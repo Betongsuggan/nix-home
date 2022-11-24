@@ -89,22 +89,22 @@
       laptop = host.mkHost {
           name = "nixos";
           NICs = [ "wlp0s20f3" ]; 
-          kernelPackage = pkgs.linuxPackages_5_15;
+          kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernelMods = [ "kvm-intel" "iwlwifi" ];
           kernelParams = [];
           fileSystems = {
             "/" = {
-              device = "/dev/disk/by-uuid/0c799567-d4e0-44e8-9007-60c28fdbe367";
+              device = "/dev/disk/by-uuid/e6fa26ba-7e3a-4146-8bba-54fd65aa211a";
               fsType = "ext4";
             };
   
             "/boot" = {
-              device = "/dev/disk/by-uuid/AEFE-A292";
+              device = "/dev/disk/by-uuid/C8DA-ECD3";
               fsType = "vfat";
             };
           };
-          swap = "/dev/disk/by-uuid/bda65168-5ec0-4cf9-9bcf-15fa4a3328ce";
+          swap = "/dev/disk/by-uuid/da3b504d-b0fa-450e-8974-e332c5ce5608";
           systemConfig = {
             touchpad.enable = true;
             graphics.enable = true;
