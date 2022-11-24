@@ -15,7 +15,7 @@ in {
       etcher
       exfat
       gimp        
-      gnome3.gedit
+      gnome.gedit
       gparted     
       gthumb 
       htop    

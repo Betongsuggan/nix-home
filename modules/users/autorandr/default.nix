@@ -90,7 +90,7 @@ in
         "island-monitor" = {
           fingerprint = {
             eDP-1 = currentScreen;
-            DP-3 = islandMonitor;
+            DP-1 = islandMonitor;
           };
           config = {
             eDP-1 = {
@@ -99,7 +99,7 @@ in
               rate = "59.95";
               position = "0x120";
             };
-            DP-3 = {
+            DP-1 = {
               enable = true;
               primary = true;
               position = "1920x0";

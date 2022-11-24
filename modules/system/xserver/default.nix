@@ -12,6 +12,7 @@ in {
       type = types.str;
       default = "lightdm";
     };
+    videoDrivers = [ "displaylink" "modesetting" ];
   };
 
   config = mkIf (cfg.enable) {
@@ -28,6 +29,9 @@ in {
             start = "";
           }
         ];
+        sessionCommands = ''
+          ${lib.getBin pkgs.xorg.xrandr}/bin/xrandr --setprovideroutputsource 2 0
+        '';
       };
     };
   };

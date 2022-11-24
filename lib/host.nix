@@ -61,10 +61,10 @@ with builtins;
         hardware.enableAllFirmware = true;
 
         boot.loader.systemd-boot.enable = true;
-        boot.loader.systemd-boot.configurationLimit = 5;
+        boot.loader.systemd-boot.configurationLimit = 10;
         boot.loader.efi.canTouchEfiVariables = true;
         boot.loader.grub.useOSProber = true;
-        boot.loader.grub.configurationLimit = 6;
+        boot.loader.grub.configurationLimit = 10;
 
         time.timeZone = "Europe/Stockholm";
 
@@ -73,7 +73,7 @@ with builtins;
           allowUnfree = true;
         };
 
-        nix.maxJobs = lib.mkDefault cpuCores;
+        nix.settings.max-jobs = lib.mkDefault cpuCores;
         nix.package = pkgs.nixUnstable;
         nix.extraOptions = ''
           experimental-features = nix-command flakes

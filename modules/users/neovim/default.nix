@@ -55,6 +55,7 @@ in
         coc-yaml
         coc-json
         vim-nix
+        nerdtree
 
         # Themes
         gruvbox

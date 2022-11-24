@@ -11,9 +11,10 @@ in {
   config = mkIf (cfg.enable) {
     home.packages = with pkgs; [ 
       altair
-      adoptopenjdk-hotspot-bin-15
+      openjdk17-bootstrap
+      android-studio
       awscli2
-      docker-compose_2
+      docker-compose
       gnumake
       jetbrains.idea-community
       jq
@@ -27,7 +28,7 @@ in {
       silver-searcher
     ];
     home.sessionVariables = {
-      JAVA_HOME = "${pkgs.adoptopenjdk-hotspot-bin-15}";
+      JAVA_HOME = "${pkgs.openjdk17-bootstrap}";
       PATH="$HOME/node_modules/bin:$PATH";
     };
   };

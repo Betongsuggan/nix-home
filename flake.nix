@@ -2,7 +2,7 @@
   description = "Betongsuggan's flake to rule them all. Proudly stolen from https://jdisaacs.com/blog/nixos-config/";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-22.05";
+    nixpkgs.url = "nixpkgs/nixos-22.11";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -125,7 +125,7 @@
       humla-nixos = host.mkHost {
           name = "humla-nixos";
           NICs = [ "wlp0s20f3" ]; 
-          kernelPackage = pkgs.linuxPackages_5_15;
+          kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernelMods = [ "kvm-intel" "iwlwifi" ];
           kernelParams = [];
