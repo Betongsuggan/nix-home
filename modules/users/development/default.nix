@@ -27,6 +27,7 @@ in {
       postman
       silver-searcher
     ];
+    programs.go.enable = true;
     home.sessionVariables = {
       JAVA_HOME = "${pkgs.openjdk17-bootstrap}";
       PATH="$HOME/node_modules/bin:$PATH";
