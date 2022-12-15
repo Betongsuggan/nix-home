@@ -16,6 +16,8 @@ in {
       awscli2
       docker-compose
       gnumake
+      golangci-lint
+      golangci-lint-langserver
       jetbrains.idea-community
       jq
       kotlin
@@ -28,6 +30,7 @@ in {
       silver-searcher
     ];
     programs.go.enable = true;
+
     home.sessionVariables = {
       JAVA_HOME = "${pkgs.openjdk17-bootstrap}";
       PATH="$HOME/node_modules/bin:$PATH";
