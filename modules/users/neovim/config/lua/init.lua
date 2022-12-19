@@ -1,0 +1,7 @@
+require('settings')
+require('nvim-tree-config')
+require('bufferline-config')
+require('indent-blankline-config')
+require('autopairs-config')
+require('feline-config')
+require('lsp-config')

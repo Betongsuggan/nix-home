@@ -15,18 +15,18 @@ in
     };
     programs.urxvt = {
       enable = true;
-      iso14755 = false;
+      iso14755 = true;
       scroll.bar.enable = false;
       extraConfig = {
         cursorBlink = true;
-        iso14755_52 = false;
+        iso14755_52 = true;
       };
       keybindings = {
         "Shift-Control-V" = "eval:paste_clipboard";
         "Shift-Control-C" = "eval:selection_to_clipboard";
       };
       fonts = [
-        "xft:Hasklug Nerd Font Mono,Hasklig Medium:style=Medium,Regular:pixelsize=11"
+        "xft:Hasklug Nerd Font Mono,Hasklig Medium:style=Medium,Regular:pixelsize=15"
         "xft:Hasklug Nerd Font Mono:style=Bold:pixelsize=15"
         "xft:Hasklug Nerd Font Mono:style=Italic:pixelsize=15"
         "xft:Hasklug Nerd Font Mono:style=Bold Italic:pixelsize=15"
