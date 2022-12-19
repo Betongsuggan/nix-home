@@ -37,13 +37,11 @@ with builtins;
   mkSystemUser = { name, groups, uid, shell, ... }:
   {
     users.users."${name}" = {
-      name = name;
+      inherit name uid shell;
       isNormalUser = true;
       isSystemUser = false;
       extraGroups = groups;
-      uid = uid;
       initialPassword = "replaceme";
-      shell = shell;
     };
   };
 }

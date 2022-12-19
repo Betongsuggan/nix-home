@@ -8,7 +8,7 @@ in {
     enable = mkEnableOption "Enable touchpad support";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     services.xserver.libinput.enable = true;
   };
 }

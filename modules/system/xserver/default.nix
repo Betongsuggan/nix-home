@@ -15,7 +15,7 @@ in {
     videoDrivers = [ "displaylink" "modesetting" ];
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     services.gvfs.enable = true;
     services.xserver = {
       enable = true;

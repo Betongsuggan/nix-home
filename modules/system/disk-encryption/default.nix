@@ -18,7 +18,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     boot.initrd.luks.devices = {
       crypted = {
         device = "/dev/disk/by-partuuid/${cfg.diskId}";

@@ -26,12 +26,13 @@ with builtins;
       inherit name NICs systemConfig cpuCores gpuTempSensor cpuTempSensor;
     };
 
-    sys_users = (map (u: user.mkSystemUser u) users);
+    sys_users = map user.mkSystemUser users;
   in lib.nixosSystem {
     inherit system;
 
     modules = [
       {
+        inherit fileSystems;
         imports = [ ../modules/system ] ++ sys_users;
 
         br = systemConfig;
@@ -40,7 +41,6 @@ with builtins;
           "hmsystemdata.json".text = toJSON userCfg;
         };
 
-        fileSystems = fileSystems;
         swapDevices = [ { device = swap; } ];
 
         networking.hostName = "${name}";

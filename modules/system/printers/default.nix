@@ -8,7 +8,7 @@ in {
     enable = mkEnableOption "Enable Printers";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     # Printers and shit
     services.printing = {
       enable = true;

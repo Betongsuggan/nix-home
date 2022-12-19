@@ -7,8 +7,8 @@ let
     pname = "${lib.strings.sanitizeDerivationName repo}";
     version = ref;
     src = builtins.fetchGit {
+      inherit ref;
       url = "https://github.com/${repo}.git";
-      ref = ref;
     };
   };
 
@@ -23,7 +23,7 @@ in
   config = lib.mkIf cfg.enable {
     nixpkgs.overlays = [
       (import (builtins.fetchTarball {
-        url = https://github.com/nix-community/neovim-nightly-overlay/archive/master.tar.gz;
+        url = "https://github.com/nix-community/neovim-nightly-overlay/archive/master.tar.gz";
       }))
     ];
 
@@ -45,6 +45,8 @@ in
         # Editor plugins
         nvim-autopairs
         feline-nvim
+        nvim-notify
+        vim-illuminate
 
         # File tree
         nvim-tree-lua
@@ -64,6 +66,15 @@ in
         null-ls-nvim
         # LSP status window
         fidget-nvim
+
+        # Completions
+        cmp-nvim-lsp
+        cmp-buffer
+        cmp-path
+        cmp-cmdline
+        cmp-nvim-lsp-signature-help
+        nvim-cmp
+        lspkind-nvim
 
         # Go plugins
         #(plugin "nvim-treesitter/nvim-treesitter")
@@ -86,6 +97,9 @@ in
         rnix-lsp
         nixpkgs-fmt
         statix
+
+        # Lua
+        sumneko-lua-language-server
 
         # Java
         java-language-server

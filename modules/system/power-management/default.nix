@@ -8,7 +8,7 @@ in {
     enable = mkEnableOption "Enable power management";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     services.tlp.enable = true;
   };
 }

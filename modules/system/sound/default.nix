@@ -8,7 +8,7 @@ in {
     enable = mkEnableOption "Enable sound hardware";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     sound.enable = true;
     hardware.pulseaudio = {
       enable = true;

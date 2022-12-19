@@ -18,7 +18,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     networking.firewall = {
       enable = true;
       allowedTCPPorts = cfg.tcpPorts;
