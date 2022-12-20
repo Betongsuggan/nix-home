@@ -24,7 +24,7 @@ local on_attach = function(client, bufnr)
         { '<space>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, description = 'LSP: List workspaces', opts = opts },
         { '<space>D', vim.lsp.buf.type_definition, description = 'LSP: Show type definition', opts = opts },
         { '<space>rn', vim.lsp.buf.rename, description = 'LSP: Rename', opts = opts },
-        { '<space>ca', vim.lsp.buf.code_action, description = 'LSP: Code Action', opts = opts },
+        { '<space>ca', function () vim.cmd([[CodeActionMenu]]) end, description = 'LSP: Code Action', opts = opts },
         { 'gr', function () nice_reference.references() end, description = 'LSP: Show references', opts = opts },
         { '<space>e', function() vim.diagnostic.open_float(0, {scope="line"}) end, description = 'Diagnostics: Show window', opts = opts },
         { '[d', function() vim.diagnostic.goto_prev({ float =  { border = "single" }}) end, description = 'Diagnostics: Previous', opts = opts },
@@ -176,32 +176,32 @@ nvim_lsp.gopls.setup{
 -- Python
 default_lsp_setup('pyright')
 
--- Typescript
-nvim_lsp.tsserver.setup{
-    init_options = require("nvim-lsp-ts-utils").init_options,
-    on_attach = function(client, bufnr)
-        on_attach(client, bufnr)
-
-        -- Let eslint format
-        client.server_capabilities.document_formatting = false
-        client.server_capabilities.document_range_formatting = false
-
-        local ts_utils = require("nvim-lsp-ts-utils")
-        ts_utils.setup({
-            enable_import_on_completion = true
-        })
-        ts_utils.setup_client(client)
-
-        -- Mappings.
-        local opts = { noremap=true, silent=true, buffer=true }
-        require('legendary').keymaps({
-            { 'gto', ':TSLspOrganize<CR>', description = 'LSP: Organize imports', opts = opts },
-            { 'gtr', ':TSLspRenameFile<CR>', description = 'LSP: Rename file', opts = opts },
-            { 'gti', ':TSLspImportAll<CR>', description = 'LSP: Import missing imports', opts = opts }
-        })
-    end,
-    capabilities = capabilities
-}
+---- Typescript
+--nvim_lsp.tsserver.setup{
+--    init_options = require("nvim-lsp-ts-utils").init_options,
+--    on_attach = function(client, bufnr)
+--        on_attach(client, bufnr)
+--
+--        -- Let eslint format
+--        client.server_capabilities.document_formatting = false
+--        client.server_capabilities.document_range_formatting = false
+--
+--        local ts_utils = require("nvim-lsp-ts-utils")
+--        ts_utils.setup({
+--            enable_import_on_completion = true
+--        })
+--        ts_utils.setup_client(client)
+--
+--        -- Mappings.
+--        local opts = { noremap=true, silent=true, buffer=true }
+--        require('legendary').keymaps({
+--            { 'gto', ':TSLspOrganize<CR>', description = 'LSP: Organize imports', opts = opts },
+--            { 'gtr', ':TSLspRenameFile<CR>', description = 'LSP: Rename file', opts = opts },
+--            { 'gti', ':TSLspImportAll<CR>', description = 'LSP: Import missing imports', opts = opts }
+--        })
+--    end,
+--    capabilities = capabilities
+--}
 
 -- Web
 -- ESLint

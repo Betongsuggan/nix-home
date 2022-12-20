@@ -1,5 +1,6 @@
 { config, pkgs, lib, vimUtils, ... }:
 
+
 let
   cfg = config.br.neovim;
   # installs a vim plugin from git with a given tag / branch
@@ -41,6 +42,7 @@ in
         ctrlp
         bufferline-nvim
         vim-smoothie
+        telescope-nvim
 
         # Editor plugins
         nvim-autopairs
@@ -61,11 +63,15 @@ in
 
         # LSP
         nvim-lspconfig
-        nvim-lsp-ts-utils
+        ## Better language server Lua support
         null-ls-nvim
-        fidget-nvim
+        #fidget-nvim
+        ## Show references in a popup
         (plugin "wiliamks/nice-reference.nvim")
+        ## Show code actions icon
         nvim-lightbulb
+        ## Show code actions in popup
+        nvim-code-action-menu
 
         # Completions
         cmp-nvim-lsp
@@ -92,6 +98,8 @@ in
       ];
       extraPackages = with pkgs; [
         tree-sitter
+        ripgrep
+
         # Bash
         nodePackages.bash-language-server
 
