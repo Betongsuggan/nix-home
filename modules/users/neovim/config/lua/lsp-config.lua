@@ -1,5 +1,6 @@
 -- Setup lspconfig.
 local nvim_lsp = require('lspconfig')
+local nice_reference = require('nice-reference')
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -24,7 +25,7 @@ local on_attach = function(client, bufnr)
         { '<space>D', vim.lsp.buf.type_definition, description = 'LSP: Show type definition', opts = opts },
         { '<space>rn', vim.lsp.buf.rename, description = 'LSP: Rename', opts = opts },
         { '<space>ca', vim.lsp.buf.code_action, description = 'LSP: Code Action', opts = opts },
-        { 'gr', vim.lsp.buf.references, description = 'LSP: Show references', opts = opts },
+        { 'gr', function () nice_reference.references() end, description = 'LSP: Show references', opts = opts },
         { '<space>e', function() vim.diagnostic.open_float(0, {scope="line"}) end, description = 'Diagnostics: Show window', opts = opts },
         { '[d', function() vim.diagnostic.goto_prev({ float =  { border = "single" }}) end, description = 'Diagnostics: Previous', opts = opts },
         { ']d', function() vim.diagnostic.goto_next({ float =  { border = "single" }}) end, description = 'Diagnostics: Next', opts = opts },
@@ -131,6 +132,7 @@ nvim_lsp.sumneko_lua.setup{
             workspace = {
                 -- Make the server aware of Neovim runtime files
                 library = vim.api.nvim_get_runtime_file("", true),
+                checkThirdParty = false,
             },
             -- Do not send telemetry data containing a randomized but unique identifier
             telemetry = {

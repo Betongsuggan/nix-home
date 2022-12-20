@@ -62,10 +62,10 @@ in
         # LSP
         nvim-lspconfig
         nvim-lsp-ts-utils
-        # Mostly for linting
         null-ls-nvim
-        # LSP status window
         fidget-nvim
+        (plugin "wiliamks/nice-reference.nvim")
+        nvim-lightbulb
 
         # Completions
         cmp-nvim-lsp
