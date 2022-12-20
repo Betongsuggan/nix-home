@@ -14,8 +14,8 @@
   let
     inherit (nixpkgs) lib;
     
-    util = import ./lib {
-      inherit system pkgs home-manager lib; overlays = pkgs.overlays;
+    util = with pkgs; import ./lib {
+      inherit system pkgs home-manager lib overlays;# overlays = pkgs.overlays;
     };
 
     inherit (util) user;
@@ -43,8 +43,8 @@
           autorandr.enable = true;
           audio.enable = true;
           neovim.enable = true;
-          #urxvt.enable = true;
-          alacritty.enable = true;
+          urxvt.enable = true;
+          #alacritty.enable = true;
           bash.enable = true;
           i3.enable = true;
           rofi.enable = true;

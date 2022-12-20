@@ -34,14 +34,14 @@ local on_attach = function(client, bufnr)
         { '[u', function() require('illuminate').next_reference({ reverse = true, wrap = true }) end, description = "Illuminate: Previous reference", opts = opts }
     })
 
-    -- if client.server_capabilities.document_formatting then
-    --     vim.cmd([[
-    --         augroup LspFormatting
-    --             autocmd! * <buffer>
-    --             autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()
-    --         augroup END
-    --         ]])
-    -- end
+    if client.server_capabilities.document_formatting then
+        vim.cmd([[
+            augroup LspFormatting
+                autocmd! * <buffer>
+                autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()
+            augroup END
+            ]])
+    end
 end
 
 local notify = require('notify')
@@ -71,10 +71,13 @@ local function default_lsp_setup(module)
         capabilities = capabilities
     }
 end
+
 -- Bash
 default_lsp_setup('bashls')
+
 -- Dart
 default_lsp_setup('dartls')
+
 -- Elixir
 nvim_lsp.elixirls.setup{
     cmd = { 'elixir-ls' },
@@ -88,18 +91,23 @@ nvim_lsp.elixirls.setup{
     on_attach = on_attach,
     capabilities = capabilities
 }
+
 -- Erlang
 default_lsp_setup('erlangls')
+
 -- Haskell
 default_lsp_setup('hls')
+
 -- Java
 nvim_lsp.java_language_server.setup{
     cmd = { 'java-language-server' },
     on_attach = on_attach,
     capabilities = capabilities
 }
+
 -- Kotlin
 default_lsp_setup('kotlin_language_server')
+
 -- Lua
 local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, "lua/?.lua")
@@ -133,6 +141,7 @@ nvim_lsp.sumneko_lua.setup{
     on_attach = on_attach,
     capabilities = capabilities
 }
+
 -- Nix
 nvim_lsp.rnix.setup{
     on_attach = function(client, bufnr)
@@ -143,8 +152,28 @@ nvim_lsp.rnix.setup{
         client.server_capabilities.document_range_formatting = false
     end
 }
+
+-- Go
+nvim_lsp.gopls.setup{
+	cmd = {'gopls'},
+	-- for postfix snippets and analyzers
+	capabilities = capabilities,
+	    settings = {
+	      gopls = {
+		      experimentalPostfixCompletions = true,
+		      analyses = {
+		        unusedparams = true,
+		        shadow = true,
+		     },
+		     staticcheck = true,
+		    },
+	    },
+	on_attach = on_attach,
+}
+
 -- Python
 default_lsp_setup('pyright')
+
 -- Typescript
 nvim_lsp.tsserver.setup{
     init_options = require("nvim-lsp-ts-utils").init_options,
@@ -171,6 +200,7 @@ nvim_lsp.tsserver.setup{
     end,
     capabilities = capabilities
 }
+
 -- Web
 -- ESLint
 nvim_lsp.eslint.setup{
@@ -186,10 +216,13 @@ nvim_lsp.eslint.setup{
     end,
     capabilities = capabilities
 }
+
 -- CSS
 default_lsp_setup('cssls')
+
 -- HTML
 default_lsp_setup('html')
+
 -- JSON
 default_lsp_setup('jsonls')
 

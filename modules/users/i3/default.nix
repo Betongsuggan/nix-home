@@ -10,7 +10,7 @@ in
     enable = mkEnableOption "Enable I3 window manager";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     services.network-manager-applet.enable = true;
 
     home.packages = with pkgs; [ feh brightnessctl i3lock-fancy-rapid ];
@@ -49,14 +49,13 @@ in
 
         modifier = mod;
 
-        fonts = {
-          names = [ theme.font.name ];
-          style = theme.font.style;
-          size = theme.font.size;
+        fonts = with theme.font; {
+          inherit style size;
+          names = [ name ];
         };
 
         keybindings = lib.mkOptionDefault {
-          "${mod}+Return" = "exec alacritty";
+          "${mod}+Return" = "exec urxvt";
           "${mod}+x" = "exec sh -c '${pkgs.maim}/bin/maim -s | xclip -selection clipboard -t image/png'";
           "${mod}+o" = "exec rofi -show run";
           "${mod}+Shift+x" = "exec sh -c '${pkgs.i3lock-fancy-rapid}/bin/i3lock-fancy-rapid 15 8'";

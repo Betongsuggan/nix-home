@@ -76,9 +76,11 @@ in
         nvim-cmp
         lspkind-nvim
 
+        # Snippets
+        luasnip
+        cmp_luasnip
+
         # Go plugins
-        #(plugin "nvim-treesitter/nvim-treesitter")
-        #(plugin "neovim/nvim-lspconfig")
         (plugin "ray-x/go.nvim")
         (plugin "ray-x/guihua.lua")
 
@@ -106,6 +108,12 @@ in
 
         # Kotlin
         kotlin-language-server
+
+        # Go
+        gopls
+
+        # Json
+        nodePackages.vscode-json-languageserver
       ];
     };
     xdg.configFile.nvim = {
