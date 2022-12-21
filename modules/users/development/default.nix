@@ -28,6 +28,7 @@ in {
       python3
       postman
       silver-searcher
+      teleport
     ];
     programs.go.enable = true;
 

@@ -15,11 +15,11 @@ in
     };
     programs.urxvt = {
       enable = true;
-      iso14755 = true;
+      iso14755 = false;
       scroll.bar.enable = false;
       extraConfig = {
         cursorBlink = true;
-        iso14755_52 = true;
+        iso14755_52 = false;
       };
       keybindings = {
         "Shift-Control-V" = "eval:paste_clipboard";
