@@ -11,7 +11,9 @@ require'nvim-tree'.setup {
 
   open_on_tab         = false,
   hijack_cursor       = false,
-  update_cwd          = false,
+  update_cwd          = true,
+  sync_root_with_cwd  = true,
+  respect_buf_cwd     = true,
   diagnostics         = {
     enable = true,
     icons = {
@@ -31,16 +33,22 @@ require'nvim-tree'.setup {
     args = {}
   },
   view = {
-    width = 30,
+    adaptive_size = true,
+    centralize_selection =true,
+    -- width = 30,
     side = 'left',
     mappings = {
       custom_only = false,
       list = {}
+    },
+    float = {
+      enable = true
     }
   },
   actions = {
     open_file = {
-      resize_window = true
+      quit_on_open = true,
+      resize_window = true,
     }
   }
 }

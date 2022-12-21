@@ -1,6 +1,7 @@
 -- Setup lspconfig.
 local nvim_lsp = require('lspconfig')
 local nice_reference = require('nice-reference')
+local telescope = require('telescope.builtin')
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -14,10 +15,13 @@ local on_attach = function(client, bufnr)
     -- Mappings.
     local opts = { noremap=true, silent=true, buffer=true }
     require('legendary').keymaps({
-        { 'gD', vim.lsp.buf.declaration, description = 'LSP: Go to declaration', opts = opts },
-        { 'gd', vim.lsp.buf.definition, description = 'LSP: Go to definition', opts = opts },
+        --{ 'gD', vim.lsp.buf.declaration, description = 'LSP: Go to declaration', opts = opts },
+        { 'gD', telescope.lsp_type_definitions, description = 'LSP: Go to declaration', opts = opts },
+        --{ 'gd', vim.lsp.buf.definition, description = 'LSP: Go to definition', opts = opts },
+        { 'gd', telescope.lsp_definitions, description = 'LSP: Go to definition', opts = opts },
         { 'K', vim.lsp.buf.hover, description = 'LSP: Hover', opts = opts },
-        { 'gi', vim.lsp.buf.implementation, description = 'LSP: Go to implementation', opts = opts },
+        --{ 'gi', vim.lsp.buf.implementation, description = 'LSP: Go to implementation', opts = opts },
+        { 'gi', telescope.lsp_implementations, description = 'LSP: Go to implementation', opts = opts },
         { '<C-s>', vim.lsp.buf.signature_help, description = 'LSP: Signature help', mode = { 'n', 'i' }, opts = opts },
         { '<space>wa', vim.lsp.buf.add_workspace_folder, description = 'LSP: Add workspace folder', opts = opts },
         { '<space>wr', vim.lsp.buf.remove_workspace_folder, description = 'LSP: Remove workspace folder', opts = opts },
@@ -25,8 +29,10 @@ local on_attach = function(client, bufnr)
         { '<space>D', vim.lsp.buf.type_definition, description = 'LSP: Show type definition', opts = opts },
         { '<space>rn', vim.lsp.buf.rename, description = 'LSP: Rename', opts = opts },
         { '<space>ca', function () vim.cmd([[CodeActionMenu]]) end, description = 'LSP: Code Action', opts = opts },
-        { 'gr', function () nice_reference.references() end, description = 'LSP: Show references', opts = opts },
-        { '<space>e', function() vim.diagnostic.open_float(0, {scope="line"}) end, description = 'Diagnostics: Show window', opts = opts },
+        --{ 'gr', function () nice_reference.references() end, description = 'LSP: Show references', opts = opts },
+        { 'gr', telescope.lsp_references, description = 'LSP: Show references', opts = opts },
+        --{ '<space>e', function() vim.diagnostic.open_float(0, {scope="line"}) end, description = 'Diagnostics: Show window', opts = opts },
+        { '<space>e', telescope.diagnostics, description = 'Diagnostics: Show window', opts = opts },
         { '[d', function() vim.diagnostic.goto_prev({ float =  { border = "single" }}) end, description = 'Diagnostics: Previous', opts = opts },
         { ']d', function() vim.diagnostic.goto_next({ float =  { border = "single" }}) end, description = 'Diagnostics: Next', opts = opts },
         { '<space>q', vim.diagnostic.setloclist, description = 'Diagnostic: Show location list', opts = opts },

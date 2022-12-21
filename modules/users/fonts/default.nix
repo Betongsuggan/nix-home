@@ -8,7 +8,7 @@ in {
     enable = mkEnableOption "Enable additional fonts";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     fonts.fontconfig.enable = true;
     home.packages = with pkgs; [ glibcLocales nerdfonts xorg.libXft ];
     home.sessionVariables = {
