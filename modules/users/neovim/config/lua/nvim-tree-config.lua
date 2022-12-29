@@ -55,8 +55,6 @@ require'nvim-tree'.setup {
   }
 }
 
-require('legendary').keymaps({
-  keymappings.openFileTree,
-  { '<leader>tr', ':NvimTreeRefresh<cr>', opts = { silent = true }, description = 'Nvim Tree: Refresh' },
-  { '<leader>tf', ':NvimTreeFindFile<cr>', opts = { silent = true }, description = 'Nvim Tree: Find file' }
-})
+keymaps.open_file_tree(':NvimTreeToggle<cr>')
+keymaps.refresh_file_in_tree(':NvimTreeRefresh<cr>')
+keymaps.find_file_in_tree(':NvimTreeFindFile<cr>')

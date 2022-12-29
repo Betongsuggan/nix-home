@@ -2,7 +2,7 @@ local set = vim.opt
 local g = vim.g
 
 -- Set leader key
-g.mapleader = ','
+g.mapleader = ' '
 vim.cmd([[ colorscheme gruvbox ]])
 
 -- Visuals

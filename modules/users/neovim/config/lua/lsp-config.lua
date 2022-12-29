@@ -1,6 +1,7 @@
 -- Setup lspconfig.
-local nvim_lsp = require('lspconfig')
+local nvim_lsp  = require('lspconfig')
 local telescope = require('telescope.builtin')
+local keymaps   = require('keymappings')
 
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
@@ -13,28 +14,21 @@ local on_attach = function(client, bufnr)
     require('illuminate').on_attach(client)
 
     -- Mappings.
-    local opts = { noremap=true, silent=true, buffer=true }
-    require('legendary').keymaps({
-        { 'gD', telescope.lsp_type_definitions, description = 'LSP: Go to declaration', opts = opts },
-        { 'gd', telescope.lsp_definitions, description = 'LSP: Go to definition', opts = opts },
-        { 'K', vim.lsp.buf.hover, description = 'LSP: Hover', opts = opts },
-        { 'gi', telescope.lsp_implementations, description = 'LSP: Go to implementation', opts = opts },
-        { '<C-s>', vim.lsp.buf.signature_help, description = 'LSP: Signature help', mode = { 'n', 'i' }, opts = opts },
-        { '<space>wa', vim.lsp.buf.add_workspace_folder, description = 'LSP: Add workspace folder', opts = opts },
-        { '<space>wr', vim.lsp.buf.remove_workspace_folder, description = 'LSP: Remove workspace folder', opts = opts },
-        { '<space>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, description = 'LSP: List workspaces', opts = opts },
-        { '<space>D', vim.lsp.buf.type_definition, description = 'LSP: Show type definition', opts = opts },
-        { '<space>rn', vim.lsp.buf.rename, description = 'LSP: Rename', opts = opts },
-        { '<space>ca', function () vim.cmd([[CodeActionMenu]]) end, description = 'LSP: Code Action', opts = opts },
-        { 'gr', telescope.lsp_references, description = 'LSP: Show references', opts = opts },
-        { '<space>e', telescope.diagnostics, description = 'Diagnostics: Show window', opts = opts },
-        { '[d', function() vim.diagnostic.goto_prev({ float =  { border = "single" }}) end, description = 'Diagnostics: Previous', opts = opts },
-        { ']d', function() vim.diagnostic.goto_next({ float =  { border = "single" }}) end, description = 'Diagnostics: Next', opts = opts },
-        { '<space>q', vim.diagnostic.setloclist, description = 'Diagnostic: Show location list', opts = opts },
-        { 'gb', vim.lsp.buf.formatting, description = 'LSP: Format file', opts = opts },
-        { ']u', function() require('illuminate').next_reference({ wrap = true }) end, description = "Illuminate: Next reference", opts = opts },
-        { '[u', function() require('illuminate').next_reference({ reverse = true, wrap = true }) end, description = "Illuminate: Previous reference", opts = opts }
-    })
+    keymaps.lsp_go_to_declaration(telescope.lsp_type_definitions)
+    keymaps.lsp_go_to_definition(telescope.lsp_definitions)
+    keymaps.lsp_go_to_implementation(telescope.lsp_implementations)
+    keymaps.lsp_next_reference(function() require('illuminate').next_reference({ wrap = true }) end)
+    keymaps.lsp_previous_reference(function() require('illuminate').next_reference({ reverse = true, wrap = true }) end)
+    keymaps.lsp_next_diagnostic(function() vim.diagnostic.goto_next({ float =  { border = "single" }}) end)
+    keymaps.lsp_previous_diagnostic(function() vim.diagnostic.goto_prev({ float =  { border = "single" }}) end)
+    keymaps.lsp_hover(vim.lsp.buf.hover)
+    keymaps.lsp_rename(vim.lsp.buf.rename)
+    keymaps.lsp_format(vim.lsp.buf.formatting)
+    keymaps.lsp_show_signature(vim.lsp.buf.signature_help)
+    keymaps.lsp_show_type_definition(vim.lsp.buf.type_definition)
+    keymaps.lsp_show_code_action(function () vim.cmd([[CodeActionMenu]]) end)
+    keymaps.lsp_show_diagnostics(telescope.diagnostics)
+    keymaps.lsp_show_references(telescope.lsp_references)
 
     if client.server_capabilities.document_formatting then
         vim.cmd([[
