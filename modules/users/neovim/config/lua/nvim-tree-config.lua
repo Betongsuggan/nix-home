@@ -1,3 +1,5 @@
+local keymaps = require('keymappings')
+
 require'nvim-tree'.setup {
   disable_netrw       = true,
   hijack_netrw        = true,
@@ -24,7 +26,7 @@ require'nvim-tree'.setup {
     }
   },
   update_focused_file = {
-    enable      = false,
+    enable      = true,
     update_cwd  = false,
     ignore_list = {}
   },
@@ -54,7 +56,7 @@ require'nvim-tree'.setup {
 }
 
 require('legendary').keymaps({
-  { '<leader>tt', ':NvimTreeToggle<cr>', opts = { silent = true }, description = 'Nvim Tree: Toggle' },
+  keymappings.openFileTree,
   { '<leader>tr', ':NvimTreeRefresh<cr>', opts = { silent = true }, description = 'Nvim Tree: Refresh' },
   { '<leader>tf', ':NvimTreeFindFile<cr>', opts = { silent = true }, description = 'Nvim Tree: Find file' }
 })

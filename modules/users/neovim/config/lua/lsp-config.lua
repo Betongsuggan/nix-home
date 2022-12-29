@@ -1,7 +1,7 @@
 -- Setup lspconfig.
 local nvim_lsp = require('lspconfig')
-local nice_reference = require('nice-reference')
 local telescope = require('telescope.builtin')
+
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -15,12 +15,9 @@ local on_attach = function(client, bufnr)
     -- Mappings.
     local opts = { noremap=true, silent=true, buffer=true }
     require('legendary').keymaps({
-        --{ 'gD', vim.lsp.buf.declaration, description = 'LSP: Go to declaration', opts = opts },
         { 'gD', telescope.lsp_type_definitions, description = 'LSP: Go to declaration', opts = opts },
-        --{ 'gd', vim.lsp.buf.definition, description = 'LSP: Go to definition', opts = opts },
         { 'gd', telescope.lsp_definitions, description = 'LSP: Go to definition', opts = opts },
         { 'K', vim.lsp.buf.hover, description = 'LSP: Hover', opts = opts },
-        --{ 'gi', vim.lsp.buf.implementation, description = 'LSP: Go to implementation', opts = opts },
         { 'gi', telescope.lsp_implementations, description = 'LSP: Go to implementation', opts = opts },
         { '<C-s>', vim.lsp.buf.signature_help, description = 'LSP: Signature help', mode = { 'n', 'i' }, opts = opts },
         { '<space>wa', vim.lsp.buf.add_workspace_folder, description = 'LSP: Add workspace folder', opts = opts },
@@ -29,14 +26,12 @@ local on_attach = function(client, bufnr)
         { '<space>D', vim.lsp.buf.type_definition, description = 'LSP: Show type definition', opts = opts },
         { '<space>rn', vim.lsp.buf.rename, description = 'LSP: Rename', opts = opts },
         { '<space>ca', function () vim.cmd([[CodeActionMenu]]) end, description = 'LSP: Code Action', opts = opts },
-        --{ 'gr', function () nice_reference.references() end, description = 'LSP: Show references', opts = opts },
         { 'gr', telescope.lsp_references, description = 'LSP: Show references', opts = opts },
-        --{ '<space>e', function() vim.diagnostic.open_float(0, {scope="line"}) end, description = 'Diagnostics: Show window', opts = opts },
         { '<space>e', telescope.diagnostics, description = 'Diagnostics: Show window', opts = opts },
         { '[d', function() vim.diagnostic.goto_prev({ float =  { border = "single" }}) end, description = 'Diagnostics: Previous', opts = opts },
         { ']d', function() vim.diagnostic.goto_next({ float =  { border = "single" }}) end, description = 'Diagnostics: Next', opts = opts },
         { '<space>q', vim.diagnostic.setloclist, description = 'Diagnostic: Show location list', opts = opts },
-        { '<space>f', vim.lsp.buf.formatting, description = 'LSP: Format file', opts = opts },
+        { 'gb', vim.lsp.buf.formatting, description = 'LSP: Format file', opts = opts },
         { ']u', function() require('illuminate').next_reference({ wrap = true }) end, description = "Illuminate: Next reference", opts = opts },
         { '[u', function() require('illuminate').next_reference({ reverse = true, wrap = true }) end, description = "Illuminate: Previous reference", opts = opts }
     })
@@ -81,26 +76,6 @@ end
 
 -- Bash
 default_lsp_setup('bashls')
-
--- Dart
-default_lsp_setup('dartls')
-
--- Elixir
-nvim_lsp.elixirls.setup{
-    cmd = { 'elixir-ls' },
-    -- Settings block is required, as there is no default set for elixir
-    settings = {
-        elixirLs = {
-            dialyzerEnabled = true,
-            dialyzerFormat = "dialyxir_long"
-        }
-    },
-    on_attach = on_attach,
-    capabilities = capabilities
-}
-
--- Erlang
-default_lsp_setup('erlangls')
 
 -- Haskell
 default_lsp_setup('hls')
@@ -179,73 +154,15 @@ nvim_lsp.gopls.setup{
 	on_attach = on_attach,
 }
 
--- Python
-default_lsp_setup('pyright')
-
----- Typescript
---nvim_lsp.tsserver.setup{
---    init_options = require("nvim-lsp-ts-utils").init_options,
---    on_attach = function(client, bufnr)
---        on_attach(client, bufnr)
---
---        -- Let eslint format
---        client.server_capabilities.document_formatting = false
---        client.server_capabilities.document_range_formatting = false
---
---        local ts_utils = require("nvim-lsp-ts-utils")
---        ts_utils.setup({
---            enable_import_on_completion = true
---        })
---        ts_utils.setup_client(client)
---
---        -- Mappings.
---        local opts = { noremap=true, silent=true, buffer=true }
---        require('legendary').keymaps({
---            { 'gto', ':TSLspOrganize<CR>', description = 'LSP: Organize imports', opts = opts },
---            { 'gtr', ':TSLspRenameFile<CR>', description = 'LSP: Rename file', opts = opts },
---            { 'gti', ':TSLspImportAll<CR>', description = 'LSP: Import missing imports', opts = opts }
---        })
---    end,
---    capabilities = capabilities
---}
-
--- Web
--- ESLint
-nvim_lsp.eslint.setup{
-    on_attach = function(client, bufnr)
-        on_attach(client, bufnr)
-        -- Run all eslint fixes on save
-        vim.cmd([[
-            augroup EslintOnSave
-                autocmd! * <buffer>
-                autocmd BufWritePre <buffer> EslintFixAll
-            augroup END
-            ]])
-    end,
-    capabilities = capabilities
-}
-
--- CSS
-default_lsp_setup('cssls')
-
--- HTML
-default_lsp_setup('html')
-
 -- JSON
 default_lsp_setup('jsonls')
 
 -- NULL
 require("null-ls").setup({
     sources = {
-        -- Elixir
-        require("null-ls").builtins.diagnostics.credo,
-
         -- Nix
         require("null-ls").builtins.formatting.nixpkgs_fmt,
         require("null-ls").builtins.diagnostics.statix,
         require("null-ls").builtins.code_actions.statix,
-
-        -- Python
-        require("null-ls").builtins.formatting.black
     },
 })
