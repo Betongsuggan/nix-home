@@ -65,13 +65,14 @@ in
         nvim-lspconfig
         ## Better language server Lua support
         null-ls-nvim
-        #fidget-nvim
         ## Show references in a popup
         (plugin "wiliamks/nice-reference.nvim")
         ## Show code actions icon
         nvim-lightbulb
         ## Show code actions in popup
         nvim-code-action-menu
+        ## Show LSP Processes
+        fidget-nvim
 
         # Completions
         cmp-nvim-lsp

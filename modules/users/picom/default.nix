@@ -16,9 +16,6 @@ in
       fade = true;
       fadeSteps =  [ 0.1 0.12 ];
       vSync = true;
-      opacityRules = [
-       "90:class_g  = 'URxvt'"
-      ];
     };
   };
 }

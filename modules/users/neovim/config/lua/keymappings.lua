@@ -52,7 +52,7 @@ local key_mappings = {
   lsp_show_type_definition  = add_key_mapping('<leader>nt', lsp_opts, 'LSP: Show type definition'),
   lsp_show_code_action      = add_key_mapping('<leader>na', lsp_opts, 'LSP: Show code action'),
   lsp_show_diagnostics      = add_key_mapping('<leader>ne', lsp_opts, 'LSP: Show diagnostics'),
-  lsp_show_references       = add_key_mapping('<leader>nr', lsp_opts, 'LSP: Go to reference'),
+  lsp_show_references       = add_key_mapping('<leader>nr', lsp_opts, 'LSP: Show references'),
 
 --        { '<space>wa', vim.lsp.buf.add_workspace_folder, description = 'LSP: Add workspace folder', opts = opts },
 --        { '<space>wr', vim.lsp.buf.remove_workspace_folder, description = 'LSP: Remove workspace folder', opts = opts },
