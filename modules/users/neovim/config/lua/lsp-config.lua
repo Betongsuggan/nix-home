@@ -2,6 +2,7 @@
 local nvim_lsp  = require('lspconfig')
 local telescope = require('telescope.builtin')
 local keymaps   = require('keymappings')
+local languages = require('lsp')
 
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
@@ -29,6 +30,9 @@ local on_attach = function(client, bufnr)
     keymaps.lsp_show_code_action(function () vim.cmd([[CodeActionMenu]]) end)
     keymaps.lsp_show_diagnostics(telescope.diagnostics)
     keymaps.lsp_show_references(telescope.lsp_references)
+    keymaps.lsp_create_workspace(vim.lsp.buf.add_workspace_folder)
+    keymaps.lsp_remove_workspace(vim.lsp.buf.remove_workspace_folder)
+    keymaps.lsp_show_workspaces(function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end)
 
     if client.server_capabilities.document_formatting then
         vim.cmd([[
@@ -68,88 +72,9 @@ local function default_lsp_setup(module)
     }
 end
 
--- Bash
-default_lsp_setup('bashls')
-
--- Haskell
-default_lsp_setup('hls')
-
--- Java
-nvim_lsp.java_language_server.setup{
-    cmd = { 'java-language-server' },
-    on_attach = on_attach,
-    capabilities = capabilities
-}
-
--- Kotlin
-default_lsp_setup('kotlin_language_server')
-
--- Lua
-local runtime_path = vim.split(package.path, ';')
-table.insert(runtime_path, "lua/?.lua")
-table.insert(runtime_path, "lua/?/init.lua")
-nvim_lsp.sumneko_lua.setup{
-    settings = {
-        Lua = {
-            runtime = {
-                -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-                version = 'LuaJIT',
-                -- Setup your lua path
-                path = runtime_path,
-            },
-            completion = {
-                callSnippet = 'Replace'
-            },
-            diagnostics = {
-                -- Get the language server to recognize the `vim` global
-                globals = {'vim'},
-            },
-            workspace = {
-                -- Make the server aware of Neovim runtime files
-                library = vim.api.nvim_get_runtime_file("", true),
-                checkThirdParty = false,
-            },
-            -- Do not send telemetry data containing a randomized but unique identifier
-            telemetry = {
-                enable = false,
-            }
-        }
-    },
-    on_attach = on_attach,
-    capabilities = capabilities
-}
-
--- Nix
-nvim_lsp.rnix.setup{
-    on_attach = function(client, bufnr)
-        on_attach(client, bufnr)
-
-        -- Let statix format
-        client.server_capabilities.document_formatting = false
-        client.server_capabilities.document_range_formatting = false
-    end
-}
-
--- Go
-nvim_lsp.gopls.setup{
-	cmd = {'gopls'},
-	-- for postfix snippets and analyzers
-	capabilities = capabilities,
-	    settings = {
-	      gopls = {
-		      experimentalPostfixCompletions = true,
-		      analyses = {
-		        unusedparams = true,
-		        shadow = true,
-		     },
-		     staticcheck = true,
-		    },
-	    },
-	on_attach = on_attach,
-}
-
--- JSON
-default_lsp_setup('jsonls')
+for _, language in ipairs(languages) do
+  language(on_attach, capabilities)
+end
 
 -- NULL
 require("null-ls").setup({

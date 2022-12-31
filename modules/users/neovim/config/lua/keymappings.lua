@@ -54,8 +54,8 @@ local key_mappings = {
   lsp_show_diagnostics      = add_key_mapping('<leader>ne', lsp_opts, 'LSP: Show diagnostics'),
   lsp_show_references       = add_key_mapping('<leader>nr', lsp_opts, 'LSP: Show references'),
 
---        { '<space>wa', vim.lsp.buf.add_workspace_folder, description = 'LSP: Add workspace folder', opts = opts },
---        { '<space>wr', vim.lsp.buf.remove_workspace_folder, description = 'LSP: Remove workspace folder', opts = opts },
---        { '<space>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, description = 'LSP: List workspaces', opts = opts },
+  lsp_create_workspace      = add_key_mapping('<leader>nwa', lsp_opts, 'LSP: Add workspace folder'),
+  lsp_remove_workspace      = add_key_mapping('<leader>nwd', lsp_opts, 'LSP: Remove workspace folder'),
+  lsp_show_workspaces       = add_key_mapping('<leader>nwl', lsp_opts, 'LSP: List workspaces'),
 }
 return key_mappings
