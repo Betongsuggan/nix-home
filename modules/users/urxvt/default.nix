@@ -9,7 +9,7 @@ in
     enable = mkEnableOption "Enable urxvt terminal emulator";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     home.sessionVariables = {
       TERMINFO_DIRS = "${pkgs.rxvt-unicode-unwrapped.terminfo.outPath}/share/terminfo";
     };

@@ -9,7 +9,7 @@ in
     enable = mkEnableOption "Enable X11";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     xsession.enable = true;
     xresources.extraConfig = ''
       ! -----------------------------------------------------------------------------

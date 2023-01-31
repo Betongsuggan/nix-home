@@ -15,7 +15,7 @@
     inherit (nixpkgs) lib;
     
     util = with pkgs; import ./lib {
-      inherit system pkgs home-manager lib overlays;# overlays = pkgs.overlays;
+      inherit system pkgs home-manager lib overlays;
     };
 
     inherit (util) user;
@@ -84,6 +84,26 @@
         };
         username="birgerrydback";
       };
+      ayaneo = user.mkHMUser {
+        userConfig = {
+          git = {
+            enable = true;
+            userName = "Birger Rydback";
+            userEmail = "rydback@gmail.com";
+          };
+          general.enable = true;
+          games.enable = true;
+          browsers.enable = true;
+          audio.enable = true;
+          neovim.enable = true;
+          urxvt.enable = true;
+          bash.enable = true;
+          fonts.enable = true;
+          x11.enable = true;
+          colemak.enable = true;
+        };
+        username="betongsuggan";
+      };
     };
 
     nixosConfigurations = {
@@ -123,33 +143,55 @@
           }];
           cpuCores = 4;
       };
+      ayaneo = host.mkHost {
+          name = "ayaneo";
+          NICs = [ "wlp3s0" ]; 
+          kernelPackage = pkgs.linuxPackages_latest;
+          initrdMods = [ "nvme" "xhci_pci" "thunderbolt" "usbhid" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
+          kernelMods = [ "kvm-amd" ];
+          kernelParams = [];
+          fileSystems = {
+            "/" = {
+              device = "/dev/disk/by-uuid/cc910516-4af4-4894-87d5-1e74c726bafc";
+              fsType = "ext4";
+            };
+            "/boot/efi" = {
+              device = "/dev/disk/by-uuid/5793-8E8F";
+              fsType = "vfat";
+            };
+          };
+          swap = "/dev/disk/by-uuid/ff8b0185-4671-4fff-bdae-fa83dcc0318c";
+          bootPartition = "/boot/efi";
+          systemConfig = {
+            sound.enable = true;
+            bluetooth.enable = true;
+            graphics.enable = true;
+            kde.enable = true;
+            firewall = {
+              enable = true;
+              tcpPorts = [ 8080 ];
+            };
+          };
+          users = [{
+            name = "betongsuggan";
+            groups = [ "wheel" "networkmanager" ];
+            uid = 1000;
+            shell = pkgs.bash;
+          }];
+          cpuCores = 16;
+      };
       home-desktop = host.mkHost {
           name = "home-desktop";
-          #NICs = [ "" ]; 
           kernelPackage = pkgs.linuxPackages_5_15;
           initrdMods = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernelMods = [ "iwlwifi" ];
           kernelParams = [];
-          #fileSystems = {
-          #  "/" = {
-          #    device = "/dev/disk/by-uuid/0c799567-d4e0-44e8-9007-60c28fdbe367";
-          #    fsType = "ext4";
-          #  };
-          #};
-          #swap = "/dev/disk/by-uuid/bda65168-5ec0-4cf9-9bcf-15fa4a3328ce";
           systemConfig = {
             #graphics.enable = true;
             sound.enable = true;
             #docker.enable = true;
             bluetooth.enable = true;
             xserver.enable = true;
-            #printers.enable = true;
-            #power-management.enable = true;
-            #diskEncryption = {
-            #  enable = true;
-            #  diskId = "33b56bc7-dd4f-4a2d-a000-1d8cb6cfbdb3";
-            #  headerId = "2556269d-06e3-4e5b-94dd-9a2a7fc0fda9";
-            #};
             firewall = {
               enable = true;
               tcpPorts = [ 8080 ];

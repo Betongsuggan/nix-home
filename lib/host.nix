@@ -15,7 +15,8 @@ with builtins;
     users, 
     wifi ? [],
     gpuTempSensor ? null, 
-    cpuTempSensor ? null
+    cpuTempSensor ? null,
+    bootPartition ? "/boot",
   }:
   let
     networkCfg = listToAttrs (map (n: {
@@ -62,6 +63,7 @@ with builtins;
 
         boot.loader.systemd-boot.enable = true;
         boot.loader.systemd-boot.configurationLimit = 10;
+        boot.loader.efi.efiSysMountPoint = bootPartition;
         boot.loader.efi.canTouchEfiVariables = true;
         boot.loader.grub.useOSProber = true;
         boot.loader.grub.configurationLimit = 10;
@@ -81,7 +83,7 @@ with builtins;
 
         powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
 
-        system.stateVersion = "21.11";
+        system.stateVersion = "22.11";
       }
     ];
   };

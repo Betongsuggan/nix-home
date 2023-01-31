@@ -6,6 +6,7 @@
     ./docker
     ./firewall
     ./graphics
+    ./kde
     ./power-management
     ./printers
     ./sound
