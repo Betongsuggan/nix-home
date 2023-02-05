@@ -2,15 +2,18 @@
   description = "Betongsuggan's flake to rule them all. Proudly stolen from https://jdisaacs.com/blog/nixos-config/";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-22.11";
+    #nixpkgs.url = "nixpkgs/nixos-22.11";
+    nixpkgs.url = "nixpkgs/nixos-unstable";
 
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    handygccs-flake.url = "github:Betongsuggan/handygccs-flake/xboxdrv-control-mapper";
   };
 
-  outputs = { nixpkgs, home-manager, ...}@inputs:
+  outputs = { nixpkgs, home-manager, handygccs-flake, ...}@inputs:
   let
     inherit (nixpkgs) lib;
     
@@ -179,6 +182,12 @@
             shell = pkgs.bash;
           }];
           cpuCores = 16;
+          additionalModules = [ 
+            handygccs-flake.nixosModules.handygccs
+            { services.handygccs.enable = true; }
+            handygccs-flake.nixosModules.xboxdrv-handygccs
+            { services.xboxdrv-handygccs.enable = true; }
+          ];
       };
       home-desktop = host.mkHost {
           name = "home-desktop";

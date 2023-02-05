@@ -8,29 +8,33 @@ in {
     enable = mkEnableOption "Enable general desktop programs";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     home.packages = with pkgs; [
       bpytop
-      kazam    
+      coreutils
+      kazam
       etcher
       exfat
-      gimp        
+      gimp
       gnome.gedit
-      gparted     
-      gthumb 
-      htop    
-      kdenlive
-      okular  
-      p7zip     
-      lm_sensors
-      p7zip     
-      unzip          
-      yubikey-manager
-      xfce.thunar            
-      xfce.thunar-volman     
+      gparted
+      gthumb
       gvfs
+      htop
+      iio-sensor-proxy
+      kdenlive
+      lm_sensors
+      okular
+      p7zip
       polkit
+      powertop
+      ryzenadj
+      unzip
+      yubikey-manager
+      xfce.thunar
+      xfce.thunar-volman
       udisks
+      usbutils
       vlc
     ];
   };

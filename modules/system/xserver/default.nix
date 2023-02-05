@@ -16,7 +16,6 @@ in {
   };
 
   config = mkIf cfg.enable {
-    services.gvfs.enable = true;
     services.xserver = {
       enable = true;
   

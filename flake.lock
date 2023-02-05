@@ -1,5 +1,42 @@
 {
   "nodes": {
+    "handygccs": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1674697322,
+        "narHash": "sha256-bpvYkmrNaKoaJPeO26Y2sIlRyIaO6S86TucYWlXDDKE=",
+        "owner": "ShadowBlip",
+        "repo": "HandyGCCS",
+        "rev": "1996b761dcf3ffcdcb04f7d9570d3157d752fb87",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ShadowBlip",
+        "ref": "aya2_dev",
+        "repo": "HandyGCCS",
+        "type": "github"
+      }
+    },
+    "handygccs-flake": {
+      "inputs": {
+        "handygccs": "handygccs",
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1675630113,
+        "narHash": "sha256-i1jm+5Mhaq6hCiHnaWG5hxlxZktGTGujxrx32DkyfRo=",
+        "owner": "Betongsuggan",
+        "repo": "handygccs-flake",
+        "rev": "81039b7843e3ac576f4b5274b3e56e523a40f914",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Betongsuggan",
+        "ref": "xboxdrv-control-mapper",
+        "repo": "handygccs-flake",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -8,11 +45,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1675181178,
-        "narHash": "sha256-jymSUUjKoArptU7LJ1i4boysXptnpuETiUTenKgs2fM=",
+        "lastModified": 1675595366,
+        "narHash": "sha256-WoQkwaaoZqrhWpIrMxA+2j8CgxgyvjHzCyEZAQu06rQ=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "69696fe53940562a047bf2ec675cc1dcd1bc09b3",
+        "rev": "9621e9ab80a038cd11c7cfcae4df46a59d62b16a",
         "type": "github"
       },
       "original": {
@@ -23,23 +60,40 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1675154384,
-        "narHash": "sha256-gUXzyTS3WsO3g2Rz0qOYR2a26whkyL2UfTr1oPH9mm8=",
+        "lastModified": 1675512093,
+        "narHash": "sha256-u1CY4feK14B57E6T+0Bhkuoj8dpBxCPrWO+SP87UVP8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "0218941ea68b4c625533bead7bbb94ccce52dceb",
+        "rev": "8e8240194eda25b61449f29bb5131e02b28a5486",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-22.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1675545634,
+        "narHash": "sha256-TbQeQcM5TA/wIho6xtzG+inUfiGzUXi8ewwttiQWYJE=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "0591d6b57bfeb55dfeec99a671843337bc2c3323",
         "type": "github"
       },
       "original": {
         "id": "nixpkgs",
-        "ref": "nixos-22.11",
+        "ref": "nixos-unstable",
         "type": "indirect"
       }
     },
     "root": {
       "inputs": {
+        "handygccs-flake": "handygccs-flake",
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs_2"
       }
     },
     "utils": {

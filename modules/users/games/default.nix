@@ -8,15 +8,21 @@ in {
     enable = mkEnableOption "Enable gaming setup";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      steam
-      retroarch
-      lutris
-      chiaki
       antimicroX
-      mangohud
+      chiaki
       discord
+      evtest
+      gamescope
+      gamemode
+      lutris
+      mangohud
+      retroarch
+      steam
+      steam-run
+      steamcontroller
+      xboxdrv
     ];
   };
 }

@@ -17,6 +17,7 @@ with builtins;
     gpuTempSensor ? null, 
     cpuTempSensor ? null,
     bootPartition ? "/boot",
+    additionalModules ? [],
   }:
   let
     networkCfg = listToAttrs (map (n: {
@@ -85,6 +86,6 @@ with builtins;
 
         system.stateVersion = "22.11";
       }
-    ];
+    ] ++ additionalModules;
   };
 }

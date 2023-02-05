@@ -32,7 +32,6 @@ in {
           libvdpau-va-gl
         ];
       };
-
       steam-hardware.enable = true;
     };
   };
