@@ -152,7 +152,7 @@
           kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "nvme" "xhci_pci" "thunderbolt" "usbhid" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernelMods = [ "kvm-amd" ];
-          kernelParams = [];
+          kernelParams = [ "iomem=relaxed" ];
           fileSystems = {
             "/" = {
               device = "/dev/disk/by-uuid/cc910516-4af4-4894-87d5-1e74c726bafc";
@@ -184,9 +184,17 @@
           cpuCores = 16;
           additionalModules = [ 
             handygccs-flake.nixosModules.handygccs
-            { services.handygccs.enable = true; }
             handygccs-flake.nixosModules.xboxdrv-handygccs
-            { services.xboxdrv-handygccs.enable = true; }
+            { 
+              services.handygccs.enable = true; 
+              services.xboxdrv-handygccs.enable = true; 
+              services.upower.enable = true;
+              environment.systemPackages = with pkgs; [
+                microcodeAmd
+              ];
+              services.xserver.displayManager.autoLogin.enable = true;
+              services.xserver.displayManager.autoLogin.user = "betongsuggan";
+            }
           ];
       };
       home-desktop = host.mkHost {

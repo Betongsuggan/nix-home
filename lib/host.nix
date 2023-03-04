@@ -56,6 +56,7 @@ with builtins;
         boot.kernelModules = kernelMods;
         boot.kernelParams = kernelParams;
         boot.kernelPackages = kernelPackage;
+        boot.extraModulePackages = with kernelPackage; [ turbostat ];
         boot.kernel.sysctl = {
           "vm.max_map_count" = 262144;
         };
@@ -82,7 +83,7 @@ with builtins;
           experimental-features = nix-command flakes
         '';
 
-        powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
+        powerManagement.cpuFreqGovernor = lib.mkDefault "performance";
 
         system.stateVersion = "22.11";
       }
