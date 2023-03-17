@@ -11,6 +11,7 @@
     ./printers
     ./sound
     ./touchpad
+    ./wayland
     ./xserver
   ];
 }

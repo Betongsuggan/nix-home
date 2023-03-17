@@ -21,7 +21,7 @@ in {
         vim = "nvim";
         hm = "home-manager";
         gw = "./gradlew --no-daemon";
-        btop = "bpytop";
+        #btop = "bpytop";
       };
       initExtra = ''
         set -o vi

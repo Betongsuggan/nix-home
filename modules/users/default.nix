@@ -1,24 +1,25 @@
 { pkgs, config, lib, ... }:
 {
   imports = [
-    ./general
-    ./autorandr
+    ./alacritty
     ./audio
-    ./i3
-    ./git
+    ./autorandr
+    ./bash
+    ./browsers
     ./colemak
     ./communication
     ./development
+    ./fonts
+    ./games
+    ./general
+    ./git
+    ./i3
     ./neovim
-    ./bash
-    ./alacritty
-    ./urxvt
     ./picom
     ./polybar
     ./rofi
+    ./sway
+    ./urxvt
     ./x11
-    ./fonts
-    ./games
-    ./browsers
   ];
 }

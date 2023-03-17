@@ -87,6 +87,33 @@
         };
         username="birgerrydback";
       };
+      work-bits = user.mkHMUser {
+        userConfig = {
+          git = {
+            enable = true;
+            userName = "Birger Rydback";
+            userEmail = "birgerrydback@bits.bi";
+          };
+          general.enable = true;
+          communication.enable = true;
+          browsers.enable = true;
+          autorandr.enable = true;
+          audio.enable = true;
+          neovim.enable = true;
+          urxvt.enable = true;
+          bash.enable = true;
+          i3.enable = true;
+          rofi.enable = true;
+          polybar.enable = true;
+          picom.enable = true;
+          fonts.enable = true;
+          #x11.enable = true;
+          sway.enable = true;
+          colemak.enable = true;
+          development.enable = true;
+        };
+        username="birgerrydback";
+      };
       ayaneo = user.mkHMUser {
         userConfig = {
           git = {
@@ -259,6 +286,52 @@
             shell = pkgs.bash;
           }];
           cpuCores = 6;
+      };
+      bits-nixos = host.mkHost {
+          name = "bits-nixos";
+          NICs = [ "wwp103s0f4u3u3" ]; 
+          kernelPackage = pkgs.linuxPackages_latest;
+          initrdMods = [ "nvme" "xhci_pci" "thunderbolt" "usb_storage" "sd_mod" "sdhci_pci" ];
+          kernelMods = [ "kvm-amd" ];
+          kernelParams = [];
+          fileSystems = {
+            "/" = {
+              device = "/dev/disk/by-uuid/75ba9480-26dc-4602-8797-b1896f829acd";
+              fsType = "ext4";
+            };
+  
+            "/boot" = {
+              device = "/dev/disk/by-uuid/D4CC-FF5B";
+              fsType = "vfat";
+            };
+          };
+          swap = "/dev/disk/by-uuid/08fd16ed-033c-456a-af0e-f16c933f08a3";
+          systemConfig = {
+            touchpad.enable = true;
+            graphics.enable = true;
+            sound.enable = true;
+            docker.enable = true;
+            bluetooth.enable = true;
+            wayland.enable = true;
+            printers.enable = true;
+            power-management.enable = true;
+            diskEncryption = {
+              enable = true;
+              diskId = "f3fd4fdf-b8ef-45c7-8e96-2ca5bfe32cd9";
+              headerId = "1abd4b51-8a97-4d04-97f1-326b2ef1dcbe";
+            };
+            firewall = {
+              enable = true;
+              tcpPorts = [ 8080 ];
+            };
+          };
+          users = [{
+            name = "birgerrydback";
+            groups = [ "wheel" "networkmanager" "video" "docker" ];
+            uid = 1000;
+            shell = pkgs.bash;
+          }];
+          cpuCores = 8;
       };
     };
   };

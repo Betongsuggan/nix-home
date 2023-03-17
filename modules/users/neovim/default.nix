@@ -103,7 +103,7 @@ in
         statix
 
         # Lua
-        sumneko-lua-language-server
+        lua-language-server
 
         # Java
         java-language-server
