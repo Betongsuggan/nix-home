@@ -10,5 +10,10 @@ in {
 
   config = mkIf cfg.enable {
     security.polkit.enable = true;
+    programs.light.enable = true;
+
+    security.pam.services.swaylock = {
+      text = "auth include login";
+    };
   };
 }

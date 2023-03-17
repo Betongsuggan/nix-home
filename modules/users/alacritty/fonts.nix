@@ -1,5 +1,5 @@
 {
-  size = 8;
+  size = 12;
   normal = {
     family = "Hasklug Nerd Font Mono";
     style = "Medium,Regular";
