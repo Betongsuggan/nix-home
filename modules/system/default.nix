@@ -4,6 +4,7 @@
     ./bluetooth
     ./disk-encryption
     ./docker
+    ./fingerprint
     ./firewall
     ./graphics
     ./kde
