@@ -309,6 +309,7 @@
           swap = "/dev/disk/by-uuid/08fd16ed-033c-456a-af0e-f16c933f08a3";
           systemConfig = {
             touchpad.enable = true;
+            fingerprint.enable = true;
             graphics.enable = true;
             sound.enable = true;
             docker.enable = true;

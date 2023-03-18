@@ -20,5 +20,8 @@ in {
         driver = pkgs.libfprint-2-tod1-goodix;
       };
     };
+
+    security.pam.services.login.fprintAuth = true;
+    security.pam.services.swaylock-fancy.fprintAuth = true;
   };
 }
