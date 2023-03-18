@@ -13,7 +13,7 @@ in {
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      swaylock
+      swaylock-fancy
       swayidle
       wl-clipboard
       mako
@@ -34,15 +34,13 @@ in {
         };
 
         gaps = {
-          bottom = 10;
-          top = 10;
-          horizontal = 10;
-          vertical = 10;
-          outer = 10;
-          inner = 10;
-          left = 10;
-          right = 10;
-          smartGaps = true;
+          top = 6;
+          horizontal = 6;
+          vertical = 6;
+          outer = 6;
+          inner = 6;
+          left = 6;
+          right = 6;
         };
 
         bars = [
@@ -51,6 +49,11 @@ in {
             command = "waybar";
           }
         ];
+
+        keybindings = lib.mkOptionDefault {
+          "${modifier}+o" = "exec ${pkgs.wofi}/bin/wofi --show run";
+          "${modifier}+Shift+x" = "exec ${pkgs.swaylock-fancy}/bin/swaylock-fancy";
+        };
 
         colors =  with theme.colors; {
           background = "${background}";

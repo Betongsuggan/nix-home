@@ -109,6 +109,7 @@
           fonts.enable = true;
           #x11.enable = true;
           sway.enable = true;
+          waybar.enable = true;
           #colemak.enable = true;
           development.enable = true;
         };

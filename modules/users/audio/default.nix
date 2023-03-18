@@ -8,7 +8,10 @@ in {
     enable = mkEnableOption "Enable user audio programs";
   };
 
-  config = mkIf (cfg.enable) {
-    home.packages = [ pkgs.pavucontrol ];
+  config = mkIf cfg.enable {
+    home.packages = [ 
+      pkgs.pavucontrol 
+      pkgs.youtube-music 
+    ];
   };
 }

@@ -20,6 +20,7 @@
     ./rofi
     ./sway
     ./urxvt
+    ./waybar
     ./x11
   ];
 }
