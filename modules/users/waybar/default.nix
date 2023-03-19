@@ -120,7 +120,7 @@ in {
               {ipaddr}/{cidr}
               Up: {bandwidthUpBits}
               Down: {bandwidthDownBits}'';
-            on-click = "";
+            on-click = "${pkgs.alacritty}/bin/alacritty --command nmtui-connect";
           };
           "custom/menu" = {
             return-type = "json";

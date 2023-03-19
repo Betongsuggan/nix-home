@@ -24,12 +24,11 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     home.packages = [ pkgs.gitAndTools.diff-so-fancy ];
     programs.git = {
       enable = true;
-      userName = cfg.userName;
-      userEmail = cfg.userEmail;
+      inherit (cfg) userName userEmail;
       extraConfig = {
         core.pager = "diff-so-fancy | less --tabs=4 -RFX";
         credential.helper = "${

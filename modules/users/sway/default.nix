@@ -15,9 +15,11 @@ in {
     home.packages = with pkgs; [
       swaylock-fancy
       swayidle
+      sway-contrib.grimshot
       wl-clipboard
       mako
       wofi
+      networkmanager_dmenu
     ];
 
     wayland.windowManager.sway = {
@@ -32,6 +34,13 @@ in {
           inherit style size;
           names = [ name ];
         };
+
+        startup = [
+          {
+            command = "blueman-applet";
+            always = false;
+          }
+        ];
 
         gaps = {
           top = 6;
@@ -53,6 +62,7 @@ in {
         keybindings = lib.mkOptionDefault {
           "${modifier}+o" = "exec ${pkgs.wofi}/bin/wofi --show run";
           "${modifier}+Shift+x" = "exec ${pkgs.swaylock-fancy}/bin/swaylock-fancy";
+          "${modifier}+x" = "exec date -Iseconds | { read date; ${pkgs.sway-contrib.grimshot}/bin/grimshot save area ~/Pictures/\${date}; }";
         };
 
         colors =  with theme.colors; {
