@@ -21,7 +21,6 @@ let
 in {
   options.br.waybar = {
     enable = mkEnableOption "Enable Waybar";
-
   };
 
   config = mkIf cfg.enable {

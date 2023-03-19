@@ -10,10 +10,7 @@ in {
 
   config = mkIf cfg.enable {
     fonts.fontconfig.enable = true;
-    home.packages = with pkgs; [ glibcLocales nerdfonts xorg.libXft ];
-    home.sessionVariables = {
-      LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
-    };
+    home.packages = with pkgs; [ glibcLocales nerdfonts noto-fonts-emoji ];
   };
 }
   
