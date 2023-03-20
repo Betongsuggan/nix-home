@@ -22,9 +22,10 @@ in {
       jq
       kotlin
       newman
-      nodejs-14_x
+      nodejs-16_x
       nodePackages.node2nix
       #nodePackages.npm
+      yarn
       python3
       postman
       silver-searcher

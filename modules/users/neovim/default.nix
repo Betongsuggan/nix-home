@@ -54,6 +54,9 @@ in
         # Indentation
         indent-blankline-nvim
 
+        # Collaboration
+        (plugin "jbyuki/instant.nvim")
+
         # LSP
         nvim-lspconfig
         ## Better language server Lua support

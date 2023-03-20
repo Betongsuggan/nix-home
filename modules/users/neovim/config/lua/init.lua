@@ -3,6 +3,7 @@ return {
   require('nvim-tree-config'),
   require('bufferline-config'),
   require('indent-blankline-config'),
+  require('instant-config'),
   require('autopairs-config'),
   require('feline-config'),
   require('lsp-config'),
