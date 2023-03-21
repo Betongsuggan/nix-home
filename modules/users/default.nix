@@ -14,6 +14,7 @@
     ./general
     ./git
     ./i3
+    ./kanshi
     ./neovim
     ./picom
     ./polybar

@@ -1,1 +1,1 @@
-vim.g.user_name = "birger"
+vim.g.instant_username = "birger"

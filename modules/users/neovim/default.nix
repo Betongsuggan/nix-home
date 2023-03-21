@@ -36,6 +36,7 @@ in
         bufferline-nvim
         vim-smoothie
         telescope-nvim
+        nvim-scrollbar
 
         # Editor plugins
         nvim-autopairs

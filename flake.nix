@@ -102,6 +102,7 @@
           alacritty.enable = true;
           bash.enable = true;
           fonts.enable = true;
+          kanshi.enable = true;
           sway.enable = true;
           waybar.enable = true;
           development.enable = true;
