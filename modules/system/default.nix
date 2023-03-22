@@ -5,6 +5,7 @@
     ./disk-encryption
     ./docker
     ./fingerprint
+    ./firefox
     ./firewall
     ./graphics
     ./kde

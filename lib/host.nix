@@ -71,6 +71,8 @@ with builtins;
 
         time.timeZone = "Europe/Stockholm";
 
+        environment.systemPackages = with pkgs; [ firefox-wayland ];
+
         nixpkgs.pkgs = pkgs;
         nixpkgs.config = {
           allowUnfree = true;

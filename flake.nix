@@ -96,7 +96,7 @@
           };
           general.enable = true;
           communication.enable = true;
-          browsers.enable = true;
+          #browsers.enable = true;
           audio.enable = true;
           neovim.enable = true;
           alacritty.enable = true;
@@ -304,6 +304,7 @@
           systemConfig = {
             touchpad.enable = true;
             fingerprint.enable = true;
+            firefox.enable = true;
             graphics.enable = true;
             sound.enable = true;
             docker.enable = true;

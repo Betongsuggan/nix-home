@@ -12,7 +12,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     programs.bash = {
       enable = true;
       shellAliases = {
@@ -21,11 +21,11 @@ in {
         vim = "nvim";
         hm = "home-manager";
         gw = "./gradlew --no-daemon";
-        #btop = "bpytop";
       };
       initExtra = ''
         set -o vi
         PS1="\[\033[33m\]ﬦ: \[\033[36m\]\W\[\033[00m\]> "
+        export EDITOR=nvim
       '';
     };
   };
