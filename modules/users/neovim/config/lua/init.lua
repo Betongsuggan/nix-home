@@ -11,5 +11,6 @@ return {
   require('lightbulb-config'),
   require('keymappings'),
   require('telescope-config'),
+  require('treesitter-config'),
   require('fidget-config'),
 }

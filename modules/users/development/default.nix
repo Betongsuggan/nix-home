@@ -23,8 +23,6 @@ in {
       kotlin
       newman
       nodejs-16_x
-      nodePackages.node2nix
-      #nodePackages.npm
       yarn
       python3
       postman
