@@ -91,6 +91,9 @@ in
         # Nix plugins
         vim-nix
 
+        # Terraform
+        (plugin  "hashicorp/terraform-ls")
+
         # Themes
         (plugin "ellisonleao/gruvbox.nvim")
       ];

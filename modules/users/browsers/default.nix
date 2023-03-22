@@ -10,13 +10,13 @@ in {
     defaultBrowser = mkOption {
       description = "Default browser for the system";
       type = types.str;
-      default = "chromium";
+      default = "firefox";
     };
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      chromium
+      firefox
     ];
     home.sessionVariables = {
       BROWSER = cfg.defaultBrowser;

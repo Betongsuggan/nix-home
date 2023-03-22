@@ -4,7 +4,7 @@ with lib;
 let
   cfg = config.br.kanshi;
 in {
-  options.br.git = {
+  options.br.kanshi = {
     enable = mkOption {
       description = "Enable Kanshi";
       type = types.bool;
@@ -15,9 +15,15 @@ in {
   config = mkIf cfg.enable {
     services.kanshi = {
       enable = true;
-      profiles.work.WAYLAND1 = [
+      profiles.work.outputs = [
         {
-          mode = "2560x1440";
+          criteria = "DP-2";
+          mode = "3840x2560";
+          scale = 1.5;
+        }
+        {
+          criteria = "eDP-1";
+          mode = "1920x1200";
         }
       ];
     };

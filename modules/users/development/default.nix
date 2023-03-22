@@ -8,7 +8,7 @@ in {
     enable = mkEnableOption "Enable Java/Kotlin development";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     home.packages = with pkgs; [ 
       altair
       openjdk17-bootstrap
@@ -30,6 +30,7 @@ in {
       postman
       silver-searcher
       teleport
+      terraform
     ];
     programs.go.enable = true;
 
