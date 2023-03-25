@@ -2,6 +2,7 @@
 with lib;
 
 let
+  inherit (pkgs) pamixer;
   cfg = config.br.sway;
   theme = import ../theming/theme.nix { };
   modifier = "Mod4";
@@ -113,9 +114,9 @@ in {
         bindsym XF86MonBrightnessUp exec light -A 10
 
         # Volume
-        bindsym XF86AudioRaiseVolume exec 'pactl set-sink-volume @DEFAULT_SINK@ +1%'
-        bindsym XF86AudioLowerVolume exec 'pactl set-sink-volume @DEFAULT_SINK@ -1%'
-        bindsym XF86AudioMute exec 'pactl set-sink-mute @DEFAULT_SINK@ toggle'
+        bindsym XF86AudioRaiseVolume exec '${pamixer}/bin/pamixer -i 2'
+        bindsym XF86AudioLowerVolume exec '${pamixer}/bin/pamixer -d 2'
+        bindsym XF86AudioMute exec '${pamixer}/bin/pamixer -t'
       '';
     };
   };
