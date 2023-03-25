@@ -2,7 +2,7 @@
 with lib;
 
 let
-  inherit (pkgs) pamixer;
+  inherit (pkgs) pamixer playerctl;
   cfg = config.br.sway;
   theme = import ../theming/theme.nix { };
   modifier = "Mod4";
@@ -105,9 +105,9 @@ in {
         window.titlebar = false;
       };
       extraConfig = ''
-        input * xkb_layout "us"
-        input * xkb_variant "colemak"
-        input * xkb_options "caps:escape,compose:ralt"
+        input * xkb_layout "us,us"
+        input * xkb_variant "colemak,"
+        input * xkb_options "caps:escape,compose:ralt,grp:shifts_toggle"
 
         # Brightness
         bindsym XF86MonBrightnessDown exec light -U 10
@@ -117,6 +117,11 @@ in {
         bindsym XF86AudioRaiseVolume exec '${pamixer}/bin/pamixer -i 2'
         bindsym XF86AudioLowerVolume exec '${pamixer}/bin/pamixer -d 2'
         bindsym XF86AudioMute exec '${pamixer}/bin/pamixer -t'
+
+        # Media control
+        bindsym XF86AudioPlay exec '${playerctl}/bin/playerctl play-pause'
+        bindsym XF86AudioNext exec '${playerctl}/bin/playerctl next'
+        bindsym XF86AudioPrev exec '${playerctl}/bin/playerctl previous'
       '';
     };
   };
