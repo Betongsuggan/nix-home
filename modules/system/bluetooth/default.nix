@@ -3,14 +3,17 @@ with lib;
 
 let
   cfg = config.br.bluetooth;
-in {
+in
+{
   options.br.bluetooth = {
     enable = mkEnableOption "Enable Bluetooth";
   };
 
   config = mkIf cfg.enable {
     services.blueman.enable = true;
-    hardware.bluetooth.enable = true;
-    hardware.bluetooth.powerOnBoot = true;
+    hardware.bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+    };
   };
 }

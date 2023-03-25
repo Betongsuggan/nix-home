@@ -2,7 +2,6 @@
   description = "Betongsuggan's flake to rule them all. Proudly stolen from https://jdisaacs.com/blog/nixos-config/";
 
   inputs = {
-    #nixpkgs.url = "nixpkgs/nixos-22.11";
     nixpkgs.url = "nixpkgs/nixos-unstable";
 
     home-manager = {
@@ -13,138 +12,137 @@
     handygccs-flake.url = "github:Betongsuggan/handygccs-flake/xboxdrv-control-mapper";
   };
 
-  outputs = { nixpkgs, home-manager, handygccs-flake, ...}@inputs:
-  let
-    inherit (nixpkgs) lib;
-    
-    util = with pkgs; import ./lib {
-      inherit system pkgs home-manager lib overlays;
-    };
+  outputs = { nixpkgs, home-manager, handygccs-flake, ... }@inputs:
+    let
+      inherit (nixpkgs) lib;
 
-    inherit (util) user;
-    inherit (util) host;
+      util = with pkgs; import ./lib {
+        inherit system pkgs home-manager lib overlays;
+      };
 
-    pkgs = import nixpkgs {
+      inherit (util) user;
+      inherit (util) host;
+
+      pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [];
-    };
+        overlays = [ ];
+      };
 
-    system = "x86_64-linux";
-  in {
-    homeManagerConfigurations = {
-      private = user.mkHMUser {
-        userConfig = {
-          git = {
-            enable = true;
-            userName = "Betongsuggan";
-            userEmail = "rydback@gmail.com";
+      system = "x86_64-linux";
+    in
+    {
+      homeManagerConfigurations = {
+        private = user.mkHMUser {
+          userConfig = {
+            git = {
+              enable = true;
+              userName = "Betongsuggan";
+              userEmail = "rydback@gmail.com";
+            };
+            general.enable = true;
+            communication.enable = true;
+            browsers.enable = true;
+            autorandr.enable = true;
+            audio.enable = true;
+            neovim.enable = true;
+            urxvt.enable = true;
+            bash.enable = true;
+            i3.enable = true;
+            rofi.enable = true;
+            polybar.enable = true;
+            picom.enable = true;
+            fonts.enable = true;
+            x11.enable = true;
+            colemak.enable = true;
+            development.enable = true;
+            games.enable = true;
           };
-          general.enable = true;
-          communication.enable = true;
-          browsers.enable = true;
-          autorandr.enable = true;
-          audio.enable = true;
-          neovim.enable = true;
-          urxvt.enable = true;
-          #alacritty.enable = true;
-          bash.enable = true;
-          i3.enable = true;
-          rofi.enable = true;
-          polybar.enable = true;
-          picom.enable = true;
-          fonts.enable = true;
-          x11.enable = true;
-          colemak.enable = true;
-          development.enable = true;
-          games.enable = true;
+          username = "betongsuggan";
         };
-        username="betongsuggan";
-      };
-      work = user.mkHMUser {
-        userConfig = {
-          git = {
-            enable = true;
-            userName = "Birger Rydback";
-            userEmail = "birger@humla.io";
+        work = user.mkHMUser {
+          userConfig = {
+            git = {
+              enable = true;
+              userName = "Birger Rydback";
+              userEmail = "birger@humla.io";
+            };
+            general.enable = true;
+            communication.enable = true;
+            browsers.enable = true;
+            autorandr.enable = true;
+            audio.enable = true;
+            neovim.enable = true;
+            urxvt.enable = true;
+            bash.enable = true;
+            i3.enable = true;
+            rofi.enable = true;
+            polybar.enable = true;
+            picom.enable = true;
+            fonts.enable = true;
+            x11.enable = true;
+            colemak.enable = true;
+            development.enable = true;
           };
-          general.enable = true;
-          communication.enable = true;
-          browsers.enable = true;
-          autorandr.enable = true;
-          audio.enable = true;
-          neovim.enable = true;
-          urxvt.enable = true;
-          bash.enable = true;
-          i3.enable = true;
-          rofi.enable = true;
-          polybar.enable = true;
-          picom.enable = true;
-          fonts.enable = true;
-          x11.enable = true;
-          colemak.enable = true;
-          development.enable = true;
+          username = "birgerrydback";
         };
-        username="birgerrydback";
-      };
-      work-bits = user.mkHMUser {
-        userConfig = {
-          git = {
-            enable = true;
-            userName = "Birger Rydback";
-            userEmail = "birgerrydback@bits.bi";
+        work-bits = user.mkHMUser {
+          userConfig = {
+            git = {
+              enable = true;
+              userName = "Birger Rydback";
+              userEmail = "birgerrydback@bits.bi";
+            };
+            general.enable = true;
+            communication.enable = true;
+            audio.enable = true;
+            neovim.enable = true;
+            alacritty.enable = true;
+            bash.enable = true;
+            fonts.enable = true;
+            kanshi.enable = true;
+            sway.enable = true;
+            waybar.enable = true;
+            development.enable = true;
           };
-          general.enable = true;
-          communication.enable = true;
-          #browsers.enable = true;
-          audio.enable = true;
-          neovim.enable = true;
-          alacritty.enable = true;
-          bash.enable = true;
-          fonts.enable = true;
-          kanshi.enable = true;
-          sway.enable = true;
-          waybar.enable = true;
-          development.enable = true;
+          username = "birgerrydback";
         };
-        username="birgerrydback";
-      };
-      ayaneo = user.mkHMUser {
-        userConfig = {
-          git = {
-            enable = true;
-            userName = "Birger Rydback";
-            userEmail = "rydback@gmail.com";
+        ayaneo = user.mkHMUser {
+          userConfig = {
+            git = {
+              enable = true;
+              userName = "Birger Rydback";
+              userEmail = "rydback@gmail.com";
+            };
+            general.enable = true;
+            games.enable = true;
+            browsers.enable = true;
+            audio.enable = true;
+            neovim.enable = true;
+            urxvt.enable = true;
+            bash.enable = true;
+            fonts.enable = true;
+            x11.enable = true;
+            colemak.enable = true;
           };
-          general.enable = true;
-          games.enable = true;
-          browsers.enable = true;
-          audio.enable = true;
-          neovim.enable = true;
-          urxvt.enable = true;
-          bash.enable = true;
-          fonts.enable = true;
-          x11.enable = true;
-          colemak.enable = true;
+          username = "betongsuggan";
         };
-        username="betongsuggan";
       };
-    };
 
-    nixosConfigurations = {
-      laptop = host.mkHost {
+      nixosConfigurations = {
+        laptop = host.mkHost {
           name = "nixos";
-          NICs = [ "wlp0s20f3" ]; 
+          NICs = [ "wlp0s20f3" ];
           kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernelMods = [ "kvm-intel" "iwlwifi" ];
-          kernelParams = [];
+          kernelParams = [ ];
           fileSystems = {
             "/" = {
               device = "/dev/disk/by-uuid/e6fa26ba-7e3a-4146-8bba-54fd65aa211a";
               fsType = "ext4";
             };
-  
+
             "/boot" = {
               device = "/dev/disk/by-uuid/C8DA-ECD3";
               fsType = "vfat";
@@ -167,14 +165,14 @@
             shell = pkgs.bash;
           }];
           cpuCores = 4;
-      };
-      ayaneo = host.mkHost {
+        };
+        ayaneo = host.mkHost {
           name = "ayaneo";
-          NICs = [ "wlp3s0" ]; 
+          NICs = [ "wlp3s0" ];
           kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "nvme" "xhci_pci" "thunderbolt" "usbhid" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernelMods = [ "kvm-amd" ];
-          kernelParams = [];
+          kernelParams = [ ];
           fileSystems = {
             "/" = {
               device = "/dev/disk/by-uuid/cc910516-4af4-4894-87d5-1e74c726bafc";
@@ -204,19 +202,19 @@
             shell = pkgs.bash;
           }];
           cpuCores = 16;
-          additionalModules = [ 
+          additionalModules = [
             handygccs-flake.nixosModules.handygccs
             { services.handygccs.enable = true; }
             handygccs-flake.nixosModules.xboxdrv-handygccs
             { services.xboxdrv-handygccs.enable = true; }
           ];
-      };
-      home-desktop = host.mkHost {
+        };
+        home-desktop = host.mkHost {
           name = "home-desktop";
           kernelPackage = pkgs.linuxPackages_5_15;
           initrdMods = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernelMods = [ "iwlwifi" ];
-          kernelParams = [];
+          kernelParams = [ ];
           systemConfig = {
             #graphics.enable = true;
             sound.enable = true;
@@ -235,20 +233,20 @@
             shell = pkgs.bash;
           }];
           cpuCores = 16;
-      };
-      humla-nixos = host.mkHost {
+        };
+        humla-nixos = host.mkHost {
           name = "humla-nixos";
-          NICs = [ "wlp0s20f3" ]; 
+          NICs = [ "wlp0s20f3" ];
           kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
           kernelMods = [ "kvm-intel" "iwlwifi" ];
-          kernelParams = [];
+          kernelParams = [ ];
           fileSystems = {
             "/" = {
               device = "/dev/disk/by-uuid/0c799567-d4e0-44e8-9007-60c28fdbe367";
               fsType = "ext4";
             };
-  
+
             "/boot" = {
               device = "/dev/disk/by-uuid/AEFE-A292";
               fsType = "vfat";
@@ -281,20 +279,20 @@
             shell = pkgs.bash;
           }];
           cpuCores = 6;
-      };
-      bits-nixos = host.mkHost {
+        };
+        bits-nixos = host.mkHost {
           name = "bits-nixos";
-          NICs = [ "wwp103s0f4u3u3" ]; 
+          NICs = [ "wwp103s0f4u3u3" ];
           kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "nvme" "xhci_pci" "thunderbolt" "usb_storage" "sd_mod" "sdhci_pci" ];
           kernelMods = [ "kvm-amd" ];
-          kernelParams = [];
+          kernelParams = [ ];
           fileSystems = {
             "/" = {
               device = "/dev/disk/by-uuid/75ba9480-26dc-4602-8797-b1896f829acd";
               fsType = "ext4";
             };
-  
+
             "/boot" = {
               device = "/dev/disk/by-uuid/D4CC-FF5B";
               fsType = "vfat";
@@ -329,7 +327,7 @@
             shell = pkgs.bash;
           }];
           cpuCores = 8;
+        };
       };
     };
-  };
 }

@@ -18,6 +18,7 @@ in {
       gnumake
       golangci-lint
       golangci-lint-langserver
+      gotools
       jetbrains.idea-community
       jq
       kotlin

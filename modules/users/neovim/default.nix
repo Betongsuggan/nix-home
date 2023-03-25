@@ -22,9 +22,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.sessionVariables = {
-      EDITOR="nvim";
-    };
     programs.neovim = {
       enable = true;
       extraConfig = ''
@@ -47,7 +44,10 @@ in
         # File tree
         nvim-tree-lua
         nvim-web-devicons
-        nvim-treesitter
+
+        # Syntax highlighting
+        nvim-treesitter.withAllGrammars
+        nvim-treesitter-textobjects
 
         # Keybindings
         legendary-nvim

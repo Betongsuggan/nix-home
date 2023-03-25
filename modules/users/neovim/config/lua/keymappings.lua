@@ -35,27 +35,27 @@ local key_mappings = {
   search_help_tags          = add_key_mapping('<leader>fh', search_opts, 'Searching: Search help tags'),
 
   -- LSP mappings
-  lsp_go_to_declaration     = add_key_mapping('gD', lsp_opts, 'LSP: Go to declaration'),
-  lsp_go_to_definition      = add_key_mapping('gd', lsp_opts, 'LSP: Go to definition'),
-  lsp_go_to_implementation  = add_key_mapping('gi', lsp_opts, 'LSP: Go to implementation'),
+  lsp_go_to_declaration     = add_key_mapping('sD', lsp_opts, 'LSP: Go to declaration'),
+  lsp_go_to_definition      = add_key_mapping('sd', lsp_opts, 'LSP: Go to definition'),
+  lsp_go_to_implementation  = add_key_mapping('si', lsp_opts, 'LSP: Go to implementation'),
 
   lsp_next_reference        = add_key_mapping(']u', lsp_opts, 'LSP: Next reference'),
   lsp_previous_reference    = add_key_mapping('[u', lsp_opts, 'LSP: Previous reference'),
   lsp_next_diagnostic       = add_key_mapping(']d', lsp_opts, 'LSP: Next diagnostic'),
   lsp_previous_diagnostic   = add_key_mapping('[d', lsp_opts, 'LSP: Previous diagnostic'),
 
-  lsp_hover                 = add_key_mapping('<leader>nh', lsp_opts, 'LSP: Hover'),
-  lsp_rename                = add_key_mapping('<leader>nn', lsp_opts, 'LSP: Rename'),
-  lsp_format                = add_key_mapping('<leader>nf', lsp_opts, 'LSP: Format'),
+  lsp_hover                 = add_key_mapping('sh', lsp_opts, 'LSP: Hover'),
+  lsp_rename                = add_key_mapping('sn', lsp_opts, 'LSP: Rename'),
+  lsp_format                = add_key_mapping('sf', lsp_opts, 'LSP: Format'),
 
-  lsp_show_signature        = add_key_mapping('<leader>ns', lsp_opts, 'LSP: Show signature'),
-  lsp_show_type_definition  = add_key_mapping('<leader>nt', lsp_opts, 'LSP: Show type definition'),
-  lsp_show_code_action      = add_key_mapping('<leader>na', lsp_opts, 'LSP: Show code action'),
-  lsp_show_diagnostics      = add_key_mapping('<leader>ne', lsp_opts, 'LSP: Show diagnostics'),
-  lsp_show_references       = add_key_mapping('<leader>nr', lsp_opts, 'LSP: Show references'),
+  lsp_show_signature        = add_key_mapping('ss', lsp_opts, 'LSP: Show signature'),
+  lsp_show_type_definition  = add_key_mapping('st', lsp_opts, 'LSP: Show type definition'),
+  lsp_show_code_action      = add_key_mapping('sa', lsp_opts, 'LSP: Show code action'),
+  lsp_show_diagnostics      = add_key_mapping('se', lsp_opts, 'LSP: Show diagnostics'),
+  lsp_show_references       = add_key_mapping('sr', lsp_opts, 'LSP: Show references'),
 
-  lsp_create_workspace      = add_key_mapping('<leader>nwa', lsp_opts, 'LSP: Add workspace folder'),
-  lsp_remove_workspace      = add_key_mapping('<leader>nwd', lsp_opts, 'LSP: Remove workspace folder'),
-  lsp_show_workspaces       = add_key_mapping('<leader>nwl', lsp_opts, 'LSP: List workspaces'),
+  lsp_create_workspace      = add_key_mapping('swa', lsp_opts, 'LSP: Add workspace folder'),
+  lsp_remove_workspace      = add_key_mapping('swd', lsp_opts, 'LSP: Remove workspace folder'),
+  lsp_show_workspaces       = add_key_mapping('swl', lsp_opts, 'LSP: List workspaces'),
 }
 return key_mappings
