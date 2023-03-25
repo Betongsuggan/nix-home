@@ -6,7 +6,8 @@ let
   cfg = config.br.sway;
   theme = import ../theming/theme.nix { };
   modifier = "Mod4";
-in {
+in
+{
   options.br.sway = {
     enable = mkEnableOption "Enable Sway";
 
@@ -62,42 +63,46 @@ in {
 
         keybindings = lib.mkOptionDefault {
           "${modifier}+o" = "exec ${pkgs.wofi}/bin/wofi --show run";
+
           "${modifier}+Shift+x" = "exec ${pkgs.swaylock-fancy}/bin/swaylock-fancy";
-          "${modifier}+x" = "exec date -Iseconds | { read date; ${pkgs.sway-contrib.grimshot}/bin/grimshot save area ~/Pictures/\${date}; }";
+
+          #"${modifier}+Shift+p" = "exec date -Iseconds | { read date; ${pkgs.sway-contrib.grimshot}/bin/grimshot save area ~/Pictures/\${date}; }";
+
+          "${modifier}+Shift+p" = "exec ${pkgs.sway-contrib.grimshot}/bin/grimshot save area ~/Pictures/$(date -Iseconds)";
         };
 
-        colors =  with theme.colors; {
+        colors = with theme.colors; {
           background = "${background}";
 
           focused = {
-            border      = "${thirdText}";
-            background  = "${thirdText}";
-            text        = "${borderDark}";
-            indicator   = "${purple}";
+            border = "${thirdText}";
+            background = "${thirdText}";
+            text = "${borderDark}";
+            indicator = "${purple}";
             childBorder = "${borderDark}";
           };
 
           unfocused = {
-            border     = "${borderDark}";
+            border = "${borderDark}";
             background = "${borderDark}";
-            text       = "${utilityText}";
-            indicator   = "${purple}";
+            text = "${utilityText}";
+            indicator = "${purple}";
             childBorder = "${borderDark}";
           };
 
           focusedInactive = {
-            border     = "${borderDark}";
+            border = "${borderDark}";
             background = "${borderDark}";
-            text       = "${borderDark}";
-            indicator   = "${purple}";
+            text = "${borderDark}";
+            indicator = "${purple}";
             childBorder = "${borderDark}";
           };
 
           urgent = {
-            border     = "${alertText}";
+            border = "${alertText}";
             background = "${alertText}";
-            text       = "${mainText}";
-            indicator   = "${mainText}";
+            text = "${mainText}";
+            indicator = "${mainText}";
             childBorder = "${mainText}";
           };
         };
