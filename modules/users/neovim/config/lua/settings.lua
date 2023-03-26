@@ -15,7 +15,7 @@ set.title = true
 set.wildmenu = true
 
 -- Clipboard
--- set.clipboard=unnamedplus = true
+set.clipboard = 'unnamedplus'
 
 -- Search behavior
 set.incsearch = true -- Find next match as we type the search
