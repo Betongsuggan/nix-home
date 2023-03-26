@@ -66,9 +66,13 @@ in
 
           "${modifier}+Shift+x" = "exec ${pkgs.swaylock-fancy}/bin/swaylock-fancy";
 
-          #"${modifier}+Shift+p" = "exec date -Iseconds | { read date; ${pkgs.sway-contrib.grimshot}/bin/grimshot save area ~/Pictures/\${date}; }";
-
           "${modifier}+Shift+p" = "exec ${pkgs.sway-contrib.grimshot}/bin/grimshot save area ~/Pictures/$(date -Iseconds)";
+        };
+
+        input = {
+          "*" = {
+            tap = "enabled";
+          };
         };
 
         colors = with theme.colors; {
