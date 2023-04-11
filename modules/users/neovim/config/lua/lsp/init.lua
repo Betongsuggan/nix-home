@@ -8,4 +8,5 @@ return {
   require('lsp/json'),
   require('lsp/nix'),
   require('lsp/terraform'),
+  require('lsp/typescript'),
 }

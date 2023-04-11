@@ -90,7 +90,7 @@
           userConfig = {
             git = {
               enable = true;
-              userName = "Birger Rydback";
+              userName = "BirgerRydback";
               userEmail = "birgerrydback@bits.bi";
             };
             general.enable = true;

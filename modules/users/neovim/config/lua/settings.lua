@@ -32,6 +32,7 @@ set.number = true
 set.shiftwidth = 2
 set.smarttab = true
 set.tabstop = 2
+set.signcolumn = "yes"
 
 -- Timers
 set.timeoutlen = 1000

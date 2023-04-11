@@ -3,7 +3,8 @@ with lib;
 
 let
   cfg = config.br.firefox;
-in {
+in
+{
   options.br.firefox = {
     enable = mkEnableOption "Enable Firefox browser";
   };
@@ -23,7 +24,7 @@ in {
     };
     environment.sessionVariables = {
       MOZ_ENABLE_WAYLAND = "1";
-      XDG_CURRENT_DESKTOP = "sway"; 
+      XDG_CURRENT_DESKTOP = "sway";
     };
   };
 }

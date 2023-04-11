@@ -118,6 +118,10 @@ in
         # Terraform
         terraform-ls
 
+        # Typescript
+        nodePackages.typescript
+        nodePackages.typescript-language-server
+
         # Go
         gopls
 
