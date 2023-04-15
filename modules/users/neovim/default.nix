@@ -91,6 +91,9 @@ in
         # Nix plugins
         vim-nix
 
+        # Rust plugins
+        rust-tools-nvim
+
         # Themes
         (plugin "ellisonleao/gruvbox.nvim")
       ];
@@ -101,19 +104,25 @@ in
         # Bash
         nodePackages.bash-language-server
 
-        # Nix
-        rnix-lsp
-        nixpkgs-fmt
-        statix
-
-        # Lua
-        lua-language-server
+        # Go
+        gopls
 
         # Java
         java-language-server
 
+        # Json
+        nodePackages.vscode-json-languageserver
+
         # Kotlin
         kotlin-language-server
+
+        # Lua
+        lua-language-server
+
+        # Nix
+        rnix-lsp
+        nixpkgs-fmt
+        statix
 
         # Terraform
         terraform-ls
@@ -121,12 +130,6 @@ in
         # Typescript
         nodePackages.typescript
         nodePackages.typescript-language-server
-
-        # Go
-        gopls
-
-        # Json
-        nodePackages.vscode-json-languageserver
       ];
     };
     xdg.configFile.nvim = {

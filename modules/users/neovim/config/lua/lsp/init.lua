@@ -7,6 +7,7 @@ return {
   require('lsp/lua'),
   require('lsp/json'),
   require('lsp/nix'),
+  require('lsp/rust'),
   require('lsp/terraform'),
   require('lsp/typescript'),
 }
