@@ -30,6 +30,11 @@ in {
       silver-searcher
       teleport
       terraform
+
+      # Rust packages
+      cargo
+      rustc
+      rustfmt
     ];
     programs.go.enable = true;
 

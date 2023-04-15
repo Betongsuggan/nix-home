@@ -18,10 +18,10 @@ set.wildmenu = true
 set.clipboard = 'unnamedplus'
 
 -- Search behavior
-set.incsearch = true -- Find next match as we type the search
-set.hlsearch = true -- Highlight search matches
+set.incsearch = true  -- Find next match as we type the search
+set.hlsearch = true   -- Highlight search matches
 set.ignorecase = true -- Ignore casing when we seach...
-set.smartcase = true -- ...unless we search with capitalization
+set.smartcase = true  -- ...unless we search with capitalization
 
 -- Editoring
 set.autoindent = true
@@ -39,8 +39,3 @@ set.timeoutlen = 1000
 set.ttimeout = true
 set.ttimeoutlen = 5
 set.updatetime = 100
-
-Theming = {
-  statusline = 'slant',
-  statusline_color = 'gruvbox'
-}

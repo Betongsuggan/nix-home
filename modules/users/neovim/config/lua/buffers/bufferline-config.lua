@@ -1,4 +1,6 @@
-local keymaps = require('keymappings')
+-- Configuration for handling buffers
+
+local keymaps = require('editor/keymappings')
 
 require("bufferline").setup{
     options = {

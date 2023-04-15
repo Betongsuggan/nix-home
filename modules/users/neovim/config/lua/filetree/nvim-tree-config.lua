@@ -1,4 +1,6 @@
-local keymaps = require('keymappings')
+-- File tree visualiser
+
+local keymaps = require('editor/keymappings')
 
 require'nvim-tree'.setup {
   disable_netrw       = true,

@@ -1,7 +1,6 @@
-local nvim_lsp  = require('lspconfig')
+local nvim_lsp = require('lspconfig')
 
-return function (on_attach, capabilities)
-
+return function(on_attach, capabilities)
   local runtime_path = vim.split(package.path, ';')
   table.insert(runtime_path, "lua/?.lua")
   table.insert(runtime_path, "lua/?/init.lua")
@@ -20,7 +19,7 @@ return function (on_attach, capabilities)
         },
         diagnostics = {
           -- Get the language server to recognize the `vim` global
-          globals = {'vim'},
+          globals = { 'vim' },
         },
         workspace = {
           -- Make the server aware of Neovim runtime files

@@ -1,5 +1,5 @@
--- Telescope Settings
-local keymaps = require('keymappings')
+-- Configuration for searching for files and content
+local keymaps = require('editor/keymappings')
 local telescope = require('telescope.builtin')
 
 keymaps.search_file_name(telescope.find_files)

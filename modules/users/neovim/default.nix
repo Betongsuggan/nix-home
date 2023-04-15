@@ -67,17 +67,20 @@ in
         ## Show code actions icon
         nvim-lightbulb
         ## Show code actions in popup
-        nvim-code-action-menu
+        #nvim-code-action-menu
+        (plugin "aznhe21/actions-preview.nvim")
         ## Show LSP Processes
         fidget-nvim
 
         # Completions
+        nvim-cmp
         cmp-nvim-lsp
         cmp-buffer
         cmp-path
         cmp-cmdline
+        cmp-nvim-lua
+        cmp-vsnip
         cmp-nvim-lsp-signature-help
-        nvim-cmp
         lspkind-nvim
 
         # Snippets
@@ -123,6 +126,9 @@ in
         rnix-lsp
         nixpkgs-fmt
         statix
+
+        # Rust
+        rust-analyzer
 
         # Terraform
         terraform-ls
