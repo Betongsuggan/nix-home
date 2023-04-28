@@ -91,7 +91,7 @@
             git = {
               enable = true;
               userName = "BirgerRydback";
-              userEmail = "birgerrydback@bits.bi";
+              userEmail = "birger.rydback@bits.bi";
             };
             general.enable = true;
             communication.enable = true;

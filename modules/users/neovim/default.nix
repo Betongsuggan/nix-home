@@ -68,7 +68,7 @@ in
         nvim-lightbulb
         ## Show code actions in popup
         #nvim-code-action-menu
-        (plugin "aznhe21/actions-preview.nvim")
+        (plugin "")
         ## Show LSP Processes
         fidget-nvim
 
@@ -91,6 +91,9 @@ in
         (plugin "ray-x/go.nvim")
         (plugin "ray-x/guihua.lua")
 
+        # Haskell plugins
+        #haskell-tools-nvim
+
         # Nix plugins
         vim-nix
 
@@ -109,6 +112,10 @@ in
 
         # Go
         gopls
+
+        # Haskell
+        #haskellPackages.haskell-lsp
+        #haskellPackages.haskell-lsp-types
 
         # Java
         java-language-server

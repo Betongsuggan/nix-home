@@ -1,7 +1,7 @@
-local nvim_lsp  = require('lspconfig')
+local nvim_lsp = require('lspconfig')
 
-return function (on_attach, capabilities)
-  nvim_lsp.gopls.setup{
+return function(on_attach, capabilities)
+  nvim_lsp.gopls.setup {
     cmd = { "gopls" },
     on_attach = on_attach,
     settings = {

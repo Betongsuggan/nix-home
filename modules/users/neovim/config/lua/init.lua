@@ -15,7 +15,7 @@ return {
   require('statusbar/feline-config'),
 
   -- Editor behavior configs
-  require('editor/actoins-preview-config'),
+  require('editor/actions-preview-config'),
   require('editor/autopairs-config'),
   require('editor/diagnostics-config'),
   require('editor/treesitter-config'),

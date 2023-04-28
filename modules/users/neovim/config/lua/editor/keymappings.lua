@@ -51,7 +51,7 @@ local key_mappings = {
 
   lsp_hover                 = add_key_mapping('sh', lsp_opts, 'LSP: Hover'),
   lsp_rename                = add_key_mapping('sn', lsp_opts, 'LSP: Rename'),
-  lsp_format                = add_key_mapping('sf', lsp_opts, 'LSP: Format'),
+  lsp_format                = add_key_mapping('sl', lsp_opts, 'LSP: Format'),
   lsp_show_signature        = add_key_mapping('ss', lsp_opts, 'LSP: Show signature'),
   lsp_show_type_definition  = add_key_mapping('st', lsp_opts, 'LSP: Show type definition'),
   lsp_show_code_action      = add_key_mapping('sa', lsp_opts, 'LSP: Show code action'),
@@ -62,27 +62,10 @@ local key_mappings = {
   lsp_show_workspaces       = add_key_mapping('swl', lsp_opts, 'LSP: List workspaces'),
 }
 
-legendary.setup {
-  autocmds = {
-    {
-      name = "AutoFormatOnSave",
-      clear = true,
-      {
-        'BufWritePre',
-        function() vim.lsp.buf.format() end,
-        pattern = '<buffer>',
-        description = 'Format LSP files on save',
-        group = "AutoFormatOnSave",
-      },
-      {
-        'BufWritePre',
-        function() vim.lsp.buf.code_action({ context = { only = { 'source.organizeImports' } }, apply = true }) end,
-        pattern = '<buffer>',
-        description = 'Organize imports',
-        group = "AutoFormatOnSave",
-      }
-    },
-  }
-}
-
+key_mappings.lsp_format(
+  function()
+    vim.lsp.buf.format()
+    vim.lsp.buf.code_action({ context = { only = { 'source.organizeImports' } }, apply = true })
+  end
+)
 return key_mappings
