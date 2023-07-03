@@ -11,6 +11,6 @@ in {
   config = mkIf cfg.enable {
     services.xserver.libinput.enable = true;
     services.xserver.libinput.touchpad.tapping = true;
-    hardware.keyboard.qmk.enable = true;
+    #hardware.keyboard.qmk.enable = true;
   };
 }

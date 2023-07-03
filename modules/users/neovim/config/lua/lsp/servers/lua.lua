@@ -1,9 +1,11 @@
 local nvim_lsp = require('lspconfig')
-
+local neodev = require('neodev')
 return function(on_attach, capabilities)
   local runtime_path = vim.split(package.path, ';')
   table.insert(runtime_path, "lua/?.lua")
   table.insert(runtime_path, "lua/?/init.lua")
+
+  neodev.setup {}
 
   nvim_lsp.lua_ls.setup {
     settings = {

@@ -67,8 +67,11 @@ in
         ## Show code actions icon
         nvim-lightbulb
         ## Show code actions in popup
-        #nvim-code-action-menu
-        (plugin "")
+        (plugin "aznhe21/actions-preview.nvim")
+
+        # LSP Testing
+        neotest-plenary
+
         ## Show LSP Processes
         fidget-nvim
 
@@ -92,7 +95,7 @@ in
         (plugin "ray-x/guihua.lua")
 
         # Haskell plugins
-        #haskell-tools-nvim
+        haskell-tools-nvim
 
         # Nix plugins
         vim-nix
@@ -102,6 +105,15 @@ in
 
         # Themes
         (plugin "ellisonleao/gruvbox.nvim")
+
+        # Typescript
+        vim-prettier
+
+        # Lua
+        neodev-nvim
+
+        # Utils
+        FixCursorHold-nvim
       ];
       extraPackages = with pkgs; [
         tree-sitter
@@ -114,8 +126,8 @@ in
         gopls
 
         # Haskell
-        #haskellPackages.haskell-lsp
-        #haskellPackages.haskell-lsp-types
+        haskell-language-server
+        haskellPackages.hoogle
 
         # Java
         java-language-server
@@ -142,6 +154,7 @@ in
 
         # Typescript
         nodePackages.typescript
+        nodePackages.prettier
         nodePackages.typescript-language-server
       ];
     };

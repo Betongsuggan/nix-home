@@ -18,7 +18,8 @@ let
       --arg percentage "${percentage}" \
       '{text:$text,tooltip:$tooltip,alt:$alt,class:$class,percentage:$percentage}'
   ''}/bin/waybar-${name}";
-in {
+in
+{
   options.br.waybar = {
     enable = mkEnableOption "Enable Waybar";
   };
@@ -72,11 +73,11 @@ in {
               text = "$(cat /sys/class/drm/card0/device/gpu_busy_percent)";
               tooltip = "GPU Usage";
             };
-            format = "力 {}%";
+            format = "󰒋 {}%";
             on-click = "";
           };
           memory = {
-            format = " {}%";
+            format = " {}%";
             interval = 5;
             on-click = "";
           };
@@ -85,25 +86,18 @@ in {
             format-muted = "  0%";
             format-icons = {
               headphone = "";
-              headset = "";
+              headset = "󰋎";
               portable = "";
               default = [ "" "" "" ];
             };
             on-click = "pavucontrol";
           };
-          idle_inhibitor = {
-            format = "{icon}";
-            format-icons = {
-              activated = "零";
-              deactivated = "鈴";
-            };
-          };
           battery = {
             bat = "BAT0";
             interval = 10;
-            format-icons = [ "" "" "" "" "" "" "" "" "" "" ];
+            format-icons = [ "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ];
             format = "{icon} {capacity}%";
-            format-charging = " {capacity}%";
+            format-charging = "󰂄 {capacity}%";
             onclick = "";
           };
           "sway/window" = {
@@ -112,7 +106,7 @@ in {
           network = {
             interval = 3;
             format-wifi = " {essid}";
-            format-ethernet = " Connected";
+            format-ethernet = "󰛳 Connected";
             format-disconnected = "";
             tooltip-format = ''
               {ifname}
@@ -153,14 +147,11 @@ in {
             format = "{icon}{}";
             format-icons = {
               "No player active" = " ";
-              "Celluloid" = " ";
-              "spotify" = " 阮";
-              "ncspot" = " 阮";
-              "qutebrowser" = "爵";
+              "Celluloid" = " ";
+              "spotify" = "  ";
               "firefox" = " ";
-              "discord" = " ﭮ ";
+              "discord" = " 󰙯 ";
               "sublimemusic" = " ";
-              "kdeconnect" = " ";
             };
             on-click = "${mediaPlayerCtld} shift";
             on-click-right = "${mediaPlayerCtld} unshift";
@@ -170,12 +161,12 @@ in {
             exec = ''${mediaPlayerCtl} metadata --format '{"text": "{{artist}} - {{title}}", "alt": "{{status}}", "tooltip": "{{title}} ({{artist}} - {{album}})"}' '';
             return-type = "json";
             interval = 2;
-            max-length = 30;
+            max-length = 60;
             format = "{icon} {}";
             format-icons = {
-              "Playing" = "契";
-              "Paused" = " ";
-              "Stopped" = "栗";
+              "Playing" = "󰏤 ";
+              "Paused" = "󰐊 ";
+              "Stopped" = "󰐊 ";
             };
             on-click = "${mediaPlayerCtl} play-pause";
           };

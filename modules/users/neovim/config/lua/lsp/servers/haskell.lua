@@ -1,8 +1,10 @@
-local nvim_lsp = require('lspconfig')
+local ht = require('haskell-tools')
 
 return function(on_attach, capabilities)
-  nvim_lsp.hls.setup {
-    on_attach = on_attach,
-    capabilities = capabilities
+  ht.setup {
+    hls = {
+      on_attach = on_attach,
+      capabilities = capabilities
+    }
   }
 end

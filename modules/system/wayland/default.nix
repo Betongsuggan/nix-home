@@ -3,7 +3,8 @@ with lib;
 
 let
   cfg = config.br.wayland;
-in {
+in
+{
   options.br.wayland = {
     enable = mkEnableOption "Wayland setup";
   };
@@ -16,7 +17,7 @@ in {
     security.pam.services.swaylock = {
       text = "auth include login";
     };
-    
+
     services.xserver = {
       enable = true;
       displayManager.gdm = {

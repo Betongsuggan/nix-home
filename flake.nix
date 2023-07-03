@@ -2,17 +2,15 @@
   description = "Betongsuggan's flake to rule them all. Proudly stolen from https://jdisaacs.com/blog/nixos-config/";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-unstable";
+    nixpkgs.url = "nixpkgs/nixos-23.05";
 
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-23.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    handygccs-flake.url = "github:Betongsuggan/handygccs-flake/xboxdrv-control-mapper";
   };
 
-  outputs = { nixpkgs, home-manager, handygccs-flake, ... }@inputs:
+  outputs = { nixpkgs, home-manager, ... }@inputs:
     let
       inherit (nixpkgs) lib;
 
@@ -107,26 +105,6 @@
           };
           username = "birgerrydback";
         };
-        ayaneo = user.mkHMUser {
-          userConfig = {
-            git = {
-              enable = true;
-              userName = "Birger Rydback";
-              userEmail = "rydback@gmail.com";
-            };
-            general.enable = true;
-            games.enable = true;
-            browsers.enable = true;
-            audio.enable = true;
-            neovim.enable = true;
-            urxvt.enable = true;
-            bash.enable = true;
-            fonts.enable = true;
-            x11.enable = true;
-            colemak.enable = true;
-          };
-          username = "betongsuggan";
-        };
       };
 
       nixosConfigurations = {
@@ -203,10 +181,10 @@
           }];
           cpuCores = 16;
           additionalModules = [
-            handygccs-flake.nixosModules.handygccs
-            { services.handygccs.enable = true; }
-            handygccs-flake.nixosModules.xboxdrv-handygccs
-            { services.xboxdrv-handygccs.enable = true; }
+            #handygccs-flake.nixosModules.handygccs
+            #{ services.handygccs.enable = true; }
+            #handygccs-flake.nixosModules.xboxdrv-handygccs
+            #{ services.xboxdrv-handygccs.enable = true; }
           ];
         };
         home-desktop = host.mkHost {
@@ -283,7 +261,6 @@
         bits-nixos = host.mkHost {
           name = "bits-nixos";
           NICs = [ "wwp103s0f4u3u3" ];
-          kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "nvme" "xhci_pci" "thunderbolt" "usb_storage" "sd_mod" "sdhci_pci" ];
           kernelMods = [ "kvm-amd" ];
           kernelParams = [ ];

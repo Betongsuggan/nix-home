@@ -20,19 +20,17 @@ in {
         enable = true;
         driSupport = true;
         driSupport32Bit = true;
-        setLdLibraryPath = true; 
-        extraPackages32 = with pkgs.pkgsi686Linux; [ 
-          libva 
-        ];
+       # setLdLibraryPath = true; 
+#        extraPackages32 = with pkgs.pkgsi686Linux; [ 
+#          libva 
+#        ];
         extraPackages = with pkgs; [
-          mesa
-          intel-media-driver
-          vaapiIntel
           vaapiVdpau
           libvdpau-va-gl
         ];
       };
-      steam-hardware.enable = true;
+      #steam-hardware.enable = true;
     };
+    environment.systemPackages = [ pkgs.vulkan-validation-layers ];
   };
 }

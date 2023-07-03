@@ -5,13 +5,11 @@ local keymaps = require('editor/keymappings')
 require'nvim-tree'.setup {
   disable_netrw       = true,
   hijack_netrw        = true,
-  --open_on_setup       = false,
 
   hijack_directories   = {
     enable = true,
     auto_open = true,
   },
-
   open_on_tab         = false,
   hijack_cursor       = false,
   update_cwd          = true,
@@ -36,14 +34,15 @@ require'nvim-tree'.setup {
     args = {}
   },
   view = {
+
     adaptive_size = true,
     centralize_selection =true,
     -- width = 30,
     side = 'left',
-    mappings = {
-      custom_only = false,
-      list = {}
-    },
+    --mappings = {
+    --  custom_only = false,
+    --  list = {}
+    --},
     float = {
       enable = true
     }

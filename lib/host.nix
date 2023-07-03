@@ -7,13 +7,13 @@ with builtins;
     initrdMods, 
     kernelMods, 
     kernelParams, 
-    kernelPackage,
     fileSystems,
     swap,
     systemConfig, 
     cpuCores, 
     users, 
     wifi ? [],
+    kernelPackage ? null,
     gpuTempSensor ? null, 
     cpuTempSensor ? null,
     bootPartition ? "/boot",
@@ -53,9 +53,10 @@ with builtins;
         networking.useDHCP = false;
 
         boot.initrd.availableKernelModules = initrdMods;
+        boot.initrd.kernelModules = [ "amdgpu" "dm-snapshot"];
         boot.kernelModules = kernelMods;
         boot.kernelParams = kernelParams;
-        boot.kernelPackages = kernelPackage;
+        #boot.kernelPackages = kernelPackage;
         boot.kernel.sysctl = {
           "vm.max_map_count" = 262144;
         };

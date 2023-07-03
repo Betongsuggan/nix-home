@@ -34,6 +34,14 @@ in {
         credential.helper = "${
             pkgs.git.override { withLibsecret = true; }
           }/bin/git-credential-libsecret";
+        url = {
+          "ssh://git@github.com" = {
+            insteadOf = "https://github.com";
+          };
+        };
+        push = {
+          autoSetupRemote = true;
+        };
       };
       aliases = {
         "f" = "fetch -pt";

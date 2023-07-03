@@ -14,8 +14,10 @@ in {
       openjdk17-bootstrap
       android-studio
       awscli2
+      cabal-install
       docker-compose
       gnumake
+      ghc
       golangci-lint
       golangci-lint-langserver
       gotools

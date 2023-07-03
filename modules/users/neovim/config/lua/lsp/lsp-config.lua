@@ -3,6 +3,7 @@ local nvim_lsp                         = require('lspconfig')
 local telescope                        = require('telescope.builtin')
 local keymaps                          = require('editor/keymappings')
 local languages                        = require('lsp/servers')
+local testing                          = require('testing')
 
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
   border = "rounded",
@@ -48,3 +49,5 @@ local capabilities                     = require('cmp_nvim_lsp').default_capabil
 for _, language in ipairs(languages) do
   language(on_attach, capabilities)
 end
+
+

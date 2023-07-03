@@ -36,6 +36,7 @@ local key_mappings = {
   search_file_name          = add_key_mapping('<leader>ff', search_opts, 'Searching: Search file name'),
   search_directory_contents = add_key_mapping('<leader>fg', search_opts, 'Searching: Search directory contents'),
   search_buffer_names       = add_key_mapping('<leader>fb', search_opts, 'Searching: Search buffer names'),
+  search_symbols            = add_key_mapping('<leader>fn', search_opts, 'Searching: Search workspace symbols'),
   search_help_tags          = add_key_mapping('<leader>fh', search_opts, 'Searching: Search help tags'),
   -- LSP mappings
   lsp_go_to_declaration     = add_key_mapping('sD', lsp_opts, 'LSP: Go to declaration'),

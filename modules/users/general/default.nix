@@ -24,6 +24,7 @@ in {
       iio-sensor-proxy
       kdenlive
       lm_sensors
+      lshw
       okular
       p7zip
       polkit
