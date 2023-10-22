@@ -19,8 +19,7 @@
         #  options = "--delete-older-than 7d";
         #};
 
-        settings = {
-          # Add community Cachix to binary cache
+        settings = { # Add community Cachix to binary cache
           builders-use-substitutes = true;
           substituters =
             [ "https://nix-community.cachix.org" ];

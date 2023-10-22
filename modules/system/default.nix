@@ -11,7 +11,7 @@
     ./kde
     ./power-management
     ./printers
-    ./sound
+    ./audio
     ./touchpad
     ./wayland
     ./xserver

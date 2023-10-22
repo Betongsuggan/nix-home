@@ -1,15 +1,12 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.sound;
-in
 {
-  options.br.sound = {
+  options.audio = {
     enable = mkEnableOption "Enable sound hardware";
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.audio.enable {
     sound.enable = true;
     services.pipewire = {
       enable = true;

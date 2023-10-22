@@ -1,14 +1,12 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.touchpad;
-in {
-  options.br.touchpad = {
+{
+  options.touchpad = {
     enable = mkEnableOption "Enable touchpad support";
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.touchpad.enable {
     services.xserver.libinput.enable = true;
     services.xserver.libinput.touchpad.tapping = true;
     #hardware.keyboard.qmk.enable = true;

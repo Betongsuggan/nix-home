@@ -1,15 +1,12 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.wayland;
-in
 {
-  options.br.wayland = {
+  options.wayland = {
     enable = mkEnableOption "Wayland setup";
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.wayland.enable {
     security.polkit.enable = true;
     programs.light.enable = true;
     programs.sway.enable = true;

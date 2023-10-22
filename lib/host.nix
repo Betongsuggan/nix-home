@@ -54,7 +54,9 @@ with builtins;
           networking.hostName = "${name}";
           networking.interfaces = networkCfg;
 
+          networking.wireless.enable = false;
           networking.networkmanager.enable = true;
+          networking.useDHCP = false;
 
           boot.initrd.availableKernelModules = initrdMods;
           boot.initrd.kernelModules = [ "amdgpu" "dm-snapshot" ];
