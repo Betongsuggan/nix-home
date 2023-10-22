@@ -18,9 +18,9 @@ in {
       profiles = {
         work.outputs = [
           {
-            criteria = "DP-1";
+            criteria = "DP-3";
             mode = "3840x2560";
-            scale = 1.5;
+            scale = 1.25;
           }
           {
             criteria = "eDP-1";

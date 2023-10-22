@@ -53,7 +53,7 @@ in
         legendary-nvim
 
         # Indentation
-        indent-blankline-nvim
+        #indent-blankline-nvim
 
         # Collaboration
         (plugin "jbyuki/instant.nvim")
@@ -70,6 +70,10 @@ in
         (plugin "aznhe21/actions-preview.nvim")
 
         # LSP Testing
+        nvim-dap
+        nvim-dap-go
+        neotest
+        neotest-go
         neotest-plenary
 
         ## Show LSP Processes
@@ -124,6 +128,7 @@ in
 
         # Go
         gopls
+        delve
 
         # Haskell
         haskell-language-server

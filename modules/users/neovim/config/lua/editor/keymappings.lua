@@ -11,6 +11,7 @@ local key_mappings = {
   open_file_tree            = add_key_mapping('<leader>tt', { silent = true }, 'FileTree: Toggle File Tree'),
   refresh_file_in_tree      = add_key_mapping('<leader>tr', { silent = true }, 'FileTree: Refresh File Tree'),
   find_file_in_tree         = add_key_mapping('<leader>tf', { silent = true }, 'FileTree: Find File'),
+
   -- Autocompletion
   -- These are now setup in cmp-config.lua since I haven't gottem them to work through legendary
   --autocomplete              = add_key_mapping('<C-Space>',{ silent = true, noremap = true }, 'Show autocomplete options'),
@@ -61,6 +62,16 @@ local key_mappings = {
   lsp_create_workspace      = add_key_mapping('swa', lsp_opts, 'LSP: Add workspace folder'),
   lsp_remove_workspace      = add_key_mapping('swd', lsp_opts, 'LSP: Remove workspace folder'),
   lsp_show_workspaces       = add_key_mapping('swl', lsp_opts, 'LSP: List workspaces'),
+
+  -- LSP Testing
+  lsp_file_tests            = add_key_mapping('smg', { noremap = true }, 'LSP: Run all tests in file'),
+  lsp_nearest_test          = add_key_mapping('sme', { noremap = true }, 'LSP: Run nearest test'),
+  lsp_debug_nearest_test    = add_key_mapping('smd', { noremap = true }, 'LSP: Debug nearest test'),
+  lsp_toggle_test_output    = add_key_mapping('smo', { noremap = true }, 'LSP: Toggle debug menu'),
+  lsp_toggle_test_tree      = add_key_mapping('smi', { noremap = true }, 'LSP: Toggle debug menu'),
+
+  -- LSP Debugging
+  lsp_toggle_breakpoint     = add_key_mapping('smb', { noremap = true }, 'LSP: Toggle breakpoint'),
 }
 
 key_mappings.lsp_format(

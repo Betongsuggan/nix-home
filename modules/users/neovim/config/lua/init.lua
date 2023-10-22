@@ -5,7 +5,7 @@ return {
   require('lsp/lsp-config'),
 
   -- Visual related configs
-  require('visuals/indent-blankline-config'),
+  --require('visuals/indent-blankline-config'),
   require('visuals/scrollbar-config'),
   require('visuals/fidget-config'),
   require('visuals/lightbulb-config'),

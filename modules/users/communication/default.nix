@@ -11,8 +11,6 @@ in {
   config = mkIf (cfg.enable) {
     home.packages = with pkgs; [
       slack
-      teams
-      #zoom-us
       skypeforlinux
     ];
   };

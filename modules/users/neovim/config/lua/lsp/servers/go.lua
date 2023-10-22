@@ -9,6 +9,7 @@ return function(on_attach, capabilities)
         gofumpt = true,
         analyses = {
           unusedparams = true,
+          shadow = true,
         },
         staticcheck = true,
       },

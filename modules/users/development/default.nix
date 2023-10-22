@@ -18,9 +18,6 @@ in {
       docker-compose
       gnumake
       ghc
-      golangci-lint
-      golangci-lint-langserver
-      gotools
       jetbrains.idea-community
       jq
       kotlin
@@ -28,7 +25,7 @@ in {
       nodejs-16_x
       yarn
       python3
-      postman
+      #postman
       silver-searcher
       teleport
       terraform
@@ -37,6 +34,12 @@ in {
       cargo
       rustc
       rustfmt
+
+      # Go packages
+      golangci-lint
+      golangci-lint-langserver
+      gotools
+      delve
     ];
     programs.go.enable = true;
 

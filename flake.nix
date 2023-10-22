@@ -2,10 +2,10 @@
   description = "Betongsuggan's flake to rule them all. Proudly stolen from https://jdisaacs.com/blog/nixos-config/";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-23.05";
+    nixpkgs.url = "nixpkgs/nixos-unstable";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-23.05";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -57,32 +57,6 @@
             games.enable = true;
           };
           username = "betongsuggan";
-        };
-        work = user.mkHMUser {
-          userConfig = {
-            git = {
-              enable = true;
-              userName = "Birger Rydback";
-              userEmail = "birger@humla.io";
-            };
-            general.enable = true;
-            communication.enable = true;
-            browsers.enable = true;
-            autorandr.enable = true;
-            audio.enable = true;
-            neovim.enable = true;
-            urxvt.enable = true;
-            bash.enable = true;
-            i3.enable = true;
-            rofi.enable = true;
-            polybar.enable = true;
-            picom.enable = true;
-            fonts.enable = true;
-            x11.enable = true;
-            colemak.enable = true;
-            development.enable = true;
-          };
-          username = "birgerrydback";
         };
         work-bits = user.mkHMUser {
           userConfig = {
@@ -260,7 +234,8 @@
         };
         bits-nixos = host.mkHost {
           name = "bits-nixos";
-          NICs = [ "wwp103s0f4u3u3" ];
+          NICs = [ "wwp103s0f4u3u3" "wlp4s0" ];
+          kernelPackage = pkgs.linuxPackages_latest;
           initrdMods = [ "nvme" "xhci_pci" "thunderbolt" "usb_storage" "sd_mod" "sdhci_pci" ];
           kernelMods = [ "kvm-amd" ];
           kernelParams = [ ];
