@@ -24,7 +24,6 @@ with lib;
         nodejs-18_x
         yarn
         python3
-        postman
         silver-searcher
         teleport
         terraform
@@ -47,6 +46,6 @@ with lib;
         PATH = "$HOME/node_modules/bin:$PATH";
       };
     };
-    unfreePackages = [ "postman" "terraform" "android-studio-stable" "idea-community" ];
+    unfreePackages = [ "terraform" "android-studio-stable" "idea-community" ];
   };
 }

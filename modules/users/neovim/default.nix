@@ -146,8 +146,8 @@ in
           lua-language-server
 
           # Nix
-          rnix-lsp
-          nixpkgs-fmt
+          nil
+          nixfmt
           statix
 
           # Rust

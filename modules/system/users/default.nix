@@ -1,4 +1,4 @@
-{ config, lib, pkgs,  ... }: {
+{ config, lib, pkgs, ... }: {
 
   options = {
     user = lib.mkOption {
@@ -33,29 +33,30 @@
       # Create a home directory for human user
       isNormalUser = true;
 
-      extraGroups = [
-        "wheel" # Sudo privileges
-      ];
-
+      extraGroups = config.extraUserGroups;
     };
 
-    home-manager.users.${config.user}.xdg = {
-      # Allow Nix to manage the default applications list
-      mimeApps.enable = true;
+    home-manager.users.${config.user} = {
+      home.packages = [ pkgs.home-manager ];
+      programs.home-manager.enable = true;
+      xdg = {
+        # Allow Nix to manage the default applications list
+        mimeApps.enable = true;
 
-      # Set directories for application defaults
-      userDirs = {
-        enable = true;
-        createDirectories = true;
-        documents = "$HOME/documents";
-        download = config.userDirs.download;
-        music = "$HOME/media/music";
-        pictures = "$HOME/media/images";
-        videos = "$HOME/media/videos";
-        desktop = "$HOME/other/desktop";
-        publicShare = "$HOME/other/public";
-        templates = "$HOME/other/templates";
-        extraConfig = { XDG_DEV_DIR = "$HOME/dev"; };
+        # Set directories for application defaults
+        userDirs = {
+          enable = true;
+          createDirectories = true;
+          documents = "$HOME/documents";
+          download = config.userDirs.download;
+          music = "$HOME/media/music";
+          pictures = "$HOME/media/images";
+          videos = "$HOME/media/videos";
+          desktop = "$HOME/other/desktop";
+          publicShare = "$HOME/other/public";
+          templates = "$HOME/other/templates";
+          extraConfig = { XDG_DEV_DIR = "$HOME/dev"; };
+        };
       };
     };
   };
