@@ -1,5 +1,33 @@
-{ inputs, globals, overlays, ... }:
+{ inputs, overlays, ... }:
 
+let  
+    globals =
+      let baseName = "birgerrydback";
+      in
+      {
+        user = "birgerrydback";
+        fullName = "Birger Rydback";
+        # Create a home directory for human user
+        extraUserGroups = [
+          "wheel"
+          "networkmanager"
+          "video"
+          "docker"
+        ];
+        #gitName = "Birger Rydback";
+        #gitEmail = "birger.rydback@bits.bi";
+        #hostnames = {
+        #  git = "git.${baseName}";
+        #  metrics = "metrics.${baseName}";
+        #  prometheus = "prom.${baseName}";
+        #  secrets = "vault.${baseName}";
+        #  stream = "stream.${baseName}";
+        #  content = "cloud.${baseName}";
+        #  books = "books.${baseName}";
+        #  download = "download.${baseName}";
+        #};
+      };
+  in 
 inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [

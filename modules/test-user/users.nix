@@ -1,20 +1,37 @@
-{ config, lib, ... }: {
+{ config, lib, pkgs,  ... }: {
 
-  options = { };
+  options = {
+    user = lib.mkOption {
+      type = lib.types.str;
+      description = "Primary user of the system";
+    };
+    fullName = lib.mkOption {
+      type = lib.types.str;
+      description = "Human readable name of the user";
+    };
+    extraUserGroups = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      description = "Extra groups for the user";
+    };
+    userDirs = {
+      # Required to prevent infinite recursion when referenced by himalaya
+      download = lib.mkOption {
+        type = lib.types.str;
+        description = "XDG directory for downloads";
+        default =
+          if pkgs.stdenv.isDarwin then "$HOME/Downloads" else "$HOME/downloads";
+      };
+    };
+  };
 
   config = {
-
     # Allows us to declaritively set password
-    users.mutableUsers = false;
+    users.mutableUsers = true;
 
     # Define a user account. Don't forget to set a password with ‘passwd’.
     users.users.${config.user} = {
-
       # Create a home directory for human user
       isNormalUser = true;
-
-      # Automatically create a password to start
-      hashedPassword = config.passwordHash;
 
       extraGroups = [
         "wheel" # Sudo privileges
@@ -42,7 +59,5 @@
         extraConfig = { XDG_DEV_DIR = "$HOME/dev"; };
       };
     };
-
   };
-
 }
