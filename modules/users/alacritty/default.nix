@@ -1,10 +1,8 @@
 { pkgs, config, lib, ... }:
 with lib;
 
-let
-  cfg = config.br.alacritty;
-in {
-  options.br.alacritty = {
+{
+  options.alacritty = {
     enable = mkOption {
       description = "Enable Alacritty terminal emulator";
       type = types.bool;
@@ -12,13 +10,13 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
-    programs.alacritty = {
+  config = mkIf config.alacritty.enable {
+    home-manager.users.${config.user}.programs.alacritty = {
       enable = true;
 
       settings = {
         live_config_reload = true;
-        font   = import ./fonts.nix;
+        font = import ./fonts.nix;
         colors = import ./colors.nix;
       };
     };

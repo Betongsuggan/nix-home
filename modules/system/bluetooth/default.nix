@@ -1,15 +1,12 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.bluetooth;
-in
 {
-  options.br.bluetooth = {
+  options.bluetooth = {
     enable = mkEnableOption "Enable Bluetooth";
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.bluetooth.enable {
     services.blueman.enable = true;
     hardware.bluetooth = {
       enable = true;

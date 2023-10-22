@@ -17,6 +17,12 @@ with lib;
       wireplumber.enable = true;
       pulse.enable = true;
     };
+
+    home-manager.users.${config.user}.home.packages = [
+      pkgs.pavucontrol
+      pkgs.youtube-music
+    ];
+
     #hardware.pulseaudio = {
     #  enable = true;
     #  package = pkgs.pulseaudioFull;

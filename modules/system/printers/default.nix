@@ -1,14 +1,12 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.printers;
-in {
-  options.br.printers = {
+{
+  options.printers = {
     enable = mkEnableOption "Enable Printers";
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.printers.enable {
     # Printers and shit
     services.printing = {
       enable = true;

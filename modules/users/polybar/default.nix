@@ -2,19 +2,18 @@
 with lib;
 
 let
-  cfg = config.br.polybar;
-  theme = import ../theming/theme.nix {};
+  theme = import ../theming/theme.nix { };
 in
 {
-  options.br.polybar = {
+  options.polybar = {
     enable = mkEnableOption "Enable Polybar";
   };
 
-  config = mkIf (cfg.enable) {
-    services.polybar = {
+  config = mkIf (config.polybar.enable) {
+    home-manager.users.${config.user}.services.polybar = {
       enable = true;
       package = pkgs.polybar.override {
- #       i3GapsSupport = true;
+        #       i3GapsSupport = true;
         pulseSupport = true;
       };
       config = with builtins; {
@@ -90,7 +89,7 @@ in
           ramp-capacity-3 = "";
           ramp-capacity-4 = "";
           ramp-capacity-foreground = "${theme.colors.secondaryText}";
-          
+
           format-charging = "<animation-charging>";
           format-charging-font = 2;
           animation-charging-0 = "";
@@ -123,15 +122,15 @@ in
         };
         "module/cpu" = {
           type = "internal/cpu";
-          
+
           interval = "0.5";
           label = ": %percentage%%";
         };
         "module/memory" = {
           type = "internal/memory";
-          
+
           interval = 3;
-          format =  "<ramp-used> <label> <ramp-free>";
+          format = "<ramp-used> <label> <ramp-free>";
 
           label = "%gb_used% | %gb_free%";
           ramp-used-0 = "▁";

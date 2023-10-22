@@ -1,15 +1,12 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.firefox;
-in
 {
-  options.br.firefox = {
+  options.firefox = {
     enable = mkEnableOption "Enable Firefox browser";
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.firefox.enable {
     environment.systemPackages = with pkgs; [ firefox-wayland linux-firmware ];
 
     xdg = {

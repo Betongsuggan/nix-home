@@ -1,10 +1,8 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.graphics;
-in {
-  options.br.graphics = {
+{
+  options.graphics = {
     enable = mkEnableOption "Enable graphics hardware";
 
     brand = mkOption {
@@ -14,16 +12,16 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.graphics.enable {
     hardware = {
       opengl = {
         enable = true;
         driSupport = true;
         driSupport32Bit = true;
-       # setLdLibraryPath = true; 
-#        extraPackages32 = with pkgs.pkgsi686Linux; [ 
-#          libva 
-#        ];
+        # setLdLibraryPath = true; 
+        #        extraPackages32 = with pkgs.pkgsi686Linux; [ 
+        #          libva 
+        #        ];
         extraPackages = with pkgs; [
           vaapiVdpau
           libvdpau-va-gl

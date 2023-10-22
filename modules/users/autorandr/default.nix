@@ -2,7 +2,6 @@
 with lib;
 
 let
-  cfg = config.br.autorandr;
   privateLaptopScreen = "00ffffffffffff004d10f71400000000181e0104a51d12780ede50a3544c99260f505400000001010101010101010101010101010101283c80a070b023403020360020b410000018203080a070b023403020360020b410000018000000fe0047524e5050804c513133344e31000000000002410332011200000a010a2020007f";
   workLaptopScreen = "00ffffffffffff004d10d11400000000041e0104a52215780ede50a3544c99260f505400000001010101010101010101010101010101283c80a070b023403020360050d210000018203080a070b023403020360050d210000018000000fe00464b52314b804c513135364e31000000000002410332001200000a010a2020003a";
   currentScreen = workLaptopScreen;
@@ -13,12 +12,12 @@ let
   currentMonitorOutput = "DP-2";
 in
 {
-  options.br.autorandr = {
+  options.autorandr = {
     enable = mkEnableOption "Enable Autorandr";
   };
 
-  config = mkIf (cfg.enable) {
-    programs.autorandr = {
+  config = mkIf (config.autorandr.enable) {
+    home-manager.users.${config.user}.programs.autorandr = {
       enable = true;
       profiles = {
         "laptop" = {
@@ -127,7 +126,7 @@ in
               mode = "1920x1080";
               rate = "60.00";
             };
-          };  
+          };
         };
       };
     };

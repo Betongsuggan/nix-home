@@ -1,10 +1,8 @@
 { pkgs, config, lib, ... }:
 with lib;
 
-let
-  cfg = config.br.bash;
-in {
-  options.br.bash = {
+{
+  options.bash = {
     enable = mkOption {
       description = "Enable bash shell";
       type = types.bool;
@@ -12,8 +10,8 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
-    programs.bash = {
+  config = mkIf config.bash.enable {
+    home-manager.users.${config.user}.programs.bash = {
       enable = true;
       shellAliases = {
         ll = "ls -la --color=auto";

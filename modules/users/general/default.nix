@@ -1,19 +1,17 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.general;
-in {
-  options.br.general = {
+{
+  options.general = {
     enable = mkEnableOption "Enable general desktop programs";
   };
 
-  config = mkIf cfg.enable {
-    home.packages = with pkgs; [
+  config = mkIf config.general.enable {
+    home-manager.users.${config.user}.home.packages = with pkgs; [
       btop
       coreutils
+      pciutils
       kazam
-      etcher
       exfat
       gimp
       gnome.gedit

@@ -21,9 +21,8 @@ inputs.nixpkgs.lib.nixosSystem {
     globals
     inputs.home-manager.nixosModules.home-manager
     ../../modules/common
-    ../../modules/test-user
     ../../modules/system
-    #../../modules/users
+    ../../modules/users
     {
       nixpkgs.overlays = overlays;
 
@@ -72,39 +71,38 @@ inputs.nixpkgs.lib.nixosSystem {
 
       touchpad.enable = true;
       #fingerprint.enable = true;
-      #firefox.enable = true;
-      #graphics.enable = true;
-      #sound.enable = true;
-      #docker.enable = true;
-      #bluetooth.enable = true;
+      firefox.enable = true;
+      graphics.enable = true;
+      audio.enable = true;
+      docker.enable = true;
+      bluetooth.enable = true;
       wayland.enable = true;
-      #printers.enable = true;
-      #power-management.enable = true;
-      #diskEncryption = {
-      #  enable = true;
-      #  diskId = "f3fd4fdf-b8ef-45c7-8e96-2ca5bfe32cd9";
-      #  headerId = "1abd4b51-8a97-4d04-97f1-326b2ef1dcbe";
-      #};
-      #firewall = {
-      #  enable = true;
-      #  tcpPorts = [ 8080 ];
-      #};
-      #git = {
-      #  enable = true;
-      #  userName = "BirgerRydback";
-      #  userEmail = "birger.rydback@bits.bi";
-      #};
-      #general.enable = true;
-      #communication.enable = true;
-      #audio.enable = true;
+      printers.enable = true;
+      power-management.enable = true;
+      diskEncryption = {
+        enable = true;
+        diskId = "f3fd4fdf-b8ef-45c7-8e96-2ca5bfe32cd9";
+        headerId = "1abd4b51-8a97-4d04-97f1-326b2ef1dcbe";
+      };
+      firewall = {
+        enable = true;
+        tcpPorts = [ 8080 ];
+      };
+      git = {
+        enable = true;
+        userName = "BirgerRydback";
+        userEmail = "birger.rydback@bits.bi";
+      };
+      general.enable = true;
+      communication.enable = true;
       #neovim.enable = true;
-      #alacritty.enable = true;
-      #bash.enable = true;
-      #fonts.enable = true;
-      #kanshi.enable = true;
-      #sway.enable = true;
-      #waybar.enable = true;
-      #development.enable = true;
+      alacritty.enable = true;
+      bash.enable = true;
+      fonts.enable = true;
+      kanshi.enable = true;
+      sway.enable = true;
+      waybar.enable = true;
+      development.enable = true;
     }
   ];
 }

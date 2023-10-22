@@ -2,7 +2,6 @@
 with lib;
 
 let
-  cfg = config.br.waybar;
   theme = import ../theming/theme.nix { };
   mediaPlayerCtl = "${pkgs.playerctl}/bin/playerctl";
   mediaPlayerCtld = "${pkgs.playerctl}/bin/playerctld";
@@ -20,12 +19,12 @@ let
   ''}/bin/waybar-${name}";
 in
 {
-  options.br.waybar = {
+  options.waybar = {
     enable = mkEnableOption "Enable Waybar";
   };
 
-  config = mkIf cfg.enable {
-    programs.waybar = {
+  config = mkIf config.waybar.enable {
+    home-manager.users.${config.user}.programs.waybar = {
       enable = true;
       settings = {
         primary = {

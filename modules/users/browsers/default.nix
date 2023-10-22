@@ -1,10 +1,8 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.browsers;
-in {
-  options.br.browsers = {
+{
+  options.browsers = {
     enable = mkEnableOption "Enable browser packages";
 
     defaultBrowser = mkOption {
@@ -14,11 +12,11 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
-    home.packages = with pkgs; [
+  config = mkIf config.browsers.enable {
+    home-manager.users.${config.user}.packages = with pkgs; [
       firefox
     ];
-    home.sessionVariables = {
+    home-manager.users.${config.user}.sessionVariables = {
       BROWSER = cfg.defaultBrowser;
     };
   };

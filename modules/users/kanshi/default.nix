@@ -1,10 +1,8 @@
 { pkgs, config, lib, ... }:
 with lib;
 
-let
-  cfg = config.br.kanshi;
-in {
-  options.br.kanshi = {
+{
+  options.kanshi = {
     enable = mkOption {
       description = "Enable Kanshi";
       type = types.bool;
@@ -12,8 +10,8 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
-    services.kanshi = {
+  config = mkIf config.kanshi.enable {
+    home-manager.users.${config.user}.services.kanshi = {
       enable = true;
       profiles = {
         work.outputs = [

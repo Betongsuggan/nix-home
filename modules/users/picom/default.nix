@@ -1,15 +1,12 @@
 { config, pkgs, lib, ... }:
 with lib;
 
-let
-  cfg = config.br.picom;
-in
 {
-  options.br.picom = {
+  options.picom = {
     enable = mkEnableOption "Enable Picom service";
   };
 
-  config = mkIf (cfg.enable) {
+  config = mkIf (config.picom.enable) {
     services.picom = {
       enable = true;
       backend = "glx";

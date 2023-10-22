@@ -1,17 +1,14 @@
-{pkgs, config, lib, ...}:
+{ pkgs, config, lib, ... }:
 with lib;
 
-let
-  cfg = config.br.x11;
-in
 {
-  options.br.x11 = {
+  options.x11 = {
     enable = mkEnableOption "Enable X11";
   };
 
-  config = mkIf cfg.enable {
-    xsession.enable = true;
-    xresources.extraConfig = ''
+  config = mkIf config.x11.enable {
+    home-manager.users.${config.user}.xsession.enable = true;
+    home-manager.users.${config.user}.xresources.extraConfig = ''
       ! -----------------------------------------------------------------------------
       ! File: gruvbox-dark.xresources
       ! Description: Retro groove colorscheme generalized

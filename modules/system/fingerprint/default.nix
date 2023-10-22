@@ -1,14 +1,12 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.fingerprint;
-in {
-  options.br.fingerprint = {
+{
+  options.fingerprint = {
     enable = mkEnableOption "Enable fingerprint reader";
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.fingerprint.enable {
     environment.systemPackages = [
       pkgs.fprintd
     ];

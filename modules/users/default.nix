@@ -2,7 +2,6 @@
 {
   imports = [
     ./alacritty
-    ./audio
     ./autorandr
     ./bash
     ./browsers
