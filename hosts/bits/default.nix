@@ -6,13 +6,12 @@ inputs.nixpkgs.lib.nixosSystem {
     globals
     inputs.home-manager.nixosModules.home-manager
     ../../modules/common
-    ../../modules/users
-    ../../modules/system
+    ../../modules/test-user
     {
       nixpkgs.overlays = overlays;
 
       # Hardware
-      physical = true;
+      #physical = true;
       networking.hostName = "bits-nixos";
 
       # Not sure what's necessary but too afraid to remove anything
@@ -68,7 +67,7 @@ inputs.nixpkgs.lib.nixosSystem {
           fsType = "vfat";
         };
       };
-      swap = "/dev/disk/by-uuid/08fd16ed-033c-456a-af0e-f16c933f08a3";
+      swapDevices = [{ device = "/dev/disk/by-uuid/08fd16ed-033c-456a-af0e-f16c933f08a3"; }];
 
       # Secrets must be prepared ahead before deploying
       #passwordHash = inputs.nixpkgs.lib.fileContents ../../misc/password.sha512;

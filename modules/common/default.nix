@@ -1,14 +1,21 @@
 { config, lib, pkgs, ... }: {
 
-  options = { };
+  options = {
+    user = lib.mkOption {
+      type = lib.types.str;
+      description = "Primary user of the system";
+    };
+    fullName = lib.mkOption {
+      type = lib.types.str;
+      description = "Human readable name of the user";
+    };
+  };
 
   config =
     let stateVersion = "23.05";
     in
     {
-
       nix = {
-
         # Enable features in Nix commands
         extraOptions = ''
           experimental-features = nix-command flakes
@@ -21,9 +28,7 @@
         #};
 
         settings = {
-
           # Add community Cachix to binary cache
-          # Don't use with macOS because blocked by corporate firewall
           builders-use-substitutes = true;
           substituters =
             [ "https://nix-community.cachix.org" ];
@@ -33,7 +38,6 @@
 
           auto-optimise-store = true;
         };
-
       };
 
       # Basic common system packages for all devices

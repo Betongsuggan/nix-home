@@ -15,11 +15,11 @@
       globals =
         let baseName = "birgerrydback";
         in
-        rec {
-          user = "betongsuggan";
-          #fullName = "Birger Rydback";
-          gitName = "Birger Rydback";
-          gitEmail = "birger.rydback@bits.bi";
+        {
+          user = "birgerrydback";
+          fullName = "Birger Rydback";
+          #gitName = "Birger Rydback";
+          #gitEmail = "birger.rydback@bits.bi";
           #hostnames = {
           #  git = "git.${baseName}";
           #  metrics = "metrics.${baseName}";
@@ -42,12 +42,5 @@
       nixosConfigurations = {
         bits = import ./hosts/bits { inherit inputs globals overlays; };
       };
-
-      # For quickly applying home-manager settings with:
-      # home-manager switch --flake .#bits
-      #homeConfigurations = {
-      #  bits =
-      #    nixosConfigurations.bits.config.home-manager.users.${globals.user}.home;
-      #};
     };
 }
