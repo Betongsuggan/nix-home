@@ -19,6 +19,7 @@ inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
     globals
+    inputs.nur.nixosModules.nur
     inputs.home-manager.nixosModules.home-manager
     ../../modules/common
     ../../modules/system
@@ -31,29 +32,27 @@ inputs.nixpkgs.lib.nixosSystem {
       networking.networkmanager.enable = true;
       networking.useDHCP = false;
 
-      boot.kernelPackages = pkgs.linuxPackages_latest;
+      boot.kernelPackages = pkgs.linuxPackages_6_1;
 
       boot.initrd.availableKernelModules =
         [ "nvme" "xhci_pci" "ahci" "thunderbolt" "usb_storage" "sd_mod" "sdhci_pci" ];
       boot.loader.systemd-boot.enable = true;
       boot.loader.systemd-boot.configurationLimit = 10;
+
       boot.loader.efi.efiSysMountPoint = "/boot";
       boot.loader.efi.canTouchEfiVariables = true;
       boot.loader.grub.useOSProber = true;
       boot.loader.grub.configurationLimit = 10;
 
       # Graphics and VMs
-      boot.initrd.kernelModules = [ "amdgpu" ];
-      boot.kernelModules = [ "kvm-amd" ];
+      #boot.initrd.kernelModules = [ "amdgpu" ];
+      #boot.kernelModules = [ "kvm-amd" ];
 
-      # Required binary blobs to boot on this machine
-      hardware.enableRedistributableFirmware = true;
-
-      # Prioritize performance over efficiency
-      powerManagement.cpuFreqGovernor = "performance";
-
-      # Allow firmware updates
       hardware.cpu.amd.updateMicrocode = true;
+      nixpkgs.config.allowUnfree = true;
+      hardware.enableAllFirmware = true;
+      hardware.enableRedistributableFirmware = true;
+      hardware.i2c.enable = true;
 
       time.timeZone = "Europe/Stockholm";
 
@@ -78,6 +77,8 @@ inputs.nixpkgs.lib.nixosSystem {
         { device = "/dev/disk/by-uuid/08fd16ed-033c-456a-af0e-f16c933f08a3"; }
       ];
 
+      services.fwupd.enable = true;
+
       touchpad.enable = true;
       #fingerprint.enable = true;
       firefox.enable = true;
@@ -98,6 +99,7 @@ inputs.nixpkgs.lib.nixosSystem {
         userEmail = "birger.rydback@bits.bi";
       };
       general.enable = true;
+      games.enable = true;
       communication.enable = true;
       neovim.enable = true;
       alacritty.enable = true;

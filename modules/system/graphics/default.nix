@@ -29,6 +29,5 @@ with lib;
       };
       #steam-hardware.enable = true;
     };
-    environment.systemPackages = [ pkgs.vulkan-validation-layers ];
   };
 }

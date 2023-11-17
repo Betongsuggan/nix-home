@@ -1,5 +1,5 @@
 {
-  description = "Betongsuggan's flake to rule them all. Proudly stolen from https://jdisaacs.com/blog/nixos-config/";
+  description = "Betongsuggan's flake to rule them all";
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-23.05";
@@ -8,6 +8,8 @@
       url = "github:nix-community/home-manager/release-23.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nur.url = "github:nix-community/NUR";
   };
 
   outputs = { nixpkgs, ... }@inputs:
@@ -20,9 +22,6 @@
         bits = import ./hosts/bits { inherit inputs overlays; };
       };
 
-
-      # For quickly applying home-manager settings with:
-      # home-manager switch --flake .#tempest
       homeConfigurations = {
         bits =
           nixosConfigurations.bits.config.home-manager.users.birgerrydback.home;

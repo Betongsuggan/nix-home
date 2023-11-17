@@ -127,7 +127,9 @@ in
 
           # Go
           gopls
-          delve
+          gofumpt
+          gotools
+          golines
 
           # Haskell
           haskell-language-server

@@ -1,4 +1,5 @@
 { config, lib, pkgs, ... }:
+
 with lib;
 
 {
@@ -7,7 +8,7 @@ with lib;
   };
 
   config = mkIf config.games.enable {
-    home-manager.users.${config.user}.packages = with pkgs; [
+    home-manager.users.${config.user}.home.packages = with pkgs; [
       antimicroX
       chiaki
       discord
@@ -22,5 +23,7 @@ with lib;
       steamcontroller
       xboxdrv
     ];
+
+    unfreePackages = [ "discord" "steam" "steam-original" "steam-run" ];
   };
 }

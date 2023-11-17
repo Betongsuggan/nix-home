@@ -8,6 +8,7 @@
     ./colemak
     ./communication
     ./development
+    ./flatpak
     ./fonts
     ./games
     ./general

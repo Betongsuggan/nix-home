@@ -14,6 +14,10 @@ with lib;
     home-manager.users.${config.user}.programs.bash = {
       enable = true;
       shellAliases = {
+        cloud = "cd ~/Development/cloud";
+        dashboard = "cd ~/Development/web/apps/dashboard";
+        nocode = "cd ~/Development/web/apps/nocode";
+        demo = "cd ~/Development/web/apps/nocode-demo";
         ll = "ls -la --color=auto";
         ls = "ls --color=auto";
         vim = "nvim";

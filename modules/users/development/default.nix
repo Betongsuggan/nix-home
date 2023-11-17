@@ -9,6 +9,7 @@ with lib;
   config = mkIf config.development.enable {
     home-manager.users.${config.user} = {
       home.packages = with pkgs; [
+        hello
         altair
         openjdk17-bootstrap
         android-studio
@@ -37,6 +38,8 @@ with lib;
         golangci-lint
         golangci-lint-langserver
         gotools
+        gofumpt
+        golines
         delve
       ];
       programs.go.enable = true;

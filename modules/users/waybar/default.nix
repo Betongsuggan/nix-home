@@ -40,8 +40,8 @@ in
             "custom/gpu"
             "memory"
             "pulseaudio"
-            "custom/player"
-            "custom/currentplayer"
+#            "custom/player"
+#            "custom/currentplayer"
           ];
           modules-right = [
             "sway/workspaces"
