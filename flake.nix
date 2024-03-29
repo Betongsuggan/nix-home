@@ -20,6 +20,7 @@
     rec {
       nixosConfigurations = {
         bits = import ./hosts/bits { inherit inputs overlays; };
+        private-laptop = import ./hosts/private-laptop { inherit inputs overlays; };
       };
 
       homeConfigurations = {
