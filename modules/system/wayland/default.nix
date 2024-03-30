@@ -9,7 +9,6 @@ with lib;
   config = mkIf config.wayland.enable {
     security.polkit.enable = true;
     programs.light.enable = true;
-    programs.sway.enable = true;
 
     security.pam.services.swaylock = {
       text = "auth include login";

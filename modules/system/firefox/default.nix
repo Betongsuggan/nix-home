@@ -40,7 +40,7 @@ with lib;
     };
     environment.sessionVariables = {
       MOZ_ENABLE_WAYLAND = "1";
-      XDG_CURRENT_DESKTOP = "sway";
+      XDG_CURRENT_DESKTOP = "hyprland";
       GTK_USE_PORTAL = "1";
       NIXOS_OZONE_WL = "1";
     };

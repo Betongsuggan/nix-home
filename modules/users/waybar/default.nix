@@ -195,7 +195,7 @@ in
           color: ${theme.colors.background};
           margin-top: 2;
           margin-bottom: 2;
-          border-radius: 10px;
+          border-radius: ${theme.cornerRadius};
         }
 
         .modules-left {
@@ -205,14 +205,14 @@ in
           color: ${theme.colors.background};
           margin-top: 2;
           margin-bottom: 2;
-          border-radius: 10px;
+          border-radius: ${theme.cornerRadius};
         }
 
         window#waybar.bottom {
           opacity: 0.90;
           background-color: ${theme.colors.background};
           border: 2px solid ${theme.colors.border};
-          border-radius: 10px;
+          border-radius: ${theme.cornerRadius};
         }
 
         window#waybar {
@@ -249,7 +249,7 @@ in
           margin-left: 0;
           margin-top: -2;
           margin-bottom: -4;
-          border-radius: 10px;
+          border-radius: ${theme.cornerRadius};
         }
 
         #custom-hostname {
@@ -260,7 +260,7 @@ in
           margin-right: 0;
           margin-top: -2;
           margin-bottom: -4;
-          border-radius: 10px;
+          border-radius: ${theme.cornerRadius};
         }
 
         #tray {

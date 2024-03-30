@@ -13,6 +13,7 @@
     ./games
     ./general
     ./git
+    ./hyprland
     ./i3
     ./kanshi
     ./neovim
@@ -22,6 +23,7 @@
     ./sway
     ./urxvt
     ./waybar
+    ./wofi
     ./x11
   ];
 }

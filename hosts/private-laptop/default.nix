@@ -24,6 +24,14 @@ inputs.nixpkgs.lib.nixosSystem {
     ../../modules/common
     ../../modules/system
     ../../modules/users
+    #{
+    #  # disabledModules = [ "misc/news.nix" ];
+    #  config = {
+    #    news.display = "silent";
+    #    news.json = inputs.nixpkgs.lib.mkForce { };
+    #    news.entries = inputs.nixpkgs.lib.mkForce [ ];
+    #  };
+    #}
     ({ config, lib, pkgs, ... }: {
       nixpkgs.overlays = overlays;
       networking.hostName = "nixos";
@@ -45,7 +53,6 @@ inputs.nixpkgs.lib.nixosSystem {
       boot.loader.grub.configurationLimit = 10;
 
       # Graphics and VMs
-      #boot.initrd.kernelModules = [ "amdgpu" ];
       boot.kernelModules = [ "kvm-intel" "iwlwifi" ];
 
       nixpkgs.config.allowUnfree = true;
@@ -54,6 +61,10 @@ inputs.nixpkgs.lib.nixosSystem {
       hardware.i2c.enable = true;
 
       time.timeZone = "Europe/Stockholm";
+
+      nixpkgs.config.permittedInsecurePackages = [
+        "electron-25.9.0"
+      ];
 
       # File systems must be declared in order to boot
       fileSystems = {
@@ -73,8 +84,13 @@ inputs.nixpkgs.lib.nixosSystem {
 
       services.fwupd.enable = true;
 
+
+      git = {
+        enable = true;
+        userName = "Betongsuggan";
+        userEmail = "rydback@gmail.com";
+      };
       touchpad.enable = true;
-      #fingerprint.enable = true;
       firefox.enable = true;
       graphics.enable = true;
       audio.enable = true;
@@ -87,11 +103,6 @@ inputs.nixpkgs.lib.nixosSystem {
         enable = true;
         tcpPorts = [ 8080 ];
       };
-      git = {
-        enable = true;
-        userName = "Betongsuggan";
-        userEmail = "rydback@gmail.com";
-      };
       general.enable = true;
       games.enable = true;
       communication.enable = true;
@@ -100,7 +111,8 @@ inputs.nixpkgs.lib.nixosSystem {
       bash.enable = true;
       fonts.enable = true;
       kanshi.enable = true;
-      sway.enable = true;
+      #sway.enable = true;
+      hyprland.enable = true;
       waybar.enable = true;
       development.enable = true;
     })

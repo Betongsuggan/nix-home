@@ -3,7 +3,6 @@ with lib;
 
 let
   inherit (pkgs) pamixer playerctl;
-  cfg = config.br.sway;
   theme = import ../theming/theme.nix { };
   modifier = "Mod4";
 in
@@ -21,9 +20,9 @@ in
         sway-contrib.grimshot
         wl-clipboard
         mako
-        wofi
         networkmanager_dmenu
       ];
+
 
       wayland.windowManager.sway = {
         enable = true;
@@ -31,7 +30,7 @@ in
         config = rec {
           inherit modifier;
           terminal = "alacritty";
-          menu = "wofi --show run";
+          menu = "wofi --show drun";
 
           fonts = with theme.font; {
             inherit style size;
@@ -63,7 +62,7 @@ in
           ];
 
           keybindings = lib.mkOptionDefault {
-            "${modifier}+o" = "exec ${pkgs.wofi}/bin/wofi --show run";
+            "${modifier}+o" = "exec ${pkgs.wofi}/bin/wofi --show drun";
 
             "${modifier}+Shift+x" = "exec ${pkgs.swaylock-fancy}/bin/swaylock-fancy";
 

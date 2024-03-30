@@ -44,10 +44,6 @@ inputs.nixpkgs.lib.nixosSystem {
       boot.loader.grub.useOSProber = true;
       boot.loader.grub.configurationLimit = 10;
 
-      # Graphics and VMs
-      #boot.initrd.kernelModules = [ "amdgpu" ];
-      #boot.kernelModules = [ "kvm-amd" ];
-
       hardware.cpu.amd.updateMicrocode = true;
       nixpkgs.config.allowUnfree = true;
       hardware.enableAllFirmware = true;
@@ -80,7 +76,6 @@ inputs.nixpkgs.lib.nixosSystem {
       services.fwupd.enable = true;
 
       touchpad.enable = true;
-      #fingerprint.enable = true;
       firefox.enable = true;
       graphics.enable = true;
       audio.enable = true;

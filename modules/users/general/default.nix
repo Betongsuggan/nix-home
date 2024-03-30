@@ -14,7 +14,7 @@ with lib;
       kazam
       exfat
       gimp
-      gnome.gedit
+      gedit
       gparted
       gthumb
       gvfs
@@ -25,7 +25,6 @@ with lib;
       lshw
       okular
       p7zip
-      polkit
       powertop
       ryzenadj
       unzip

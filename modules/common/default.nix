@@ -6,12 +6,14 @@
       description = "List of unfree packages to allow.";
       default = [ ];
     };
+    stateVersion = lib.mkOption {
+      type = lib.types.str;
+      description = "Applied state version for Nix packages";
+      default = "23.11";
+    };
   };
 
-  config =
-    let stateVersion = "23.05";
-    in
-    {
+  config = {
       nix = {
         # Enable features in Nix commands
         extraOptions = ''
@@ -52,7 +54,7 @@
         builtins.elem (lib.getName pkg) config.unfreePackages;
 
       # Pin a state version to prevent warnings
-      home-manager.users.${config.user}.home.stateVersion = stateVersion;
-      home-manager.users.root.home.stateVersion = stateVersion;
+      home-manager.users.${config.user}.home.stateVersion = config.stateVersion;
+      home-manager.users.root.home.stateVersion = config.stateVersion;
     };
 }

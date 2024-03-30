@@ -1,7 +1,6 @@
 { config, pkgs, lib, ... }:
 with lib;
 let
-  cfg = config.br.i3;
   theme = import ../theming/theme.nix { };
   mod = "Mod4";
 in
