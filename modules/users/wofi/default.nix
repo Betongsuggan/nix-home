@@ -6,7 +6,7 @@ with lib;
     enable = mkEnableOption "Enable Wofi application launcher";
   };
 
-  config = mkIf (config.wofi.enable) {
+  config = mkIf config.wofi.enable {
     home-manager.users.${config.user}.programs.wofi = {
       enable = true;
       settings = {

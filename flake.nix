@@ -15,7 +15,6 @@
   outputs = { nixpkgs, ... }@inputs:
     let
       overlays = [ ];
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
     in
     rec {
       nixosConfigurations = {

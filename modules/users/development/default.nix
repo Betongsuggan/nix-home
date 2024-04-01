@@ -9,38 +9,53 @@ with lib;
   config = mkIf config.development.enable {
     home-manager.users.${config.user} = {
       home.packages = with pkgs; [
-        hello
-        altair
+        # AWS Testing
+        #localstack
+
+        # Python
+        python3
+
+        # Kotlin
+        kotlin
         openjdk17-bootstrap
         android-studio
-        awscli2
-        cabal-install
-        docker-compose
-        gnumake
-        ghc
         jetbrains.idea-community
-        jq
-        kotlin
-        newman
-        nodejs-18_x
-        yarn
-        python3
-        silver-searcher
-        teleport
-        terraform
 
-        # Rust packages
+        # Node stuff
+        yarn
+        nodePackages.pnpm
+        nodejs-18_x
+
+        # Haskell
+        ghc
+        cabal-install
+
+        # Rust
         cargo
         rustc
         rustfmt
 
-        # Go packages
+        # Go
+        delve
         golangci-lint
         golangci-lint-langserver
         gotools
         gofumpt
         golines
-        delve
+
+        # IaC
+        terraform
+        awscli2
+
+        # Utilities
+        altair
+        docker-compose
+        gnumake
+        jq
+        ls-lint
+        newman
+        silver-searcher
+        teleport
       ];
       programs.go.enable = true;
 

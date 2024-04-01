@@ -2,8 +2,6 @@
 
 let
   globals =
-    let baseName = "birgerrydback";
-    in
     {
       user = "birgerrydback";
       fullName = "Birger Rydback";
@@ -25,30 +23,41 @@ inputs.nixpkgs.lib.nixosSystem {
     ../../modules/system
     ../../modules/users
     ({ config, lib, pkgs, ... }: {
-      nixpkgs.overlays = overlays;
-      networking.hostName = "bits-nixos";
+      nixpkgs = { inherit overlays; };
 
-      networking.wireless.enable = false;
-      networking.networkmanager.enable = true;
-      networking.useDHCP = false;
+      boot = {
+     
+        kernelPackages = pkgs.linuxPackages_latest;
+        
+        initrd.availableKernelModules =
+          [ "nvme" "xhci_pci" "ahci" "thunderbolt" "usb_storage" "sd_mod" "sdhci_pci" ];
+        loader = {
+          systemd-boot.enable = true;
+          systemd-boot.configurationLimit = 10;
+          
+          efi.efiSysMountPoint = "/boot";
+          efi.canTouchEfiVariables = true;
+          grub.useOSProber = true;
+          grub.configurationLimit = 10;
+        };
+      };
 
-      boot.kernelPackages = pkgs.linuxPackages_6_1;
+      hardware = {
+        cpu.amd.updateMicrocode = true;
+        enableAllFirmware = true;
+        enableRedistributableFirmware = true;
+        i2c.enable = true;
+      };
 
-      boot.initrd.availableKernelModules =
-        [ "nvme" "xhci_pci" "ahci" "thunderbolt" "usb_storage" "sd_mod" "sdhci_pci" ];
-      boot.loader.systemd-boot.enable = true;
-      boot.loader.systemd-boot.configurationLimit = 10;
+      networking = {
+        hostName = "bits-nixos";
+        
+        wireless.enable = false;
+        networkmanager.enable = true;
+        useDHCP = false;
+      };
 
-      boot.loader.efi.efiSysMountPoint = "/boot";
-      boot.loader.efi.canTouchEfiVariables = true;
-      boot.loader.grub.useOSProber = true;
-      boot.loader.grub.configurationLimit = 10;
-
-      hardware.cpu.amd.updateMicrocode = true;
       nixpkgs.config.allowUnfree = true;
-      hardware.enableAllFirmware = true;
-      hardware.enableRedistributableFirmware = true;
-      hardware.i2c.enable = true;
 
       time.timeZone = "Europe/Stockholm";
 
@@ -95,15 +104,21 @@ inputs.nixpkgs.lib.nixosSystem {
       };
       general.enable = true;
       games.enable = true;
+      flatpak.enable = true;
       communication.enable = true;
       neovim.enable = true;
       alacritty.enable = true;
       bash.enable = true;
       fonts.enable = true;
       kanshi.enable = true;
-      sway.enable = true;
+      #sway.enable = true;
+      hyprland.enable = true;
       waybar.enable = true;
       development.enable = true;
+
+      nixpkgs.config.permittedInsecurePackages = [
+        "electron-25.9.0"
+      ];
     })
   ];
 }

@@ -40,8 +40,8 @@ in
             "custom/gpu"
             "memory"
             "pulseaudio"
-#            "custom/player"
-#            "custom/currentplayer"
+            "custom/player"
+            "custom/currentplayer"
           ];
           modules-right = [
             "sway/workspaces"
@@ -61,12 +61,13 @@ in
 
           };
           cpu = {
+            interval = 15;
             format = " {usage}%";
             on-click = "";
           };
 
           "custom/gpu" = {
-            interval = 5;
+            interval = 30;
             return-type = "json";
             exec = jsonOutput "gpu" {
               text = "$(cat /sys/class/drm/card0/device/gpu_busy_percent)";
@@ -77,10 +78,11 @@ in
           };
           memory = {
             format = " {}%";
-            interval = 5;
+            interval = 15;
             on-click = "";
           };
           pulseaudio = {
+            interval = 10;
             format = "{icon} {volume}%";
             format-muted = "  0%";
             format-icons = {
@@ -103,7 +105,7 @@ in
             max-length = 20;
           };
           network = {
-            interval = 3;
+            interval = 10;
             format-wifi = " {essid}";
             format-ethernet = "󰛳 Connected";
             format-disconnected = "";
@@ -115,6 +117,7 @@ in
             on-click = "${pkgs.alacritty}/bin/alacritty --command nmtui-connect";
           };
           "custom/menu" = {
+            interval = 1000;
             return-type = "json";
             exec = jsonOutput "menu" {
               text = "";
@@ -123,11 +126,12 @@ in
             on-click = "${pkgs.wofi}/bin/wofi -S drun -x 10 -y 10 -W 25% -H 60%";
           };
           "custom/hostname" = {
+            interval = 1000;
             exec = "echo $USER@$(hostname)";
             on-click = "alacritty";
           };
           "custom/currentplayer" = {
-            interval = 2;
+            interval = 10;
             return-type = "json";
             exec = jsonOutput "currentplayer" {
               pre = ''
@@ -159,7 +163,7 @@ in
             exec-if = "${mediaPlayerCtl} status";
             exec = ''${mediaPlayerCtl} metadata --format '{"text": "{{artist}} - {{title}}", "alt": "{{status}}", "tooltip": "{{title}} ({{artist}} - {{album}})"}' '';
             return-type = "json";
-            interval = 2;
+            interval = 10;
             max-length = 60;
             format = "{icon} {}";
             format-icons = {

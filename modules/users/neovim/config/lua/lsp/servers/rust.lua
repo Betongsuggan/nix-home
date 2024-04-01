@@ -16,6 +16,7 @@ return function(on_attach, capabilities)
     server = {
       on_attach = on_attach,
       capabilities = capabilities,
+      standalone = true,
       settings = {
       },
     },

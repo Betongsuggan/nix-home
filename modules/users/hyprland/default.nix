@@ -2,9 +2,7 @@
 with lib;
 
 let
-  inherit (pkgs) pamixer playerctl;
   theme = import ../theming/theme.nix { };
-  modifier = "Mod4";
 in
 {
   options.hyprland = {
@@ -15,13 +13,14 @@ in
     programs.hyprland.enable = true;
     home-manager.users.${config.user} = {
       home.file.".config/hypr/hyprpaper.conf".text = ''
-        preload = ~/Pictures/nix-background.png
-        wallpaper = eDP-1,~/Pictures/nix-background.png
+        preload = ~/media/images/nix-background.png
+        wallpaper = ,~/media/images/nix-background.png
+        splash = false
       '';
       home.packages = with pkgs; [
         swaylock-fancy
-        #grim
-        #swayidle
+        grim
+        slurp
         hyprpaper
         wl-clipboard
         mako
@@ -30,7 +29,7 @@ in
 
       wayland.windowManager.hyprland = {
         enable = true;
-        settings = rec {
+        settings = {
           monitor = [
             ",preferred,auto,1"
           ];
@@ -40,7 +39,7 @@ in
 
           exec-once = [
             "waybar"
-            "bluman-applet"
+            "hyprpaper"
           ];
 
           general = {
@@ -54,9 +53,8 @@ in
           bind = [
 
             "$mod, RETURN, exec, ${pkgs.alacritty}/bin/alacritty"
+            "$mod, f, fullscreen,"
             "$modShift, q, killactive,"
-
-            "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
 
             "$mod, h, movefocus, l"
             "$mod, l, movefocus, r"
@@ -70,20 +68,21 @@ in
 
             "$mod, o, exec, ${pkgs.wofi}/bin/wofi --show drun"
             ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds)''
+            "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
 
             # Brightness
             ", XF86MonBrightnessDown, exec, light -U 10"
             ", XF86MonBrightnessUp,  exec, light -A 10"
 
             # Volume
-            ", XF86AudioRaiseVolume, exec, '${pamixer}/bin/pamixer -i 2'"
-            ", XF86AudioLowerVolume, exec, '${pamixer}/bin/pamixer -d 2'"
-            ", XF86AudioMute, exec, '${pamixer}/bin/pamixer -t'"
+            ", XF86AudioRaiseVolume, exec, ${pkgs.pamixer}/bin/pamixer -i 2"
+            ", XF86AudioLowerVolume, exec, ${pkgs.pamixer}/bin/pamixer -d 2"
+            ", XF86AudioMute, exec, ${pkgs.pamixer}/bin/pamixer -t"
 
             # Media control
-            ", XF86AudioPlay, exec, '${playerctl}/bin/playerctl play-pause'"
-            ", XF86AudioNext, exec, '${playerctl}/bin/playerctl next'"
-            ", XF86AudioPrev, exec, '${playerctl}/bin/playerctl previous'"
+            ", XF86AudioPlay, exec, ${pkgs.playerctl}/bin/playerctl play-pause"
+            ", XF86AudioNext, exec, ${pkgs.playerctl}/bin/playerctl next"
+            ", XF86AudioPrev, exec, ${pkgs.playerctl}/bin/playerctl previous"
           ] ++ (
             # workspaces
             # binds $mod + [shift +] {1..10} to [move to] workspace {1..10}
@@ -101,116 +100,16 @@ in
               10)
           );
 
+          misc = {
+            disable_splash_rendering = true;
+          };
+
           input = {
             kb_layout = "us,us";
             kb_variant = "colemak,";
             kb_options = "caps:escape,compose:ralt,grp:shifts_toggle";
           };
         };
-        #  inherit modifier;
-        #  terminal = "alacritty";
-        #  menu = "wofi --show drun";
-
-        #  fonts = with theme.font; {
-        #    inherit style size;
-        #    names = [ name ];
-        #  };
-
-        #  startup = [
-        #    {
-        #      command = "blueman-applet";
-        #      always = false;
-        #    }
-        #  ];
-
-        #  gaps = {
-        #    top = 6;
-        #    horizontal = 6;
-        #    vertical = 6;
-        #    outer = 6;
-        #    inner = 6;
-        #    left = 6;
-        #    right = 6;
-        #  };
-
-        #  bars = [
-        #    {
-        #      position = "bottom";
-        #      command = "waybar";
-        #    }
-        #  ];
-
-        #  keybindings = lib.mkOptionDefault {
-        #    "${modifier}+o" = "exec ${pkgs.wofi}/bin/wofi --show drun";
-
-        #    "${modifier}+Shift+x" = "exec ${pkgs.swaylock-fancy}/bin/swaylock-fancy";
-
-        #    "${modifier}+Shift+p" = "exec ${pkgs.sway-contrib.grimshot}/bin/grimshot save area ~/Pictures/$(date -Iseconds)";
-        #  };
-
-        #  input = {
-        #    "*" = {
-        #      tap = "enabled";
-        #    };
-        #  };
-
-        #  colors = with theme.colors; {
-        #    background = "${background}";
-
-        #    focused = {
-        #      border = "${thirdText}";
-        #      background = "${thirdText}";
-        #      text = "${borderDark}";
-        #      indicator = "${purple}";
-        #      childBorder = "${borderDark}";
-        #    };
-
-        #    unfocused = {
-        #      border = "${borderDark}";
-        #      background = "${borderDark}";
-        #      text = "${utilityText}";
-        #      indicator = "${purple}";
-        #      childBorder = "${borderDark}";
-        #    };
-
-        #    focusedInactive = {
-        #      border = "${borderDark}";
-        #      background = "${borderDark}";
-        #      text = "${borderDark}";
-        #      indicator = "${purple}";
-        #      childBorder = "${borderDark}";
-        #    };
-
-        #    urgent = {
-        #      border = "${alertText}";
-        #      background = "${alertText}";
-        #      text = "${mainText}";
-        #      indicator = "${mainText}";
-        #      childBorder = "${mainText}";
-        #    };
-        #  };
-
-        #  window.titlebar = false;
-        #};
-        #extraConfig = ''
-        #  input * xkb_layout "us,us"
-        #  input * xkb_variant "colemak,"
-        #  input * xkb_options "caps:escape,compose:ralt,grp:shifts_toggle"
-
-        #  # Brightness
-        #  bindsym XF86MonBrightnessDown exec light -U 10
-        #  bindsym XF86MonBrightnessUp exec light -A 10
-
-        #  # Volume
-        #  bindsym XF86AudioRaiseVolume exec '${pamixer}/bin/pamixer -i 2'
-        #  bindsym XF86AudioLowerVolume exec '${pamixer}/bin/pamixer -d 2'
-        #  bindsym XF86AudioMute exec '${pamixer}/bin/pamixer -t'
-
-        #  # Media control
-        #  bindsym XF86AudioPlay exec '${playerctl}/bin/playerctl play-pause'
-        #  bindsym XF86AudioNext exec '${playerctl}/bin/playerctl next'
-        #  bindsym XF86AudioPrev exec '${playerctl}/bin/playerctl previous'
-        #'';
       };
     };
   };

@@ -2,7 +2,7 @@
 
 let
   # installs a vim plugin from git with a given tag / branch
-  pluginGit = ref: repo: pkgs.vimUtils.buildVimPluginFrom2Nix {
+  pluginGit = ref: repo: pkgs.vimUtils.buildVimPlugin {
     pname = "${lib.strings.sanitizeDerivationName repo}";
     version = ref;
     src = builtins.fetchGit {
@@ -74,6 +74,7 @@ in
           neotest
           neotest-go
           neotest-plenary
+          vimspector
 
           ## Show LSP Processes
           fidget-nvim
@@ -130,6 +131,8 @@ in
           gofumpt
           gotools
           golines
+          golangci-lint
+          golangci-lint-langserver
 
           # Haskell
           haskell-language-server

@@ -18,17 +18,13 @@ with lib;
         enable = true;
         driSupport = true;
         driSupport32Bit = true;
-        # setLdLibraryPath = true; 
-        #        extraPackages32 = with pkgs.pkgsi686Linux; [ 
-        #          libva 
-        #        ];
         extraPackages = with pkgs; [
           intel-media-driver
+          mesa
           vaapiVdpau
           libvdpau-va-gl
         ];
       };
-      #steam-hardware.enable = true;
     };
   };
 }
