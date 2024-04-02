@@ -8,6 +8,7 @@
     ./colemak
     ./communication
     ./development
+    ./dunst
     ./flatpak
     ./fonts
     ./games
@@ -15,6 +16,7 @@
     ./git
     ./hyprland
     ./i3
+    ./icons
     ./kanshi
     ./neovim
     ./picom

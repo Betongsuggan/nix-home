@@ -23,8 +23,6 @@ in
         slurp
         hyprpaper
         wl-clipboard
-        mako
-        networkmanager_dmenu
       ];
 
       wayland.windowManager.hyprland = {
