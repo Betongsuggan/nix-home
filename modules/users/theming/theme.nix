@@ -2,4 +2,5 @@
 {
   font = font;
   colors = colors;
+  cornerRadius = "5px";
 }

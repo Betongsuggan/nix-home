@@ -1,19 +1,16 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.urxvt;
-in
 {
-  options.br.urxvt = {
+  options.urxvt = {
     enable = mkEnableOption "Enable urxvt terminal emulator";
   };
 
-  config = mkIf cfg.enable {
-    home.sessionVariables = {
+  config = mkIf config.urxvt.enable {
+    home-manager.users.${config.user}.sessionVariables = {
       TERMINFO_DIRS = "${pkgs.rxvt-unicode-unwrapped.terminfo.outPath}/share/terminfo";
     };
-    programs.urxvt = {
+    home-manager.users.${config.user}.programs.urxvt = {
       enable = true;
       iso14755 = false;
       scroll.bar.enable = false;

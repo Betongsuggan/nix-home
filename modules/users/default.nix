@@ -1,24 +1,29 @@
-{ pkgs, config, lib, ... }:
+{ ... }:
 {
   imports = [
-    ./general
+    ./alacritty
     ./autorandr
-    ./audio
-    ./i3
-    ./git
+    ./bash
+    ./browsers
     ./colemak
     ./communication
     ./development
+    ./flatpak
+    ./fonts
+    ./games
+    ./general
+    ./git
+    ./hyprland
+    ./i3
+    ./kanshi
     ./neovim
-    ./bash
-    ./alacritty
-    ./urxvt
     ./picom
     ./polybar
     ./rofi
+    ./sway
+    ./urxvt
+    ./waybar
+    ./wofi
     ./x11
-    ./fonts
-    ./games
-    ./browsers
   ];
 }

@@ -1,10 +1,8 @@
 { pkgs, config, lib, ... }:
 with lib;
 
-let
-  cfg = config.br.bash;
-in {
-  options.br.bash = {
+{
+  options.bash = {
     enable = mkOption {
       description = "Enable bash shell";
       type = types.bool;
@@ -12,20 +10,24 @@ in {
     };
   };
 
-  config = mkIf (cfg.enable) {
-    programs.bash = {
+  config = mkIf config.bash.enable {
+    home-manager.users.${config.user}.programs.bash = {
       enable = true;
       shellAliases = {
+        cloud = "cd ~/Development/cloud";
+        dashboard = "cd ~/Development/web/apps/dashboard";
+        nocode = "cd ~/Development/web/apps/nocode";
+        demo = "cd ~/Development/web/apps/nocode-demo";
         ll = "ls -la --color=auto";
         ls = "ls --color=auto";
         vim = "nvim";
         hm = "home-manager";
         gw = "./gradlew --no-daemon";
-        btop = "bpytop";
       };
       initExtra = ''
         set -o vi
-        PS1="\[\033[33m\]ﬦ: \[\033[36m\]\W\[\033[00m\]> "
+        PS1="\[\033[33m\]󰘧: \[\033[36m\]\W\[\033[00m\]> "
+        export EDITOR=nvim
       '';
     };
   };

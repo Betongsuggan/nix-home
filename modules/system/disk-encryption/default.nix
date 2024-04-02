@@ -1,10 +1,8 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.diskEncryption;
-in {
-  options.br.diskEncryption = {
+{
+  options.diskEncryption = {
     enable = mkEnableOption "Enable Disk Encryption";
 
     diskId = mkOption {
@@ -18,11 +16,11 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.diskEncryption.enable {
     boot.initrd.luks.devices = {
       crypted = {
-        device = "/dev/disk/by-partuuid/${cfg.diskId}";
-        header = "/dev/disk/by-partuuid/${cfg.headerId}";
+        device = "/dev/disk/by-partuuid/${config.diskEncryption.diskId}";
+        header = "/dev/disk/by-partuuid/${config.diskEncryption.headerId}";
         allowDiscards = true;
         preLVM = true;
       };

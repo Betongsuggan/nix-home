@@ -1,40 +1,69 @@
 { config, pkgs, lib, ... }:
 with lib;
 
-let
-  cfg = config.br.development;
-in {
-  options.br.development = {
-    enable = mkEnableOption "Enable Java/Kotlin development";
+{
+  options.development = {
+    enable = mkEnableOption "Enable development toolings";
   };
 
-  config = mkIf (cfg.enable) {
-    home.packages = with pkgs; [ 
-      altair
-      openjdk17-bootstrap
-      android-studio
-      awscli2
-      docker-compose
-      gnumake
-      golangci-lint
-      golangci-lint-langserver
-      jetbrains.idea-community
-      jq
-      kotlin
-      newman
-      nodejs-14_x
-      nodePackages.node2nix
-      #nodePackages.npm
-      python3
-      postman
-      silver-searcher
-      teleport
-    ];
-    programs.go.enable = true;
+  config = mkIf config.development.enable {
+    home-manager.users.${config.user} = {
+      home.packages = with pkgs; [
+        # AWS Testing
+        #localstack
 
-    home.sessionVariables = {
-      JAVA_HOME = "${pkgs.openjdk17-bootstrap}";
-      PATH="$HOME/node_modules/bin:$PATH";
+        # Python
+        python3
+
+        # Kotlin
+        kotlin
+        openjdk17-bootstrap
+        android-studio
+        jetbrains.idea-community
+
+        # Node stuff
+        yarn
+        nodePackages.pnpm
+        nodejs-18_x
+
+        # Haskell
+        ghc
+        cabal-install
+
+        # Rust
+        cargo
+        rustc
+        rustfmt
+
+        # Go
+        delve
+        golangci-lint
+        golangci-lint-langserver
+        gotools
+        gofumpt
+        golines
+
+        # IaC
+        terraform
+        awscli2
+
+        # Utilities
+        altair
+        docker-compose
+        gnumake
+        jq
+        ls-lint
+        newman
+        silver-searcher
+        teleport
+      ];
+      programs.go.enable = true;
+
+      home.sessionVariables = {
+        JAVA_HOME = "${pkgs.openjdk17-bootstrap}";
+        PATH = "$HOME/node_modules/bin:$PATH";
+      };
     };
+    unfreePackages = [ "terraform" "android-studio-stable" "idea-community" ];
   };
 }

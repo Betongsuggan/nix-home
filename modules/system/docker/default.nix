@@ -1,14 +1,18 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.docker;
-in {
-  options.br.docker = {
+{
+  options.docker = {
     enable = mkEnableOption "Enable Docker";
   };
 
-  config = mkIf cfg.enable {
-    virtualisation.docker.enable = true;
+  config = mkIf config.docker.enable {
+    virtualisation.docker = {
+      enable = true;
+      rootless = {
+        enable = true;
+        setSocketVariable = true;
+      };
+    };
   };
 }

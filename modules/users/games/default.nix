@@ -1,15 +1,14 @@
 { config, lib, pkgs, ... }:
+
 with lib;
 
-let
-  cfg = config.br.games;
-in {
-  options.br.games = {
+{
+  options.games = {
     enable = mkEnableOption "Enable gaming setup";
   };
 
-  config = mkIf cfg.enable {
-    home.packages = with pkgs; [
+  config = mkIf config.games.enable {
+    home-manager.users.${config.user}.home.packages = with pkgs; [
       antimicroX
       chiaki
       discord
@@ -24,5 +23,7 @@ in {
       steamcontroller
       xboxdrv
     ];
+
+    unfreePackages = [ "discord" "steam" "steam-original" "steam-run" ];
   };
 }

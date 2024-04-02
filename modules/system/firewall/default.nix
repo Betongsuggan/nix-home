@@ -1,10 +1,8 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.firewall;
-in {
-  options.br.firewall = {
+{
+  options.firewall = {
     enable = mkEnableOption "Enable Firewall";
     tcpPorts = mkOption {
       description = "Allowed incoming TCP port traffic";
@@ -18,11 +16,11 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.firewall.enable {
     networking.firewall = {
       enable = true;
-      allowedTCPPorts = cfg.tcpPorts;
-      allowedUDPPorts = cfg.udpPorts;
+      allowedTCPPorts = config.firewall.tcpPorts;
+      allowedUDPPorts = config.firewall.udpPorts;
     };
   };
 }

@@ -1,10 +1,8 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.xserver;
-in {
-  options.br.xserver = {
+{
+  options.xserver = {
     enable = mkEnableOption "Enable X server";
 
     displayManager = mkOption {
@@ -15,10 +13,10 @@ in {
     videoDrivers = [ "displaylink" "modesetting" ];
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.xserver.enable {
     services.xserver = {
       enable = true;
-  
+
       displayManager = {
         defaultSession = "nixsession";
         session = [

@@ -1,15 +1,13 @@
-{ pkgs, config, lib, ...}:
+{ pkgs, config, lib, ... }:
 with lib;
 
-let
-  cfg = config.br.colemak;
-in {
-  options.br.colemak = {
+{
+  options.colemak = {
     enable = mkEnableOption "Enable Colemak keyboard layout";
   };
 
-  config = mkIf (cfg.enable) {
-    home.keyboard = {
+  config = mkIf (config.colemak.enable) {
+    home-manager.users.${config.user}.keyboard = {
       layout = "us,us";
       variant = "colemak,";
       #layout = "us";

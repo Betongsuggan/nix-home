@@ -1,14 +1,12 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  cfg = config.br.kde;
-in {
-  options.br.kde = {
+{
+  options.kde = {
     enable = mkEnableOption "Enable KDE desktop environment";
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf config.kde.enable {
     services.gvfs.enable = true;
     services.xserver = {
       enable = true;
