@@ -44,6 +44,10 @@ in
             "col.active_border" = ''rgb(${lib.strings.removePrefix "#" theme.colors.utilityText})'';
           };
 
+          dwindle = {
+            force_split = 2;
+          };
+
           decoration = {
             rounding = 5;
           };

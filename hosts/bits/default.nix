@@ -111,7 +111,7 @@ inputs.nixpkgs.lib.nixosSystem {
       bash.enable = true;
       fonts.enable = true;
       dunst.enable = true;
-      #icons.enable = true;
+      icons.enable = true;
       kanshi.enable = true;
       #sway.enable = true;
       hyprland.enable = true;

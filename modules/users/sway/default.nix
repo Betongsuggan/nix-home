@@ -19,7 +19,7 @@ in
         swayidle
         sway-contrib.grimshot
         wl-clipboard
-        mako
+        #mako
         networkmanager_dmenu
       ];
 
