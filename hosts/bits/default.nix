@@ -116,6 +116,7 @@ inputs.nixpkgs.lib.nixosSystem {
       #sway.enable = true;
       hyprland.enable = true;
       waybar.enable = true;
+      wofi.enable = true;
       development.enable = true;
 
       nixpkgs.config.permittedInsecurePackages = [

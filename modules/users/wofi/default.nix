@@ -1,6 +1,9 @@
 { config, lib, pkgs, ... }:
 with lib;
 
+let
+  theme = import ../theming/theme.nix { };
+in
 {
   options.wofi = {
     enable = mkEnableOption "Enable Wofi application launcher";
