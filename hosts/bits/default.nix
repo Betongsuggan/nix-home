@@ -49,13 +49,24 @@ inputs.nixpkgs.lib.nixosSystem {
         i2c.enable = true;
       };
 
-      networking = {
-        hostName = "bits-nixos";
-        
-        wireless.enable = false;
-        networkmanager.enable = true;
-        useDHCP = false;
-      };
+      #networking = {
+      #  hostName = "bits-nixos";
+      #  
+      #  wireless.enable = false;
+      #  networkmanager = {
+      #    enable = true;
+      #    dispatcherScripts = [
+      #      {
+      #        type = "up";
+      #        source = pkgs.writeShellScriptBin "network-connection" ''
+      #          #!/usr/bin/env bash
+      #          ${pkgs.dunst}/bin/dunstify hello
+      #        '';
+      #      }
+      #    ];
+      #  };
+      #  useDHCP = false;
+      #};
 
       nixpkgs.config.allowUnfree = true;
 
@@ -88,6 +99,10 @@ inputs.nixpkgs.lib.nixosSystem {
       firefox.enable = true;
       graphics.enable = true;
       audio.enable = true;
+      networkManager = {
+        enable = true;
+        hostName = "bits-nixos";
+      };
       docker.enable = true;
       bluetooth.enable = true;
       wayland.enable = true;

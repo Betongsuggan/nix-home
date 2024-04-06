@@ -1,6 +1,7 @@
 { pkgs, config, lib, ... }:
 {
   imports = [
+    ./audio
     ./bluetooth
     ./disk-encryption
     ./docker
@@ -11,7 +12,7 @@
     ./kde
     ./power-management
     ./printers
-    ./audio
+    ./networking
     ./touchpad
     ./wayland
     ./xserver

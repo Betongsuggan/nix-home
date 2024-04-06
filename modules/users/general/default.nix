@@ -7,6 +7,7 @@ with lib;
   };
 
   config = mkIf config.general.enable {
+    services.tumbler.enable = true; 
     home-manager.users.${config.user}.home.packages = with pkgs; [
       btop
       coreutils
@@ -20,7 +21,9 @@ with lib;
       gvfs
       htop
       iio-sensor-proxy
+      imv
       kdenlive
+      lf
       lm_sensors
       lshw
       okular

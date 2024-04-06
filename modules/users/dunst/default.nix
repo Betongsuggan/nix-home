@@ -8,38 +8,57 @@ with lib;
     enable = mkEnableOption "Enable Dunst notification daemon";
   };
 
+  # TODO Notifications
+  # Connect/disconnect wifi. Show wifi/network info
+  # Low battery notification. Charger connected/disconnected notification. show battery status.
+  # Show system performance, e.g. cpu, memory, storage etc.
+  # Mediaplayer stared stopped, changed song?
+  # Bluetooth connected/disconnected devices
+
   config = mkIf config.dunst.enable {
     environment.systemPackages = with pkgs; [
-      tela-icon-theme 
+      papirus-icon-theme 
     ];
     home-manager.users.${config.user} = {
       services.dunst = {
         enable = true;
         iconTheme = {
-          name = "Tela-black";
-          package = pkgs.tela-icon-theme;
-          size = "scalable";
+          name = "Papirus-Light";
+          package = pkgs.papirus-icon-theme;
+          size = "24x24";
         };
         settings = {
           global = {
+            layer = "overlay";
             follow = "keyboard";
             markup = "full";
             dmenu = "${pkgs.wofi} --dmenu";
+            show_indicators = false;
+
+            font = "${theme.font.name} ${theme.font.sizeStr}";
             format = "<b>%a</b>\\n%s\\n\\n%b";
             width = "(0,300)";
-            offset = "30x50";
+            offset = "40x40";
             corner_radius = 5;
             separator_height = 5;
             frame_width = 3;
             gap_size = 4;
-            layer = "overlay";
-            font = "${theme.font.name} ${theme.font.sizeStr}";
+            vertical_alignment = "top";
+
+            progress_bar_corner_radius = 4;
+
             mouse_left = "do_action";
             mouse_middle = "context";
             mouse_right = "close_current";
+
             background = theme.colors.thirdText;
             foreground = theme.colors.background;
+            highlight = theme.colors.utilityText;
             frame_color = theme.colors.borderDark;
+          };
+          slack = {
+            desktop_entry = "Slack";
+            new_icon = "/run/current-system/sw/share/icons/Papirus/24x24/apps/slack.svg";
           };
 
           urgency_low.timeout = 10;

@@ -3,7 +3,8 @@ with lib;
 
 let
   theme = import ../theming/theme.nix { };
-  volumeControls = import ./volumeControls.nix { inherit config libs pkgs; };
+  volumeControl = import ./volumeControls.nix { inherit pkgs; };
+  brightnessControl = import ./brightnessControls.nix { inherit pkgs; };
 in
 {
   options.hyprland = {
@@ -19,6 +20,8 @@ in
         splash = false
       '';
       home.packages = with pkgs; [
+        volumeControl.volumeControl
+        brightnessControl
         swaylock-fancy
         grim
         slurp
@@ -73,14 +76,6 @@ in
             ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds)''
             "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
 
-            # Brightness
-            ", XF86MonBrightnessDown, exec, light -U 10"
-            ", XF86MonBrightnessUp,  exec, light -A 10"
-
-            # Volume
-            ", XF86AudioRaiseVolume, exec, ${volumeControls}/volumeChange -i 2"
-            ", XF86AudioLowerVolume, exec, ${pkgs.pamixer}/bin/pamixer -d 2"
-            ", XF86AudioMute, exec, ${pkgs.pamixer}/bin/pamixer -t"
 
             # Media control
             ", XF86AudioPlay, exec, ${pkgs.playerctl}/bin/playerctl play-pause"
@@ -102,6 +97,16 @@ in
               )
               10)
           );
+          binde=[
+            # Brightness
+            ", XF86MonBrightnessUp,  exec, brightness-control -i 10"
+            ", XF86MonBrightnessDown, exec, brightness-control -d 10"
+
+            # Volume
+            ", XF86AudioRaiseVolume, exec, volume-control -i 2"
+            ", XF86AudioLowerVolume, exec, volume-control -d 2"
+            ", XF86AudioMute, exec, volume-control -m"
+          ];
 
           misc = {
             disable_splash_rendering = true;
