@@ -3,6 +3,7 @@ with lib;
 
 let
   theme = import ../theming/theme.nix { };
+  volumeControls = import ./volumeControls.nix { inherit config libs pkgs; };
 in
 {
   options.hyprland = {
@@ -77,7 +78,7 @@ in
             ", XF86MonBrightnessUp,  exec, light -A 10"
 
             # Volume
-            ", XF86AudioRaiseVolume, exec, ${pkgs.pamixer}/bin/pamixer -i 2"
+            ", XF86AudioRaiseVolume, exec, ${volumeControls}/volumeChange -i 2"
             ", XF86AudioLowerVolume, exec, ${pkgs.pamixer}/bin/pamixer -d 2"
             ", XF86AudioMute, exec, ${pkgs.pamixer}/bin/pamixer -t"
 
