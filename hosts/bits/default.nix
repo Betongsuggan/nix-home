@@ -111,7 +111,7 @@ inputs.nixpkgs.lib.nixosSystem {
       kanshi.enable = true;
       #sway.enable = true;
       hyprland.enable = true;
-      waybar.enable = true;
+      #waybar.enable = true;
       wofi.enable = true;
       development.enable = true;
 

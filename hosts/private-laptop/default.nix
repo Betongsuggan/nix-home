@@ -33,32 +33,33 @@ inputs.nixpkgs.lib.nixosSystem {
     #  };
     #}
     ({ config, lib, pkgs, ... }: {
-      nixpkgs.overlays = overlays;
-      networking.hostName = "nixos";
-
-      networking.wireless.enable = false;
-      networking.networkmanager.enable = true;
-      networking.useDHCP = false;
-
-      boot.kernelPackages = pkgs.linuxPackages_6_1;
-
-      boot.initrd.availableKernelModules =
-        [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
-      boot.loader.systemd-boot.enable = true;
-      boot.loader.systemd-boot.configurationLimit = 10;
-
-      boot.loader.efi.efiSysMountPoint = "/boot";
-      boot.loader.efi.canTouchEfiVariables = true;
-      boot.loader.grub.useOSProber = true;
-      boot.loader.grub.configurationLimit = 10;
-
-      # Graphics and VMs
-      boot.kernelModules = [ "kvm-intel" "iwlwifi" ];
+      nixpkgs = { inherit overlays; };
+      boot = {
+      
+        kernelPackages = pkgs.linuxPackages_6_1;
+      
+        initrd.availableKernelModules =
+          [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
+        loader = {
+          systemd-boot.enable = true;
+          systemd-boot.configurationLimit = 10;
+        
+          efi.efiSysMountPoint = "/boot";
+          efi.canTouchEfiVariables = true;
+          grub.useOSProber = true;
+          grub.configurationLimit = 10;
+        };
+      
+        # Graphics and VMs
+        kernelModules = [ "kvm-intel" "iwlwifi" ];
+      };
 
       nixpkgs.config.allowUnfree = true;
-      hardware.enableAllFirmware = true;
-      hardware.enableRedistributableFirmware = true;
-      hardware.i2c.enable = true;
+      hardware = {
+        enableAllFirmware = true;
+        enableRedistributableFirmware = true;
+        i2c.enable = true;
+      };
 
       time.timeZone = "Europe/Stockholm";
 
@@ -99,6 +100,10 @@ inputs.nixpkgs.lib.nixosSystem {
       wayland.enable = true;
       printers.enable = true;
       power-management.enable = true;
+      networkmanager = {
+        enable = true;
+        hostName = "nixos";
+      };
       firewall = {
         enable = true;
         tcpPorts = [ 8080 ];
@@ -110,11 +115,14 @@ inputs.nixpkgs.lib.nixosSystem {
       alacritty.enable = true;
       bash.enable = true;
       fonts.enable = true;
+      #icons.enable = true;
+      dunst.enable = true;
       kanshi.enable = true;
       #sway.enable = true;
       hyprland.enable = true;
-      waybar.enable = true;
+      #waybar.enable = true;
       development.enable = true;
+      wofi.enable = true;
     })
   ];
 }

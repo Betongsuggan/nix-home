@@ -12,7 +12,7 @@ with lib;
   # Connect/disconnect wifi. Show wifi/network info
   # Low battery notification. Charger connected/disconnected notification. show battery status.
   # Show system performance, e.g. cpu, memory, storage etc.
-  # Mediaplayer stared stopped, changed song?
+  # Mediaplayer started stopped, changed song?
   # Bluetooth connected/disconnected devices
 
   config = mkIf config.dunst.enable {
@@ -32,7 +32,7 @@ with lib;
             layer = "overlay";
             follow = "keyboard";
             markup = "full";
-            dmenu = "${pkgs.wofi} --dmenu";
+            dmenu = "${pkgs.wofi}/bin/wofi --dmenu";
             show_indicators = false;
 
             font = "${theme.font.name} ${theme.font.sizeStr}";
@@ -47,7 +47,7 @@ with lib;
 
             progress_bar_corner_radius = 4;
 
-            mouse_left = "do_action";
+            mouse_left = "context";
             mouse_middle = "context";
             mouse_right = "close_current";
 

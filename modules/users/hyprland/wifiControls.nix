@@ -12,11 +12,13 @@ let
     elif [[ "$connected" =~ "disabled" ]]; then
     	toggle="󰖩  Enable Wi-Fi"
     fi
+
+    rescan="󰖩  Rescan Wi-Fi"
     
     # Use Wofi to select wifi network
-    chosen_network=$(echo -e "$toggle\n$wifi_list" | uniq -u | wofi --dmenu --prompt "Wi-Fi SSID: " )
+    chosen_network=$(echo -e "$toggle\n$rescan\n$wifi_list" | uniq -u | wofi --dmenu --prompt "Wi-Fi SSID: " )
     # Get name of connection
-    read -r chosen_id <<< "${chosen_network:3}"
+    read -r chosen_id <<< "''${chosen_network:3}"
     
     if [ "$chosen_network" = "" ]; then
     	exit
@@ -24,9 +26,11 @@ let
     	nmcli radio wifi on
     elif [ "$chosen_network" = "󰖪  Disable Wi-Fi" ]; then
     	nmcli radio wifi off
+    elif [ "$chosen_network" = "󰖪  Rescan Wi-Fi" ]; then
+    	nmcli dev wifi list --rescan yes
     else
     	# Message to show when connection is activated successfully
-      	success_message="You are now connected to the Wi-Fi network \"$chosen_id\"."
+      	success_message="Connected to \"<b>$chosen_id</b>\"."
     	# Get saved connections
     	saved_connections=$(nmcli -g NAME connection)
     	if [[ $(echo "$saved_connections" | grep -w "$chosen_id") = "$chosen_id" ]]; then
@@ -35,7 +39,7 @@ let
     		if [[ "$chosen_network" =~ "" ]]; then
     			wifi_password=$(wofi --dmenu --password --prompt "Password: " )
     		fi
-    		nmcli device wifi connect "$chosen_id" password "$wifi_password" | grep "successfully" && dunstify "Connection Established" "$success_message"
+    		nmcli device wifi connect "$chosen_id" password "$wifi_password" | grep "successfully" && dunstify -a "Wi-Fi connection" -i "$success_message"
         fi
     fi
   '';

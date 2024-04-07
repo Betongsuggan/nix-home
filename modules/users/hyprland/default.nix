@@ -3,6 +3,7 @@ with lib;
 
 let
   theme = import ../theming/theme.nix { };
+  utils = import ./utilNotifications.nix { inherit pkgs; };
   wifiControl = import ./wifiControls.nix { inherit pkgs; };
   volumeControl = import ./volumeControls.nix { inherit pkgs; };
   brightnessControl = import ./brightnessControls.nix { inherit pkgs; };
@@ -24,6 +25,8 @@ in
         volumeControl
         brightnessControl
         wifiControl
+        utils.time
+        utils.workspaces
         swaylock-fancy
         grim
         slurp
@@ -74,6 +77,9 @@ in
             "$modShift, k, movewindow, u"
             "$modShift, j, movewindow, d"
 
+            "$mod, w, exec, workspace-notifier"
+            "$mod, t, exec, time-notifier"
+            "$mod, e, exec, ${pkgs.wofi-emoji}/bin/wofi-emoji"
             "$mod, u, exec, wifi-control"
             "$mod, o, exec, ${pkgs.wofi}/bin/wofi --show drun"
             ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds)''
