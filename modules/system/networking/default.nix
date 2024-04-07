@@ -16,6 +16,7 @@ in
   };
 
   config = mkIf config.networkmanager.enable {
+      environment.systemPackages = [ notifier ];
       networking = {
         inherit (config.networkmanager) hostName;
         
@@ -24,8 +25,8 @@ in
           enable = true;
           dispatcherScripts = [
             {
-              type = "up";
-              source = "${notifier}/bin/network-notifier.sh";
+              type = "pre-up";
+              source = "${notifier}/bin/network-notifier";
             }
           ];
         };

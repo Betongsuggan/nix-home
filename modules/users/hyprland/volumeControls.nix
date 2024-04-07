@@ -28,6 +28,4 @@ let
     fi
   '';
 in
-{
-  inherit volumeControl;
-}
+volumeControl

@@ -3,6 +3,7 @@ with lib;
 
 let
   theme = import ../theming/theme.nix { };
+  wifiControl = import ./wifiControls.nix { inherit pkgs; };
   volumeControl = import ./volumeControls.nix { inherit pkgs; };
   brightnessControl = import ./brightnessControls.nix { inherit pkgs; };
 in
@@ -20,8 +21,9 @@ in
         splash = false
       '';
       home.packages = with pkgs; [
-        volumeControl.volumeControl
+        volumeControl
         brightnessControl
+        wifiControl
         swaylock-fancy
         grim
         slurp
@@ -72,6 +74,7 @@ in
             "$modShift, k, movewindow, u"
             "$modShift, j, movewindow, d"
 
+            "$mod, u, exec, wifi-control"
             "$mod, o, exec, ${pkgs.wofi}/bin/wofi --show drun"
             ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds)''
             "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"

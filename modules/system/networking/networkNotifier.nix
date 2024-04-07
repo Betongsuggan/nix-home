@@ -1,11 +1,9 @@
 { pkgs, ... }:
 let
-  networkNotifier = pkgs.writeShellScriptBin "network-notifier.sh" ''
+  networkNotifier = pkgs.writeShellScriptBin "network-notifier" ''
     #!/usr/bin/env bash
     
-    echo "hello"
+    ${pkgs.dunst}/bin/dunstify "hello"
   '';
 in
-{
-  inherit networkNotifier;
-}
+networkNotifier

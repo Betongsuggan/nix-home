@@ -49,25 +49,6 @@ inputs.nixpkgs.lib.nixosSystem {
         i2c.enable = true;
       };
 
-      #networking = {
-      #  hostName = "bits-nixos";
-      #  
-      #  wireless.enable = false;
-      #  networkmanager = {
-      #    enable = true;
-      #    dispatcherScripts = [
-      #      {
-      #        type = "up";
-      #        source = pkgs.writeShellScriptBin "network-connection" ''
-      #          #!/usr/bin/env bash
-      #          ${pkgs.dunst}/bin/dunstify hello
-      #        '';
-      #      }
-      #    ];
-      #  };
-      #  useDHCP = false;
-      #};
-
       nixpkgs.config.allowUnfree = true;
 
       time.timeZone = "Europe/Stockholm";
@@ -99,7 +80,7 @@ inputs.nixpkgs.lib.nixosSystem {
       firefox.enable = true;
       graphics.enable = true;
       audio.enable = true;
-      networkManager = {
+      networkmanager = {
         enable = true;
         hostName = "bits-nixos";
       };
