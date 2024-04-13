@@ -19,7 +19,7 @@
       workspaces=$(hyprctl workspaces | grep "workspace\sID" | grep "\s''${display}" | awk '{print($3)}')
       for workspace in $workspaces; do
         if [ "$workspace" == "$currentWorkspace" ]; then
-          notification+="  1️⃣$workspace\n"
+          notification+="  $workspace\n"
         else
           notification+="  $workspace\n"
         fi

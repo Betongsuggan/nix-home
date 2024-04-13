@@ -5,6 +5,7 @@ let
   theme = import ../theming/theme.nix { };
   utils = import ./utilNotifications.nix { inherit pkgs; };
   wifiControl = import ./wifiControls.nix { inherit pkgs; };
+  mediaPlayer = import ./mediaPlayerControls.nix { inherit pkgs; };
   volumeControl = import ./volumeControls.nix { inherit pkgs; };
   brightnessControl = import ./brightnessControls.nix { inherit pkgs; };
 in
@@ -22,6 +23,7 @@ in
         splash = false
       '';
       home.packages = with pkgs; [
+        mediaPlayer
         volumeControl
         brightnessControl
         wifiControl
@@ -87,9 +89,9 @@ in
 
 
             # Media control
-            ", XF86AudioPlay, exec, ${pkgs.playerctl}/bin/playerctl play-pause"
-            ", XF86AudioNext, exec, ${pkgs.playerctl}/bin/playerctl next"
-            ", XF86AudioPrev, exec, ${pkgs.playerctl}/bin/playerctl previous"
+            ", XF86AudioPlay, exec, media-player play"
+            ", XF86AudioNext, exec, media-player next"
+            ", XF86AudioPrev, exec, media-player previous"
           ] ++ (
             # workspaces
             # binds $mod + [shift +] {1..10} to [move to] workspace {1..10}
