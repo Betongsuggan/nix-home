@@ -2,8 +2,6 @@
 
 let
   globals =
-    let baseName = "betongsuggan";
-    in
     {
       user = "betongsuggan";
       fullName = "Birger Rydback";
@@ -19,23 +17,18 @@ inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
     globals
+    {
+      _module.args = { inherit inputs; };
+    }
     inputs.nur.nixosModules.nur
     inputs.home-manager.nixosModules.home-manager
     ../../modules/common
     ../../modules/system
     ../../modules/users
-    #{
-    #  # disabledModules = [ "misc/news.nix" ];
-    #  config = {
-    #    news.display = "silent";
-    #    news.json = inputs.nixpkgs.lib.mkForce { };
-    #    news.entries = inputs.nixpkgs.lib.mkForce [ ];
-    #  };
-    #}
     ({ config, lib, pkgs, ... }: {
+
       nixpkgs = { inherit overlays; };
       boot = {
-      
         kernelPackages = pkgs.linuxPackages_6_1;
       
         initrd.availableKernelModules =
@@ -59,6 +52,7 @@ inputs.nixpkgs.lib.nixosSystem {
         enableAllFirmware = true;
         enableRedistributableFirmware = true;
         i2c.enable = true;
+        sensor.iio.enable = true;
       };
 
       time.timeZone = "Europe/Stockholm";
@@ -83,8 +77,13 @@ inputs.nixpkgs.lib.nixosSystem {
         { device = "/dev/disk/by-uuid/da3b504d-b0fa-450e-8974-e332c5ce5608"; }
       ];
 
-      services.fwupd.enable = true;
 
+      environment.systemPackages = with pkgs; [ 
+        iio-sensor-proxy 
+      ];
+      services = {
+        fwupd.enable = true;
+      };
 
       git = {
         enable = true;
@@ -115,12 +114,9 @@ inputs.nixpkgs.lib.nixosSystem {
       alacritty.enable = true;
       bash.enable = true;
       fonts.enable = true;
-      #icons.enable = true;
       dunst.enable = true;
       kanshi.enable = true;
-      #sway.enable = true;
       hyprland.enable = true;
-      #waybar.enable = true;
       development.enable = true;
       wofi.enable = true;
     })

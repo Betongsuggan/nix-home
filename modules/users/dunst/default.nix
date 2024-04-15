@@ -13,7 +13,6 @@ with lib;
   # Low battery notification. Charger connected/disconnected notification. show battery status.
   # Show system performance, e.g. cpu, memory, storage etc.
   # Mediaplayer started stopped, changed song?
-  # Bluetooth connected/disconnected devices
 
   config = mkIf config.dunst.enable {
     environment.systemPackages = with pkgs; [
@@ -37,7 +36,7 @@ with lib;
 
             font = "${theme.font.name} ${theme.font.sizeStr}";
             format = "<b>%a</b>\\n%s\\n\\n%b";
-            width = "(0,300)";
+            width = "(0,400)";
             offset = "40x40";
             corner_radius = 5;
             separator_height = 5;
