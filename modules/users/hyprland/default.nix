@@ -59,7 +59,7 @@ in
           ];
 
           general = {
-            "col.active_border" = ''rgb(${lib.strings.removePrefix "#" theme.colors.utilityText})'';
+            "col.active_border" = ''rgb(${lib.strings.removePrefix "#" theme.colors.border-light})'';
           };
 
           dwindle = {

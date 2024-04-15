@@ -108,7 +108,7 @@ in
           rust-tools-nvim
 
           # Themes
-          (plugin "ellisonleao/gruvbox.nvim")
+          #(plugin "ellisonleao/gruvbox.nvim")
 
           # Typescript
           vim-prettier

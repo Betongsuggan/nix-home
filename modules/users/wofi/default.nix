@@ -21,15 +21,12 @@ in
           image_size = 15;
         };
         style = ''
-          * {
-            border-radius: ${theme.cornerRadius};
-            border: none;
-          }
-
           window {
             font-size: 18px;
-            background-color: ${theme.colors.background};
-            color: ${theme.colors.mainText};
+            border-radius: ${theme.cornerRadius};
+            border-color: ${theme.colors.border-light};
+            background-color: ${theme.colors.background-dark};
+            color: ${theme.colors.text-light};
           }
 
           #entry {
@@ -37,16 +34,16 @@ in
           }
 
           #entry:selected {
-            background-color: ${theme.colors.thirdText};
+            background-color: ${theme.colors.red-dark};
           }
 
           #text:selected {
-            color: ${theme.colors.background};
+            color: ${theme.colors.text-light};
           }
 
           #input {
-            background-color: ${theme.colors.utilityText};
-            color: ${theme.colors.background};
+            background-color: ${theme.colors.background-light};
+            color: ${theme.colors.text-light};
             padding: 0.50em;
           }
 
@@ -55,6 +52,9 @@ in
             margin-right: 0.25em;
           }
         '';
+        #input  {
+        # color: ${theme.colors.background};
+        #}
       };
     };
   };

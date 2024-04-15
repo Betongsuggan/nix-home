@@ -50,10 +50,10 @@ with lib;
             mouse_middle = "context";
             mouse_right = "close_current";
 
-            background = theme.colors.thirdText;
-            foreground = theme.colors.background;
-            highlight = theme.colors.utilityText;
-            frame_color = theme.colors.borderDark;
+            background  = theme.colors.background-dark;
+            foreground  = theme.colors.text-light;
+            highlight   = theme.colors.red-light;
+            frame_color = theme.colors.border-light;
           };
           slack = {
             desktop_entry = "Slack";

@@ -1,5 +1,6 @@
 return {
   require('settings'),
+  require('theme'),
 
   -- LSP configs
   require('lsp/lsp-config'),
