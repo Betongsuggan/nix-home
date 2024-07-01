@@ -3,7 +3,6 @@ local g = vim.g
 
 -- Set leader key
 g.mapleader = ' '
-vim.cmd([[ colorscheme gruvbox ]])
 
 -- Visuals
 set.cursorline = true

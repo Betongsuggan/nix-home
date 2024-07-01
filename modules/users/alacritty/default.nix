@@ -34,9 +34,9 @@ in
             red     = theme.colors.red-light;
             green   = theme.colors.green-light;
             yellow  = theme.colors.yellow-light;
-            blue    = theme.colors.purple-light;
+            blue    = theme.colors.blue-light;
             magenta = theme.colors.purple-light;
-            cyan    = theme.colors.green-light;
+            cyan    = theme.colors.organge-light;
             white   = theme.colors.text-light;
           };
         };

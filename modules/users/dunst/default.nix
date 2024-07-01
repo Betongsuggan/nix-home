@@ -59,6 +59,10 @@ with lib;
             desktop_entry = "Slack";
             new_icon = "/run/current-system/sw/share/icons/Papirus/24x24/apps/slack.svg";
           };
+          discord = {
+            desktop_entry = "Discord";
+            skip_display = true;
+          };
 
           urgency_low.timeout = 10;
           urgency_normal.timeout = 30;

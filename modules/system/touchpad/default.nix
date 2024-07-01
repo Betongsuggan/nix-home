@@ -7,8 +7,8 @@ with lib;
   };
 
   config = mkIf config.touchpad.enable {
-    services.xserver.libinput.enable = true;
-    services.xserver.libinput.touchpad.tapping = true;
+    services.libinput.enable = true;
+    services.libinput.touchpad.tapping = true;
     #hardware.keyboard.qmk.enable = true;
   };
 }

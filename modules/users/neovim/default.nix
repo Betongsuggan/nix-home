@@ -108,7 +108,8 @@ in
           rust-tools-nvim
 
           # Themes
-          #(plugin "ellisonleao/gruvbox.nvim")
+          #gruvbox
+          (plugin "ellisonleao/gruvbox.nvim")
 
           # Typescript
           vim-prettier
@@ -152,7 +153,7 @@ in
 
           # Nix
           nil
-          nixfmt
+          nixfmt-classic
           statix
 
           # Rust

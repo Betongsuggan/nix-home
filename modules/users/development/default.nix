@@ -42,6 +42,7 @@ with lib;
         gotools
         gofumpt
         golines
+        nilaway
 
         # IaC
         terraform

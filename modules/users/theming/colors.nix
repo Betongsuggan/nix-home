@@ -38,8 +38,14 @@
   red-light        = "#ff5151";
   red-dark         = "#1d1516";
 
-  purple-light      = "#7f71e5";
-  purple-dark       = "#1f2027";
+  organge-light    = "#71e59f";
+  organge-dark     = "#1d1a17";
+
+  purple-light     = "#7f71e5";
+  purple-dark      = "#1f2027";
+
+  blue-light       = "#71e59f";
+  blue-dark        = "#151a1e";
 
   green-light      = "#71e59f";
   green-dark       = "#151c1a";

@@ -42,10 +42,10 @@ in
 
       wayland.windowManager.hyprland = {
         enable = true;
-        package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+        #package = inputs.hyprland.packages.${pkgs.system}.hyprland;
         settings = {
           monitor = [
-            "eDP-1,preferred,auto,1"
+            ",preferred,auto,1"
           ];
 
           "$mod" = "SUPER";
@@ -146,9 +146,9 @@ in
             kb_layout = "us,us";
             kb_variant = "colemak,";
             kb_options = "caps:escape,compose:ralt,grp:shifts_toggle";
-            touchdevice = {
-              output = "eDP-1";
-            };
+            #touchdevice = {
+            #  output = "eDP-1";
+            #};
           };
         };
       };
