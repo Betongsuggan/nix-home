@@ -22,6 +22,7 @@
       nixosConfigurations = {
         bits = import ./hosts/bits { inherit inputs overlays; };
         private-laptop = import ./hosts/private-laptop { inherit inputs overlays; };
+        private-desktop = import ./hosts/private-desktop { inherit inputs overlays; };
       };
 
       homeConfigurations = {
@@ -29,6 +30,8 @@
           nixosConfigurations.bits.config.home-manager.users.birgerrydback.home;
         private-laptop =
           nixosConfigurations.private-laptop.config.home-manager.users.betongsuggan.home;
+        private-desktop =
+          nixosConfigurations.private-desktop.config.home-manager.users.betongsuggan.home;
       };
     };
 }
