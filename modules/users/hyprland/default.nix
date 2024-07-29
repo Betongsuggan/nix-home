@@ -12,6 +12,12 @@ in
 {
   options.hyprland = {
     enable = mkEnableOption "Enable Hyprland";
+
+    monitorResolution = mkOption {
+      description = "Monitor resolution";
+      type = types.str;
+      default = ",preferred,auto,1";
+    };
   };
 
   config = mkIf config.hyprland.enable {
@@ -46,7 +52,8 @@ in
         #package = inputs.hyprland.packages.${pkgs.system}.hyprland;
         settings = {
           monitor = [
-            ",preferred,auto,1"
+            config.hyprland.monitorResolution
+            "Unknown-1,disable"
           ];
 
           cursor = {
@@ -156,7 +163,7 @@ in
 
           input = {
             kb_layout = "us,us";
-            kb_variant = "colemak,";
+            kb_variant = ",colemak";
             kb_options = "caps:escape,compose:ralt,grp:shifts_toggle";
             #touchdevice = {
             #  output = "eDP-1";

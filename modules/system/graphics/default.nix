@@ -5,23 +5,36 @@ with lib;
   options.graphics = {
     enable = mkEnableOption "Enable graphics hardware";
 
-    brand = mkOption {
-      description = "Graphics card manufacturer";
-      type = types.str;
-      default = "intel";
-    };
+    nvidia = mkEnableOption "Nvidia graphics";       
   };
 
   config = mkIf config.graphics.enable {
+    home-manager.users.${config.user}.home.packages = with pkgs; [
+      vulkan-tools
+    ];
+
+    services.xserver = mkIf config.graphics.nvidia {
+      videoDrivers = [ "amdgpu" ];
+    };
+
     hardware = {
+      #nvidia = mkIf config.graphics.nvidia {
+      #  modesetting.enable = true;
+      #  open = true;
+      #  package = config.boot.kernelPackages.nvidiaPackages.latest;
+      #};
       graphics = {
         enable = true;
         enable32Bit = true;
         extraPackages = with pkgs; [
-          intel-media-driver
+          #intel-media-driver
           mesa
           vaapiVdpau
           libvdpau-va-gl
+          mangohud
+        ];
+        extraPackages32 = with pkgs; [
+          mangohud
         ];
       };
     };
