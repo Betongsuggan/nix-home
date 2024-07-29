@@ -5,11 +5,7 @@ with lib;
   options.graphics = {
     enable = mkEnableOption "Enable graphics hardware";
 
-    brand = mkOption {
-      description = "Graphics card manufacturer";
-      type = types.str;
-      default = "intel";
-    };
+    nvidia = mkEnableOption "Nvidia graphics";       
   };
 
   config = mkIf config.graphics.enable {
@@ -23,6 +19,10 @@ with lib;
           vaapiVdpau
           libvdpau-va-gl
         ];
+      };
+      nvidia = mkIf config.graphics.nvidia {
+        modesetting.enable = true;
+        package = config.boot.kernelPackages.nvidiaPackages.stable;
       };
     };
 
