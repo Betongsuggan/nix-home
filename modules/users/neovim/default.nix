@@ -134,6 +134,7 @@ in
           golines
           golangci-lint
           golangci-lint-langserver
+          nilaway
 
           # Haskell
           haskell-language-server

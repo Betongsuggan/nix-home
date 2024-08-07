@@ -25,6 +25,7 @@ return function(on_attach, capabilities)
         analyses = {
           unusedparams = true,
           shadow = true,
+          nilaway = true,
         },
         staticcheck = true,
       },

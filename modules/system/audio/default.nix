@@ -7,7 +7,6 @@ with lib;
   };
 
   config = mkIf config.audio.enable {
-    sound.enable = true;
     services.pipewire = {
       enable = true;
       alsa = {

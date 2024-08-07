@@ -14,9 +14,10 @@ with lib;
 
   config = mkIf config.graphics.enable {
     hardware = {
-      graphics = {
+      opengl = {
         enable = true;
-        enable32Bit = true;
+        driSupport = true;
+        driSupport32Bit = true;
         extraPackages = with pkgs; [
           intel-media-driver
           mesa
