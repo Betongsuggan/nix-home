@@ -28,6 +28,7 @@ with lib;
         set -o vi
         PS1="\[\033[33m\]󰘧: \[\033[36m\]\W\[\033[00m\]> "
         export EDITOR=nvim
+        export PATH="$PATH:~/.cargo/bin/"
       '';
     };
   };

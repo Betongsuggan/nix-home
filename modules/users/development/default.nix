@@ -34,6 +34,8 @@ with lib;
         cargo
         rustc
         rustfmt
+        gcc
+        clippy
 
         # Go
         delve

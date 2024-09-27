@@ -109,9 +109,7 @@ inputs.nixpkgs.lib.nixosSystem {
       dunst.enable = true;
       icons.enable = true;
       kanshi.enable = true;
-      #sway.enable = true;
       hyprland.enable = true;
-      #waybar.enable = true;
       wofi.enable = true;
       development.enable = true;
 
