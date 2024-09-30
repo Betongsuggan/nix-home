@@ -30,7 +30,7 @@ inputs.nixpkgs.lib.nixosSystem {
       nixpkgs = { inherit overlays; };
       boot = {
         kernelPackages = pkgs.linuxPackages_6_1;
-      
+        supportedFilesystems = [ "ntfs" ];     
         initrd.availableKernelModules =
           [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
         loader = {

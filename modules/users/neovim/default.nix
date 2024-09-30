@@ -59,8 +59,10 @@ in
 
           # LSP
           nvim-lspconfig
-          ## Better language server Lua support
-          null-ls-nvim
+
+          # null-ls
+          none-ls-nvim
+
           ## Show references in a popup
           (plugin "wiliamks/nice-reference.nvim")
           ## Show code actions icon
@@ -159,6 +161,7 @@ in
 
           # Rust
           rust-analyzer
+          rustfmt
 
           # Terraform
           terraform-ls

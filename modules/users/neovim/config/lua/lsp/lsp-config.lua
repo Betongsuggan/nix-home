@@ -34,17 +34,18 @@ local on_attach                        = function(client, bufnr)
   keymaps.lsp_remove_workspace(vim.lsp.buf.remove_workspace_folder)
   keymaps.lsp_show_workspaces(function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end)
 
-  --if client.server_capabilities.document_formatting then
-  --  vim.cmd([[
-  --    augroup LspFormatting
-  --      autocmd! * <buffer>
-  --      autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()
-  --    augroup END
-  --  ]])
-  --end
+  if client.server_capabilities.documentFormattingProvider then
+    -- Format on save
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      buffer = bufnr,
+      callback = function()
+        vim.lsp.buf.format({ async = true })
+      end
+    })
+  end
 end
 
-local capabilities                     = require('cmp_nvim_lsp').default_capabilities()
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 for _, language in ipairs(languages) do
   language(on_attach, capabilities)

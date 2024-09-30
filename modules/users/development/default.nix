@@ -9,8 +9,10 @@ with lib;
   config = mkIf config.development.enable {
     home-manager.users.${config.user} = {
       home.packages = with pkgs; [
-        # AWS Testing
-        #localstack
+        # Infrastructure
+        localstack
+        pulumi
+        pulumiPackages.pulumi-language-go
 
         # Python
         python3

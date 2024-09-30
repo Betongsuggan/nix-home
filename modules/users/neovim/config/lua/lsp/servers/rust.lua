@@ -18,6 +18,15 @@ return function(on_attach, capabilities)
       capabilities = capabilities,
       standalone = true,
       settings = {
+        ["rust-analyzer"] = {
+          -- enable clippy on save
+          checkOnSave = {
+            command = "clippy",
+          },
+          check = {
+            command = "clippy",
+          },
+        },
       },
     },
   }
