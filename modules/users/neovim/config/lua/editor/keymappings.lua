@@ -1,19 +1,44 @@
 local legendary = require('legendary')
 
+legendary.setup({
+  select_prompt = 'legendary.telescope',
+  telescope = {
+    theme = 'dropdown',
+    -- Add other Telescope options here if needed
+  },
+})
+
 local function add_key_mapping(keymap, opts, description)
   return function(command) legendary.keymap({ keymap, command, opts = opts, description = description }) end
+end
+
+local function add_key_mapping_for_modes(keymap, opts, modes, description)
+  -- Iterate over the list of modes
+  return function(command)
+    legendary.keymap({
+      keymap,
+      command,
+      opts = opts,
+      mode = modes,
+      description = description
+    })
+  end
 end
 
 local search_opts = { silent = true, noremap = true }
 local lsp_opts = { noremap = true, silent = true, buffer = true }
 local key_mappings = {
+  -- Show key mappings
+  help                      = add_key_mapping_for_modes("<leader>z", { noremap = true }, { 'n', 'v' },
+    "Show key mappings"),
+
   -- File tree mappings
   open_file_tree            = add_key_mapping('<leader>tt', { silent = true }, 'FileTree: Toggle File Tree'),
   refresh_file_in_tree      = add_key_mapping('<leader>tr', { silent = true }, 'FileTree: Refresh File Tree'),
   find_file_in_tree         = add_key_mapping('<leader>tf', { silent = true }, 'FileTree: Find File'),
 
   -- Autocompletion
-  -- These are now setup in cmp-config.lua since I haven't gottem them to work through legendary
+  -- These are now setup in cmp-config.lua since I haven't got them to work through legendary
   --autocomplete              = add_key_mapping('<C-Space>',{ silent = true, noremap = true }, 'Show autocomplete options'),
   --autocomplete_confirm      = add_key_mapping('<CR>', { silent = true, noremap = true }, 'Select autocomplete option'),
   --autocomplete_next         = add_key_mapping('<Tab>', { silent = true, noremap = true }, 'Show next autocomplete option'),
@@ -33,12 +58,14 @@ local key_mappings = {
   next_buffer               = add_key_mapping('<leader>l', { noremap = true }, 'Buffer: Next buffer'),
   previous_buffer           = add_key_mapping('<leader>h', { noremap = true }, 'Buffer: Previous buffer'),
   close_buffer              = add_key_mapping('<leader>q', { noremap = true }, 'Buffer: Close buffer')(':bd <CR>'),
+
   -- Searching
   search_file_name          = add_key_mapping('<leader>ff', search_opts, 'Searching: Search file name'),
   search_directory_contents = add_key_mapping('<leader>fg', search_opts, 'Searching: Search directory contents'),
   search_buffer_names       = add_key_mapping('<leader>fb', search_opts, 'Searching: Search buffer names'),
   search_symbols            = add_key_mapping('<leader>fn', search_opts, 'Searching: Search workspace symbols'),
   search_help_tags          = add_key_mapping('<leader>fh', search_opts, 'Searching: Search help tags'),
+
   -- LSP mappings
   lsp_go_to_declaration     = add_key_mapping('sD', lsp_opts, 'LSP: Go to declaration'),
   lsp_go_to_definition      = add_key_mapping('sd', lsp_opts, 'LSP: Go to definition'),
@@ -47,7 +74,8 @@ local key_mappings = {
   lsp_previous_reference    = add_key_mapping('sO', lsp_opts, 'LSP: Previous reference'),
   lsp_next_diagnostic       = add_key_mapping('su', lsp_opts, 'LSP: Next diagnostic'),
   lsp_previous_diagnostic   = add_key_mapping('sU', lsp_opts, 'LSP: Previous diagnostic'),
-  -- These are now setup in cmp-config.lua since I haven't gottem them to work through legendary
+
+  -- These are now setup in cmp-config.lua since I haven't got them to work through legendary
   --lsp_scroll_docs_down      = add_key_mapping('<C-S-j>', lsp_opts, 'LSP: Scroll down in documentation'),
   --lsp_scroll_docs_up        = add_key_mapping('<C-S-k>', lsp_opts, 'LSP: Scroll up in documentation'),
 
@@ -72,6 +100,22 @@ local key_mappings = {
 
   -- LSP Debugging
   lsp_toggle_breakpoint     = add_key_mapping('smb', { noremap = true }, 'LSP: Toggle breakpoint'),
+
+  -- AI tools
+  ai_chat                   = add_key_mapping('fi', { noremap = false }, 'AI: Chat'),
+  ai_edit_with_instruction  = add_key_mapping('fw', { noremap = false }, 'AI: Edit interactive'),
+  ai_complete               = add_key_mapping_for_modes('<C-Tab>', { noremap = false }, { 'n', 'i' }, 'AI: Auto complete'),
+  ai_grammar_correction     = add_key_mapping_for_modes('fg', { noremap = false }, { 'n', 'v' }, 'AI: Grammar correction'),
+  ai_translate              = add_key_mapping_for_modes('ft', { noremap = false }, { 'n', 'v' }, 'AI: Translate'),
+  ai_keywords               = add_key_mapping_for_modes('fk', { noremap = false }, { 'n', 'v' }, 'AI: Summarize keywords'),
+  ai_docstring              = add_key_mapping_for_modes('fd', { noremap = false }, { 'n', 'v' }, 'AI: Create docstring'),
+  ai_add_tests              = add_key_mapping_for_modes('fa', { noremap = false }, { 'n', 'v' }, 'AI: Add tests'),
+  ai_optimize_code          = add_key_mapping_for_modes('fo', { noremap = false }, { 'n', 'v' }, 'AI: Optimize code'),
+  ai_summarize              = add_key_mapping_for_modes('fs', { noremap = false }, { 'n', 'v' }, 'AI: Summarize'),
+  ai_fix_bugs               = add_key_mapping_for_modes('ff', { noremap = false }, { 'n', 'v' }, 'AI: Fix bugs'),
+  ai_explain_code           = add_key_mapping_for_modes('fe', { noremap = false }, { 'n', 'v' }, 'AI: Explain'),
+  ai_readability_analysis   = add_key_mapping_for_modes('fr', { noremap = false }, { 'n', 'v' },
+    'AI: Readability analysis'),
 }
 
 key_mappings.lsp_format(
@@ -80,4 +124,6 @@ key_mappings.lsp_format(
     vim.lsp.buf.code_action({ context = { only = { 'source.organizeImports' } }, apply = true })
   end
 )
+key_mappings.help(function() vim.cmd(':Telescope keymaps') end)
+
 return key_mappings

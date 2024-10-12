@@ -1,4 +1,5 @@
 -- Setup lspconfig.
+local augroup                          = vim.api.nvim_create_augroup("LspFormatting", {})
 local nvim_lsp                         = require('lspconfig')
 local telescope                        = require('telescope.builtin')
 local keymaps                          = require('editor/keymappings')
@@ -34,18 +35,22 @@ local on_attach                        = function(client, bufnr)
   keymaps.lsp_remove_workspace(vim.lsp.buf.remove_workspace_folder)
   keymaps.lsp_show_workspaces(function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end)
 
-  if client.server_capabilities.documentFormattingProvider then
-    -- Format on save
+  if client.supports_method("textDocument/formatting") then
+    vim.api.nvim_clear_autocmds({
+      group = augroup,
+      buffer = bufnr,
+    })
     vim.api.nvim_create_autocmd("BufWritePre", {
+      group = augroup,
       buffer = bufnr,
       callback = function()
-        vim.lsp.buf.format({ async = true })
-      end
+        vim.lsp.buf.format({ bufnr = bufnr })
+      end,
     })
   end
 end
 
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
+local capabilities                     = require('cmp_nvim_lsp').default_capabilities()
 
 for _, language in ipairs(languages) do
   language(on_attach, capabilities)

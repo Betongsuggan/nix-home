@@ -5,7 +5,10 @@ return {
   -- LSP configs
   require('lsp/lsp-config'),
 
-  -- Visual related configs
+  -- AI
+  require('ai/openai'),
+
+ -- Visual related configs
   --require('visuals/indent-blankline-config'),
   require('visuals/scrollbar-config'),
   require('visuals/fidget-config'),

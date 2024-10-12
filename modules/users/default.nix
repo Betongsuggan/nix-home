@@ -19,6 +19,7 @@
     ./icons
     ./kanshi
     ./neovim
+    ./ai
     ./picom
     ./polybar
     ./rofi

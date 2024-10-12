@@ -1,4 +1,4 @@
-{ config, pkgs, lib, vimUtils, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   # installs a vim plugin from git with a given tag / branch
@@ -56,6 +56,9 @@ in
 
           # Collaboration
           (plugin "jbyuki/instant.nvim")
+
+          # AI stuff
+          ChatGPT-nvim
 
           # LSP
           nvim-lspconfig
@@ -121,10 +124,12 @@ in
 
           # Utils
           FixCursorHold-nvim
+          plenary-nvim
         ];
         extraPackages = with pkgs; [
           tree-sitter
           ripgrep
+          curl
 
           # Bash
           nodePackages.bash-language-server

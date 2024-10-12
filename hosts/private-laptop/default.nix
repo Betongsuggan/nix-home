@@ -99,6 +99,11 @@ inputs.nixpkgs.lib.nixosSystem {
       wayland.enable = true;
       printers.enable = true;
       power-management.enable = true;
+
+      ai = {
+        enable = true;
+        keyProviderPath = "$HOME/.config/openai/key_provider.sh";
+      };
       networkmanager = {
         enable = true;
         hostName = "nixos";

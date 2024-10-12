@@ -98,6 +98,10 @@ inputs.nixpkgs.lib.nixosSystem {
         userName = "BirgerRydback";
         userEmail = "birger.rydback@bits.bi";
       };
+      ai = {
+        enable = true;
+        keyProviderPath = "$HOME/.config/openai/key_provider.sh";
+      };
       general.enable = true;
       games.enable = true;
       flatpak.enable = true;
