@@ -10,11 +10,17 @@
     };
 
     nur.url = "github:nix-community/NUR";
+
+    avante.url = "github:Betongsuggan/avante-nvim-flake/v0.0.8";
   };
 
-  outputs = { nixpkgs, ... }@inputs:
+  outputs = { nixpkgs, home-manager, avante, ... }@inputs:
     let
-      overlays = [ ];
+      overlays = [ 
+        (self: super: {
+          avante = avante.packages.${self.system}.default;
+        })
+      ];
     in
     rec {
       nixosConfigurations = {
@@ -23,10 +29,8 @@
       };
 
       homeConfigurations = {
-        bits =
-          nixosConfigurations.bits.config.home-manager.users.birgerrydback.home;
-        private-laptop =
-          nixosConfigurations.private-laptop.config.home-manager.users.betongsuggan.home;
+        private-laptop = nixosConfigurations.private-laptop.config.home-manager.users.betongsuggan.home;
+        bits = nixosConfigurations.bits.config.home-manager.users.birgerrydback.home;
       };
     };
 }

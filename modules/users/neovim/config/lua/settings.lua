@@ -6,7 +6,7 @@ g.mapleader = ' '
 
 -- Visuals
 set.cursorline = true
-set.laststatus = 2
+set.laststatus = 3
 set.number = true
 set.ruler = true
 set.termguicolors = true

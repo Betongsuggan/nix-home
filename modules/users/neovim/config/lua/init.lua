@@ -7,8 +7,9 @@ return {
 
   -- AI
   require('ai/openai'),
+  require('ai/avante'),
 
- -- Visual related configs
+  -- Visual related configs
   --require('visuals/indent-blankline-config'),
   require('visuals/scrollbar-config'),
   require('visuals/fidget-config'),
@@ -28,6 +29,7 @@ return {
   require('editor/instant-config'),
   require('editor/telescope-config'),
   require('editor/keymappings'),
+  require('editor/render-markdown'),
 
   -- Buffer configs
   require('buffers/bufferline-config'),

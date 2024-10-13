@@ -21,9 +21,11 @@ with lib;
 
   config = mkIf config.ai.enable {
     home-manager.users.${config.user} = {
-      home.packages = [
-        keyProvider
-      ];
+      home = {
+        packages = [
+          keyProvider
+        ];
+      };
     };
   };
 }

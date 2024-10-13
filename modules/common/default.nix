@@ -9,7 +9,7 @@
     stateVersion = lib.mkOption {
       type = lib.types.str;
       description = "Applied state version for Nix packages";
-      default = "23.11";
+      default = "24.11";
     };
   };
 

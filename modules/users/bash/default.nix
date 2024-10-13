@@ -25,10 +25,14 @@ with lib;
         gw = "./gradlew --no-daemon";
       };
       initExtra = ''
+        # include .profile if it exists
+        [[ -f ~/.profile ]] && . ~/.profile
+
         set -o vi
         PS1="\[\033[33m\]󰘧: \[\033[36m\]\W\[\033[00m\]> "
         export EDITOR=nvim
         export PATH="$PATH:~/.cargo/bin/"
+        export ANTHROPIC_API_KEY="$(ai_key_provider)"
       '';
     };
   };

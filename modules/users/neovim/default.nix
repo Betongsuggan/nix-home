@@ -59,6 +59,7 @@ in
 
           # AI stuff
           ChatGPT-nvim
+          pkgs.avante
 
           # LSP
           nvim-lspconfig
@@ -125,6 +126,7 @@ in
           # Utils
           FixCursorHold-nvim
           plenary-nvim
+          (plugin "MeanderingProgrammer/render-markdown.nvim")
         ];
         extraPackages = with pkgs; [
           tree-sitter
