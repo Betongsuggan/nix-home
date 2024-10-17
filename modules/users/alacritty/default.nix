@@ -19,6 +19,10 @@ in
       settings = {
         live_config_reload = true;
         font = import ./fonts.nix;
+        shell = {
+          program = "${pkgs.nushell}/bin/nu";
+          args = [];
+        };
         colors = {
           primary = {
             background = theme.colors.background-dark;

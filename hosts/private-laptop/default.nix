@@ -117,7 +117,8 @@ inputs.nixpkgs.lib.nixosSystem {
       communication.enable = true;
       neovim.enable = true;
       alacritty.enable = true;
-      bash.enable = true;
+      #bash.enable = true;
+      nushell.enable = true;
       fonts.enable = true;
       dunst.enable = true;
       kanshi.enable = true;

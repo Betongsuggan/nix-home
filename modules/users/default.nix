@@ -1,6 +1,7 @@
 { ... }:
 {
   imports = [
+    ./ai
     ./alacritty
     ./autorandr
     ./bash
@@ -19,7 +20,7 @@
     ./icons
     ./kanshi
     ./neovim
-    ./ai
+    ./nushell
     ./picom
     ./polybar
     ./rofi
