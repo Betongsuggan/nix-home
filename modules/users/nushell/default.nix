@@ -1,15 +1,15 @@
 { pkgs, config, lib, ... }:
 with lib;
 
-let 
-  sessionVariables = builtins.concatStringsSep "\n" (mapAttrsToList (name: value: 
-  let 
-    valueWithEnvHome = lib.replaceStrings [ "$HOME" ] [ "$env.HOME" ] value;
-  in
-  ''
-    $env.${name} = $env.${name} + ":" + ${valueWithEnvHome};
-  '') config.home-manager.users.${config.user}.home.sessionVariables);
-in
+#let 
+#  sessionVariables = builtins.concatStringsSep "\n" (mapAttrsToList (name: value: 
+#  let 
+#    valueWithEnvHome = lib.replaceStrings [ "$HOME" ] [ "$env.HOME" ] value;
+#  in
+#  ''
+#    $env.${name} = $env.${name} + ":" + ${valueWithEnvHome};
+#  '') config.home-manager.users.${config.user}.home.sessionVariables);
+#in
 {
   options.nushell = {
     enable = mkOption {
@@ -32,9 +32,7 @@ in
         '';
       };
       envFile = {
-        text = ''
-          ${sessionVariables}
-        '';
+        text = "";
       };
       shellAliases = {
         cloud = "cd ~/Development/cloud";

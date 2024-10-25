@@ -24,6 +24,7 @@
     ./picom
     ./polybar
     ./rofi
+    ./starship
     ./sway
     ./urxvt
     ./waybar
