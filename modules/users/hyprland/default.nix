@@ -50,6 +50,7 @@ in
 
           "$mod" = "SUPER";
           "$modShift" = "SUPER_SHIFT";
+          "$modCtrl" = "SUPER_CTRL";
 
           exec-once = [
             "waybar"
@@ -76,6 +77,17 @@ in
             "$mod, f, fullscreen,"
             "$modShift, q, killactive,"
 
+            "$modShift, 1, movetoworkspacesilent, 1"
+            "$modShift, 2, movetoworkspacesilent, 2"
+            "$modShift, 3, movetoworkspacesilent, 3"
+            "$modShift, 4, movetoworkspacesilent, 4"
+            "$modShift, 5, movetoworkspacesilent, 5"
+            "$modShift, 6, movetoworkspacesilent, 6"
+            "$modShift, 7, movetoworkspacesilent, 7"
+            "$modShift, 8, movetoworkspacesilent, 8"
+            "$modShift, 9, movetoworkspacesilent, 9"
+            "$modShift, 0, movetoworkspacesilent, 0"
+
             "$mod, h, movefocus, l"
             "$mod, l, movefocus, r"
             "$mod, k, movefocus, u"
@@ -98,6 +110,7 @@ in
             "$mod, e, exec, ${pkgs.wofi-emoji}/bin/wofi-emoji"
             "$mod, u, exec, wifi-control"
             "$mod, o, exec, ${pkgs.wofi}/bin/wofi --show drun"
+
             ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds)''
             "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
 

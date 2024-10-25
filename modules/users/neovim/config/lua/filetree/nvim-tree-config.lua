@@ -2,11 +2,11 @@
 
 local keymaps = require('editor/keymappings')
 
-require'nvim-tree'.setup {
+require 'nvim-tree'.setup {
   disable_netrw       = true,
   hijack_netrw        = true,
 
-  hijack_directories   = {
+  hijack_directories  = {
     enable = true,
     auto_open = true,
   },
@@ -29,25 +29,19 @@ require'nvim-tree'.setup {
     update_cwd  = false,
     ignore_list = {}
   },
-  system_open = {
+  system_open         = {
     cmd  = nil,
     args = {}
   },
-  view = {
-
+  view                = {
     adaptive_size = true,
-    centralize_selection =true,
-    -- width = 30,
+    centralize_selection = true,
     side = 'left',
-    --mappings = {
-    --  custom_only = false,
-    --  list = {}
-    --},
     float = {
       enable = true
     }
   },
-  actions = {
+  actions             = {
     open_file = {
       quit_on_open = true,
       resize_window = true,

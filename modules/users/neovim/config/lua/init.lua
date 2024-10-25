@@ -13,7 +13,6 @@ return {
   --require('visuals/indent-blankline-config'),
   require('visuals/scrollbar-config'),
   require('visuals/fidget-config'),
-  require('visuals/lightbulb-config'),
   require('visuals/notification-config'),
 
   -- Status bar configs

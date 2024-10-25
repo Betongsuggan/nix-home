@@ -1,16 +1,14 @@
--- Diagnostics Options Setup
-local sign = function(opts)
-  vim.fn.sign_define(opts.name, {
-    texthl = opts.name,
-    text = opts.text,
-    numhl = ''
-  })
+vim.cmd [[autocmd CursorHold,CursorHoldI * lua require'nvim-lightbulb'.update_lightbulb()]]
+
+-- Define custom diagnostic signs with icons
+local signs = { Error = "🚨", Warn = "⚠️ ", Hint = "💡", Info = "💬" }
+
+for type, icon in pairs(signs) do
+  local hl = "DiagnosticSign" .. type
+  vim.fn.sign_define(hl, { text = icon, texthl = "SignColumn", linehl = "", numhl = "" })
 end
 
-sign({ name = 'DiagnosticSignError', text = '' })
-sign({ name = 'DiagnosticSignWarn', text = '' })
-sign({ name = 'DiagnosticSignHint', text = '' })
-sign({ name = 'DiagnosticSignInfo', text = '' })
+vim.fn.sign_define('LightBulbSign', { text = "💡", texthl = "LightBulbSignColor", linehl = "", numhl = "" })
 
 vim.diagnostic.config({
   virtual_text = false,

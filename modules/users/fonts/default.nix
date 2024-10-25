@@ -7,8 +7,16 @@ with lib;
   };
 
   config = mkIf config.fonts.enable {
-    fonts.fontconfig.enable = true;
-    home-manager.users.${config.user}.home.packages = with pkgs; [ glibcLocales nerdfonts noto-fonts-emoji ];
+    fonts.fontconfig = {
+      enable = true;
+         defaultFonts = {
+           monospace = [ "Hasklug Nerd Font Mono" "Noto Color Emoji" ];
+         };
+    };
+    home-manager.users.${config.user}.home = {
+      packages = with pkgs; [ glibcLocales nerdfonts noto-fonts-emoji ];
+
+    };
   };
 }
   

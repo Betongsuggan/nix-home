@@ -18,7 +18,25 @@ in
 
       settings = {
         live_config_reload = true;
-        font = import ./fonts.nix;
+        font = {
+          size = 12;
+          normal = {
+            family = "monospace";
+            style = "Medium,Regular";
+          };
+          bold = {
+            family = "monospace";
+            style = "Bold";
+          };
+          italic = {
+            family = "monospace";
+            style = "Italic";
+          };
+          bold_italic = {
+            family = "monospace";
+            style = "Bold Italic";
+          };
+        };
         shell = {
           program = "${pkgs.nushell}/bin/nu";
           args = [];
