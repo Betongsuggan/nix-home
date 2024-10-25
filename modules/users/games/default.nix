@@ -9,7 +9,6 @@ with lib;
 
   config = mkIf config.games.enable {
     home-manager.users.${config.user}.home.packages = with pkgs; [
-      antimicroX
       chiaki
       discord
       evtest

@@ -11,14 +11,14 @@
 
     nur.url = "github:nix-community/NUR";
 
-    avante.url = "github:Betongsuggan/avante-nvim-flake/v0.0.8";
+    neovim.url = "github:Betongsuggan/nvim";
   };
 
-  outputs = { nixpkgs, home-manager, avante, ... }@inputs:
+  outputs = { nixpkgs, home-manager, neovim, ... }@inputs:
     let
       overlays = [ 
         (self: super: {
-          avante = avante.packages.${self.system}.default;
+          neovim = neovim.packages.${self.system}.default;
         })
       ];
     in

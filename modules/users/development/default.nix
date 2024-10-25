@@ -11,7 +11,7 @@ with lib;
       home.packages = with pkgs; [
         # Infrastructure
         localstack
-        pulumi
+        #pulumi
         pulumiPackages.pulumi-language-go
 
         # Python
@@ -46,7 +46,7 @@ with lib;
         gotools
         gofumpt
         golines
-        nilaway
+        #nilaway
 
         # IaC
         terraform
