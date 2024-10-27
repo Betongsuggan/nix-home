@@ -12,7 +12,7 @@ with lib;
         # Infrastructure
         localstack
         #pulumi
-        pulumiPackages.pulumi-language-go
+        #pulumiPackages.pulumi-language-go
 
         # Python
         python3
@@ -60,7 +60,7 @@ with lib;
         ls-lint
         newman
         silver-searcher
-        teleport
+        #teleport
       ];
       programs.go.enable = true;
 

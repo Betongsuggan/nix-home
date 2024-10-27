@@ -100,7 +100,7 @@ inputs.nixpkgs.lib.nixosSystem {
       };
       ai = {
         enable = true;
-        keyProviderPath = "$HOME/.config/openai/key_provider.sh";
+        keyProviderPath = "$HOME/.config/anthropic/key_provider.sh";
       };
       general.enable = true;
       games.enable = true;
