@@ -17,7 +17,6 @@ in
       enable = true;
 
       settings = {
-        live_config_reload = true;
         font = {
           size = 12;
           normal = {
@@ -37,7 +36,7 @@ in
             style = "Bold Italic";
           };
         };
-        shell = {
+        terminal.shell = {
           program = "${pkgs.nushell}/bin/nu";
           args = [];
         };
