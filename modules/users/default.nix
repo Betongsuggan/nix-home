@@ -10,6 +10,7 @@
     ./communication
     ./development
     ./dunst
+    ./fish
     ./flatpak
     ./fonts
     ./games
@@ -30,5 +31,6 @@
     ./waybar
     ./wofi
     ./x11
+    ./zellij
   ];
 }

@@ -36,10 +36,10 @@ in
             style = "Bold Italic";
           };
         };
-        terminal.shell = {
-          program = "${pkgs.fish}/bin/fish";
-          args = [];
-        };
+        #terminal.shell = {
+        #  program = "${pkgs.bash}/bin/bash";
+        #  args = [];
+        #};
         colors = {
           primary = {
             background = theme.colors.background-dark;
