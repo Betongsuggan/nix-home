@@ -31,7 +31,7 @@ with lib;
             dmenu = "${pkgs.wofi}/bin/wofi --dmenu";
             show_indicators = false;
 
-            font = "${theme.font.name} ${theme.font.sizeStr}";
+            font = "${config.theme.font.name} ${config.theme.font.sizeStr}";
             format = "<b>%a</b>\\n%s\\n\\n%b";
             width = "(0,400)";
             offset = "40x40";

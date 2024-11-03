@@ -1,6 +1,7 @@
 { ... }:
 {
   imports = [
+    ./theming
     ./ai
     ./alacritty
     ./autorandr
@@ -27,7 +28,6 @@
     ./rofi
     ./starship
     ./sway
-    ./theming
     ./urxvt
     ./waybar
     ./wofi

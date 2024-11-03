@@ -8,7 +8,6 @@ in
 {
   options.sway = {
     enable = mkEnableOption "Enable Sway";
-
   };
 
   config = mkIf config.sway.enable {

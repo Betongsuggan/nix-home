@@ -60,6 +60,10 @@ in
             "hyprpaper"
             "auto-screen-rotation"
             "${pkgs.touchegg}/bin/touchegg"
+            "[workspace 1] firefox"
+            ''[workspace 2] alacritty -e zellij attach --create "Bits Development"''
+            ''[workspace 3] alacritty -e zellij attach --create "Nix Home"''
+            "[workspace 9] slack"
           ];
 
           general = {

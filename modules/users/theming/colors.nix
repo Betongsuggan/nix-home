@@ -1,6 +1,3 @@
-#
-# Gruvbox Colors
-#
 {
   gruvbox = {
     background-light = "#3c3836";
@@ -19,8 +16,8 @@
     red-light        = "#fb4934";
     red-dark         = "#cc241d";
   
-    organge-light    = "#fe8019";
-    organge-dark     = "#d65d0e";
+    orange-light    = "#fe8019";
+    orange-dark     = "#d65d0e";
   
     purple-light     = "#d3869b";
     purple-dark      = "#b16286";
@@ -49,8 +46,8 @@
     red-light        = "#ff5151";
     red-dark         = "#1d1516";
   
-    organge-light    = "#71e59f";
-    organge-dark     = "#1d1a17";
+    orange-light    = "#71e59f";
+    orange-dark     = "#1d1a17";
   
     purple-light     = "#7f71e5";
     purple-dark      = "#1f2027";

@@ -1,6 +1,8 @@
 { pkgs, config, lib, ... }:
 with lib;
-
+let 
+  defaultLayout = builtins.readFile ./layouts/default.kdl;
+in
 {
   options.zellij = {
     enable = mkOption {
@@ -11,26 +13,37 @@ with lib;
   };
 
   config = mkIf config.zellij.enable {
-    home-manager.users.${config.user}.programs.zellij = {
-      enable = true;
-      enableBashIntegration = true;
-      settings = {
-        simplified_ui = true;
-        pane_frames = false;
-        theme = "gruvbox";
-        #themes = {
-        #  fg 
-        #  bg 40 42 54
-        #  black 0 0 0
-        #  red 255 85 85
-        #  green 80 250 123
-        #  yellow 241 250 140
-        #  blue 98 114 164
-        #  magenta 255 121 198
-        #  cyan 139 233 253
-        #  white 255 255 255
-        #  orange 255 184 108
-        #};
+    home-manager.users.${config.user} = {
+      home.file.".config/zellij/layouts/default.kdl".text = defaultLayout; 
+      programs.zellij = {
+        enable = true;
+        #enableBashIntegration = true;
+        settings = {
+          simplified_ui = true;
+          pane_frames = false;
+          ui = {
+            pane_frames = {
+              rounded_corners = true;
+            };
+          };
+          layout = "default";
+          theme = "gruvbox";
+          themes = {
+            gruvbox = {
+              fg = config.theme.colors.text-light;
+              bg = config.theme.colors.background-dark;
+              black = config.theme.colors.background-dark;
+              red = config.theme.colors.background-dark;
+              green = config.theme.colors.green-dark;
+              yellow = config.theme.colors.yellow-dark;
+              blue = config.theme.colors.blue-dark;
+              magenta = config.theme.colors.purple-dark;
+              cyan = config.theme.colors.blue-light;
+              white = config.theme.colors.text-light;
+              orange = config.theme.colors.orange-dark;
+            };
+          };
+        };
       };
     };
   };

@@ -54,7 +54,7 @@ with lib;
             yellow  = config.theme.colors.yellow-light;
             blue    = config.theme.colors.blue-light;
             magenta = config.theme.colors.purple-light;
-            cyan    = config.theme.colors.organge-light;
+            cyan    = config.theme.colors.orange-light;
             white   = config.theme.colors.text-light;
           };
         };

@@ -16,6 +16,7 @@ in
 inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
+    ../../modules/users/theming
     globals
     inputs.nur.nixosModules.nur
     inputs.home-manager.nixosModules.home-manager
@@ -102,6 +103,7 @@ inputs.nixpkgs.lib.nixosSystem {
         enable = true;
         keyProviderPath = "$HOME/.config/anthropic/key_provider.sh";
       };
+      #theme.name = "gruvbox";
       general.enable = true;
       games.enable = true;
       flatpak.enable = true;
