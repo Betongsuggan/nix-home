@@ -37,7 +37,7 @@ in
           };
         };
         terminal.shell = {
-          program = "${pkgs.nushell}/bin/nu";
+          program = "${pkgs.fish}/bin/fish";
           args = [];
         };
         colors = {

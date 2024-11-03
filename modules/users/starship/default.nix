@@ -14,6 +14,7 @@ with lib;
     home-manager.users.${config.user}.programs.starship = {
       enable = true;
       enableNushellIntegration = true;
+      enableFishIntegration = true;
       enableBashIntegration = true;
     };
   };

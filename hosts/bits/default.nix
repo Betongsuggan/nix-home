@@ -108,8 +108,9 @@ inputs.nixpkgs.lib.nixosSystem {
       communication.enable = true;
       neovim.enable = true;
       alacritty.enable = true;
-      #bash.enable = true;
+      bash.enable = true;
       nushell.enable = true;
+      fish.enable = true;
       starship.enable = true;
       fonts.enable = true;
       dunst.enable = true;
