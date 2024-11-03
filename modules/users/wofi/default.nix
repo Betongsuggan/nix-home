@@ -1,9 +1,6 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let
-  theme = import ../theming/theme.nix { };
-in
 {
   options.wofi = {
     enable = mkEnableOption "Enable Wofi application launcher";
@@ -23,10 +20,10 @@ in
         style = ''
           window {
             font-size: 18px;
-            border-radius: ${theme.cornerRadius};
-            border-color: ${theme.colors.border-light};
-            background-color: ${theme.colors.background-dark};
-            color: ${theme.colors.text-light};
+            border-radius: ${config.theme.cornerRadius};
+            border-color: ${config.theme.colors.border-light};
+            background-color: ${config.theme.colors.background-dark};
+            color: ${config.theme.colors.text-light};
           }
 
           #entry {
@@ -34,16 +31,16 @@ in
           }
 
           #entry:selected {
-            background-color: ${theme.colors.red-dark};
+            background-color: ${config.theme.colors.red-dark};
           }
 
           #text:selected {
-            color: ${theme.colors.text-light};
+            color: ${config.theme.colors.text-light};
           }
 
           #input {
-            background-color: ${theme.colors.background-light};
-            color: ${theme.colors.text-light};
+            background-color: ${config.theme.colors.background-light};
+            color: ${config.theme.colors.text-light};
             padding: 0.50em;
           }
 
@@ -53,7 +50,7 @@ in
           }
         '';
         #input  {
-        # color: ${theme.colors.background};
+        # color: ${config.theme.colors.background};
         #}
       };
     };

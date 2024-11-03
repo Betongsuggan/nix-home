@@ -1,8 +1,5 @@
 { pkgs, config, lib, ... }:
 with lib;
-let 
-  theme = import ../theming/theme.nix { };
-in
 {
   options.alacritty = {
     enable = mkOption {
@@ -42,23 +39,23 @@ in
         #};
         colors = {
           primary = {
-            background = theme.colors.background-dark;
-            foreground = theme.colors.text-light;
+            background = config.theme.colors.background-dark;
+            foreground = config.theme.colors.text-light;
           };
         
           selection = {
-            text       = theme.colors.text-dark;
-            background = theme.colors.text-mid;
+            text       = config.theme.colors.text-dark;
+            background = config.theme.colors.text-mid;
           };
           normal = {
-            black   = theme.colors.background-dark;
-            red     = theme.colors.red-light;
-            green   = theme.colors.green-light;
-            yellow  = theme.colors.yellow-light;
-            blue    = theme.colors.blue-light;
-            magenta = theme.colors.purple-light;
-            cyan    = theme.colors.organge-light;
-            white   = theme.colors.text-light;
+            black   = config.theme.colors.background-dark;
+            red     = config.theme.colors.red-light;
+            green   = config.theme.colors.green-light;
+            yellow  = config.theme.colors.yellow-light;
+            blue    = config.theme.colors.blue-light;
+            magenta = config.theme.colors.purple-light;
+            cyan    = config.theme.colors.organge-light;
+            white   = config.theme.colors.text-light;
           };
         };
       };

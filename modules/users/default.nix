@@ -27,6 +27,7 @@
     ./rofi
     ./starship
     ./sway
+    ./theming
     ./urxvt
     ./waybar
     ./wofi

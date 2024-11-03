@@ -2,7 +2,6 @@
 with lib;
 
 let
-  theme = import ../theming/theme.nix { };
   utils = import ./utilNotifications.nix { inherit pkgs; };
   wifiControl = import ./wifiControls.nix { inherit pkgs; };
   mediaPlayer = import ./mediaPlayerControls.nix { inherit pkgs; };
@@ -64,7 +63,7 @@ in
           ];
 
           general = {
-            "col.active_border" = ''rgb(${lib.strings.removePrefix "#" theme.colors.border-light})'';
+            "col.active_border" = ''rgb(${lib.strings.removePrefix "#" config.theme.colors.border-light})'';
           };
 
           dwindle = {

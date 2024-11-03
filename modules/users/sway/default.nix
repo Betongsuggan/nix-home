@@ -3,7 +3,6 @@ with lib;
 
 let
   inherit (pkgs) pamixer playerctl;
-  theme = import ../theming/theme.nix { };
   modifier = "Mod4";
 in
 {
@@ -32,7 +31,7 @@ in
           terminal = "alacritty";
           menu = "wofi --show drun";
 
-          fonts = with theme.font; {
+          fonts = with config.theme.font; {
             inherit style size;
             names = [ name ];
           };
@@ -75,7 +74,7 @@ in
             };
           };
 
-          colors = with theme.colors; {
+          colors = with config.theme.colors; {
             background = "${background}";
 
             focused = {

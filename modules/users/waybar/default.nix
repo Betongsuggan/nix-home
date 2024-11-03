@@ -2,7 +2,6 @@
 with lib;
 
 let
-  theme = import ../theming/theme.nix { };
   mediaPlayerCtl = "${pkgs.playerctl}/bin/playerctl";
   mediaPlayerCtld = "${pkgs.playerctl}/bin/playerctld";
 
@@ -178,7 +177,7 @@ in
 
       style = ''
         * {
-          font-family: ${theme.font.name}, ${theme.font.style};
+          font-family: ${config.theme.font.name}, ${theme.font.style};
           font-size: 10pt;
         }
 
@@ -195,37 +194,37 @@ in
         .modules-right {
           margin-right: 0px;
           padding-left: 15px;
-          background-color: ${theme.colors.thirdText};
-          color: ${theme.colors.background};
+          background-color: ${config.theme.colors.thirdText};
+          color: ${config.theme.colors.background};
           margin-top: 2;
           margin-bottom: 2;
-          border-radius: ${theme.cornerRadius};
+          border-radius: ${config.theme.cornerRadius};
         }
 
         .modules-left {
           padding-right: 15px;
           margin-left: 0px;
-          background-color: ${theme.colors.thirdText};
-          color: ${theme.colors.background};
+          background-color: ${config.theme.colors.thirdText};
+          color: ${config.theme.colors.background};
           margin-top: 2;
           margin-bottom: 2;
-          border-radius: ${theme.cornerRadius};
+          border-radius: ${config.theme.cornerRadius};
         }
 
         window#waybar.bottom {
           opacity: 0.90;
-          background-color: ${theme.colors.background};
-          border: 2px solid ${theme.colors.border};
-          border-radius: ${theme.cornerRadius};
+          background-color: ${config.theme.colors.background};
+          border: 2px solid ${config.theme.colors.border};
+          border-radius: ${config.theme.cornerRadius};
         }
 
         window#waybar {
-          color: ${theme.colors.thirdText};
+          color: ${config.theme.colors.thirdText};
         }
 
         #workspaces button {
-          background-color: ${theme.colors.background};
-          color: ${theme.colors.thirdText};
+          background-color: ${config.theme.colors.background};
+          color: ${config.theme.colors.thirdText};
           margin-top: 4;
           margin-bottom: 4;
           padding-top: 0px;
@@ -235,40 +234,40 @@ in
         }
 
         #workspaces button.hidden {
-          background-color: ${theme.colors.background};
-          color: ${theme.colors.blue};
+          background-color: ${config.theme.colors.background};
+          color: ${config.theme.colors.blue};
         }
 
         #workspaces button.focused,
         #workspaces button.active {
-          background-color: ${theme.colors.secondaryText};
-          color: ${theme.colors.background};
+          background-color: ${config.theme.colors.secondaryText};
+          color: ${config.theme.colors.background};
         }
 
         #custom-menu {
-          background-color: ${theme.colors.utilityText};
-          color: ${theme.colors.background};
+          background-color: ${config.theme.colors.utilityText};
+          color: ${config.theme.colors.background};
           padding-left: 15px;
           padding-right: 15px;
           margin-left: 0;
           margin-top: -2;
           margin-bottom: -4;
-          border-radius: ${theme.cornerRadius};
+          border-radius: ${config.theme.cornerRadius};
         }
 
         #custom-hostname {
-          background-color: ${theme.colors.utilityText};
-          color: ${theme.colors.background};
+          background-color: ${config.theme.colors.utilityText};
+          color: ${config.theme.colors.background};
           padding-left: 15px;
           padding-right: 15px;
           margin-right: 0;
           margin-top: -2;
           margin-bottom: -4;
-          border-radius: ${theme.cornerRadius};
+          border-radius: ${config.theme.cornerRadius};
         }
 
         #tray {
-          color: ${theme.colors.background};
+          color: ${config.theme.colors.background};
         }
       '';
     };

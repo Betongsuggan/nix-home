@@ -1,7 +1,4 @@
 { config, lib, pkgs, ... }:
-let
-  theme = import ../theming/theme.nix { };
-in
 with lib;
 {
   options.dunst = {
@@ -50,10 +47,10 @@ with lib;
             mouse_middle = "context";
             mouse_right = "close_current";
 
-            background  = theme.colors.background-dark;
-            foreground  = theme.colors.text-light;
-            highlight   = theme.colors.red-light;
-            frame_color = theme.colors.border-light;
+            background  = config.theme.colors.background-dark;
+            foreground  = config.theme.colors.text-light;
+            highlight   = config.theme.colors.red-light;
+            frame_color = config.theme.colors.border-light;
           };
           slack = {
             desktop_entry = "Slack";

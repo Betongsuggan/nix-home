@@ -119,6 +119,7 @@ inputs.nixpkgs.lib.nixosSystem {
       hyprland.enable = true;
       wofi.enable = true;
       development.enable = true;
+      zellij.enable = true;
 
       nixpkgs.config.permittedInsecurePackages = [
         "electron-25.9.0"

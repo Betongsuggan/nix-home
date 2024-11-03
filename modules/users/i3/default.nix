@@ -1,7 +1,6 @@
 { config, pkgs, lib, ... }:
 with lib;
 let
-  theme = import ../theming/theme.nix { };
   mod = "Mod4";
 in
 {
@@ -49,7 +48,7 @@ in
 
           modifier = mod;
 
-          fonts = with theme.font; {
+          fonts = with config.theme.font; {
             inherit style size;
             names = [ name ];
           };
@@ -102,7 +101,7 @@ in
             smartGaps = true;
           };
 
-          colors = with theme.colors; {
+          colors = with config.theme.colors; {
             background = "${background}";
 
             focused = {
