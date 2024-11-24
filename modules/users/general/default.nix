@@ -32,8 +32,6 @@ with lib;
       ryzenadj
       unzip
       yubikey-manager
-      xfce.thunar
-      xfce.thunar-volman
       udisks
       usbutils
       vlc

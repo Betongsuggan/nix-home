@@ -28,6 +28,7 @@
     ./rofi
     ./starship
     ./sway
+    ./thunar
     ./urxvt
     ./waybar
     ./wofi

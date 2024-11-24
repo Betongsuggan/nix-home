@@ -17,7 +17,6 @@ in
       home.file.".config/zellij/layouts/default.kdl".text = defaultLayout; 
       programs.zellij = {
         enable = true;
-        #enableBashIntegration = true;
         settings = {
           simplified_ui = true;
           pane_frames = false;

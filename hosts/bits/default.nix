@@ -119,6 +119,7 @@ inputs.nixpkgs.lib.nixosSystem {
       icons.enable = true;
       kanshi.enable = true;
       hyprland.enable = true;
+      thunar.enable = true;
       wofi.enable = true;
       development.enable = true;
       zellij.enable = true;

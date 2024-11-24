@@ -14,6 +14,10 @@ with lib;
       };
       programs.firefox = {
         enable = true;
+        enableVaapi = true;
+        extraPkgs = [
+          pkgs.ffmpeg-full
+        ];
         profiles.betongsuggan = {
           settings = {
               "media.ffmpeg.vaapi.enabled" = true;
