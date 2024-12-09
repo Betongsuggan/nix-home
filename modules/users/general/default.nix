@@ -23,6 +23,7 @@ with lib;
       iio-sensor-proxy
       imv
       kdenlive
+      kooha
       lf
       lm_sensors
       lshw

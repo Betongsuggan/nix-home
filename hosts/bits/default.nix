@@ -8,6 +8,7 @@ let
       extraUserGroups = [
         "wheel"
         "networkmanager"
+        "network"
         "video"
         "docker"
       ];
@@ -28,7 +29,7 @@ inputs.nixpkgs.lib.nixosSystem {
 
       boot = {
      
-        kernelPackages = pkgs.linuxPackages_latest;
+        kernelPackages = pkgs.linuxPackages_6_6;
         
         initrd.availableKernelModules =
           [ "nvme" "xhci_pci" "ahci" "thunderbolt" "usb_storage" "sd_mod" "sdhci_pci" ];

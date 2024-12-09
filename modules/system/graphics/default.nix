@@ -20,7 +20,6 @@ with lib;
         extraPackages = with pkgs; [
           intel-media-driver
           mesa
-          mesa-va-drivers
           vaapiVdpau
           libvdpau-va-gl
         ];

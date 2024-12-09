@@ -19,7 +19,6 @@ in
       environment.systemPackages = [ notifier ];
       networking = {
         inherit (config.networkmanager) hostName;
-        
         wireless.enable = false;
         networkmanager = {
           enable = true;
@@ -29,6 +28,7 @@ in
               source = "${notifier}/bin/network-notifier";
             }
           ];
+          wifi.scanRandMacAddress = false;
         };
         useDHCP = false;
       };
