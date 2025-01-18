@@ -45,6 +45,7 @@ in
         settings = {
           monitor = [
             ",preferred,auto,1"
+            "Unknown-1,disable"
           ];
 
           cursor = {

@@ -9,7 +9,15 @@ with lib;
   };
 
   config = mkIf config.graphics.enable {
+    services.xserver = mkIf config.graphics.nvidia {
+      videoDrivers = [ "nvidia" ];
+    };
     hardware = {
+      nvidia = mkIf config.graphics.nvidia {
+        modesetting.enable = true;
+        #open = true;
+        package = config.boot.kernelPackages.nvidiaPackages.stable;
+      };
       graphics = {
         enable = true;
         enable32Bit = true;
@@ -19,10 +27,6 @@ with lib;
           vaapiVdpau
           libvdpau-va-gl
         ];
-      };
-      nvidia = mkIf config.graphics.nvidia {
-        modesetting.enable = true;
-        package = config.boot.kernelPackages.nvidiaPackages.stable;
       };
     };
 

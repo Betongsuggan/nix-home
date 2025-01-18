@@ -32,8 +32,8 @@
       homeConfigurations = {
         private-laptop = nixosConfigurations.private-laptop.config.home-manager.users.betongsuggan.home;
         bits = nixosConfigurations.bits.config.home-manager.users.birgerrydback.home;
-        private-desktop =
-          nixosConfigurations.private-desktop.config.home-manager.users.betongsuggan.home;
+        #private-desktop =
+        #  nixosConfigurations.private-desktop.config.home-manager.users.betongsuggan.home;
       };
     };
 }
