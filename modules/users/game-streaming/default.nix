@@ -33,5 +33,4 @@ with lib;
       systemPackages = [ pkgs.moonlight-qt ];
     };
   };
-
 }
