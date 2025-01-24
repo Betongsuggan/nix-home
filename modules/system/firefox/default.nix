@@ -21,10 +21,10 @@ with lib;
               "media.av1.enabled" = false;
               "gfx.webrender.all" = true;
           };
-          extensions = with config.nur.repos.rycee.firefox-addons; [
-            vimium
-            #1password
-          ];
+          #extensions = with config.repos.rycee.firefox-addons; [
+          #  vimium
+          #  #1password
+          #];
         };
       };
     };

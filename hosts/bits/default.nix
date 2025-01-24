@@ -19,7 +19,7 @@ inputs.nixpkgs.lib.nixosSystem {
   modules = [
     ../../modules/users/theming
     globals
-    inputs.nur.nixosModules.nur
+    inputs.nur.modules.nixos.default
     inputs.home-manager.nixosModules.home-manager
     ../../modules/common
     ../../modules/system

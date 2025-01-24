@@ -20,7 +20,6 @@ with lib;
       steam
       steam-run
       steamcontroller
-      xboxdrv
     ];
 
     unfreePackages = [ "discord" "steam" "steam-original" "steam-run" ];
