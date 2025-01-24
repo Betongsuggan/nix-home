@@ -15,6 +15,7 @@
     ./flatpak
     ./fonts
     ./games
+    ./game-streaming
     ./general
     ./git
     ./hyprland

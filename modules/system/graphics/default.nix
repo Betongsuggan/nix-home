@@ -25,5 +25,9 @@ with lib;
         ];
       };
     };
+
+    environment.variables = {
+      __NVFBC_CAPTURE = "1";
+    };
   };
 }
