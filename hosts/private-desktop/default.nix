@@ -60,12 +60,12 @@ inputs.nixpkgs.lib.nixosSystem {
       # File systems must be declared in order to boot
       fileSystems = {
         "/" = {
-          device = "/dev/disk/by-uuid/43255a91-0948-4139-a4b6-8dfd39d0cb71";
+          device = "/dev/disk/by-uuid/7bd243d3-6b04-4df9-b4d7-3c590f7ebe3d";
           fsType = "ext4";
         };
       };
       swapDevices = [
-        { device = "/dev/disk/by-uuid/e60bcff0-9a13-4d4b-8b4d-9942f317ecd0"; }
+        { device = "/dev/disk/by-uuid/979c14c3-e740-4c1b-8b3d-cd817ac9b61b"; }
       ];
 
 
