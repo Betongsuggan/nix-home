@@ -1,6 +1,6 @@
 { pkgs, ... }:
 let
-  brightnessControl = pkgs.writeShellScriptBin "brightness-control" ''
+  bluetoothControl = pkgs.writeShellScriptBin "bluetooth-control" ''
     #!/usr/bin/env bash
     #
     # Forked from the excellent rofi-bluetooth script by Nick Clyde
@@ -311,4 +311,4 @@ let
     esac
   '';
 in
-brightnessControl
+bluetoothControl

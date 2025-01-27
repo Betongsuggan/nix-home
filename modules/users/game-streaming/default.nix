@@ -30,7 +30,7 @@ with lib;
       };
     };
     environment = mkIf config.game-streaming.client.enable {
-      systemPackages = [ moonlight-qt ];
+      systemPackages = [ pkgs.moonlight-qt ];
     };
   };
 

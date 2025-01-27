@@ -104,8 +104,8 @@ inputs.nixpkgs.lib.nixosSystem {
         enable = true;
         keyProviderPath = "$HOME/.config/anthropic/key_provider.sh";
       };
-      #theme.name = "gruvbox";
       general.enable = true;
+      game-streaming.client.enable = true;
       games.enable = true;
       flatpak.enable = true;
       communication.enable = true;
