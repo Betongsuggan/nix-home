@@ -7,7 +7,7 @@ let
   mediaPlayer = import ./mediaPlayerControls.nix { inherit pkgs; };
   volumeControl = import ./volumeControls.nix { inherit pkgs; };
   brightnessControl = import ./brightnessControls.nix { inherit pkgs; };
-  bluetoothControl = import ./bluetoothControls.nix { inherit pkgs; };
+  #bluetoothControl = import ./bluetoothControls.nix { inherit pkgs; };
 in
 {
   options.hyprland = {
@@ -27,7 +27,7 @@ in
         mediaPlayer
         volumeControl
         brightnessControl
-        bluetoothControl
+        #bluetoothControl
         wifiControl
         utils.time
         utils.workspaces
@@ -107,10 +107,10 @@ in
             "$mod, t, exec, time-notifier"
             "$mod, e, exec, ${pkgs.wofi-emoji}/bin/wofi-emoji"
             "$mod, u, exec, wifi-control"
-            "$mod, c, exec, bluetooth-control"
+            #"$mod, c, exec, bluetooth-control"
             "$mod, o, exec, ${pkgs.wofi}/bin/wofi --show drun"
 
-            ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds)''
+            ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds).png''
             "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
 
 

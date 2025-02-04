@@ -6,7 +6,6 @@
     ./alacritty
     ./autorandr
     ./bash
-    ./browsers
     ./colemak
     ./communication
     ./development
@@ -26,6 +25,7 @@
     ./nushell
     ./picom
     ./polybar
+    ./qutebrowser
     ./rofi
     ./starship
     ./sway

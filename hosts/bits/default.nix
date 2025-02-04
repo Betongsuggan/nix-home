@@ -79,7 +79,8 @@ inputs.nixpkgs.lib.nixosSystem {
       services.fwupd.enable = true;
 
       touchpad.enable = true;
-      firefox.enable = true;
+      #firefox.enable = true;
+      qutebrowser.enable = true;
       graphics.enable = true;
       audio.enable = true;
       networkmanager = {
