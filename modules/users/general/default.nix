@@ -22,12 +22,11 @@ with lib;
       htop
       iio-sensor-proxy
       imv
-      kdenlive
       kooha
       lf
       lm_sensors
       lshw
-      okular
+      kdePackages.okular
       p7zip
       powertop
       ryzenadj

@@ -10,7 +10,7 @@ with lib;
     home-manager.users.${config.user} = {
       home.packages = with pkgs; [
         # Infrastructure
-        localstack
+        #localstack
         #pulumi
         #pulumiPackages.pulumi-language-go
 

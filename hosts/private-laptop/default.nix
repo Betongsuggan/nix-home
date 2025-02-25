@@ -91,7 +91,6 @@ inputs.nixpkgs.lib.nixosSystem {
         userEmail = "rydback@gmail.com";
       };
       touchpad.enable = true;
-      firefox.enable = true;
       graphics.enable = true;
       audio.enable = true;
       docker.enable = true;

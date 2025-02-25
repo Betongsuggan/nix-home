@@ -21,6 +21,7 @@
     ./i3
     ./icons
     ./kanshi
+    ./keyboard
     ./neovim
     ./nushell
     ./picom

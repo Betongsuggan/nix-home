@@ -81,6 +81,7 @@ inputs.nixpkgs.lib.nixosSystem {
       touchpad.enable = true;
       #firefox.enable = true;
       qutebrowser.enable = true;
+      keyboard.enable = true;
       graphics.enable = true;
       audio.enable = true;
       networkmanager = {

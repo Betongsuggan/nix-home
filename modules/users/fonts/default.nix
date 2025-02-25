@@ -10,12 +10,13 @@ with lib;
     fonts.fontconfig = {
       enable = true;
          defaultFonts = {
+           #sansSerif = [ "Comic Relief" ];
+           #monospace = [ "Comic Relief" ];
            monospace = [ "Hasklug Nerd Font Mono" "Noto Color Emoji" ];
          };
     };
     home-manager.users.${config.user}.home = {
-      packages = with pkgs; [ glibcLocales nerd-fonts.hasklug noto-fonts-emoji ];
-
+      packages = with pkgs; [ glibcLocales comic-relief nerd-fonts.hasklug noto-fonts-emoji ];
     };
   };
 }
