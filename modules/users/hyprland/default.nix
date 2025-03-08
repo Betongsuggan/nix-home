@@ -88,7 +88,8 @@ in
           };
 
           bind = [
-
+            "$modShift, b, exec, hyprctl keyword input:kb_variant \"\""
+            "$modShift, c, exec, hyprctl keyword input:kb_variant colemak"
             "$mod, RETURN, exec, ${pkgs.alacritty}/bin/alacritty"
             "$mod, f, fullscreen,"
             "$modShift, q, killactive,"
@@ -162,11 +163,12 @@ in
           };
 
           input = {
-            kb_layout = "us,us";
-            kb_variant = ",colemak";
-            kb_options = "caps:escape,compose:ralt,grp:shifts_toggle";
+            kb_layout = "us";
+            kb_variant = "colemak";
+            kb_options = "caps:escape,compose:ralt";
+            resolve_binds_by_sym = 1;
             #touchdevice = {
-            #  output = "eDP-1";
+            #  output = "eDP-1"
             #};
           };
         };
