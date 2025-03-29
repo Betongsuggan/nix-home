@@ -31,6 +31,7 @@
     ./starship
     ./sway
     ./thunar
+    ./undervolting
     ./urxvt
     ./waybar
     ./wofi

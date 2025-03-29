@@ -111,6 +111,7 @@ inputs.nixpkgs.lib.nixosSystem {
       communication.enable = true;
       alacritty.enable = true;
       starship.enable = true;
+      undervolting = true;
       bash.enable = true;
       fonts.enable = true;
       dunst.enable = true;
