@@ -18,11 +18,6 @@ with lib;
     };
 
     hardware = {
-      #nvidia = mkIf config.graphics.nvidia {
-      #  modesetting.enable = true;
-      #  open = true;
-      #  package = config.boot.kernelPackages.nvidiaPackages.latest;
-      #};
       graphics = {
         enable = true;
         enable32Bit = true;

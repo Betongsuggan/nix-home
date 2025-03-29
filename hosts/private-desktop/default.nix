@@ -29,7 +29,7 @@ inputs.nixpkgs.lib.nixosSystem {
 
       nixpkgs = { inherit overlays; };
       boot = {
-        kernelPackages = pkgs.linuxPackages_6_13;
+        kernelPackages = pkgs.linuxPackages_6_14;
       
         initrd.availableKernelModules =
           [ "xhci_pci" "xhci_hcd" "nvme" "ahci" "usb_storage" "sd_mod" "usb_storage" ];

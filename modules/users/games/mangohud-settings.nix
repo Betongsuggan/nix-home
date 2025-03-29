@@ -80,9 +80,9 @@
   ## Note: gpu_mem_clock and gpu_mem_temp also need "vram" to be enabled
   gpu_stats = true;
   gpu_temp = true;
-  # gpu_junction_temp
+  gpu_junction_temp = true;
   # gpu_core_clock
-  # gpu_mem_temp
+  gpu_mem_temp = true;
   # gpu_mem_clock
   gpu_power = true;
   # gpu_text=
@@ -90,7 +90,7 @@
   # gpu_load_value=60,90
   # gpu_load_color=39F900,FDFD09,B22222
   ## GPU fan in rpm on AMD, FAN in percent on NVIDIA
-  # gpu_fan
+  gpu_fan = true;
   ## gpu_voltage only works on AMD GPUs
   # gpu_voltage
   ## Select list of GPUs to display

@@ -35,6 +35,7 @@ with lib;
       udisks
       usbutils
       vlc
+      wine
     ];
   };
 }
