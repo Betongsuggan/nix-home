@@ -16,7 +16,7 @@ with lib;
          };
     };
     home-manager.users.${config.user}.home = {
-      packages = with pkgs; [ glibcLocales comic-relief nerd-fonts.hasklug noto-fonts-emoji ];
+      packages = with pkgs; [ glibcLocales comic-relief nerdfonts noto-fonts-emoji ];
     };
   };
 }

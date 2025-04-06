@@ -28,15 +28,15 @@ inputs.nixpkgs.lib.nixosSystem {
       nixpkgs = { inherit overlays; };
 
       boot = {
-     
+
         kernelPackages = pkgs.linuxPackages_6_6;
-        
+
         initrd.availableKernelModules =
           [ "nvme" "xhci_pci" "ahci" "thunderbolt" "usb_storage" "sd_mod" "sdhci_pci" ];
         loader = {
           systemd-boot.enable = true;
           systemd-boot.configurationLimit = 10;
-          
+
           efi.efiSysMountPoint = "/boot";
           efi.canTouchEfiVariables = true;
           grub.useOSProber = true;
@@ -79,9 +79,9 @@ inputs.nixpkgs.lib.nixosSystem {
       services.fwupd.enable = true;
 
       touchpad.enable = true;
-      #firefox.enable = true;
+      firefox.enable = true;
       qutebrowser.enable = true;
-      keyboard.enable = true;
+      #keyboard.enable = true;
       graphics.enable = true;
       audio.enable = true;
       networkmanager = {
@@ -102,9 +102,21 @@ inputs.nixpkgs.lib.nixosSystem {
         userName = "BirgerRydback";
         userEmail = "birger.rydback@bits.bi";
       };
+
       ai = {
         enable = true;
-        keyProviderPath = "$HOME/.config/anthropic/key_provider.sh";
+        keyProviders = [
+          {
+            name = "tavily_key_provider";
+            path = "$HOME/.config/tavily/key_provider.sh";
+            envVarName = "TAVILY_API_KEY";
+          }
+          {
+            name = "anthropic_key_provider";
+            path = "$HOME/.config/anthropic/key_provider.sh";
+            envVarName = "ANTHROPIC_API_KEY";
+          }
+        ];
       };
       general.enable = true;
       game-streaming.client.enable = true;
@@ -121,7 +133,13 @@ inputs.nixpkgs.lib.nixosSystem {
       dunst.enable = true;
       icons.enable = true;
       kanshi.enable = true;
-      hyprland.enable = true;
+      hyprland = {
+        enable = true;
+        monitorResolutions = [
+          "1,3840x2560@60,auto,1"
+          ",preferred,auto,1"
+        ];
+      };
       thunar.enable = true;
       wofi.enable = true;
       development.enable = true;

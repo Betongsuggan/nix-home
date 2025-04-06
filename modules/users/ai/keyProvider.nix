@@ -1,8 +1,8 @@
-{ pkgs, config, ... }:
+{ pkgs, providerConfig, ... }: 
 let
-  keyProvider = pkgs.writeShellScriptBin "ai_key_provider" ''
+  keyProvider = pkgs.writeShellScriptBin providerConfig.name ''
     #!/usr/bin/env bash
-    "${config.ai.keyProviderPath}" "$@"
+    "${providerConfig.path}" "$@"
   '';
 in
 keyProvider

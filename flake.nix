@@ -2,10 +2,11 @@
   description = "Betongsuggan's flake to rule them all";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-unstable";
+    nixpkgs.url = "nixpkgs/nixos-24.11";
+    nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
 
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -14,11 +15,14 @@
     neovim.url = "github:Betongsuggan/nvim";
   };
 
-  outputs = { nixpkgs, home-manager, neovim, ... }@inputs:
+  outputs = { nixpkgs, nixpkgs-unstable, home-manager, neovim, ... }@inputs:
     let
-      overlays = [ 
+      overlays = [
         (self: super: {
           neovim = neovim.packages.${self.system}.default;
+        })
+        (final: prev: {
+          unstable = nixpkgs-unstable.legacyPackages.${prev.system};
         })
       ];
     in

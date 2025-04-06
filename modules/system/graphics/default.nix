@@ -13,9 +13,7 @@ with lib;
       vulkan-tools
     ];
 
-    services.xserver = mkIf config.graphics.nvidia {
-      videoDrivers = [ "amdgpu" ];
-    };
+    services.xserver.videoDrivers = [ "amdgpu" ];
 
     hardware = {
       graphics = {

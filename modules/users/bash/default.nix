@@ -33,7 +33,6 @@ with lib;
         set -o vi
         export EDITOR=nvim
         export PATH="$PATH:~/.cargo/bin/"
-        export ANTHROPIC_API_KEY="$(ai_key_provider)"
       '';
     };
   };

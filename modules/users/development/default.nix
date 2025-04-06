@@ -9,7 +9,9 @@ with lib;
   config = mkIf config.development.enable {
     home-manager.users.${config.user} = {
       home.packages = with pkgs; [
+        hello
         # Infrastructure
+        unstable.nodePackages.aws-cdk
         #localstack
         #pulumi
         #pulumiPackages.pulumi-language-go

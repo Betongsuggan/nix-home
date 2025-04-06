@@ -13,10 +13,10 @@ in
   options.hyprland = {
     enable = mkEnableOption "Enable Hyprland";
 
-    monitorResolution = mkOption {
-      description = "Monitor resolution";
-      type = types.str;
-      default = ",preferred,auto,1";
+    monitorResolutions = mkOption {
+      description = "Monitor resolutions";
+      type = types.listOf types.str;
+      default = [ ",preferred,auto,1" ];
     };
   };
 
@@ -51,10 +51,7 @@ in
         enable = true;
         #package = inputs.hyprland.packages.${pkgs.system}.hyprland;
         settings = {
-          monitor = [
-            config.hyprland.monitorResolution
-            "Unknown-1,disable"
-          ];
+          monitor = config.hyprland.monitorResolutions;
 
           cursor = {
             enable_hyprcursor = false;
