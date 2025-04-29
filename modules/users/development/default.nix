@@ -12,7 +12,8 @@ with lib;
         hello
         # Infrastructure
         unstable.nodePackages.aws-cdk
-        #localstack
+        localstack
+        nodePackages.aws-cdk-local
         #pulumi
         #pulumiPackages.pulumi-language-go
 

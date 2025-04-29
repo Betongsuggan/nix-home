@@ -24,6 +24,144 @@
         (final: prev: {
           unstable = nixpkgs-unstable.legacyPackages.${prev.system};
         })
+        (final: prev: {
+          nodePackages = prev.nodePackages // {
+
+            aws-cdk-local = prev.stdenv.mkDerivation rec {
+              pname = "aws-cdk-local";
+              version = "2.0.11";
+              
+              src = prev.fetchFromGitHub {
+                owner = "localstack";
+                repo = "aws-cdk-local";
+                rev = "9bb17186e0201a93d84edd0e8478f7da69ae5414";
+                sha256 = "sha256-1cgcBXe2N8sSNWe2L0QO8/MiBpAWKGz5DBxtl5s3+Lw=";
+              };
+              
+              # Fetch the diff package
+              diffPkg = prev.fetchurl {
+                url = "https://registry.npmjs.org/diff/-/diff-5.1.0.tgz";
+                sha256 = "sha256-Eq/4dNcQH4h4dSKlZ4HzgkD+ZopUXvAtO8X6UCvaak8=";
+              };
+              
+              nativeBuildInputs = [
+                prev.nodejs_20
+                prev.makeWrapper
+              ];
+              
+              buildPhase = ''
+                # Create a package directory
+                mkdir -p $out/lib/node_modules/aws-cdk-local
+                cp -r $src/* $out/lib/node_modules/aws-cdk-local/
+                
+                # Create node_modules directory
+                mkdir -p $out/lib/node_modules/aws-cdk-local/node_modules/diff
+                
+                # Extract the diff package
+                tar -xzf ${diffPkg} -C $out/lib/node_modules/aws-cdk-local/node_modules/diff --strip-components=1
+              '';
+              
+              installPhase = ''
+                mkdir -p $out/bin
+                
+                # Create the cdklocal executable with proper NODE_PATH
+                makeWrapper ${prev.nodejs_20}/bin/node $out/bin/cdklocal \
+                  --add-flags "$out/lib/node_modules/aws-cdk-local/bin/cdklocal" \
+                  --set NODE_PATH "$out/lib/node_modules/aws-cdk-local/node_modules:${prev.nodePackages.aws-cdk}/lib/node_modules:${prev.nodejs_20}/lib/node_modules"
+                
+                chmod +x $out/bin/cdklocal
+              '';
+              
+              meta = {
+                description = "Run your AWS CDK applications with LocalStack";
+                homepage = "https://github.com/localstack/aws-cdk-local";
+                license = prev.lib.licenses.asl20;
+              };
+            };
+          };
+
+
+
+          #  aws-cdk-local = prev.buildNpmPackage rec {
+          #    name = "aws-cdk-local";
+          #    packageName = "aws-cdk-local";
+          #    version = "2.0.11";
+          #    npmDepsHash = "sha256-pEjsZKGiXYhavaxkBNXXzhF4GxFqJo1IZ/jIo1wSgIs=";
+          #    src = prev.fetchFromGitHub {
+          #      owner = "localstack";
+          #      repo = "aws-cdk-local";
+          #      rev = "9bb17186e0201a93d84edd0e8478f7da69ae5414";
+          #      sha256 = "sha256-1cgcBXe2N8sSNWe2L0QO8/MiBpAWKGz5DBxtl5s3+Lw=";
+          #    };
+
+          #    #npmFlags = "--ignore-scripts";
+          #    #dontNpmBuild = true;
+
+          #    meta = {
+          #      description = "Run your AWS CDK applications with LocalStack";
+          #      homepage = "https://github.com/localstack/aws-cdk-local";
+          #      license = "Apache-2.0";
+          #    };
+
+          #    nativeBuildInputs = [
+          #      prev.nodejs_20
+          #      prev.makeWrapper
+          #      prev.nodePackages.npm
+          #    ];
+          #    
+          #    buildPhase = ''
+          #      # Create a package directory
+          #      mkdir -p $out/lib/node_modules/aws-cdk-local
+          #      cp -r $src/* $out/lib/node_modules/aws-cdk-local/
+
+          #      # Install dependencies
+          #      cd $out/lib/node_modules/aws-cdk-local
+          #      export HOME=$TMPDIR
+          #      npm install --no-save diff aws-cdk
+          #    '';
+          #    
+          #    installPhase = ''
+          #      mkdir -p $out/bin
+          #      
+          #      # Create the cdklocal executable with proper NODE_PATH
+          #      makeWrapper ${prev.nodejs_20}/bin/node $out/bin/cdklocal \
+          #        --add-flags "$out/lib/node_modules/aws-cdk-local/bin/cdklocal" \
+          #        --set NODE_PATH "$out/lib/node_modules/aws-cdk-local/node_modules:${prev.nodePackages.aws-cdk}/lib/node_modules:${prev.nodejs_20}/lib/node_modules"
+          #      
+          #      chmod +x $out/bin/cdklocal
+          #    '';
+
+          #    #dependencies = with prev.nodePackages; [
+          #    #  aws-cdk
+          #    #];
+
+          #    #nodejs = prev.nodejs_20;
+          #    #
+          #    #postPatch = ''
+          #    #  if [ ! -f package.json ]; then
+          #    #    cat > package.json << EOF
+          #    #    {
+          #    #      "name": "${packageName}",
+          #    #      "version": "${version}",
+          #    #      "bin": {
+          #    #        "cdklocal": "bin/cdklocal"
+          #    #      }
+          #    #    }
+          #    #  EOF
+          #    #  fi
+          #    #'';
+          #    #
+          #    #postInstall = ''
+          #    #  # Ensure the bin directory exists
+          #    #  mkdir -p $out/bin
+          #    #  
+          #    #  # Create wrapper scripts for the binaries
+          #    #  #ln -s $out/lib/node_modules/aws-cdk-localstack/bin/cdklocal $out/bin/cdklocal
+          #    #  chmod +x $out/bin/cdklocal
+          #    #'';
+          #  };
+          #};
+        })
       ];
     in
     rec {
