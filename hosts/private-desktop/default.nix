@@ -47,7 +47,13 @@ inputs.nixpkgs.lib.nixosSystem {
         supportedFilesystems = [ "ntfs" ];
       };
 
-      nixpkgs.config.allowUnfree = true;
+      nixpkgs.config = {
+        allowUnfree = true;
+        permittedInsecurePackages = [
+          "freeimage-3.18.0-unstable-2024-04-18"
+        ];
+      };
+
       hardware = {
         enableAllFirmware = true;
         enableRedistributableFirmware = true;
@@ -83,8 +89,15 @@ inputs.nixpkgs.lib.nixosSystem {
       };
       secrets = {
         enable = true;
-        keyProviderPath = "$HOME/.config/anthropic/key_provider.sh";
+        keyProviders = [
+          {
+            name = "anthropic_key_provider";
+            path = "$HOME/.config/anthropic/key_provider.sh";
+            envVarName = "ANTHROPIC_API_KEY";
+          }
+        ];
       };
+
       firefox.enable = true;
       graphics = {
         enable = true;
@@ -133,11 +146,6 @@ inputs.nixpkgs.lib.nixosSystem {
         };
       };
       wofi.enable = true;
-
-      nixpkgs.config.permittedInsecurePackages = [
-        "electron-25.9.0"
-        "freeimage-3.18.0-unstable-2024-04-18"
-      ];
     })
   ];
 }

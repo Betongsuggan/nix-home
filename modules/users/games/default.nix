@@ -18,14 +18,13 @@ with lib;
       home.packages = with pkgs; [
         chiaki
         discord
-        emulationstation-de.withCores
-        (cores: with libretro; [
-          snes9x
-        ])
+        unstable.emulationstation-de
+        libretro.snes9x
         evtest
         gamescope
         gamemode
         lutris
+        # Standard RetroArch is still included if you want to use it separately
         retroarch
         steam
         steam-run

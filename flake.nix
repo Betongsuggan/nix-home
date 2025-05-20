@@ -30,8 +30,7 @@
         (final: prev: {
           unstable = nixpkgs-unstable.legacyPackages.${prev.system};
         })
-        import
-        ./overrides/aws-cdk.nix
+        (import ./overrides/aws-cdk.nix)
       ];
     in
     rec {
