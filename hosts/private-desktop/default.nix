@@ -40,9 +40,10 @@ inputs.nixpkgs.lib.nixosSystem {
           grub.useOSProber = true;
           grub.configurationLimit = 10;
         };
+        extraModulePackages = [ pkgs.linuxPackages_6_14.ryzen-smu ];
 
         # Graphics and VMs
-        kernelModules = [ "iwlwifi" "amdgpu" ];
+        kernelModules = [ "iwlwifi" "amdgpu" "ryzen_smu" ];
         supportedFilesystems = [ "ntfs" ];
       };
 
@@ -109,7 +110,7 @@ inputs.nixpkgs.lib.nixosSystem {
       communication.enable = true;
       alacritty.enable = true;
       starship.enable = true;
-      undervolting = true;
+      undervolting.enable = true;
       bash.enable = true;
       fonts.enable = true;
       dunst.enable = true;
@@ -118,6 +119,7 @@ inputs.nixpkgs.lib.nixosSystem {
       hyprland = {
         enable = true;
         monitorResolution = ",3440x1440@100,auto,1";
+        #monitorResolution = "HDMI-A-1,3840x2160@120,auto,2";
         autostartApps = {
           firefox = {
             command = "firefox";
@@ -134,6 +136,7 @@ inputs.nixpkgs.lib.nixosSystem {
 
       nixpkgs.config.permittedInsecurePackages = [
         "electron-25.9.0"
+        "freeimage-3.18.0-unstable-2024-04-18"
       ];
     })
   ];

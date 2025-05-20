@@ -12,12 +12,16 @@ with lib;
       programs.mangohud = {
         enable = true;
         enableSessionWide = true;
-        settings = import ./mangohud-settings.nix {};
+        settings = import ./mangohud-settings.nix { };
       };
 
       home.packages = with pkgs; [
         chiaki
         discord
+        emulationstation-de.withCores
+        (cores: with libretro; [
+          snes9x
+        ])
         evtest
         gamescope
         gamemode

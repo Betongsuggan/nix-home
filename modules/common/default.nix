@@ -1,5 +1,4 @@
 { config, lib, pkgs, ... }: {
-
   options = {
     unfreePackages = lib.mkOption {
       type = lib.types.listOf lib.types.str;
