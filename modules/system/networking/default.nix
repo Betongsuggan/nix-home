@@ -16,22 +16,24 @@ in
   };
 
   config = mkIf config.networkmanager.enable {
-      environment.systemPackages = [ notifier ];
-      networking = {
-        inherit (config.networkmanager) hostName;
-        wireless.enable = false;
-        networkmanager = {
-          enable = true;
-          dispatcherScripts = [
-            {
-              type = "pre-up";
-              source = "${notifier}/bin/network-notifier";
-            }
-          ];
-          wifi.scanRandMacAddress = false;
-        };
-        useDHCP = false;
+    environment.systemPackages = [ notifier ];
+    networking = {
+      inherit (config.networkmanager) hostName;
+      wireless.enable = false;
+      extraHosts = ''
+        127.0.0.1 bits.execute-api.localhost.localstack.cloud
+      '';
+      networkmanager = {
+        enable = true;
+        dispatcherScripts = [
+          {
+            type = "pre-up";
+            source = "${notifier}/bin/network-notifier";
+          }
+        ];
+        wifi.scanRandMacAddress = false;
       };
+      useDHCP = false;
+    };
   };
 }
-

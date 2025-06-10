@@ -67,7 +67,7 @@
                 # Create the cdklocal executable with proper NODE_PATH
                 makeWrapper ${prev.nodejs_20}/bin/node $out/bin/cdklocal \
                   --add-flags "$out/lib/node_modules/aws-cdk-local/bin/cdklocal" \
-                  --set NODE_PATH "$out/lib/node_modules/aws-cdk-local/node_modules:${prev.nodePackages.aws-cdk}/lib/node_modules:${prev.nodejs_20}/lib/node_modules"
+                  --set NODE_PATH "$out/lib/node_modules/aws-cdk-local/node_modules:${prev.unstable.nodePackages.aws-cdk}/lib/node_modules:${prev.nodejs_20}/lib/node_modules"
                 
                 chmod +x $out/bin/cdklocal
               '';

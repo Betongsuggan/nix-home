@@ -2,12 +2,7 @@
 with lib;
 
 let
-  utils = import ./utilNotifications.nix { inherit pkgs; };
-  wifiControl = import ./wifiControls.nix { inherit pkgs; };
-  mediaPlayer = import ./mediaPlayerControls.nix { inherit pkgs; };
-  volumeControl = import ./volumeControls.nix { inherit pkgs; };
-  brightnessControl = import ./brightnessControls.nix { inherit pkgs; };
-  #bluetoothControl = import ./bluetoothControls.nix { inherit pkgs; };
+  controls = import ./controls { inherit pkgs; };
 in
 {
   options.hyprland = {
@@ -30,16 +25,16 @@ in
         splash = false
       '';
       home.packages = with pkgs; [
-        mediaPlayer
-        volumeControl
-        brightnessControl
-        #bluetoothControl
-        wifiControl
-        utils.time
-        utils.workspaces
-        utils.battery
-        utils.system
-        utils.autoScreenRotation
+        controls.mediaPlayer
+        controls.volume
+        controls.brightness
+        controls.bluetoothControl
+        controls.wifiControl
+        controls.utils.time
+        controls.utils.workspaces
+        controls.utils.battery
+        controls.utils.system
+        controls.utils.autoScreenRotation
         swaylock-fancy
         grim
         slurp
@@ -126,20 +121,24 @@ in
           ] ++ (
             # workspaces
             # binds $mod + [shift +] {1..10} to [move to] workspace {1..10}
-            builtins.concatLists (builtins.genList (
-                x: let
-                  ws = let
-                    c = (x + 1) / 10;
-                  in
+            builtins.concatLists (builtins.genList
+              (
+                x:
+                let
+                  ws =
+                    let
+                      c = (x + 1) / 10;
+                    in
                     builtins.toString (x + 1 - (c * 10));
-                in [
+                in
+                [
                   "$mod, ${ws}, workspace, ${toString (x + 1)}"
                   "$modShift, ${ws}, movetoworkspacesilent, ${toString (x + 1)}"
                 ]
               )
               10)
           );
-          binde=[
+          binde = [
             # Brightness
             ", XF86MonBrightnessUp,  exec, brightness-control -i 10"
             ", XF86MonBrightnessDown, exec, brightness-control -d 10"

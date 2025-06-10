@@ -16,10 +16,10 @@ with lib;
         enable = true;
         profiles.betongsuggan = {
           settings = {
-              "media.ffmpeg.vaapi.enabled" = true;
-              "media.ffvpx.enabled" = false;
-              "media.av1.enabled" = false;
-              "gfx.webrender.all" = true;
+            "media.ffmpeg.vaapi.enabled" = true;
+            "media.ffvpx.enabled" = false;
+            "media.av1.enabled" = false;
+            "gfx.webrender.all" = true;
           };
         };
       };
@@ -36,6 +36,7 @@ with lib;
     };
     environment.sessionVariables = {
       MOZ_ENABLE_WAYLAND = "1";
+      MOZ_WEBRENDER = "1";
       XDG_CURRENT_DESKTOP = "hyprland";
       GTK_USE_PORTAL = "1";
       NIXOS_OZONE_WL = "1";

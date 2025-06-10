@@ -7,7 +7,7 @@ with lib;
   };
 
   config = mkIf config.general.enable {
-    services.tumbler.enable = true; 
+    services.tumbler.enable = true;
     home-manager.users.${config.user}.home.packages = with pkgs; [
       btop
       coreutils
@@ -36,6 +36,7 @@ with lib;
       usbutils
       vlc
       wine
+      zip
     ];
   };
 }
