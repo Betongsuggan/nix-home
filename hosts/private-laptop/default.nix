@@ -16,11 +16,9 @@ in
 inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
+    ../../modules/users/theming
     globals
-    {
-      _module.args = { inherit inputs; };
-    }
-    inputs.nur.nixosModules.nur
+    inputs.nur.modules.nixos.default
     inputs.home-manager.nixosModules.home-manager
     ../../modules/common
     ../../modules/system
@@ -30,19 +28,19 @@ inputs.nixpkgs.lib.nixosSystem {
       nixpkgs = { inherit overlays; };
       boot = {
         kernelPackages = pkgs.linuxPackages_6_1;
-        supportedFilesystems = [ "ntfs" ];     
+        supportedFilesystems = [ "ntfs" ];
         initrd.availableKernelModules =
           [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
         loader = {
           systemd-boot.enable = true;
           systemd-boot.configurationLimit = 10;
-        
+
           efi.efiSysMountPoint = "/boot";
           efi.canTouchEfiVariables = true;
           grub.useOSProber = true;
           grub.configurationLimit = 10;
         };
-      
+
         # Graphics and VMs
         kernelModules = [ "kvm-intel" "iwlwifi" ];
       };
@@ -78,8 +76,8 @@ inputs.nixpkgs.lib.nixosSystem {
       ];
 
 
-      environment.systemPackages = with pkgs; [ 
-        iio-sensor-proxy 
+      environment.systemPackages = with pkgs; [
+        iio-sensor-proxy
       ];
       services = {
         fwupd.enable = true;
@@ -101,7 +99,13 @@ inputs.nixpkgs.lib.nixosSystem {
 
       ai = {
         enable = true;
-        keyProviderPath = "$HOME/.config/anthropic/key_provider.sh";
+        keyProviders = [
+          {
+            name = "anthropic_key_provider";
+            path = "$HOME/.config/anthropic/key_provider.sh";
+            envVarName = "ANTHROPIC_API_KEY";
+          }
+        ];
       };
       networkmanager = {
         enable = true;
@@ -112,9 +116,11 @@ inputs.nixpkgs.lib.nixosSystem {
         tcpPorts = [ 8080 ];
       };
       general.enable = true;
+      firefox.enable = true;
       games.enable = true;
       communication.enable = true;
       neovim.enable = true;
+      bash.enable = true;
       alacritty.enable = true;
       nushell.enable = true;
       starship.enable = true;
@@ -123,6 +129,7 @@ inputs.nixpkgs.lib.nixosSystem {
       kanshi.enable = true;
       hyprland.enable = true;
       development.enable = true;
+      thunar.enable = true;
       wofi.enable = true;
     })
   ];

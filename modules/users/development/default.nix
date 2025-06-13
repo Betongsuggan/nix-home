@@ -29,7 +29,7 @@ with lib;
         # Node stuff
         yarn
         nodePackages.pnpm
-        nodejs-18_x
+        nodejs_20
 
         # Haskell
         ghc
