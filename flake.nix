@@ -13,13 +13,15 @@
     nur.url = "github:nix-community/NUR";
 
     neovim.url = "github:Betongsuggan/nvim";
+    wofi-bluetooth.url = "github:Betongsuggan/wofi-bluetooth";
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, home-manager, neovim, ... }@inputs:
+  outputs = { nixpkgs, nixpkgs-unstable, home-manager, neovim, wofi-bluetooth, ... }@inputs:
     let
       overlays = [
         (self: super: {
           neovim = neovim.packages.${self.system}.default;
+          wofi-bluetooth = wofi-bluetooth.packages.${self.system}.default;
         })
         (final: prev: {
           unstable = nixpkgs-unstable.legacyPackages.${prev.system};
@@ -30,25 +32,25 @@
             aws-cdk-local = prev.stdenv.mkDerivation rec {
               pname = "aws-cdk-local";
               version = "2.0.11";
-              
+
               src = prev.fetchFromGitHub {
                 owner = "localstack";
                 repo = "aws-cdk-local";
                 rev = "9bb17186e0201a93d84edd0e8478f7da69ae5414";
                 sha256 = "sha256-1cgcBXe2N8sSNWe2L0QO8/MiBpAWKGz5DBxtl5s3+Lw=";
               };
-              
+
               # Fetch the diff package
               diffPkg = prev.fetchurl {
                 url = "https://registry.npmjs.org/diff/-/diff-5.1.0.tgz";
                 sha256 = "sha256-Eq/4dNcQH4h4dSKlZ4HzgkD+ZopUXvAtO8X6UCvaak8=";
               };
-              
+
               nativeBuildInputs = [
                 prev.nodejs_20
                 prev.makeWrapper
               ];
-              
+
               buildPhase = ''
                 # Create a package directory
                 mkdir -p $out/lib/node_modules/aws-cdk-local
@@ -60,7 +62,7 @@
                 # Extract the diff package
                 tar -xzf ${diffPkg} -C $out/lib/node_modules/aws-cdk-local/node_modules/diff --strip-components=1
               '';
-              
+
               installPhase = ''
                 mkdir -p $out/bin
                 
@@ -71,7 +73,7 @@
                 
                 chmod +x $out/bin/cdklocal
               '';
-              
+
               meta = {
                 description = "Run your AWS CDK applications with LocalStack";
                 homepage = "https://github.com/localstack/aws-cdk-local";

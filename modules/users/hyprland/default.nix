@@ -28,13 +28,13 @@ in
         controls.mediaPlayer
         controls.volume
         controls.brightness
-        controls.bluetoothControl
-        controls.wifiControl
+        controls.wifi
         controls.utils.time
         controls.utils.workspaces
         controls.utils.battery
         controls.utils.system
         controls.utils.autoScreenRotation
+        wofi-bluetooth
         swaylock-fancy
         grim
         slurp
@@ -107,7 +107,7 @@ in
             "$mod, t, exec, time-notifier"
             "$mod, e, exec, ${pkgs.wofi-emoji}/bin/wofi-emoji"
             "$mod, u, exec, wifi-control"
-            #"$mod, c, exec, bluetooth-control"
+            "$mod, c, exec, wofi-bluetooth"
             "$mod, o, exec, ${pkgs.wofi}/bin/wofi --show drun"
 
             ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds).png''
