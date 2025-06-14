@@ -105,7 +105,29 @@ inputs.nixpkgs.lib.nixosSystem {
             path = "$HOME/.config/anthropic/key_provider.sh";
             envVarName = "ANTHROPIC_API_KEY";
           }
+          {
+            name = "tavily_key_provider";
+            path = "$HOME/.config/tavily/key_provider.sh";
+            envVarName = "TAVILY_API_KEY";
+          }
         ];
+      };
+      walker = {
+        enable = true;
+        runAsService = true;
+        config = {
+          ui = {
+            width = 700;
+            height = 450;
+            border = {
+              width = 2;
+              radius = 10;
+            };
+          };
+          search = {
+            placeholder = "Type to search...";
+          };
+        };
       };
       networkmanager = {
         enable = true;

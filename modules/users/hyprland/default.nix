@@ -61,6 +61,7 @@ in
             "hyprpaper"
             "auto-screen-rotation"
             "${pkgs.touchegg}/bin/touchegg"
+            "walker --gapplication-service"
             "[workspace 1] firefox"
             ''[workspace 2] alacritty -e zellij attach --create "Bits Development"''
             ''[workspace 3] alacritty -e zellij attach --create "Nix Home"''
@@ -109,6 +110,7 @@ in
             "$mod, u, exec, wifi-control"
             "$mod, c, exec, wofi-bluetooth"
             "$mod, o, exec, ${pkgs.wofi}/bin/wofi --show drun"
+            "$mod, d, exec, walker"
 
             ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds).png''
             "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
