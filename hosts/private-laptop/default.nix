@@ -27,7 +27,7 @@ inputs.nixpkgs.lib.nixosSystem {
 
       nixpkgs = { inherit overlays; };
       boot = {
-        kernelPackages = pkgs.linuxPackages_6_1;
+        kernelPackages = pkgs.linuxPackages_6_12;
         supportedFilesystems = [ "ntfs" ];
         initrd.availableKernelModules =
           [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
@@ -89,7 +89,10 @@ inputs.nixpkgs.lib.nixosSystem {
         userEmail = "rydback@gmail.com";
       };
       touchpad.enable = true;
-      graphics.enable = true;
+      graphics = {
+        enable = true;
+        intel = true;
+      };
       audio.enable = true;
       docker.enable = true;
       bluetooth.enable = true;
@@ -105,7 +108,33 @@ inputs.nixpkgs.lib.nixosSystem {
             path = "$HOME/.config/anthropic/key_provider.sh";
             envVarName = "ANTHROPIC_API_KEY";
           }
+          {
+            name = "tavily_key_provider";
+            path = "$HOME/.config/tavily/key_provider.sh";
+            envVarName = "TAVILY_API_KEY";
+          }
         ];
+      };
+      walker = {
+        enable = true;
+        runAsService = true;
+        config = {
+          ui = {
+            width = 600;
+            height = 400;
+            border = {
+              width = 1;
+              radius = 5; # Will be overridden by theme.cornerRadius
+            };
+          };
+          search = {
+            placeholder = "Type to search...";
+          };
+          list = {
+            icons = true;
+            image_size = 15; # Match Wofi's image_size
+          };
+        };
       };
       networkmanager = {
         enable = true;

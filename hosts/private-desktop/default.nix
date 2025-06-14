@@ -30,19 +30,19 @@ inputs.nixpkgs.lib.nixosSystem {
       nixpkgs = { inherit overlays; };
       boot = {
         kernelPackages = pkgs.linuxPackages_6_14;
-      
+
         initrd.availableKernelModules =
           [ "xhci_pci" "xhci_hcd" "nvme" "ahci" "usb_storage" "sd_mod" "usb_storage" ];
         loader = {
           systemd-boot.enable = true;
           systemd-boot.configurationLimit = 10;
-        
+
           efi.efiSysMountPoint = "/boot";
           efi.canTouchEfiVariables = true;
           grub.useOSProber = true;
           grub.configurationLimit = 10;
         };
-      
+
         # Graphics and VMs
         kernelModules = [ "iwlwifi" "amdgpu" ];
         supportedFilesystems = [ "ntfs" ];
@@ -70,8 +70,8 @@ inputs.nixpkgs.lib.nixosSystem {
       ];
 
 
-      environment.systemPackages = with pkgs; [ 
-        iio-sensor-proxy 
+      environment.systemPackages = with pkgs; [
+        iio-sensor-proxy
       ];
       services = {
         fwupd.enable = true;
@@ -89,7 +89,7 @@ inputs.nixpkgs.lib.nixosSystem {
       firefox.enable = true;
       graphics = {
         enable = true;
-        nvidia = true;
+        amd = true;
       };
       audio.enable = true;
       bluetooth.enable = true;
@@ -116,7 +116,7 @@ inputs.nixpkgs.lib.nixosSystem {
       fonts.enable = true;
       dunst.enable = true;
       kanshi.enable = true;
-      thunar.enable = true; 
+      thunar.enable = true;
       hyprland = {
         enable = true;
         monitorResolution = ",3440x1440@100,auto,1";

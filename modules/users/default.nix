@@ -33,6 +33,7 @@
     ./thunar
     ./undervolting
     ./urxvt
+    ./walker
     ./waybar
     ./wofi
     ./x11

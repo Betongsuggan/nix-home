@@ -10,6 +10,8 @@ with lib;
     home-manager.users.${config.user} = {
       home.packages = with pkgs; [
         wofi-emoji
+        unstable.bzmenu
+        unstable.iwmenu
       ];
       programs.wofi = {
         enable = true;
@@ -21,7 +23,7 @@ with lib;
           window {
             font-size: 18px;
             border-radius: ${config.theme.cornerRadius};
-            border-color: ${config.theme.colors.border-light};
+            border-color: ${config.theme.colors.orange-light};
             background-color: ${config.theme.colors.background-dark};
             color: ${config.theme.colors.text-light};
           }
@@ -49,9 +51,6 @@ with lib;
             margin-right: 0.25em;
           }
         '';
-        #input  {
-        # color: ${config.theme.colors.background};
-        #}
       };
     };
   };

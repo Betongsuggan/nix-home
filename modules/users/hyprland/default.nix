@@ -44,7 +44,6 @@ in
 
       wayland.windowManager.hyprland = {
         enable = true;
-        #package = inputs.hyprland.packages.${pkgs.system}.hyprland;
         settings = {
           monitor = config.hyprland.monitorResolutions;
 
@@ -83,7 +82,7 @@ in
             "$modShift, b, exec, hyprctl keyword input:kb_variant \"\""
             "$modShift, c, exec, hyprctl keyword input:kb_variant colemak"
             "$mod, RETURN, exec, ${pkgs.alacritty}/bin/alacritty"
-            "$mod, f, fullscreen,"
+            "$mod, f, fullscreen"
             "$modShift, q, killactive,"
 
             "$mod, h, movefocus, l"
@@ -109,6 +108,7 @@ in
             "$mod, u, exec, wifi-control"
             "$mod, c, exec, wofi-bluetooth"
             "$mod, o, exec, ${pkgs.wofi}/bin/wofi --show drun"
+            "$mod, d, exec, walker"
 
             ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds).png''
             "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
@@ -138,6 +138,9 @@ in
               )
               10)
           );
+          binds = {
+            movefocus_cycles_fullscreen = true;
+          };
           binde = [
             # Brightness
             ", XF86MonBrightnessUp,  exec, brightness-control -i 10"
