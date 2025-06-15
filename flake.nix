@@ -11,7 +11,6 @@
     };
 
     nur.url = "github:nix-community/NUR";
-    walker.url = "github:abenz1267/walker/v0.12.23";
     neovim.url = "github:Betongsuggan/nvim";
     wofi-bluetooth.url = "github:Betongsuggan/wofi-bluetooth";
   };
