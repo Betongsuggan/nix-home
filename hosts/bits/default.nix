@@ -82,7 +82,10 @@ inputs.nixpkgs.lib.nixosSystem {
       firefox.enable = true;
       qutebrowser.enable = true;
       #keyboard.enable = true;
-      graphics.enable = true;
+      graphics = {
+        enable = true;
+        amd = true;
+      };
       audio.enable = true;
       networkmanager = {
         enable = true;
@@ -147,6 +150,27 @@ inputs.nixpkgs.lib.nixosSystem {
       };
       thunar.enable = true;
       wofi.enable = true;
+      walker = {
+        enable = true;
+        runAsService = true;
+        config = {
+          ui = {
+            width = 600;
+            height = 400;
+            border = {
+              width = 1;
+              radius = 5; # Will be overridden by theme.cornerRadius
+            };
+          };
+          search = {
+            placeholder = "Type to search...";
+          };
+          list = {
+            icons = true;
+            image_size = 15; # Match Wofi's image_size
+          };
+        };
+      };
       development.enable = true;
       zellij.enable = true;
 

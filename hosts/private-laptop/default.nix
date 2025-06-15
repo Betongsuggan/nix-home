@@ -89,7 +89,10 @@ inputs.nixpkgs.lib.nixosSystem {
         userEmail = "rydback@gmail.com";
       };
       touchpad.enable = true;
-      graphics.enable = true;
+      graphics = {
+        enable = true;
+        intel = true;
+      };
       audio.enable = true;
       docker.enable = true;
       bluetooth.enable = true;
@@ -117,15 +120,19 @@ inputs.nixpkgs.lib.nixosSystem {
         runAsService = true;
         config = {
           ui = {
-            width = 700;
-            height = 450;
+            width = 600;
+            height = 400;
             border = {
-              width = 2;
-              radius = 10;
+              width = 1;
+              radius = 5; # Will be overridden by theme.cornerRadius
             };
           };
           search = {
             placeholder = "Type to search...";
+          };
+          list = {
+            icons = true;
+            image_size = 15; # Match Wofi's image_size
           };
         };
       };

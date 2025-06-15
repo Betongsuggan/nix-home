@@ -84,7 +84,7 @@ in
             "$modShift, b, exec, hyprctl keyword input:kb_variant \"\""
             "$modShift, c, exec, hyprctl keyword input:kb_variant colemak"
             "$mod, RETURN, exec, ${pkgs.alacritty}/bin/alacritty"
-            "$mod, f, fullscreen,"
+            "$mod, f, fullscreen"
             "$modShift, q, killactive,"
 
             "$mod, h, movefocus, l"
@@ -140,6 +140,9 @@ in
               )
               10)
           );
+          binds = {
+            movefocus_cycles_fullscreen = true;
+          };
           binde = [
             # Brightness
             ", XF86MonBrightnessUp,  exec, brightness-control -i 10"
