@@ -19,7 +19,10 @@ in
     environment.systemPackages = [ notifier ];
     networking = {
       inherit (config.networkmanager) hostName;
-      wireless.enable = false;
+      wireless = {
+        enable = false;
+        iwd.enable = false;
+      };
       extraHosts = ''
         127.0.0.1 bits.execute-api.localhost.localstack.cloud
       '';

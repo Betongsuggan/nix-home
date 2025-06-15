@@ -5,11 +5,11 @@
   close_when_open = false;
   theme = "local";
   monitor = "";
-  hotreload_theme = false;
+  hotreload_theme = true;
   as_window = false;
   timeout = 0;
-  disable_click_to_close = false;
-  force_keyboard_focus = false;
+  disable_click_to_close = true;
+  force_keyboard_focus = true;
 
   keys = {
     accept_typeahead = [
@@ -64,7 +64,7 @@
 
   list = {
     dynamic_sub = true;
-    keyboard_scroll_style = "emacs";
+    keyboard_scroll_style = "vim";
     max_entries = 50;
     show_initial_entries = true;
     single_click = true;
@@ -80,7 +80,7 @@
   };
 
   activation_mode = {
-    labels = "jkl;asdf";
+    labels = "";
   };
 
   builtins = {
@@ -109,16 +109,7 @@
       name = "bookmarks";
       icon = "bookmark";
       switcher_only = true;
-      entries = [
-        {
-          label = "Walker";
-          url = "https://github.com/abenz1267/walker";
-          keywords = [
-            "walker"
-            "github"
-          ];
-        }
-      ];
+      entries = [ ];
     };
 
     xdph_picker = {
@@ -270,6 +261,7 @@
         {
           name = "Google";
           url = "https://www.google.com/search?q=%TERM%";
+          switcher_only = true;
         }
         {
           name = "DuckDuckGo";
@@ -277,8 +269,8 @@
           switcher_only = true;
         }
         {
-          name = "Ecosia";
-          url = "https://www.ecosia.org/search?q=%TERM%";
+          name = "Nix Packages";
+          url = "https://search.nixos.org/packages?query=%TERM%";
           switcher_only = true;
         }
         {

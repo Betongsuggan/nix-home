@@ -4,7 +4,7 @@ with lib;
 
 let
   walkerCfg = import ./config/config.nix;
-  theme = import ./config/theme.nix { inherit (config) theme; };
+  theme = import ./config/theme.nix { inherit (config) lib theme; };
 in
 {
   options.walker = {
@@ -35,13 +35,14 @@ in
           ];
 
         # Create configuration directory
-        file.".config/walker/config.json".text = builtins.toJSON (recursiveUpdate
-          walkerCfg
-          config.walker.config);
+        file = {
+          ".config/walker/config.json".text = builtins.toJSON (recursiveUpdate
+            walkerCfg
+            config.walker.config);
 
-
-        ## Create style file to match Wofi styling
-        file.".config/walker/themes/local.css".text = theme.css;
+          ".config/walker/themes/local.css".text = theme.css;
+          ".config/walker/themes/local.json".text = theme.json;
+        };
       };
       # Create systemd user service for Walker
       systemd.user.services.walker = mkIf config.walker.runAsService {
