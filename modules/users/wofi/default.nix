@@ -51,6 +51,9 @@ with lib;
             margin-right: 0.25em;
           }
         '';
+        #input  {
+        # color: ${config.theme.colors.background};
+        #}
       };
     };
   };

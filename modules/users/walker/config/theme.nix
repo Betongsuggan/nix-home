@@ -107,6 +107,7 @@
     }
 
     #text {
+      font-size: 1.2em;
     }
 
     #label {
@@ -115,7 +116,7 @@
 
     #sub {
       opacity: 0.5;
-      font-size: 0.8em;
+      font-size: 0.6em;
     }
 
     #activationlabel {

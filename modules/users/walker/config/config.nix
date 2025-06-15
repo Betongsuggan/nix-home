@@ -88,13 +88,13 @@
       weight = 5;
       name = "applications";
       placeholder = "Applications";
-      prioritize_new = true;
+      prioritize_new = false;
       hide_actions_with_empty_query = true;
       context_aware = true;
       refresh = true;
       show_sub_when_single = true;
       show_icon_when_single = true;
-      show_generic = true;
+      show_generic = false;
       history = true;
       actions = {
         enabled = true;
@@ -166,8 +166,7 @@
       avoid_line_breaks = true;
       placeholder = "Clipboard";
       image_height = 300;
-      max_entries = 10;
-      #switcher_only = true;
+      max_entries = 20;
     };
 
     commands = {
@@ -218,7 +217,7 @@
       refresh = true;
       concurrency = 8;
       show_icon_when_single = true;
-      preview_images = false;
+      preview_images = true;
     };
 
     runner = {
@@ -259,23 +258,13 @@
       placeholder = "Websearch";
       entries = [
         {
-          name = "Google";
-          url = "https://www.google.com/search?q=%TERM%";
-          switcher_only = true;
-        }
-        {
-          name = "DuckDuckGo";
-          url = "https://duckduckgo.com/?q=%TERM%";
-          switcher_only = true;
-        }
-        {
           name = "Nix Packages";
           url = "https://search.nixos.org/packages?query=%TERM%";
           switcher_only = true;
         }
         {
-          name = "Yandex";
-          url = "https://yandex.com/search/?text=%TERM%";
+          name = "Google";
+          url = "https://www.google.com/search?q=%TERM%";
           switcher_only = true;
         }
       ];

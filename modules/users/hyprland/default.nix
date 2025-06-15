@@ -17,13 +17,10 @@ in
 
   config = mkIf config.hyprland.enable {
     programs.hyprland.enable = true;
+    # Multi-gestures
     services.touchegg.enable = true;
+
     home-manager.users.${config.user} = {
-      home.file.".config/hypr/hyprpaper.conf".text = ''
-        preload = ~/media/images/nix-background.png
-        wallpaper = ,~/media/images/nix-background.png
-        splash = false
-      '';
       home.packages = with pkgs; [
         controls.mediaPlayer
         controls.volume
@@ -34,13 +31,20 @@ in
         controls.utils.battery
         controls.utils.system
         controls.utils.autoScreenRotation
-        wofi-bluetooth
         swaylock-fancy
         grim
         slurp
-        hyprpaper
         wl-clipboard
       ];
+
+      services.hyprpaper = {
+        enable = true;
+        settings = {
+          preload = "~/media/images/nix-background.png";
+          wallpaper = " ,~/media/images/nix-background.png";
+          splash = false;
+        };
+      };
 
       wayland.windowManager.hyprland = {
         enable = true;
@@ -104,11 +108,12 @@ in
             "$mod, b, exec, battery-notifier"
             "$mod, w, exec, workspace-notifier"
             "$mod, t, exec, time-notifier"
-            "$mod, e, exec, ${pkgs.wofi-emoji}/bin/wofi-emoji"
+            "$mod, e, exec, ${pkgs.unstable.walker}/bin/walker --modules=emojis"
             "$mod, u, exec, wifi-control"
-            "$mod, c, exec, wofi-bluetooth"
-            "$mod, o, exec, ${pkgs.wofi}/bin/wofi --show drun"
-            "$mod, d, exec, walker"
+            "$mod, z, exec, bzmenu --launcher walker --spaces 2"
+            "$mod, s, exec, ${pkgs.unstable.walker}/bin/walker --modules=websearch"
+            "$mod, o, exec, ${pkgs.unstable.walker}/bin/walker --modules=applications"
+            "$mod, c, exec, ${pkgs.unstable.walker}/bin/walker --modules=clipboard"
 
             ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds).png''
             "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
