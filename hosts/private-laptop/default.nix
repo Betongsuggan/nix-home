@@ -139,10 +139,28 @@ inputs.nixpkgs.lib.nixosSystem {
       fonts.enable = true;
       dunst.enable = true;
       kanshi.enable = true;
-      hyprland.enable = true;
+      hyprland = {
+        enable = true;
+        wallpaper = "~/media/images/zeal.jpg";
+        autostartApps = {
+          firefox = {
+            command = "firefox";
+            workspace = 1;
+          };
+
+          auto-screen-rotation = {
+            command = "auto-screen-rotation";
+            workspace = null;
+          };
+
+          touchegg = {
+            command = "${pkgs.touchegg}/bin/touchegg";
+            workspace = null;
+          };
+        };
+      };
       development.enable = true;
       thunar.enable = true;
-      wofi.enable = true;
     })
   ];
 }

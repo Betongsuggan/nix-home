@@ -1,4 +1,4 @@
-{ config, lib, pkgs, inputs, ... }:
+{ config, lib, pkgs, ... }:
 with lib;
 
 let
@@ -13,10 +13,38 @@ in
       type = types.listOf types.str;
       default = [ ",preferred,auto,1" ];
     };
+
+    wallpaper = mkOption {
+      description = "Wallpaper image";
+      type = types.str;
+      default = "~/media/images/nix-background.png";
+    };
+
+    autostartApps = mkOption {
+      description = "Applications to autostart with exec-once, with optional workspace assignment";
+      type = types.attrsOf (types.nullOr (types.submodule {
+        options = {
+          command = mkOption {
+            type = types.str;
+            description = "Command to execute";
+            example = "firefox";
+          };
+
+          workspace = mkOption {
+            type = types.nullOr types.int;
+            description = "Workspace number to launch the application in (null for no specific workspace)";
+            default = null;
+            example = 1;
+          };
+        };
+      }));
+      default = { };
+    };
   };
 
   config = mkIf config.hyprland.enable {
     programs.hyprland.enable = true;
+
     # Multi-gestures
     services.touchegg.enable = true;
 
@@ -39,8 +67,8 @@ in
       services.hyprpaper = {
         enable = true;
         settings = {
-          preload = "~/media/images/nix-background.png";
-          wallpaper = " ,~/media/images/nix-background.png";
+          preload = config.hyprland.wallpaper;
+          wallpaper = ",${config.hyprland.wallpaper}";
           splash = false;
         };
       };
@@ -59,15 +87,19 @@ in
           "$modCtrl" = "SUPER_CTRL";
 
           exec-once = [
-            "waybar"
-            "hyprpaper"
-            "auto-screen-rotation"
-            "${pkgs.touchegg}/bin/touchegg"
-            "[workspace 1] firefox"
-            ''[workspace 2] alacritty -e zellij attach --create "Bits Development"''
-            ''[workspace 3] alacritty -e zellij attach --create "Nix Home"''
-            "[workspace 9] slack"
-          ];
+            # Common start applications
+          ] ++ builtins.concatLists (builtins.attrValues (builtins.mapAttrs
+            (name: app:
+              if app == null then [ ]
+              else
+                let
+                  # Autostart applications on provided worspace
+                  workspacePrefix = if app.workspace != null then "[workspace ${toString app.workspace}] " else "";
+                in
+                [ "${workspacePrefix}${app.command}" ]
+            )
+            config.hyprland.autostartApps
+          ));
 
           general = {
             "col.active_border" = ''rgb(${lib.strings.removePrefix "#" config.theme.colors.border-light})'';
@@ -212,9 +244,9 @@ in
             kb_variant = "colemak";
             kb_options = "caps:escape,compose:ralt";
             resolve_binds_by_sym = 1;
-            #touchdevice = {
-            #  output = "eDP-1"
-            #};
+            touchdevice = {
+              output = "eDP-1";
+            };
           };
         };
       };

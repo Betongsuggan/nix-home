@@ -25,7 +25,7 @@ in
         ];
 
         file = {
-          ".config/walker/config.json".text = builtins.toJSON walkerCfg;
+          ".config/walker/config.json".text = walkerCfg;
           ".config/walker/themes/local.css".text = theme.css;
           ".config/walker/themes/local.json".text = theme.json;
         };

@@ -91,7 +91,7 @@
           transform=2
         fi
     
-        ${pkgs.hyprland}/bin/hyprctl keyword monitor "eDP-1,transform,$transform"
+        ${pkgs.hyprland}/bin/hyprctl keyword monitor "eDP-1,preferred,auto,1,transform,$transform"
       fi
     done
   '';

@@ -1,4 +1,4 @@
-{
+builtins.toJSON {
   app_launch_prefix = "";
   terminal_title_flag = "";
   locale = "";
@@ -260,6 +260,11 @@
         {
           name = "Nix Packages";
           url = "https://search.nixos.org/packages?query=%TERM%";
+          switcher_only = true;
+        }
+        {
+          name = "Home manager options";
+          url = "https://home-manager-options.extranix.com/?query=%TERM%";
           switcher_only = true;
         }
         {

@@ -120,6 +120,17 @@ inputs.nixpkgs.lib.nixosSystem {
       hyprland = {
         enable = true;
         monitorResolution = ",3440x1440@100,auto,1";
+        autostartApps = {
+          firefox = {
+            command = "firefox";
+            workspace = 1;
+          };
+
+          steam = {
+            command = "steam";
+            workspace = 2;
+          };
+        };
       };
       wofi.enable = true;
 

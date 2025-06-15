@@ -147,9 +147,19 @@ inputs.nixpkgs.lib.nixosSystem {
           "1,3840x2560@60,auto,1"
           ",preferred,auto,1"
         ];
+        autostartApps = {
+          firefox = {
+            command = "firefox";
+            workspace = 1;
+          };
+
+          slack = {
+            command = "slack";
+            workspace = 9;
+          };
+        };
       };
       thunar.enable = true;
-      wofi.enable = true;
       walker = {
         enable = true;
         runAsService = true;
