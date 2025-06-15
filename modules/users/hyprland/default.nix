@@ -44,7 +44,6 @@ in
 
       wayland.windowManager.hyprland = {
         enable = true;
-        #package = inputs.hyprland.packages.${pkgs.system}.hyprland;
         settings = {
           monitor = config.hyprland.monitorResolutions;
 
@@ -61,7 +60,6 @@ in
             "hyprpaper"
             "auto-screen-rotation"
             "${pkgs.touchegg}/bin/touchegg"
-            "walker --gapplication-service"
             "[workspace 1] firefox"
             ''[workspace 2] alacritty -e zellij attach --create "Bits Development"''
             ''[workspace 3] alacritty -e zellij attach --create "Nix Home"''
