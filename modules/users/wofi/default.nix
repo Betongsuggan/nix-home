@@ -1,6 +1,9 @@
 { config, lib, pkgs, ... }:
 with lib;
 
+let
+  wifi = import ./launchers/wifiControls.nix { inherit pkgs; };
+in
 {
   options.wofi = {
     enable = mkEnableOption "Enable Wofi application launcher";
@@ -10,8 +13,7 @@ with lib;
     home-manager.users.${config.user} = {
       home.packages = with pkgs; [
         wofi-emoji
-        unstable.bzmenu
-        unstable.iwmenu
+        wifi
       ];
       programs.wofi = {
         enable = true;

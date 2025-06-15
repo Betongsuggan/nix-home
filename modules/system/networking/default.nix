@@ -20,23 +20,12 @@ in
     networking = {
       inherit (config.networkmanager) hostName;
       wireless = {
-        enable = false;
-        iwd.enable = false;
+        iwd.enable = true;
       };
+      useDHCP = true;
       extraHosts = ''
         127.0.0.1 bits.execute-api.localhost.localstack.cloud
       '';
-      networkmanager = {
-        enable = true;
-        dispatcherScripts = [
-          {
-            type = "pre-up";
-            source = "${notifier}/bin/network-notifier";
-          }
-        ];
-        wifi.scanRandMacAddress = false;
-      };
-      useDHCP = false;
     };
   };
 }

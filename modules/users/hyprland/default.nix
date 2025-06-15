@@ -25,7 +25,6 @@ in
         controls.mediaPlayer
         controls.volume
         controls.brightness
-        controls.wifi
         controls.utils.time
         controls.utils.workspaces
         controls.utils.battery
@@ -83,49 +82,88 @@ in
           };
 
           bind = [
+            ### Keyboard layouts
+            # Qwerty
             "$modShift, b, exec, hyprctl keyword input:kb_variant \"\""
-            "$modShift, c, exec, hyprctl keyword input:kb_variant colemak"
-            "$mod, RETURN, exec, ${pkgs.alacritty}/bin/alacritty"
-            "$mod, f, fullscreen"
-            "$modShift, q, killactive,"
 
+            # Colemak
+            "$modShift, c, exec, hyprctl keyword input:kb_variant colemak"
+
+            ### Applications
+            # Terminal
+            "$mod, RETURN, exec, ${pkgs.alacritty}/bin/alacritty"
+
+            # Lock screen
+            "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
+
+            # Print screen
+            ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds).png''
+
+            ### Screen handling
+            # Forcus navigation
             "$mod, h, movefocus, l"
             "$mod, l, movefocus, r"
             "$mod, k, movefocus, u"
             "$mod, j, movefocus, d"
 
+            # Move application in screen
             "$modShift, h, movewindow, l"
             "$modShift, l, movewindow, r"
             "$modShift, k, movewindow, u"
             "$modShift, j, movewindow, d"
 
-            "$mod, s, exec, media-player play"
-            "$mod, n, exec, media-player next"
-            "$mod, p, exec, media-player previous"
+            # Fullscreen application
+            "$mod, f, fullscreen"
 
-            "$mod, SPACE, exec, system-notifier"
+            # Kill application
+            "$modShift, q, killactive,"
+
+            ### Notifiers
+            # Current media playback
             "$mod, m, exec, media-player status"
+
+            # Battery status
             "$mod, b, exec, battery-notifier"
+
+            # System resources, e.g. cpu, mem, storage
+            "$mod, SPACE, exec, system-notifier"
+
+            # Workspace information
             "$mod, w, exec, workspace-notifier"
+
+            # Clock
             "$mod, t, exec, time-notifier"
+
+            ### Launchers
+            # Emojis
             "$mod, e, exec, ${pkgs.unstable.walker}/bin/walker --modules=emojis"
-            "$mod, u, exec, wifi-control"
+
+            # Wifi
+            "$mod, u, exec, iwmenu --launcher walker --spaces 2"
+
+            # Bluetooth
             "$mod, z, exec, bzmenu --launcher walker --spaces 2"
-            "$mod, s, exec, ${pkgs.unstable.walker}/bin/walker --modules=websearch"
+
+            # Websearch
+            "$mod, d, exec, ${pkgs.unstable.walker}/bin/walker --modules=websearch"
+
+            # Applications
             "$mod, o, exec, ${pkgs.unstable.walker}/bin/walker --modules=applications"
+            # Clipboard
             "$mod, c, exec, ${pkgs.unstable.walker}/bin/walker --modules=clipboard"
 
-            ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds).png''
-            "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
+            # AI
+            "$mod, a, exec, ${pkgs.unstable.walker}/bin/walker --autoselect --modules=ai"
 
-
-            # Media control
+            ### Control
+            # Media
             ", XF86AudioPlay, exec, media-player play"
+            "$mod, s, exec, media-player play"
             ", XF86AudioNext, exec, media-player next"
+            "$mod, n, exec, media-player next"
             ", XF86AudioPrev, exec, media-player previous"
+            "$mod, p, exec, media-player previous"
           ] ++ (
-            # workspaces
-            # binds $mod + [shift +] {1..10} to [move to] workspace {1..10}
             builtins.concatLists (builtins.genList
               (
                 x:
@@ -137,7 +175,9 @@ in
                     builtins.toString (x + 1 - (c * 10));
                 in
                 [
+                  # Move focus to workspace x
                   "$mod, ${ws}, workspace, ${toString (x + 1)}"
+                  # Move focused application to workspace x
                   "$modShift, ${ws}, movetoworkspacesilent, ${toString (x + 1)}"
                 ]
               )
@@ -147,6 +187,7 @@ in
             movefocus_cycles_fullscreen = true;
           };
           binde = [
+            ### Controls
             # Brightness
             ", XF86MonBrightnessUp,  exec, brightness-control -i 10"
             ", XF86MonBrightnessDown, exec, brightness-control -d 10"

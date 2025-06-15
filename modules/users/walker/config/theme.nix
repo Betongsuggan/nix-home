@@ -103,7 +103,6 @@
 
     #icon {
       margin-right: 8px;
-      size: 10px;
     }
 
     #text {

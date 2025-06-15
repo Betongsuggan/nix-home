@@ -1,4 +1,4 @@
-{ config, lib, pkgs, inputs, ... }:
+{ config, lib, pkgs, ... }:
 with lib;
 
 
@@ -14,37 +14,23 @@ in
       default = true;
       description = "Run Walker as a service for faster startup";
     };
-    config = mkOption {
-      type = types.attrs;
-      default = { };
-      description = "Configuration options for Walker";
-    };
-    style = mkOption {
-      type = types.str;
-      default = '''';
-      description = "Custom CSS styling for Walker";
-    };
   };
   config = mkIf config.walker.enable {
-    # Install Walker package
     home-manager.users.${config.user} = {
       home = {
-        packages = with pkgs;
-          [
-            walker
-          ];
+        packages = with pkgs; [
+          walker
+          unstable.bzmenu
+          unstable.iwmenu
+        ];
 
-        # Create configuration directory
         file = {
-          ".config/walker/config.json".text = builtins.toJSON (recursiveUpdate
-            walkerCfg
-            config.walker.config);
-
+          ".config/walker/config.json".text = builtins.toJSON walkerCfg;
           ".config/walker/themes/local.css".text = theme.css;
           ".config/walker/themes/local.json".text = theme.json;
         };
       };
-      # Create systemd user service for Walker
+
       systemd.user.services.walker = mkIf config.walker.runAsService {
         Unit = {
           Description = "Walker Application Launcher";
@@ -55,7 +41,7 @@ in
         Service = {
           ExecStart = "${pkgs.walker}/bin/walker --gapplication-service";
           Restart = "on-failure";
-          RestartSec = 5;
+          RestartSec = 2;
         };
 
         Install = {
