@@ -82,7 +82,7 @@ inputs.nixpkgs.lib.nixosSystem {
         userName = "Betongsuggan";
         userEmail = "rydback@gmail.com";
       };
-      ai = {
+      secrets = {
         enable = true;
         keyProviderPath = "$HOME/.config/anthropic/key_provider.sh";
       };

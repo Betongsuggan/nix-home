@@ -2,7 +2,6 @@
 {
   imports = [
     ./theming
-    ./ai
     ./alacritty
     ./autorandr
     ./bash
@@ -27,6 +26,7 @@
     ./polybar
     ./qutebrowser
     ./rofi
+    ./secrets
     ./starship
     ./sway
     ./thunar

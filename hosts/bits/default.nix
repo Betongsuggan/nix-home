@@ -106,7 +106,7 @@ inputs.nixpkgs.lib.nixosSystem {
         userEmail = "birger.rydback@bits.bi";
       };
 
-      ai = {
+      secrets = {
         enable = true;
         keyProviders = [
           {

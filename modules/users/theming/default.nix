@@ -12,7 +12,7 @@ in
     wallpaper = mkOption {
       type = types.path;
       description = "Path to wallpaper image";
-      default = ./media/images/zeal.jpg;
+      default = ../../assets/wallpaper/nix-background.png;
     };
 
     cursor = {

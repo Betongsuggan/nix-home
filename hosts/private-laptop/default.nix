@@ -100,7 +100,7 @@ inputs.nixpkgs.lib.nixosSystem {
       printers.enable = true;
       power-management.enable = true;
 
-      ai = {
+      secrets = {
         enable = true;
         keyProviders = [
           {
