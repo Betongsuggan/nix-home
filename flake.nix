@@ -12,15 +12,17 @@
 
     nur.url = "github:nix-community/NUR";
     neovim.url = "github:Betongsuggan/nvim";
-    wofi-bluetooth.url = "github:Betongsuggan/wofi-bluetooth";
+    stylix = {
+      url = "github:danth/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, home-manager, neovim, wofi-bluetooth, ... }@inputs:
+  outputs = { nixpkgs, nixpkgs-unstable, home-manager, neovim, stylix, ... }@inputs:
     let
       overlays = [
         (self: super: {
           neovim = neovim.packages.${self.system}.default;
-          wofi-bluetooth = wofi-bluetooth.packages.${self.system}.default;
           walker-module = inputs.walker.homeManagerModules.default;
         })
         (final: prev: {

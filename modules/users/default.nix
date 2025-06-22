@@ -12,7 +12,6 @@
     ./dunst
     ./fish
     ./flatpak
-    ./fonts
     ./games
     ./game-streaming
     ./general

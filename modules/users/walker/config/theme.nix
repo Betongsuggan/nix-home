@@ -25,24 +25,24 @@
     }
 
     #cfgerr {
-      background: ${theme.colors.red-dark};
+      background: ${theme.colors.normal.red};
       margin-top: 20px;
       padding: 8px;
       font-size: 1.2em;
     }
 
     #window {
-      color: ${theme.colors.text-light};
+      color: ${theme.colors.primary.foreground};
     }
 
     #box {
       border-radius: 2px;
-      background: ${theme.colors.background-dark};
+      background: ${theme.colors.primary.background};
     }
 
     #search {
-      background: ${theme.colors.background-light};
-      border: 1px solid ${theme.colors.border-dark};
+      background: ${theme.colors.primary.background};
+      border: 1px solid ${theme.colors.primary.foreground};
       border-radius: 5px;
       padding: 8px;
     }
@@ -50,12 +50,12 @@
     #prompt {
       margin-left: 4px;
       margin-right: 12px;
-      color: ${theme.colors.text-light};
+      color: ${theme.colors.primary.foreground};
       opacity: 0.2;
     }
 
     #clear {
-      color: ${theme.colors.text-light};
+      color: ${theme.colors.primary.foreground};
       opacity: 0.8;
     }
 
@@ -77,7 +77,7 @@
     }
 
     #typeahead {
-      color: ${theme.colors.text-light};
+      color: ${theme.colors.primary.foreground};
       opacity: 0.8;
     }
 
@@ -95,7 +95,7 @@
 
     child:selected,
     child:hover {
-      background: alpha(${theme.colors.red-dark}, 1.0);
+      background: alpha(${theme.colors.normal.red}, 1.0);
     }
 
     #item {
@@ -139,8 +139,8 @@
     .aiItem {
       padding: 10px;
       border-radius: 2px;
-      color: ${theme.colors.text-light};
-      background: ${theme.colors.background-dark};
+      color: ${theme.colors.primary.foreground};
+      background: ${theme.colors.primary.background};
     }
 
     .aiItem.user {
@@ -149,7 +149,7 @@
     }
 
     .aiItem.assistant {
-      background: lighter(${theme.colors.background-dark});
+      background: lighter(${theme.colors.primary.background});
     }
   '';
 

@@ -17,13 +17,13 @@ in
 inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
-    ../../modules/users/theming
     globals
     inputs.nur.modules.nixos.default
     inputs.home-manager.nixosModules.home-manager
     ../../modules/common
     ../../modules/system
     ../../modules/users
+    inputs.stylix.nixosModules.stylix
     ({ config, lib, pkgs, ... }: {
       nixpkgs = { inherit overlays; };
 
@@ -126,6 +126,11 @@ inputs.nixpkgs.lib.nixosSystem {
           }
         ];
       };
+
+      theme = {
+        enable = true;
+        wallpaper = ../../assets/wallpaper/zeal.jpg;
+      };
       general.enable = true;
       game-streaming.client.enable = true;
       games.enable = true;
@@ -137,9 +142,8 @@ inputs.nixpkgs.lib.nixosSystem {
       nushell.enable = true;
       fish.enable = true;
       starship.enable = true;
-      fonts.enable = true;
       dunst.enable = true;
-      icons.enable = true;
+      #icons.enable = true;
       kanshi.enable = true;
       hyprland = {
         enable = true;
@@ -165,7 +169,7 @@ inputs.nixpkgs.lib.nixosSystem {
         runAsService = true;
       };
       development.enable = true;
-      zellij.enable = true;
+      #zellij.enable = true;
 
       nixpkgs.config.permittedInsecurePackages = [
         "electron-25.9.0"

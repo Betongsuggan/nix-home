@@ -33,29 +33,20 @@ with lib;
             style = "Bold Italic";
           };
         };
-        #terminal.shell = {
-        #  program = "${pkgs.bash}/bin/bash";
-        #  args = [];
-        #};
         colors = {
           primary = {
-            background = config.theme.colors.background-dark;
-            foreground = config.theme.colors.text-light;
+            inherit (config.theme.colors.primary) background foreground;
           };
-        
+
           selection = {
-            text       = config.theme.colors.text-dark;
-            background = config.theme.colors.text-mid;
+            text = config.theme.colors.bright.black;
+            background = config.theme.colors.normal.white;
           };
           normal = {
-            black   = config.theme.colors.background-dark;
-            red     = config.theme.colors.red-light;
-            green   = config.theme.colors.green-light;
-            yellow  = config.theme.colors.yellow-light;
-            blue    = config.theme.colors.blue-light;
-            magenta = config.theme.colors.purple-light;
-            cyan    = config.theme.colors.orange-light;
-            white   = config.theme.colors.text-light;
+            inherit (config.theme.colors.normal) black red green yellow blue magenta cyan white;
+          };
+          bright = {
+            inherit (config.theme.colors.bright) black red green yellow blue magenta cyan white;
           };
         };
       };

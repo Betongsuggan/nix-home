@@ -40,7 +40,7 @@ in
               notification = false;
             }
             {
-              command = "feh --bg-center ~/Pictures/nix-background.png";
+              command = "feh --bg-center ${config.theme.wallpaper}";
               always = false;
               notification = false;
             }
@@ -72,7 +72,7 @@ in
             "${mod}+Shift+l" = "move right";
 
             # Multi monitors
-            "${mod}+p" = "exec autorandr --change && feh --bg-center ~/Pictures/nix-background.png";
+            "${mod}+p" = "exec autorandr --change && feh --bg-center ${config.theme.wallpaper}";
 
             # Multimedia Keys
 
@@ -102,38 +102,38 @@ in
           };
 
           colors = with config.theme.colors; {
-            background = "${background}";
+            background = "${primary.background}";
 
             focused = {
-              border = "${thirdText}";
-              background = "${thirdText}";
-              text = "${borderDark}";
-              indicator = "${purple}";
-              childBorder = "${borderDark}";
+              border = "${normal.blue}";
+              background = "${normal.blue}";
+              text = "${bright.black}";
+              indicator = "${normal.magenta}";
+              childBorder = "${bright.black}";
             };
 
             unfocused = {
-              border = "${borderDark}";
-              background = "${borderDark}";
-              text = "${utilityText}";
-              indicator = "${purple}";
-              childBorder = "${borderDark}";
+              border = "${bright.black}";
+              background = "${bright.black}";
+              text = "${normal.white}";
+              indicator = "${normal.magenta}";
+              childBorder = "${bright.black}";
             };
 
             focusedInactive = {
-              border = "${borderDark}";
-              background = "${borderDark}";
-              text = "${borderDark}";
-              indicator = "${purple}";
-              childBorder = "${borderDark}";
+              border = "${bright.black}";
+              background = "${bright.black}";
+              text = "${bright.black}";
+              indicator = "${normal.magenta}";
+              childBorder = "${bright.black}";
             };
 
             urgent = {
-              border = "${alertText}";
-              background = "${alertText}";
-              text = "${mainText}";
-              indicator = "${mainText}";
-              childBorder = "${mainText}";
+              border = "${normal.red}";
+              background = "${normal.red}";
+              text = "${primary.foreground}";
+              indicator = "${primary.foreground}";
+              childBorder = "${primary.foreground}";
             };
           };
 

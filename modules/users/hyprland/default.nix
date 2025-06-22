@@ -14,12 +14,6 @@ in
       default = [ ",preferred,auto,1" ];
     };
 
-    wallpaper = mkOption {
-      description = "Wallpaper image";
-      type = types.str;
-      default = "~/media/images/nix-background.png";
-    };
-
     autostartApps = mkOption {
       description = "Applications to autostart with exec-once, with optional workspace assignment";
       type = types.attrsOf (types.nullOr (types.submodule {
@@ -49,26 +43,35 @@ in
     services.touchegg.enable = true;
 
     home-manager.users.${config.user} = {
-      home.packages = with pkgs; [
-        controls.mediaPlayer
-        controls.volume
-        controls.brightness
-        controls.utils.time
-        controls.utils.workspaces
-        controls.utils.battery
-        controls.utils.system
-        controls.utils.autoScreenRotation
-        swaylock-fancy
-        grim
-        slurp
-        wl-clipboard
-      ];
+      home = {
+        pointerCursor = {
+          inherit (config.theme.cursor) name package;
+          hyprcursor = {
+            enable = true;
+            inherit (config.theme.cursor) size;
+          };
+        };
+        packages = with pkgs; [
+          controls.mediaPlayer
+          controls.volume
+          controls.brightness
+          controls.utils.time
+          controls.utils.workspaces
+          controls.utils.battery
+          controls.utils.system
+          controls.utils.autoScreenRotation
+          swaylock-fancy
+          grim
+          slurp
+          wl-clipboard
+        ];
+      };
 
       services.hyprpaper = {
         enable = true;
         settings = {
-          preload = config.hyprland.wallpaper;
-          wallpaper = ",${config.hyprland.wallpaper}";
+          preload = "${config.theme.wallpaper}";
+          wallpaper = ",${config.theme.wallpaper}";
           splash = false;
         };
       };
@@ -102,7 +105,7 @@ in
           ));
 
           general = {
-            "col.active_border" = ''rgb(${lib.strings.removePrefix "#" config.theme.colors.border-light})'';
+            "col.active_border" = ''rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})'';
           };
 
           dwindle = {

@@ -13,7 +13,7 @@ with lib;
 
   config = mkIf config.dunst.enable {
     environment.systemPackages = with pkgs; [
-      papirus-icon-theme 
+      papirus-icon-theme
     ];
     home-manager.users.${config.user} = {
       services.dunst = {
@@ -31,7 +31,7 @@ with lib;
             dmenu = "${pkgs.wofi}/bin/wofi --dmenu";
             show_indicators = false;
 
-            font = "${config.theme.font.name} ${config.theme.font.sizeStr}";
+            font = "${config.theme.font.name} ${builtins.toString config.theme.font.size}";
             format = "<b>%a</b>\\n%s\\n\\n%b";
             width = "(0,400)";
             offset = "40x40";
@@ -47,10 +47,9 @@ with lib;
             mouse_middle = "context";
             mouse_right = "close_current";
 
-            background  = config.theme.colors.background-dark;
-            foreground  = config.theme.colors.text-light;
-            highlight   = config.theme.colors.red-light;
-            frame_color = config.theme.colors.border-light;
+            inherit (config.theme.colors.primary) background foreground;
+            highlight = config.theme.colors.normal.red;
+            frame_color = config.theme.colors.bright.black;
           };
           slack = {
             desktop_entry = "Slack";
@@ -66,7 +65,7 @@ with lib;
           urgency_critical.timeout = 300;
         };
       };
-    }; 
+    };
   };
 }
   
