@@ -1,15 +1,15 @@
 { pkgs, config, lib, ... }:
 with lib;
 {
-  options.ai = {
+  options.secrets = {
     enable = mkOption {
-      description = "Enable AI provider secrets";
+      description = "Enable secrets provider";
       type = types.bool;
       default = false;
     };
 
     keyProviders = mkOption {
-      description = "List of AI key providers";
+      description = "List of environment secrets to expose";
       type = types.listOf (types.submodule {
         options = {
           name = mkOption {
@@ -18,7 +18,7 @@ with lib;
           };
 
           path = mkOption {
-            description = "Path to executable providing an AI provider token to stdout when executed. Example: '$HOME/.config/openai/key_provider.sh'";
+            description = "Path to executable providing an secret provider token to stdout when executed. Example: '$HOME/.config/openai/key_provider.sh'";
             type = types.string;
           };
 
@@ -32,7 +32,7 @@ with lib;
     };
   };
 
-  config = mkIf config.ai.enable {
+  config = mkIf config.secrets.enable {
     home-manager.users.${config.user} = {
       home = {
         packages = map
@@ -42,14 +42,14 @@ with lib;
               providerConfig = provider;
             }
           )
-          config.ai.keyProviders;
+          config.secrets.keyProviders;
 
         sessionVariables = builtins.listToAttrs (map
           (provider: {
             name = provider.envVarName;
             value = "$(${provider.path})";
           })
-          config.ai.keyProviders);
+          config.secrets.keyProviders);
       };
     };
   };

@@ -17,7 +17,6 @@
     ./git
     ./hyprland
     ./i3
-    ./icons
     ./kanshi
     ./keyboard
     ./neovim

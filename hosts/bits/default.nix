@@ -29,7 +29,7 @@ inputs.nixpkgs.lib.nixosSystem {
 
       boot = {
 
-        kernelPackages = pkgs.linuxPackages_6_6;
+        kernelPackages = pkgs.linuxPackages_6_12;
 
         initrd.availableKernelModules =
           [ "nvme" "xhci_pci" "ahci" "thunderbolt" "usb_storage" "sd_mod" "sdhci_pci" ];
@@ -79,9 +79,8 @@ inputs.nixpkgs.lib.nixosSystem {
       services.fwupd.enable = true;
 
       touchpad.enable = true;
-      firefox.enable = true;
+      #firefox.enable = true;
       qutebrowser.enable = true;
-      #keyboard.enable = true;
       graphics = {
         enable = true;
         amd = true;
@@ -95,7 +94,10 @@ inputs.nixpkgs.lib.nixosSystem {
       bluetooth.enable = true;
       wayland.enable = true;
       printers.enable = true;
-      power-management.enable = true;
+      power-management = {
+        enable = true;
+        powerModes.ac = "powersave";
+      };
       firewall = {
         enable = true;
         tcpPorts = [ 8080 ];
@@ -130,6 +132,10 @@ inputs.nixpkgs.lib.nixosSystem {
       theme = {
         enable = true;
         wallpaper = ../../assets/wallpaper/zeal.jpg;
+        cursor = {
+          package = pkgs.banana-cursor;
+          name = "Banana";
+        };
       };
       general.enable = true;
       game-streaming.client.enable = true;
@@ -143,7 +149,6 @@ inputs.nixpkgs.lib.nixosSystem {
       fish.enable = true;
       starship.enable = true;
       dunst.enable = true;
-      #icons.enable = true;
       kanshi.enable = true;
       hyprland = {
         enable = true;
@@ -169,7 +174,6 @@ inputs.nixpkgs.lib.nixosSystem {
         runAsService = true;
       };
       development.enable = true;
-      #zellij.enable = true;
 
       nixpkgs.config.permittedInsecurePackages = [
         "electron-25.9.0"

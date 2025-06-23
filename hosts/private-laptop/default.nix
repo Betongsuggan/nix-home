@@ -139,9 +139,12 @@ inputs.nixpkgs.lib.nixosSystem {
       fonts.enable = true;
       dunst.enable = true;
       kanshi.enable = true;
+      theme = {
+        enable = true;
+        wallpaper = ../../assets/wallpaper/zeal.jpg;
+      };
       hyprland = {
         enable = true;
-        wallpaper = "~/media/images/zeal.jpg";
         autostartApps = {
           firefox = {
             command = "firefox";
