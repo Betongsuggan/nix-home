@@ -12,17 +12,19 @@
 
     nur.url = "github:nix-community/NUR";
     neovim.url = "github:Betongsuggan/nvim";
+    awscli-local.url = "github:Betongsuggan/awscli-local";
     stylix = {
       url = "github:danth/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, home-manager, neovim, stylix, ... }@inputs:
+  outputs = { nixpkgs, nixpkgs-unstable, home-manager, neovim, stylix, awscli-local, ... }@inputs:
     let
       overlays = [
         (self: super: {
           neovim = neovim.packages.${self.system}.default;
+          awscli-local = awscli-local.packages.${self.system}.default;
           walker-module = inputs.walker.homeManagerModules.default;
         })
         (final: prev: {

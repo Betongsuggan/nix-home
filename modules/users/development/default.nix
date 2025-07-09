@@ -9,13 +9,14 @@ with lib;
   config = mkIf config.development.enable {
     home-manager.users.${config.user} = {
       home.packages = with pkgs; [
-        hello
+
         # Infrastructure
-        unstable.nodePackages.aws-cdk
         localstack
+        awscli-local
         nodePackages.aws-cdk-local
-        #pulumi
-        #pulumiPackages.pulumi-language-go
+        unstable.nodePackages.aws-cdk
+        awscli2
+        terraform
 
         # Python
         python3
@@ -49,11 +50,6 @@ with lib;
         gotools
         gofumpt
         golines
-        #nilaway
-
-        # IaC
-        terraform
-        awscli2
 
         # Utilities
         altair
@@ -63,7 +59,7 @@ with lib;
         ls-lint
         newman
         silver-searcher
-        #teleport
+        openssl
       ];
       programs.go.enable = true;
 

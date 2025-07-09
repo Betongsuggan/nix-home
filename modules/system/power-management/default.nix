@@ -31,12 +31,6 @@ with lib;
         CPU_SCALING_GOVERNOR_ON_AC = config.power-management.powerModes.ac;
         CPU_SCALING_GOVERNOR_ON_BAT = config.power-management.powerModes.battery;
 
-        #START_CHARGE_THRESH_BAT0 = 75;
-        #STOP_CHARGE_THRESH_BAT0 = 90;
-
-        #CPU_MAX_PERF_ON_AC = 50;
-        #CPU_MAX_PERF_ON_BAT = 50;
-
         CPU_ENERGY_PERF_POLICY_ON_AC = "power";
         CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
 
