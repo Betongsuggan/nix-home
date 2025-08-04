@@ -185,54 +185,53 @@ in
       papirus-icon-theme
       config.theme.cursor.package
     ];
+
+    stylix = {
+      image = cfg.wallpaper;
+      base16Scheme = {
+        base00 = cfg.colors.primary.background;
+        base01 = cfg.colors.normal.black;
+        base02 = cfg.colors.bright.black;
+        base03 = cfg.colors.normal.white;
+        base04 = cfg.colors.bright.white;
+        base05 = cfg.colors.primary.foreground;
+        base06 = cfg.colors.bright.white;
+        base07 = cfg.colors.bright.white;
+        base08 = cfg.colors.normal.red;
+        base09 = cfg.colors.normal.yellow;
+        base0A = cfg.colors.normal.yellow;
+        base0B = cfg.colors.normal.green;
+        base0C = cfg.colors.normal.cyan;
+        base0D = cfg.colors.normal.blue;
+        base0E = cfg.colors.normal.magenta;
+        base0F = cfg.colors.normal.red;
+      };
+
+      polarity = "dark";
+
+      targets = {
+        #alacritty.enable = config.alacritty.enable;
+        #btop.enable = true;
+        #firefox.enable = config.firefox.enable;
+        #font-packages.enable = true;
+        #fontconfig.enable = true;
+        #hyprland.enable = config.hyprland.enable;
+        #hyprpaper.enable = config.hyprland.enable;
+        #hyprlock.enable = config.hyprland.enable;
+        #gtk.enable = true;
+        #qt.enable = true;
+        #mangohud.enable = true;
+        #neovim.enable = true;
+        #starship.enable = true;
+      };
+    };
+
     home-manager.users.${config.user} = {
-
-      stylix = {
-        image = cfg.wallpaper;
-        base16Scheme = {
-          base00 = cfg.colors.primary.background;
-          base01 = cfg.colors.normal.black;
-          base02 = cfg.colors.bright.black;
-          base03 = cfg.colors.normal.white;
-          base04 = cfg.colors.bright.white;
-          base05 = cfg.colors.primary.foreground;
-          base06 = cfg.colors.bright.white;
-          base07 = cfg.colors.bright.white;
-          base08 = cfg.colors.normal.red;
-          base09 = cfg.colors.normal.yellow;
-          base0A = cfg.colors.normal.yellow;
-          base0B = cfg.colors.normal.green;
-          base0C = cfg.colors.normal.cyan;
-          base0D = cfg.colors.normal.blue;
-          base0E = cfg.colors.normal.magenta;
-          base0F = cfg.colors.normal.red;
-        };
-
-        polarity = "dark";
-
-        targets = {
-          alacritty.enable = config.alacritty.enable;
-          btop.enable = true;
-          firefox.enable = config.firefox.enable;
-          font-packages.enable = true;
-          fontconfig.enable = true;
-          hyprland.enable = config.hyprland.enable;
-          hyprpaper.enable = config.hyprland.enable;
-          hyprlock.enable = config.hyprland.enable;
-          gtk.enable = true;
-          qt.enable = true;
-          mangohud.enable = true;
-          neovim.enable = true;
-          starship.enable = true;
-        };
-      };
-
       home = {
+
         file.".background-image".source = cfg.wallpaper;
-        packages = with pkgs; [ glibcLocales comic-relief config.theme.font.package noto-fonts-emoji ];
-
+        packages = with pkgs; [ config.theme.font.package noto-fonts-emoji glibcLocales ];
       };
-
     };
   };
 }

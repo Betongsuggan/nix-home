@@ -19,8 +19,6 @@ inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
     globals
-    ../../modules/users/theming
-    inputs.nur.modules.nixos.default
     inputs.home-manager.nixosModules.home-manager
     ../../modules/common
     ../../modules/system

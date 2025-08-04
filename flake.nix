@@ -10,13 +10,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nur.url = "github:nix-community/NUR";
-    neovim.url = "github:Betongsuggan/nvim";
-    awscli-local.url = "github:Betongsuggan/awscli-local";
     stylix = {
-      url = "github:danth/stylix";
+      url = "github:nix-community/stylix/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    neovim.url = "github:Betongsuggan/nvim";
+    awscli-local.url = "github:Betongsuggan/awscli-local";
   };
 
   outputs = { nixpkgs, nixpkgs-unstable, home-manager, neovim, stylix, awscli-local, ... }@inputs:

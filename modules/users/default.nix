@@ -28,6 +28,7 @@
     ./secrets
     ./starship
     ./sway
+    ./theming
     ./thunar
     ./undervolting
     ./urxvt

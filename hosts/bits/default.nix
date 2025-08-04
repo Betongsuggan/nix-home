@@ -18,12 +18,11 @@ inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
     globals
-    inputs.nur.modules.nixos.default
     inputs.home-manager.nixosModules.home-manager
+    inputs.stylix.nixosModules.stylix
     ../../modules/common
     ../../modules/system
     ../../modules/users
-    inputs.stylix.nixosModules.stylix
     ({ config, lib, pkgs, ... }: {
       nixpkgs = { inherit overlays; };
 
