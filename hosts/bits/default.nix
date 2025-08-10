@@ -6,7 +6,8 @@ let
     fullName = "Birger Rydback";
     extraUserGroups = [ "wheel" "networkmanager" "network" "video" "docker" ];
   };
-in inputs.nixpkgs.lib.nixosSystem {
+in
+inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
     globals

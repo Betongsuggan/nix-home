@@ -1,17 +1,10 @@
 { inputs, overlays, ... }:
 
-let
-  globals = {
-    user = "betongsuggan";
-    fullName = "Birger Rydback";
-    extraUserGroups = [ "wheel" "networkmanager" "video" "docker" ];
-  };
-in inputs.nixpkgs.lib.nixosSystem {
+inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
-    globals
     inputs.home-manager.nixosModules.home-manager
-    inputs.stylix.nixosModules.stylix
+    inputs.stylix.homeModules.stylix
     ../../modules/common
     ../../modules/system
     ./system.nix
@@ -23,7 +16,7 @@ in inputs.nixpkgs.lib.nixosSystem {
         useGlobalPkgs = true;
         useUserPackages = true;
         extraSpecialArgs = { inherit inputs overlays; };
-        users.birgerrydback = import ./user-birgerrydback.nix;
+        users.betongsuggan = import ./user-betongsuggan.nix;
       };
     }
   ];

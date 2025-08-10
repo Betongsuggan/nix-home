@@ -38,7 +38,7 @@
             inherit overlays;
             config.allowUnfree = true;
           };
-          modules = [ userModule ];
+          modules = [ userModule inputs.stylix.homeModules.stylix ];
           extraSpecialArgs = { inherit inputs overlays; };
         };
     in {

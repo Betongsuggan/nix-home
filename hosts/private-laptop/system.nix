@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   users.users.betongsuggan = {
@@ -22,7 +22,6 @@
       grub.configurationLimit = 10;
     };
 
-    # Graphics and VMs
     kernelModules = [ "kvm-intel" "iwlwifi" ];
   };
 
@@ -59,7 +58,6 @@
   environment.systemPackages = with pkgs; [ iio-sensor-proxy ];
   services = { fwupd.enable = true; };
 
-  # System modules
   touchpad.enable = true;
   graphics = {
     enable = true;
@@ -83,4 +81,3 @@
 
   system.stateVersion = "25.05";
 }
-

@@ -1,15 +1,16 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
-  home.username = "betongsuggan";
-  home.homeDirectory = "/home/betongsuggan";
-  home.stateVersion = "24.05";
+  home = {
+    username = "betongsuggan";
+    homeDirectory = "/home/betongsuggan";
+    stateVersion = "24.05";
+  };
 
   imports = [
     ../../modules/users
   ];
 
-  # Home-manager module configurations
   general.enable = true;
   firefox.enable = true;
   games.enable = true;
