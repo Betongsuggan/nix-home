@@ -82,6 +82,7 @@ inputs.nixpkgs.lib.nixosSystem {
         fwupd.enable = true;
       };
 
+
       git = {
         enable = true;
         userName = "Betongsuggan";

@@ -32,6 +32,15 @@
         })
         (import ./overrides/aws-cdk.nix)
       ];
+      pkgs = import nixpkgs {
+        system = "x86_64-linux";
+      };
+
+      # ✅ Fake package here
+      mockPackage = pkgs.runCommand "fake-package" { } ''
+        mkdir -p $out
+        echo `{ "time": "2020-04-26T13:32:17+00:00", "condition" = true, "message" = "fuck this" }` > $out/fake.txt
+      '';
     in
     rec {
       nixosConfigurations = {
@@ -41,10 +50,17 @@
       };
 
       homeConfigurations = {
-        private-laptop = nixosConfigurations.private-laptop.config.home-manager.users.betongsuggan.home;
-        bits = nixosConfigurations.bits.config.home-manager.users.birgerrydback.home;
-        #private-desktop =
-        #  nixosConfigurations.private-desktop.config.home-manager.users.betongsuggan.home;
+        #private-laptop = nixosConfigurations.private-laptop.config.home-manager.users.betongsuggan.home;
+        #bits = nixosConfigurations.bits.config.home-manager.users.birgerrydback.home;
+        private-desktop = nixosConfigurations.private-desktop.config.home-manager.users.betongsuggan.home // {
+          config = {
+            news = {
+              display = "silent";
+              json.output = mockPackage;
+              entries = [ ];
+            };
+          };
+        };
       };
     };
 }
