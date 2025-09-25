@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ config, lib, ... }:
 with lib;
 
 {
@@ -20,7 +20,7 @@ with lib;
         demo = "cd ~/Development/web/apps/nocode-demo";
         ll = "ls -la --color=auto";
         ls = "ls --color=auto";
-        vim = "nvim";
+        vim = "nix run github:Betongsuggan/nvim --refresh";
         hm = "home-manager";
         gw = "./gradlew --no-daemon";
       };
@@ -31,7 +31,7 @@ with lib;
         [[ -f ~/.profile ]] && . ~/.profile
 
         set -o vi
-        export EDITOR=nvim
+        export EDITOR="nix run github:Betongsuggan/nvim --"
         export PATH="$PATH:~/.cargo/bin/"
       '';
     };

@@ -18,6 +18,9 @@ with lib;
         awscli2
         terraform
 
+        # AI tools
+        claude-code
+
         # Python
         python3
 
@@ -68,6 +71,6 @@ with lib;
         PATH = "$HOME/node_modules/bin:$PATH";
       };
     };
-    unfreePackages = [ "terraform" "android-studio-stable" "idea-community" ];
+    unfreePackages = [ "terraform" "android-studio-stable" "idea-community" "claude-code" ];
   };
 }

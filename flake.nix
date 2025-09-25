@@ -15,15 +15,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    neovim.url = "github:Betongsuggan/nvim";
     awscli-local.url = "github:Betongsuggan/awscli-local";
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, home-manager, neovim, stylix, awscli-local, ... }@inputs:
+  outputs = { nixpkgs, nixpkgs-unstable, awscli-local, ... }@inputs:
     let
       overlays = [
         (self: super: {
-          neovim = neovim.packages.${self.system}.default;
           awscli-local = awscli-local.packages.${self.system}.default;
           walker-module = inputs.walker.homeManagerModules.default;
         })

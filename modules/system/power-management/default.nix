@@ -31,10 +31,10 @@ with lib;
         CPU_SCALING_GOVERNOR_ON_AC = config.power-management.powerModes.ac;
         CPU_SCALING_GOVERNOR_ON_BAT = config.power-management.powerModes.battery;
 
-        CPU_ENERGY_PERF_POLICY_ON_AC = "power";
+        #CPU_ENERGY_PERF_POLICY_ON_AC = "power";
         CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
 
-        PCIE_ASPM_ON_AC = "powersave";
+        #PCIE_ASPM_ON_AC = "powersave";
         PCIE_ASPM_ON_BAT = "powersave";
 
         AMDGPU_POWER_DPM_ON_AC = "battery";
