@@ -2,6 +2,7 @@
 {
   imports = [
     ./audio
+    ./autologin
     ./bluetooth
     ./disk-encryption
     ./docker

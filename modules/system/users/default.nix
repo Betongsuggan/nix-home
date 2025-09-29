@@ -1,63 +1,147 @@
-{ config, lib, pkgs, ... }: {
+{ config, lib, pkgs, ... }:
 
-  options = {
-    user = lib.mkOption {
-      type = lib.types.str;
-      description = "Primary user of the system";
-    };
-    fullName = lib.mkOption {
-      type = lib.types.str;
-      description = "Human readable name of the user";
-    };
-    extraUserGroups = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      description = "Extra groups for the user";
-    };
-    userDirs = {
-      # Required to prevent infinite recursion when referenced by himalaya
-      download = lib.mkOption {
-        type = lib.types.str;
-        description = "XDG directory for downloads";
-        default =
-          if pkgs.stdenv.isDarwin then "$HOME/Downloads" else "$HOME/downloads";
+with lib;
+
+let
+  userType = types.submodule {
+    options = {
+      username = mkOption {
+        type = types.str;
+        description = "Username for the account";
       };
-    };
-  };
-
-  config = {
-    # Allows us to declaritively set password
-    users.mutableUsers = true;
-
-    # Define a user account. Don't forget to set a password with ‘passwd’.
-    users.users.${config.user} = {
-      # Create a home directory for human user
-      isNormalUser = true;
-
-      extraGroups = config.extraUserGroups;
-    };
-
-    home-manager.users.${config.user} = {
-      home.packages = [ pkgs.home-manager ];
-      programs.home-manager.enable = true;
-      xdg = {
-        # Allow Nix to manage the default applications list
-        mimeApps.enable = true;
-
-        # Set directories for application defaults
-        userDirs = {
-          enable = true;
-          createDirectories = true;
-          documents = "$HOME/documents";
-          download = config.userDirs.download;
-          music = "$HOME/media/music";
-          pictures = "$HOME/media/images";
-          videos = "$HOME/media/videos";
-          desktop = "$HOME/other/desktop";
-          publicShare = "$HOME/other/public";
-          templates = "$HOME/other/templates";
-          extraConfig = { XDG_DEV_DIR = "$HOME/dev"; };
+      
+      fullName = mkOption {
+        type = types.str;
+        description = "Full name of the user";
+      };
+      
+      extraGroups = mkOption {
+        type = types.listOf types.str;
+        default = [];
+        description = "Additional groups for the user";
+      };
+      
+      autologin = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Enable autologin for this user";
+      };
+      
+      homeConfig = mkOption {
+        type = types.attrs;
+        default = {};
+        description = "Home-manager configuration for this user";
+      };
+      
+      userDirs = {
+        download = mkOption {
+          type = types.str;
+          description = "XDG directory for downloads";
+          default = if pkgs.stdenv.isDarwin then "$HOME/Downloads" else "$HOME/downloads";
         };
       };
     };
   };
+in
+
+{
+  options = {
+    # Legacy single user options for backward compatibility
+    user = mkOption {
+      type = types.str;
+      description = "Primary user of the system (legacy)";
+      default = "";
+    };
+    
+    fullName = mkOption {
+      type = types.str;
+      description = "Human readable name of the user (legacy)";
+      default = "";
+    };
+    
+    extraUserGroups = mkOption {
+      type = types.listOf types.str;
+      description = "Extra groups for the user (legacy)";
+      default = [];
+    };
+    
+    # New multi-user system
+    systemUsers = mkOption {
+      type = types.attrsOf userType;
+      default = {};
+      description = "System users configuration";
+    };
+
+    userDirs = {
+      download = mkOption {
+        type = types.str;
+        description = "XDG directory for downloads (legacy)";
+        default = if pkgs.stdenv.isDarwin then "$HOME/Downloads" else "$HOME/downloads";
+      };
+    };
+  };
+
+  config = 
+    let
+      # Create legacy user if defined
+      legacyUser = optionalAttrs (config.user != "") {
+        ${config.user} = {
+          username = config.user;
+          fullName = config.fullName;
+          extraGroups = config.extraUserGroups;
+          autologin = false;
+          homeConfig = {};
+        };
+      };
+      
+      # Combine legacy and new users
+      allUsers = legacyUser // config.systemUsers;
+      
+      # Find autologin user
+      autologinUsers = filterAttrs (name: user: user.autologin) allUsers;
+      autologinUser = if length (attrNames autologinUsers) > 0 
+                     then head (attrNames autologinUsers) 
+                     else null;
+    in
+    {
+      # Allow mutable users for password setting
+      users.mutableUsers = true;
+
+      # Create all system users
+      users.users = mapAttrs (name: userData: {
+        isNormalUser = true;
+        description = userData.fullName;
+        extraGroups = userData.extraGroups;
+      }) allUsers;
+
+      # Configure autologin if any user has it enabled
+      autologin = mkIf (autologinUser != null) {
+        enable = true;
+        user = autologinUser;
+      };
+
+      # Home-manager configurations for all users
+      home-manager.users = mapAttrs (name: userData: 
+        recursiveUpdate {
+          home.packages = [ pkgs.home-manager ];
+          programs.home-manager.enable = true;
+          xdg = {
+            mimeApps.enable = true;
+            userDirs = {
+              enable = true;
+              createDirectories = true;
+              documents = "$HOME/documents";
+              download = userData.userDirs.download;
+              music = "$HOME/media/music";
+              pictures = "$HOME/media/images";
+              videos = "$HOME/media/videos";
+              desktop = "$HOME/other/desktop";
+              publicShare = "$HOME/other/public";
+              templates = "$HOME/other/templates";
+              extraConfig = { XDG_DEV_DIR = "$HOME/dev"; };
+            };
+          };
+        } userData.homeConfig
+      ) allUsers;
+    };
 }

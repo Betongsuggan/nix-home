@@ -1,6 +1,7 @@
 { ... }:
 {
   imports = [
+    ./profiles
     ./theming
     ./alacritty
     ./autorandr
