@@ -60,10 +60,21 @@ in
           controls.utils.battery
           controls.utils.system
           controls.utils.autoScreenRotation
+          controls.power.power
           swaylock-fancy
           grim
           slurp
           wl-clipboard
+          brightnessctl
+          systemd
+          procps
+          hyprland
+          coreutils
+          gnugrep
+          gnused
+          gawk
+          which
+          upower
         ];
       };
 
@@ -76,8 +87,42 @@ in
         };
       };
 
+      services.hypridle = {
+        enable = true;
+        settings = {
+          general = {
+            lock_cmd = "${pkgs.procps}/bin/pidof swaylock || ${pkgs.swaylock-fancy}/bin/swaylock-fancy";
+            before_sleep_cmd = "${pkgs.systemd}/bin/loginctl lock-session";
+            after_sleep_cmd = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
+            ignore_dbus_inhibit = false;
+          };
+
+          listener = [
+            {
+              timeout = 300; # 5 minutes
+              on-timeout = "${pkgs.brightnessctl}/bin/brightnessctl -s set 10";
+              on-resume = "${pkgs.brightnessctl}/bin/brightnessctl -r";
+            }
+            {
+              timeout = 600; # 10 minutes
+              on-timeout = "${pkgs.systemd}/bin/loginctl lock-session";
+            }
+            {
+              timeout = 630; # 10.5 minutes
+              on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
+              on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
+            }
+            {
+              timeout = 1800; # 30 minutes
+              on-timeout = "${pkgs.systemd}/bin/systemctl suspend";
+            }
+          ];
+        };
+      };
+
       wayland.windowManager.hyprland = {
         enable = true;
+        systemd.variables = ["--all"];
         settings = {
           monitor = config.hyprland.monitorResolutions;
 
@@ -119,10 +164,10 @@ in
           bind = [
             ### Keyboard layouts
             # Qwerty
-            "$modShift, b, exec, hyprctl keyword input:kb_variant \"\""
+            "$modShift, b, exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant \"\""
 
             # Colemak
-            "$modShift, c, exec, hyprctl keyword input:kb_variant colemak"
+            "$modShift, c, exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant colemak"
 
             ### Applications
             # Terminal
@@ -132,7 +177,7 @@ in
             "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
 
             # Print screen
-            ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(slurp)" ~/media/images/$(date -Iseconds).png''
+            ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" ~/media/images/$(${pkgs.coreutils}/bin/date -Iseconds).png''
 
             ### Screen handling
             # Forcus navigation
@@ -189,6 +234,19 @@ in
 
             # AI
             "$mod, a, exec, ${pkgs.unstable.walker}/bin/walker --autoselect --modules=ai"
+
+            ### Power Management
+            # Power menu
+            "$mod, Escape, exec, power-control menu"
+            
+            # Quick lock
+            "$modCtrl, l, exec, power-control lock"
+            
+            # Quick suspend
+            "$modCtrl, s, exec, power-control suspend"
+            
+            # Power status
+            "$modShift, Escape, exec, power-control status"
 
             ### Control
             # Media
