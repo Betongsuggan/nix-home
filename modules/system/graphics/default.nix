@@ -17,7 +17,8 @@ with lib;
   };
 
   config = mkIf config.graphics.enable {
-    home-manager.users.${config.user}.home.packages = with pkgs; [
+    # Make vulkan-tools available system-wide
+    environment.systemPackages = with pkgs; [
       vulkan-tools
     ];
 

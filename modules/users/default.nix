@@ -10,6 +10,7 @@
     ./communication
     ./development
     ./dunst
+    ./firefox
     ./fish
     ./flatpak
     ./games

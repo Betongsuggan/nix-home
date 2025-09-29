@@ -17,12 +17,10 @@ with lib;
       pulse.enable = true;
     };
 
-    home-manager.users.${config.user} = {
-      home.packages = [
-        pkgs.pavucontrol
-        pkgs.youtube-music
-      ];
-    };
+    # Audio control utility available system-wide
+    environment.systemPackages = with pkgs; [
+      pavucontrol
+    ];
 
     #hardware.pulseaudio = {
     #  enable = true;

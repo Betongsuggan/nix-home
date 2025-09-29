@@ -59,7 +59,7 @@
   services = { fwupd.enable = true; };
 
   # System modules
-  firefox.enable = true;
+  firefoxSystem.enable = true;
   graphics = {
     enable = true;
     amd = true;
@@ -76,6 +76,9 @@
   };
   wayland.enable = true;
   printers.enable = true;
+  logitech.enable = true;
+  thunarSystem.enable = true;
+  flatpakSystem.enable = true;
   networkmanager = {
     enable = true;
     hostName = "home-desktop";
@@ -85,5 +88,8 @@
     tcpPorts = [ 8080 27036 27037 ];
     udpPorts = [ 27031 27032 27033 27034 27035 27036 ];
   };
+  
+  # Game streaming server
+  game-streaming.server.enable = true;
 }
 

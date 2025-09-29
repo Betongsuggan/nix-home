@@ -1,5 +1,4 @@
-{ lib, config, ... }:
-
+# Minimal gaming profile configuration
 {
   # Minimal gaming profile - just Steam Big Picture, no window manager
   # Steam will take over the entire display

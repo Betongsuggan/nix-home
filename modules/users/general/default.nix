@@ -7,11 +7,6 @@ with lib;
   };
 
   config = mkIf config.general.enable {
-    services.tumbler.enable = true;
-
-    hardware.logitech.wireless.enable = true;
-    hardware.logitech.wireless.enableGraphical = true;
-
     home-manager.users.${config.user}.home.packages = with pkgs; [
       btop
       coreutils

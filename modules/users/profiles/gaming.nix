@@ -1,5 +1,4 @@
-{ lib, config, ... }:
-
+# Gaming user profile configuration
 {
   # Gaming-focused user profile with minimal desktop and Steam Big Picture
   

@@ -1,5 +1,4 @@
-{ lib, config, ... }:
-
+# Desktop user profile configuration
 {
   # Full desktop user profile with all productivity and development tools
   
@@ -9,7 +8,6 @@
   
   # Gaming
   games.enable = true;
-  game-streaming.enable = lib.mkDefault false; # Can be overridden per user
   
   # Development tools
   development.enable = true;
@@ -59,5 +57,5 @@
   };
   
   # Hardware-specific (can be disabled for users who don't need it)
-  undervolting.enable = lib.mkDefault false;
+  undervolting.enable = false;
 }

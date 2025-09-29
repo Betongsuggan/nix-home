@@ -32,11 +32,8 @@ with lib;
       };
     };
 
-    # Ensure the user has no password requirement
-    users.users.${config.autologin.user} = {
-      hashedPassword = "";
-      initialHashedPassword = "";
-    };
+    # Note: Password settings should be configured in the user definition
+    # The autologin user should have hashedPassword = "" set where the user is defined
 
     # Allow passwordless sudo for the autologin user (gaming convenience)
     security.sudo.extraRules = [{

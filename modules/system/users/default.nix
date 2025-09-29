@@ -120,9 +120,9 @@ in
         user = autologinUser;
       };
 
-      # Home-manager configurations for all users
-      home-manager.users = mapAttrs (name: userData: 
-        recursiveUpdate {
+      # Legacy user home-manager configuration
+      home-manager.users = mkIf (config.user != "") {
+        ${config.user} = {
           home.packages = [ pkgs.home-manager ];
           programs.home-manager.enable = true;
           xdg = {
@@ -131,7 +131,7 @@ in
               enable = true;
               createDirectories = true;
               documents = "$HOME/documents";
-              download = userData.userDirs.download;
+              download = config.userDirs.download;
               music = "$HOME/media/music";
               pictures = "$HOME/media/images";
               videos = "$HOME/media/videos";
@@ -141,7 +141,7 @@ in
               extraConfig = { XDG_DEV_DIR = "$HOME/dev"; };
             };
           };
-        } userData.homeConfig
-      ) allUsers;
+        };
+      };
     };
 }

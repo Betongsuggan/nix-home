@@ -9,11 +9,14 @@
     ./fingerprint
     ./firefox
     ./firewall
+    ./flatpak
     ./graphics
     ./kde
+    ./logitech
     ./power-management
     ./printers
     ./networking
+    ./thunar
     ./touchpad
     ./wayland
     ./xserver

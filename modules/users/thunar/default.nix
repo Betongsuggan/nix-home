@@ -10,17 +10,12 @@ with lib;
   };
 
   config = mkIf config.thunar.enable {
-    programs.xfconf.enable = true;
-
-    programs.thunar = {
-      enable = true;
-      plugins = with pkgs.xfce; [
-        thunar-archive-plugin
-        thunar-volman
+    home-manager.users.${config.user} = {
+      home.packages = with pkgs; [
+        xfce.thunar
+        xfce.thunar-archive-plugin
+        xfce.thunar-volman
       ];
     };
-
-    services.gvfs.enable = true; # Mount, trash, and other functionalities
-    services.tumbler.enable = true; # Thumbnail support for images
   };
 }
