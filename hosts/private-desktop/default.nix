@@ -1,25 +1,18 @@
 { inputs, overlays, ... }:
 
 let
-  globals =
-    {
-      user = "betongsuggan";
-      fullName = "Birger Rydback";
-      extraUserGroups = [
-        "wheel"
-        "networkmanager"
-        "network"
-        "video"
-        "docker"
-        "uinput"
-      ];
-    };
-in
-inputs.nixpkgs.lib.nixosSystem {
+  globals = {
+    user = "betongsuggan";
+    fullName = "Birger Rydback";
+    extraUserGroups =
+      [ "wheel" "networkmanager" "network" "video" "docker" "uinput" ];
+  };
+in inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
     globals
     inputs.home-manager.nixosModules.home-manager
+    inputs.stylix.nixosModules.stylix
     ../../modules/common
     ../../modules/system
     ../../modules/users
@@ -27,10 +20,17 @@ inputs.nixpkgs.lib.nixosSystem {
 
       nixpkgs = { inherit overlays; };
       boot = {
-        kernelPackages = pkgs.linuxPackages_6_14;
+        kernelPackages = pkgs.linuxPackages_6_16;
 
-        initrd.availableKernelModules =
-          [ "xhci_pci" "xhci_hcd" "nvme" "ahci" "usb_storage" "sd_mod" "usb_storage" ];
+        initrd.availableKernelModules = [
+          "xhci_pci"
+          "xhci_hcd"
+          "nvme"
+          "ahci"
+          "usb_storage"
+          "sd_mod"
+          "usb_storage"
+        ];
         loader = {
           systemd-boot.enable = true;
           systemd-boot.configurationLimit = 10;
@@ -40,7 +40,7 @@ inputs.nixpkgs.lib.nixosSystem {
           grub.useOSProber = true;
           grub.configurationLimit = 10;
         };
-        extraModulePackages = [ pkgs.linuxPackages_6_14.ryzen-smu ];
+        extraModulePackages = [ pkgs.linuxPackages_6_16.ryzen-smu ];
 
         # Graphics and VMs
         kernelModules = [ "iwlwifi" "amdgpu" "ryzen_smu" ];
@@ -49,9 +49,7 @@ inputs.nixpkgs.lib.nixosSystem {
 
       nixpkgs.config = {
         allowUnfree = true;
-        permittedInsecurePackages = [
-          "freeimage-3.18.0-unstable-2024-04-18"
-        ];
+        permittedInsecurePackages = [ "freeimage-3.18.0-unstable-2024-04-18" ];
       };
 
       hardware = {
@@ -70,18 +68,12 @@ inputs.nixpkgs.lib.nixosSystem {
           fsType = "ext4";
         };
       };
-      swapDevices = [
-        { device = "/dev/disk/by-uuid/979c14c3-e740-4c1b-8b3d-cd817ac9b61b"; }
-      ];
+      swapDevices = [{
+        device = "/dev/disk/by-uuid/979c14c3-e740-4c1b-8b3d-cd817ac9b61b";
+      }];
 
-
-      environment.systemPackages = with pkgs; [
-        iio-sensor-proxy
-      ];
-      services = {
-        fwupd.enable = true;
-      };
-
+      environment.systemPackages = with pkgs; [ iio-sensor-proxy ];
+      services = { fwupd.enable = true; };
 
       git = {
         enable = true;
@@ -90,13 +82,11 @@ inputs.nixpkgs.lib.nixosSystem {
       };
       secrets = {
         enable = true;
-        keyProviders = [
-          {
-            name = "anthropic_key_provider";
-            path = "$HOME/.config/anthropic/key_provider.sh";
-            envVarName = "ANTHROPIC_API_KEY";
-          }
-        ];
+        keyProviders = [{
+          name = "anthropic_key_provider";
+          path = "$HOME/.config/anthropic/key_provider.sh";
+          envVarName = "ANTHROPIC_API_KEY";
+        }];
       };
 
       firefox.enable = true;
@@ -105,7 +95,15 @@ inputs.nixpkgs.lib.nixosSystem {
         amd = true;
       };
       audio.enable = true;
-      bluetooth.enable = true;
+      bluetooth = {
+        enable = true;
+        wake = {
+          enable = true;
+          allowedDevices = [
+            "D0:BC:C1:41:80:04"  # DualSense Wireless Controller
+          ];
+        };
+      };
       wayland.enable = true;
       printers.enable = true;
       networkmanager = {
@@ -122,18 +120,33 @@ inputs.nixpkgs.lib.nixosSystem {
       neovim.enable = true;
       games.enable = true;
       communication.enable = true;
+      development.enable = true;
       alacritty.enable = true;
       starship.enable = true;
       undervolting.enable = true;
       bash.enable = true;
-      fonts.enable = true;
       dunst.enable = true;
       kanshi.enable = true;
       thunar.enable = true;
+      theme = {
+        enable = true;
+        wallpaper = ../../assets/wallpaper/zeal.jpg;
+        cursor = {
+          package = pkgs.banana-cursor;
+          name = "Banana";
+        };
+      };
+      walker = {
+        enable = true;
+        runAsService = false;
+      };
       hyprland = {
         enable = true;
-        monitorResolution = ",3440x1440@100,auto,1";
-        #monitorResolution = "HDMI-A-1,3840x2160@120,auto,2";
+        monitorResolutions = [
+          ",3440x1440@100,auto,1"
+          "HDMI-A-1,3840x2160@120,auto,2"
+          ",preferred,auto,1"
+        ];
         autostartApps = {
           firefox = {
             command = "firefox";
@@ -146,7 +159,6 @@ inputs.nixpkgs.lib.nixosSystem {
           };
         };
       };
-      wofi.enable = true;
     })
   ];
 }
