@@ -20,7 +20,7 @@
     ./thunar
     ./touchpad
     ./undervolting
-    ./wayland
+    ./wayland-security
     ./xserver
   ];
 }

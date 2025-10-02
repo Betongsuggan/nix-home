@@ -1,7 +1,6 @@
-{ config, lib, pkgs, ... }:
+{ pkgs, ... }:
 
 {
-
   users.users.birgerrydback = {
     isNormalUser = true;
     description = "Birger Rydback";
@@ -83,7 +82,7 @@
   };
   docker.enable = true;
   bluetooth.enable = true;
-  wayland.enable = true;
+  wayland-security.enable = true;
   printers.enable = true;
   power-management = {
     enable = true;
