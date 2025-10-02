@@ -68,8 +68,8 @@
     [{ device = "/dev/disk/by-uuid/08fd16ed-033c-456a-af0e-f16c933f08a3"; }];
 
   services.fwupd.enable = true;
+  console.keyMap = "colemak";
 
-  # System modules
   touchpad.enable = true;
   graphics = {
     enable = true;
@@ -92,6 +92,5 @@
     enable = true;
     tcpPorts = [ 8080 ];
   };
-  game-streaming.client.enable = true;
 }
 

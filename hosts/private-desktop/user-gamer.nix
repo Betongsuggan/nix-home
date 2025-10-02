@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   home.username = "gamer";
@@ -6,27 +6,21 @@
   home.stateVersion = "25.05";
 
   home.packages = with pkgs; [
-    # Core Steam setup
     steam
     steam-run
-    
-    # Gaming utilities
+
     gamescope
     mangohud
     gamemode
-    
-    # Performance monitoring
+
     htop
-    
-    # Audio support
+
     pulseaudio
     pavucontrol
-    
-    # Basic utilities
+
     xdg-utils
   ];
 
-  # Auto-start Steam Big Picture Mode on login
   programs.bash = {
     enable = true;
     profileExtra = ''
@@ -39,36 +33,16 @@
     '';
   };
 
-  # Gaming environment variables
   home.sessionVariables = {
     MANGOHUD = "1";
     MANGOHUD_DLSYM = "1";
     DXVK_HUD = "fps";
-    STEAM_FRAME_FORCE_CLOSE = "1";
+    #STEAM_FRAME_FORCE_CLOSE = "1";
     # Enable FSR for compatible games
-    WINE_FULLSCREEN_FSR = "1";
+    #WINE_FULLSCREEN_FSR = "1";
     # Optimize Steam overlay
-    STEAM_DISABLE_OVERLAY_DWM = "1";
+    #STEAM_DISABLE_OVERLAY_DWM = "1";
   };
-
-
-  # XDG directory configuration
-  #xdg = {
-  #  mimeApps.enable = true;
-  #  userDirs = {
-  #    enable = true;
-  #    createDirectories = true;
-  #    documents = "$HOME/documents";
-  #    download = "$HOME/downloads";
-  #    music = "$HOME/media/music";
-  #    pictures = "$HOME/media/images";
-  #    videos = "$HOME/media/videos";
-  #    desktop = "$HOME/other/desktop";
-  #    publicShare = "$HOME/other/public";
-  #    templates = "$HOME/other/templates";
-  #    extraConfig = { XDG_DEV_DIR = "$HOME/dev"; };
-  #  };
-  #};
 
   programs.home-manager.enable = true;
 }

@@ -1,14 +1,14 @@
-{ pkgs, config, lib, ... }: {
+{
   imports = [
     ./audio
     ./autologin
     ./bluetooth
+    ./colemak
     ./disk-encryption
     ./docker
     ./fingerprint
     ./firefox
     ./firewall
-    ./flatpak
     ./game-streaming
     ./graphics
     ./kde

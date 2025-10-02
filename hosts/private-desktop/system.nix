@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   users.users.gamer = {
@@ -10,21 +10,16 @@
   users.users.betongsuggan = {
     isNormalUser = true;
     description = "Betongsuggan user";
-    #fullName = "Birger Rydback";
     extraGroups =
       [ "wheel" "networkmanager" "network" "video" "docker" "uinput" ];
   };
 
-  # Enable autologin for gaming user using getty method (console autologin)
   autologin = {
     enable = true;
     user = "gamer";
     method = "getty";
     tty = "tty1";
   };
-  
-  # Disable wayland/display manager entirely for minimal setup
-  wayland.enable = false;
 
   nixpkgs.config = {
     allowUnfree = true;
@@ -56,18 +51,13 @@
     extraModulePackages = [ pkgs.linuxPackages_6_16.ryzen-smu ];
     kernelModules = [ "iwlwifi" "amdgpu" "ryzen_smu" ];
     supportedFilesystems = [ "ntfs" ];
-    
-    # Gaming kernel parameters
+
     kernelParams = [
-      # AMD GPU optimizations
       "amdgpu.ppfeaturemask=0xffffffff"
       "amdgpu.dpm=1"
-      # Reduce input latency
       "preempt=full"
       "threadirqs"
-      # Memory optimizations
       "transparent_hugepage=madvise"
-      # Disable mitigations for performance (security tradeoff)
       "mitigations=off"
     ];
   };
@@ -81,7 +71,6 @@
 
   time.timeZone = "Europe/Stockholm";
 
-  # File systems
   fileSystems = {
     "/" = {
       device = "/dev/disk/by-uuid/7bd243d3-6b04-4df9-b4d7-3c590f7ebe3d";
@@ -92,16 +81,13 @@
   swapDevices =
     [{ device = "/dev/disk/by-uuid/979c14c3-e740-4c1b-8b3d-cd817ac9b61b"; }];
 
-  services = { 
-    fwupd.enable = true;
-  };
+  services = { fwupd.enable = true; };
 
-  # Gaming optimizations
   programs.gamemode.enable = true;
-  
-  environment.systemPackages = with pkgs; [ 
-    iio-sensor-proxy 
-    home-manager 
+
+  environment.systemPackages = with pkgs; [
+    iio-sensor-proxy
+    home-manager
     gamemode
     mangohud
   ];
@@ -120,15 +106,14 @@
       ];
     };
   };
+  console.keyMap = "colemak";
   printers.enable = true;
 
-  # Enable XDG portals for flatpak
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     config.common.default = "*";
   };
-  flatpakSystem.enable = true;
   networkmanager = {
     enable = true;
     hostName = "home-desktop";
@@ -140,14 +125,6 @@
   };
   undervolting.enable = true;
 
-  # Game streaming server
-  #game-streaming.server.enable = true;
-  # System modules
-  #firefoxSystem.enable = true;
-  #logitech.enable = true;
-  #thunarSystem.enable = true;
-
-  # Pin a state version to prevent warnings
   system.stateVersion = "25.05";
 }
 

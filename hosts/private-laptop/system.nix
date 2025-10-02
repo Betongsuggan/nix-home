@@ -58,6 +58,7 @@
   environment.systemPackages = with pkgs; [ iio-sensor-proxy ];
   services = { fwupd.enable = true; };
 
+  console.keyMap = "colemak";
   touchpad.enable = true;
   graphics = {
     enable = true;

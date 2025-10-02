@@ -23,10 +23,7 @@ with lib;
     users.groups.uinput = { };
 
     systemd.services.kanata-internalKeyboard.serviceConfig = {
-      SupplementaryGroups = [
-        "input"
-        "uinput"
-      ];
+      SupplementaryGroups = [ "input" "uinput" ];
     };
 
     services.kanata = {
