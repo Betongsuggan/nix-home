@@ -2,15 +2,11 @@
 with lib;
 
 {
-  options.qutebrowser = {
-    enable = mkEnableOption "Enable qutebrowser";
-  };
+  options.qutebrowser = { enable = mkEnableOption "Enable qutebrowser"; };
 
   config = mkIf config.qutebrowser.enable {
-    home-manager.users.${config.user}.programs = {
-      qutebrowser = {
-        enable = true;
-      };
+    programs = {
+      qutebrowser = { enable = true; };
     };
   };
 }

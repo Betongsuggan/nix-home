@@ -7,7 +7,7 @@ with lib;
   };
 
   config = mkIf config.colemak.enable {
-    home-manager.users.${config.user}.keyboard = {
+    keyboard = {
       layout = "us,us";
       variant = "colemak,";
       #layout = "us";

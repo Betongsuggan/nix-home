@@ -7,7 +7,7 @@ with lib;
   };
 
   config = mkIf (config.rofi.enable) {
-    home-manager.users.${config.user}.programs.rofi = {
+    programs.rofi = {
       enable = true;
       terminal = "urxvt";
       theme = "gruvbox-dark-soft";

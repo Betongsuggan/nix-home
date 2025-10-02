@@ -1,7 +1,24 @@
 { config, lib, pkgs, ... }:
 
 {
-  # System-level configuration for private-desktop
+  users.users.gamer = {
+    isNormalUser = true;
+    description = "Gaming User";
+    extraGroups = [ "networkmanager" "video" ];
+  };
+
+  users.users.betongsuggan = {
+    isNormalUser = true;
+    description = "Betongsuggan user";
+    #fullName = "Birger Rydback";
+    extraGroups =
+      [ "wheel" "networkmanager" "network" "video" "docker" "uinput" ];
+  };
+
+  autologin = {
+    enable = true;
+    user = "gamer";
+  };
 
   nixpkgs.config = {
     allowUnfree = true;
@@ -55,11 +72,9 @@
   swapDevices =
     [{ device = "/dev/disk/by-uuid/979c14c3-e740-4c1b-8b3d-cd817ac9b61b"; }];
 
-  environment.systemPackages = with pkgs; [ iio-sensor-proxy ];
+  environment.systemPackages = with pkgs; [ iio-sensor-proxy home-manager ];
   services = { fwupd.enable = true; };
 
-  # System modules
-  firefoxSystem.enable = true;
   graphics = {
     enable = true;
     amd = true;
@@ -76,8 +91,13 @@
   };
   wayland.enable = true;
   printers.enable = true;
-  logitech.enable = true;
-  thunarSystem.enable = true;
+
+  # Enable XDG portals for flatpak
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = "*";
+  };
   flatpakSystem.enable = true;
   networkmanager = {
     enable = true;
@@ -88,8 +108,16 @@
     tcpPorts = [ 8080 27036 27037 ];
     udpPorts = [ 27031 27032 27033 27034 27035 27036 ];
   };
-  
+  undervolting.enable = true;
+
   # Game streaming server
-  game-streaming.server.enable = true;
+  #game-streaming.server.enable = true;
+  # System modules
+  #firefoxSystem.enable = true;
+  #logitech.enable = true;
+  #thunarSystem.enable = true;
+
+  # Pin a state version to prevent warnings
+  system.stateVersion = "25.05";
 }
 

@@ -1,14 +1,11 @@
 { config, pkgs, lib, ... }:
 with lib;
 
-
 {
-  options.polybar = {
-    enable = mkEnableOption "Enable Polybar";
-  };
+  options.polybar = { enable = mkEnableOption "Enable Polybar"; };
 
   config = mkIf config.polybar.enable {
-    home-manager.users.${config.user}.services.polybar = {
+    services.polybar = {
       enable = true;
       package = pkgs.polybar.override {
         #       i3GapsSupport = true;
@@ -41,12 +38,14 @@ with lib;
           type = "internal/i3";
           label-focused = "%index%";
           label-focused-background = "${config.theme.colors.normal.white}";
-          label-focused-foreground = "${config.theme.colors.primary.background}";
+          label-focused-foreground =
+            "${config.theme.colors.primary.background}";
           label-focused-alignment = "center";
           label-focused-padding = 1;
 
           label-unfocused = "%index%";
-          label-unfocused-background = "${config.theme.colors.primary.background}";
+          label-unfocused-background =
+            "${config.theme.colors.primary.background}";
           label-unfocused-foreground = "${config.theme.colors.normal.white}";
           label-unfocused-alignment = "center";
           label-unfocused-padding = 1;

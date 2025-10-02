@@ -5,25 +5,27 @@ let
   mediaPlayerCtl = "${pkgs.playerctl}/bin/playerctl";
   mediaPlayerCtld = "${pkgs.playerctl}/bin/playerctld";
 
-  jsonOutput = name: { pre ? "", text ? "", tooltip ? "", alt ? "", class ? "", percentage ? "" }: "${pkgs.writeShellScriptBin "waybar-${name}" ''
-    set -euo pipefail
-    ${pre}
-    ${pkgs.jq}/bin/jq -cn \
-      --arg text "${text}" \
-      --arg tooltip "${tooltip}" \
-      --arg alt "${alt}" \
-      --arg class "${class}" \
-      --arg percentage "${percentage}" \
-      '{text:$text,tooltip:$tooltip,alt:$alt,class:$class,percentage:$percentage}'
-  ''}/bin/waybar-${name}";
-in
-{
-  options.waybar = {
-    enable = mkEnableOption "Enable Waybar";
-  };
+  jsonOutput = name:
+    { pre ? "", text ? "", tooltip ? "", alt ? "", class ? "", percentage ? ""
+    }:
+    "${
+      pkgs.writeShellScriptBin "waybar-${name}" ''
+        set -euo pipefail
+        ${pre}
+        ${pkgs.jq}/bin/jq -cn \
+          --arg text "${text}" \
+          --arg tooltip "${tooltip}" \
+          --arg alt "${alt}" \
+          --arg class "${class}" \
+          --arg percentage "${percentage}" \
+          '{text:$text,tooltip:$tooltip,alt:$alt,class:$class,percentage:$percentage}'
+      ''
+    }/bin/waybar-${name}";
+in {
+  options.waybar = { enable = mkEnableOption "Enable Waybar"; };
 
   config = mkIf config.waybar.enable {
-    home-manager.users.${config.user}.programs.waybar = {
+    programs.waybar = {
       enable = true;
       settings = {
         primary = {
@@ -100,9 +102,7 @@ in
             format-charging = "󰂄 {capacity}%";
             onclick = "";
           };
-          "sway/window" = {
-            max-length = 20;
-          };
+          "sway/window" = { max-length = 20; };
           network = {
             interval = 10;
             format-wifi = " {essid}";
@@ -113,16 +113,19 @@ in
               {ipaddr}/{cidr}
               Up: {bandwidthUpBits}
               Down: {bandwidthDownBits}'';
-            on-click = "${pkgs.alacritty}/bin/alacritty --command nmtui-connect";
+            on-click =
+              "${pkgs.alacritty}/bin/alacritty --command nmtui-connect";
           };
           "custom/menu" = {
             interval = 1000;
             return-type = "json";
             exec = jsonOutput "menu" {
               text = "";
-              tooltip = ''$(cat /etc/os-release | grep PRETTY_NAME | cut -d '"' -f2)'';
+              tooltip =
+                ''$(cat /etc/os-release | grep PRETTY_NAME | cut -d '"' -f2)'';
             };
-            on-click = "${pkgs.wofi}/bin/wofi -S drun -x 10 -y 10 -W 25% -H 60%";
+            on-click =
+              "${pkgs.wofi}/bin/wofi -S drun -x 10 -y 10 -W 25% -H 60%";
           };
           "custom/hostname" = {
             interval = 1000;
@@ -160,7 +163,8 @@ in
           };
           "custom/player" = {
             exec-if = "${mediaPlayerCtl} status";
-            exec = ''${mediaPlayerCtl} metadata --format '{"text": "{{artist}} - {{title}}", "alt": "{{status}}", "tooltip": "{{title}} ({{artist}} - {{album}})"}' '';
+            exec = ''
+              ${mediaPlayerCtl} metadata --format '{"text": "{{artist}} - {{title}}", "alt": "{{status}}", "tooltip": "{{title}} ({{artist}} - {{album}})"}' '';
             return-type = "json";
             interval = 10;
             max-length = 60;

@@ -11,7 +11,7 @@ with lib;
   };
 
   config = mkIf config.fish.enable {
-    home-manager.users.${config.user}.programs = {
+    programs = {
       nix-index = {
         enable = true;
         enableFishIntegration = true;
@@ -33,7 +33,7 @@ with lib;
           export EDITOR=nvim
           export PATH="$PATH:~/.cargo/bin/"
           export ANTHROPIC_API_KEY="$(ai_key_provider)"
-  
+
           fish_vi_key_bindings
         '';
       };

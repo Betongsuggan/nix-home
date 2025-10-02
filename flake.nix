@@ -18,7 +18,7 @@
     awscli-local.url = "github:Betongsuggan/awscli-local";
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, awscli-local, ... }@inputs:
+  outputs = { nixpkgs-unstable, awscli-local, ... }@inputs:
     let
       overlays = [
         (self: super: {
@@ -30,35 +30,37 @@
         })
         (import ./overrides/aws-cdk.nix)
       ];
-      pkgs = import nixpkgs {
-        system = "x86_64-linux";
-      };
 
-      # ✅ Fake package here
-      mockPackage = pkgs.runCommand "fake-package" { } ''
-        mkdir -p $out
-        echo `{ "time": "2020-04-26T13:32:17+00:00", "condition" = true, "message" = "fuck this" }` > $out/fake.txt
-      '';
-    in
-    rec {
+      mkHomeConfiguration = userModule:
+        inputs.home-manager.lib.homeManagerConfiguration {
+          pkgs = import inputs.nixpkgs {
+            system = "x86_64-linux";
+            inherit overlays;
+            config.allowUnfree = true;
+          };
+          modules = [ userModule ];
+          extraSpecialArgs = { inherit inputs overlays; };
+        };
+    in {
       nixosConfigurations = {
-        bits = import ./hosts/bits { inherit inputs overlays; };
-        private-laptop = import ./hosts/private-laptop { inherit inputs overlays; };
-        private-desktop = import ./hosts/private-desktop { inherit inputs overlays; };
+        bits = import ./hosts/bits/default.nix { inherit inputs overlays; };
+        private-laptop = import ./hosts/private-laptop/default.nix {
+          inherit inputs overlays;
+        };
+        private-desktop = import ./hosts/private-desktop/default.nix {
+          inherit inputs overlays;
+        };
       };
 
       homeConfigurations = {
-        #private-laptop = nixosConfigurations.private-laptop.config.home-manager.users.betongsuggan.home;
-        #bits = nixosConfigurations.bits.config.home-manager.users.birgerrydback.home;
-        private-desktop = nixosConfigurations.private-desktop.config.home-manager.users.betongsuggan.home // {
-          config = {
-            news = {
-              display = "silent";
-              json.output = mockPackage;
-              entries = [ ];
-            };
-          };
-        };
+        "betongsuggan@private-desktop" =
+          mkHomeConfiguration ./hosts/private-desktop/user-betongsuggan.nix;
+        "gamer@private-desktop" =
+          mkHomeConfiguration ./hosts/private-desktop/user-gamer.nix;
+        "betongsuggan@private-laptpo" =
+          mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
+        "birgerrydback@bits" =
+          mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;
       };
     };
 }

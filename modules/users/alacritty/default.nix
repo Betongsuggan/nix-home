@@ -1,6 +1,5 @@
 { pkgs, config, lib, ... }:
-with lib;
-{
+with lib; {
   options.alacritty = {
     enable = mkOption {
       description = "Enable Alacritty terminal emulator";
@@ -10,7 +9,7 @@ with lib;
   };
 
   config = mkIf config.alacritty.enable {
-    home-manager.users.${config.user}.programs.alacritty = {
+    programs.alacritty = {
       enable = true;
 
       settings = {
@@ -43,10 +42,12 @@ with lib;
             background = config.theme.colors.normal.white;
           };
           normal = {
-            inherit (config.theme.colors.normal) black red green yellow blue magenta cyan white;
+            inherit (config.theme.colors.normal)
+              black red green yellow blue magenta cyan white;
           };
           bright = {
-            inherit (config.theme.colors.bright) black red green yellow blue magenta cyan white;
+            inherit (config.theme.colors.bright)
+              black red green yellow blue magenta cyan white;
           };
         };
       };

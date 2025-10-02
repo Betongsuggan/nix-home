@@ -11,7 +11,7 @@ with lib;
   };
 
   config = mkIf config.bash.enable {
-    home-manager.users.${config.user}.programs.bash = {
+    programs.bash = {
       enable = true;
       shellAliases = {
         cloud = "cd ~/Development/cloud";

@@ -7,7 +7,7 @@ with lib;
   };
 
   config = mkIf config.general.enable {
-    home-manager.users.${config.user}.home.packages = with pkgs; [
+    home.packages = with pkgs; [
       btop
       coreutils
       pciutils

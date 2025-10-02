@@ -28,8 +28,7 @@
       settings = {
         # Add community Cachix to binary cache
         builders-use-substitutes = true;
-        substituters =
-          [ "https://nix-community.cachix.org" ];
+        substituters = [ "https://nix-community.cachix.org" ];
         trusted-public-keys = [
           "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
         ];
@@ -45,13 +44,5 @@
 
     # Basic common system packages for all devices
     environment.systemPackages = with pkgs; [ git vim wget curl ];
-
-    # Use the system-level nixpkgs instead of Home Manager's
-    home-manager = {
-      useGlobalPkgs = true;
-      useUserPackages = true;
-      users.${config.user}.home.stateVersion = config.stateVersion;
-      users.root.home.stateVersion = config.stateVersion;
-    };
   };
 }

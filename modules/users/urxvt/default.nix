@@ -7,10 +7,10 @@ with lib;
   };
 
   config = mkIf config.urxvt.enable {
-    home-manager.users.${config.user}.sessionVariables = {
+    home.sessionVariables = {
       TERMINFO_DIRS = "${pkgs.rxvt-unicode-unwrapped.terminfo.outPath}/share/terminfo";
     };
-    home-manager.users.${config.user}.programs.urxvt = {
+    programs.urxvt = {
       enable = true;
       iso14755 = false;
       scroll.bar.enable = false;

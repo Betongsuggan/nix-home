@@ -11,7 +11,7 @@ with lib;
   };
 
   config = mkIf config.kanshi.enable {
-    home-manager.users.${config.user}.services.kanshi = {
+    services.kanshi = {
       enable = true;
       settings = [
         {
