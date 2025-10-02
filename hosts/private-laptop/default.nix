@@ -4,7 +4,6 @@ inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
   modules = [
     inputs.home-manager.nixosModules.home-manager
-    inputs.stylix.homeModules.stylix
     ../../modules/common
     ../../modules/system
     ./system.nix

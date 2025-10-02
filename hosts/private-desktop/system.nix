@@ -4,7 +4,7 @@
   users.users.gamer = {
     isNormalUser = true;
     description = "Gaming User";
-    extraGroups = [ "networkmanager" "video" ];
+    extraGroups = [ "networkmanager" "video" "audio" "input" "gamemode" ];
   };
 
   users.users.betongsuggan = {
@@ -15,10 +15,16 @@
       [ "wheel" "networkmanager" "network" "video" "docker" "uinput" ];
   };
 
+  # Enable autologin for gaming user using getty method (console autologin)
   autologin = {
     enable = true;
     user = "gamer";
+    method = "getty";
+    tty = "tty1";
   };
+  
+  # Disable wayland/display manager entirely for minimal setup
+  wayland.enable = false;
 
   nixpkgs.config = {
     allowUnfree = true;
@@ -50,6 +56,20 @@
     extraModulePackages = [ pkgs.linuxPackages_6_16.ryzen-smu ];
     kernelModules = [ "iwlwifi" "amdgpu" "ryzen_smu" ];
     supportedFilesystems = [ "ntfs" ];
+    
+    # Gaming kernel parameters
+    kernelParams = [
+      # AMD GPU optimizations
+      "amdgpu.ppfeaturemask=0xffffffff"
+      "amdgpu.dpm=1"
+      # Reduce input latency
+      "preempt=full"
+      "threadirqs"
+      # Memory optimizations
+      "transparent_hugepage=madvise"
+      # Disable mitigations for performance (security tradeoff)
+      "mitigations=off"
+    ];
   };
 
   hardware = {
@@ -72,8 +92,19 @@
   swapDevices =
     [{ device = "/dev/disk/by-uuid/979c14c3-e740-4c1b-8b3d-cd817ac9b61b"; }];
 
-  environment.systemPackages = with pkgs; [ iio-sensor-proxy home-manager ];
-  services = { fwupd.enable = true; };
+  services = { 
+    fwupd.enable = true;
+  };
+
+  # Gaming optimizations
+  programs.gamemode.enable = true;
+  
+  environment.systemPackages = with pkgs; [ 
+    iio-sensor-proxy 
+    home-manager 
+    gamemode
+    mangohud
+  ];
 
   graphics = {
     enable = true;
@@ -89,7 +120,6 @@
       ];
     };
   };
-  wayland.enable = true;
   printers.enable = true;
 
   # Enable XDG portals for flatpak
