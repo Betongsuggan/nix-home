@@ -7,70 +7,69 @@ with lib;
   };
 
   config = mkIf config.development.enable {
-    home-manager.users.${config.user} = {
-      home.packages = with pkgs; [
 
-        # Infrastructure
-        localstack
-        awscli-local
-        nodePackages.aws-cdk-local
-        unstable.nodePackages.aws-cdk
-        awscli2
-        terraform
+    home.packages = with pkgs; [
 
-        # AI tools
-        claude-code
+      # Infrastructure
+      localstack
+      awscli-local
+      nodePackages.aws-cdk-local
+      unstable.nodePackages.aws-cdk
+      awscli2
+      terraform
 
-        # Python
-        python3
+      # AI tools
+      claude-code
 
-        # Kotlin
-        kotlin
-        openjdk17-bootstrap
-        android-studio
-        jetbrains.idea-community
+      # Python
+      python3
 
-        # Node stuff
-        yarn
-        nodePackages.pnpm
-        nodejs_20
+      # Kotlin
+      kotlin
+      openjdk17-bootstrap
+      android-studio
+      jetbrains.idea-community
 
-        # Haskell
-        ghc
-        cabal-install
+      # Node stuff
+      yarn
+      nodePackages.pnpm
+      nodejs_20
 
-        # Rust
-        cargo
-        rustc
-        rustfmt
-        gcc
-        clippy
+      # Haskell
+      ghc
+      cabal-install
 
-        # Go
-        delve
-        golangci-lint
-        golangci-lint-langserver
-        gotools
-        gofumpt
-        golines
+      # Rust
+      cargo
+      rustc
+      rustfmt
+      gcc
+      clippy
 
-        # Utilities
-        altair
-        docker-compose
-        gnumake
-        jq
-        ls-lint
-        newman
-        silver-searcher
-        openssl
-      ];
-      programs.go.enable = true;
+      # Go
+      delve
+      golangci-lint
+      golangci-lint-langserver
+      gotools
+      gofumpt
+      golines
 
-      home.sessionVariables = {
-        JAVA_HOME = "${pkgs.openjdk17-bootstrap}";
-        PATH = "$HOME/node_modules/bin:$PATH";
-      };
+      # Utilities
+      altair
+      docker-compose
+      gnumake
+      jq
+      ls-lint
+      newman
+      silver-searcher
+      openssl
+    ];
+    programs.go.enable = true;
+
+    home.sessionVariables = {
+      JAVA_HOME = "${pkgs.openjdk17-bootstrap}";
+      PATH = "$HOME/node_modules/bin:$PATH";
     };
-    unfreePackages = [ "terraform" "android-studio-stable" "idea-community" "claude-code" ];
+    # unfreePackages moved to system level configuration
   };
 }

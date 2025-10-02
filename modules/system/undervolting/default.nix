@@ -11,12 +11,11 @@ with lib;
   };
 
   config = mkIf config.undervolting.enable {
-    programs.corectrl = {
+    programs.corectrl.enable = true;
+    
+    hardware.amdgpu.overdrive = {
       enable = true;
-      gpuOverclock = {
-        enable = true;
-        ppfeaturemask = "0xffffffff";
-      };
+      ppfeaturemask = "0xffffffff";
     };
   };
 }

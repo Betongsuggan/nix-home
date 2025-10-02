@@ -11,7 +11,7 @@ with lib;
   };
 
   config = mkIf config.starship.enable {
-    home-manager.users.${config.user}.programs.starship = {
+    programs.starship = {
       enable = true;
       enableNushellIntegration = true;
       enableFishIntegration = true;

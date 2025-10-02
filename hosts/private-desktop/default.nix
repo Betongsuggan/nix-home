@@ -7,17 +7,11 @@ inputs.nixpkgs.lib.nixosSystem {
     inputs.stylix.nixosModules.stylix
     ../../modules/common
     ../../modules/system
-    ../../modules/users
-    
-    # System configuration
+
     ./system.nix
-    
-    # User configurations
-    ./users.nix
-    
-    # Apply nixpkgs overlays
-    ({ config, lib, pkgs, ... }: {
-      nixpkgs = { inherit overlays; };
-    })
+
+    # Home Manager configurations moved to standalone flake homeConfigurations
+
+    ({ config, lib, pkgs, ... }: { nixpkgs = { inherit overlays; }; })
   ];
 }

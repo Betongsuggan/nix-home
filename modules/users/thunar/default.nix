@@ -1,6 +1,5 @@
 { pkgs, config, lib, ... }:
-with lib;
-{
+with lib; {
   options.thunar = {
     enable = mkOption {
       description = "Enable Thunar file explorer";
@@ -10,12 +9,11 @@ with lib;
   };
 
   config = mkIf config.thunar.enable {
-    home-manager.users.${config.user} = {
-      home.packages = with pkgs; [
-        xfce.thunar
-        xfce.thunar-archive-plugin
-        xfce.thunar-volman
-      ];
-    };
+
+    home.packages = with pkgs; [
+      xfce.thunar
+      xfce.thunar-archive-plugin
+      xfce.thunar-volman
+    ];
   };
 }

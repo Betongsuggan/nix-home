@@ -1,12 +1,8 @@
-{ ... }:
-{
+{ ... }: {
   imports = [
-    ./profiles
-    ./theming
     ./alacritty
     ./autorandr
     ./bash
-    ./colemak
     ./communication
     ./development
     ./dunst
@@ -14,13 +10,11 @@
     ./fish
     ./flatpak
     ./games
-    ./game-streaming
     ./general
     ./git
     ./hyprland
     ./i3
     ./kanshi
-    ./keyboard
     ./neovim
     ./nushell
     ./picom
@@ -32,7 +26,6 @@
     ./sway
     ./theming
     ./thunar
-    ./undervolting
     ./urxvt
     ./walker
     ./waybar

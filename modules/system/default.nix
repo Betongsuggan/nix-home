@@ -1,5 +1,4 @@
-{ pkgs, config, lib, ... }:
-{
+{ pkgs, config, lib, ... }: {
   imports = [
     ./audio
     ./autologin
@@ -10,23 +9,18 @@
     ./firefox
     ./firewall
     ./flatpak
+    ./game-streaming
     ./graphics
     ./kde
+    ./keyboard
     ./logitech
     ./power-management
     ./printers
     ./networking
     ./thunar
     ./touchpad
+    ./undervolting
     ./wayland
     ./xserver
-    ./users
   ];
-
-  config = lib.mkIf pkgs.stdenv.isLinux {
-
-    # Pin a state version to prevent warnings
-    system.stateVersion =
-      config.home-manager.users.${config.user}.home.stateVersion;
-  };
 }

@@ -6,7 +6,7 @@
 
   config = lib.mkIf config.neovim.enable {
 
-    home-manager.users.${config.user}.home.packages = [
+    home.packages = [
       pkgs.neovim
     ];
   };

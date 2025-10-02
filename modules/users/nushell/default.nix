@@ -8,7 +8,7 @@ with lib;
 #  in
 #  ''
 #    $env.${name} = $env.${name} + ":" + ${valueWithEnvHome};
-#  '') config.home-manager.users.${config.user}.home.sessionVariables);
+#  '') config.home.sessionVariables);
 #in
 {
   options.nushell = {
@@ -20,7 +20,7 @@ with lib;
   };
 
   config = mkIf config.nushell.enable {
-    home-manager.users.${config.user}.programs.nushell = {
+    programs.nushell = {
       enable = true;
       configFile = { 
         text = ''

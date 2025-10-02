@@ -1,6 +1,5 @@
 { pkgs, config, lib, ... }:
-with lib;
-{
+with lib; {
   options.secrets = {
     enable = mkOption {
       description = "Enable secrets provider";
@@ -14,16 +13,18 @@ with lib;
         options = {
           name = mkOption {
             description = "Name of the provider";
-            type = types.string;
+            type = types.str;
           };
 
           path = mkOption {
-            description = "Path to executable providing an secret provider token to stdout when executed. Example: '$HOME/.config/openai/key_provider.sh'";
-            type = types.string;
+            description =
+              "Path to executable providing an secret provider token to stdout when executed. Example: '$HOME/.config/openai/key_provider.sh'";
+            type = types.str;
           };
 
           envVarName = mkOption {
-            description = "Name of the environment variable to set (defaults to <NAME>_API_KEY)";
+            description =
+              "Name of the environment variable to set (defaults to <NAME>_API_KEY)";
             type = types.str;
           };
         };
@@ -33,24 +34,18 @@ with lib;
   };
 
   config = mkIf config.secrets.enable {
-    home-manager.users.${config.user} = {
-      home = {
-        packages = map
-          (provider:
-            import ./keyProvider.nix {
-              inherit pkgs;
-              providerConfig = provider;
-            }
-          )
-          config.secrets.keyProviders;
 
-        sessionVariables = builtins.listToAttrs (map
-          (provider: {
-            name = provider.envVarName;
-            value = "$(${provider.path})";
-          })
-          config.secrets.keyProviders);
-      };
+    home = {
+      packages = map (provider:
+        import ./keyProvider.nix {
+          inherit pkgs;
+          providerConfig = provider;
+        }) config.secrets.keyProviders;
+
+      sessionVariables = builtins.listToAttrs (map (provider: {
+        name = provider.envVarName;
+        value = "$(${provider.path})";
+      }) config.secrets.keyProviders);
     };
   };
 }
