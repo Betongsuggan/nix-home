@@ -1,13 +1,11 @@
-{ config, pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   home.username = "birgerrydback";
   home.homeDirectory = "/home/birgerrydback";
   home.stateVersion = "24.05";
 
-  imports = [
-    ../../modules/users
-  ];
+  imports = [ ../../modules/users ];
 
   # Home-manager module configurations
   general.enable = true;
@@ -24,18 +22,12 @@
   dunst.enable = true;
   kanshi.enable = true;
   thunar.enable = true;
-  walker = {
-    enable = true;
-    runAsService = true;
-  };
+  walker.enable = true;
   development.enable = true;
 
   hyprland = {
     enable = true;
-    monitorResolutions = [
-      "1,3840x2560@60,auto,1"
-      ",preferred,auto,1"
-    ];
+    monitorResolutions = [ "1,3840x2560@60,auto,1" ",preferred,auto,1" ];
     autostartApps = {
       firefox = {
         command = "firefox";
@@ -87,3 +79,4 @@
 
   programs.home-manager.enable = true;
 }
+

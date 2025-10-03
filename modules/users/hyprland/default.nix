@@ -214,7 +214,7 @@ in {
 
           ### Launchers
           # Emojis
-          "$mod, e, exec, ${pkgs.unstable.walker}/bin/walker --modules=emojis"
+          "$mod, e, exec, walker --modules=emojis"
 
           # Wifi
           "$mod, u, exec, iwmenu --launcher walker --spaces 2"
@@ -223,15 +223,15 @@ in {
           "$mod, z, exec, bzmenu --launcher walker --spaces 2"
 
           # Websearch
-          "$mod, d, exec, ${pkgs.unstable.walker}/bin/walker --modules=websearch"
+          "$mod, d, exec, walker --modules=websearch"
 
           # Applications
-          "$mod, o, exec, ${pkgs.unstable.walker}/bin/walker --modules=applications"
+          "$mod, o, exec, walker --modules=applications"
           # Clipboard
-          "$mod, c, exec, ${pkgs.unstable.walker}/bin/walker --modules=clipboard"
+          "$mod, c, exec, walker --modules=clipboard"
 
           # AI
-          "$mod, a, exec, ${pkgs.unstable.walker}/bin/walker --autoselect --modules=ai"
+          "$mod, a, exec, walker --autoselect --modules=ai"
 
           ### Power Management
           # Power menu

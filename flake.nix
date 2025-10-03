@@ -16,6 +16,7 @@
     };
 
     awscli-local.url = "github:Betongsuggan/awscli-local";
+    walker.url = "github:abenz1267/walker";
   };
 
   outputs = { nixpkgs-unstable, awscli-local, ... }@inputs:
@@ -23,7 +24,6 @@
       overlays = [
         (self: super: {
           awscli-local = awscli-local.packages.${self.system}.default;
-          walker-module = inputs.walker.homeManagerModules.default;
         })
         (final: prev: {
           unstable = nixpkgs-unstable.legacyPackages.${prev.system};
@@ -38,7 +38,7 @@
             inherit overlays;
             config.allowUnfree = true;
           };
-          modules = [ userModule inputs.stylix.homeModules.stylix ];
+          modules = [ userModule inputs.stylix.homeModules.stylix inputs.walker.homeManagerModules.default ];
           extraSpecialArgs = { inherit inputs overlays; };
         };
     in {
