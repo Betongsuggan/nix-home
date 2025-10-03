@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   home = {
@@ -9,6 +9,8 @@
 
   imports = [
     ../../modules/users
+    inputs.walker.homeManagerModules.default
+    inputs.stylix.homeModules.stylix
   ];
 
   general.enable = true;
@@ -24,11 +26,7 @@
   kanshi.enable = true;
   development.enable = true;
   thunar.enable = true;
-
-  walker = {
-    enable = true;
-    runAsService = true;
-  };
+  walker.enable = true;
 
   theme = {
     enable = true;

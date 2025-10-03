@@ -11,7 +11,7 @@
     isNormalUser = true;
     description = "Betongsuggan user";
     extraGroups =
-      [ "wheel" "networkmanager" "network" "video" "docker" "uinput" ];
+      [ "wheel" "networkmanager" "network" "video" "docker" "uinput" "input" ];
   };
 
   autologin = {

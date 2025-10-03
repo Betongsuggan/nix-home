@@ -5,7 +5,11 @@
   home.homeDirectory = "/home/birgerrydback";
   home.stateVersion = "24.05";
 
-  imports = [ ../../modules/users ];
+  imports = [
+    ../../modules/users
+    inputs.walker.homeManagerModules.default
+    inputs.stylix.homeModules.stylix
+  ];
 
   # Home-manager module configurations
   general.enable = true;

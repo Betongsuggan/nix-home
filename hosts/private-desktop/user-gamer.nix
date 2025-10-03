@@ -1,32 +1,55 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   imports = [
     ../../modules/users
+    inputs.walker.homeManagerModules.default # Required for walker module consistency
+    inputs.stylix.homeModules.stylix
   ];
 
   home.username = "gamer";
   home.homeDirectory = "/home/gamer";
   home.stateVersion = "25.05";
 
-  # Enable gaming setup with enhanced MangoHud and controller support
+  # Enable gaming setup with enhanced MangoHud
   games = {
     enable = true;
     mangohud = {
       enable = true;
       detailedMode = true;
-      controllerToggle = true;
+      controllerToggle = false; # Now handled by controller module
       position = "top-left";
       fontSize = 22;
     };
   };
 
-  home.packages = with pkgs; [
-    htop
-    pulseaudio
-    pavucontrol
-    xdg-utils
-  ];
+  # Disable walker for gaming user
+  walker.enable = false;
+
+  # Enable PS5 controller support with MangoHud toggle
+  controller = {
+    enable = true;
+    type = "ps5";
+    mangohudToggle = {
+      enable = true;
+      buttons = [ "square" "triangle" ]; # Press Square or Triangle to toggle
+      autoStart = true;
+    };
+    rumble.enable = true;
+  };
+
+  hyprland.enable = true;
+  bash.enable = true;
+  theme = {
+    enable = true;
+    wallpaper = ../../assets/wallpaper/zeal.jpg;
+    cursor = {
+      package = pkgs.banana-cursor;
+      name = "Banana";
+    };
+  };
+
+  home.packages = with pkgs; [ htop pulseaudio pavucontrol xdg-utils ];
 
   programs.bash = {
     enable = true;
@@ -35,23 +58,23 @@
       if [[ -z "$DISPLAY" && "$XDG_VTNR" = "1" ]]; then
         # MANGOHUD is now handled by the games module
         export STEAM_FORCE_DESKTOPUI_SCALING=1
-        
+
         # Ensure input devices are accessible to gamescope
         export LIBINPUT_QUIRKS_DIR=/usr/share/libinput
         export XDG_SESSION_TYPE=tty
-        
+
         # Let Steam Input handle controller detection and hot-plugging
         # No hardcoded device paths - Steam will auto-detect controllers
-        
+
         # Get native resolution from framebuffer
         RESOLUTION=$(${pkgs.coreutils}/bin/cat /sys/class/drm/card*/modes 2>/dev/null | ${pkgs.coreutils}/bin/head -1 || echo "1920x1080")
         WIDTH=$(echo $RESOLUTION | ${pkgs.coreutils}/bin/cut -d'x' -f1)
         HEIGHT=$(echo $RESOLUTION | ${pkgs.coreutils}/bin/cut -d'x' -f2)
-        
+
         # Fallback to 1920x1080 if detection fails
         WIDTH=''${WIDTH:-1920}
         HEIGHT=''${HEIGHT:-1080}
-        
+
         exec ${pkgs.gamescope}/bin/gamescope -W $WIDTH -H $HEIGHT -f -e -- ${pkgs.steam}/bin/steam -bigpicture
       fi
     '';

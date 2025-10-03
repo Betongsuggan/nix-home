@@ -4,6 +4,7 @@
     ./autorandr
     ./bash
     ./communication
+    ./controller
     ./development
     ./dunst
     ./firefox

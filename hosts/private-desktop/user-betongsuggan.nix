@@ -1,13 +1,15 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   home.username = "betongsuggan";
   home.homeDirectory = "/home/betongsuggan";
   home.stateVersion = "25.05";
 
-  home.packages = with pkgs; [ ];
-
-  imports = [ ../../modules/users ];
+  imports = [
+    ../../modules/users
+    inputs.walker.homeManagerModules.default
+    inputs.stylix.homeModules.stylix
+  ];
 
   general.enable = true;
   games.enable = true;
@@ -21,9 +23,18 @@
   kanshi.enable = true;
   thunar.enable = true;
   firefox.enable = true;
-  walker = {
+  walker.enable = true;
+  
+  # Enable PS5 controller support with MangoHud toggle
+  controller = {
     enable = true;
-    runAsService = true;
+    type = "ps5";
+    mangohudToggle = {
+      enable = true;
+      buttons = [ "square" "triangle" ];  # Press Square or Triangle to toggle
+      autoStart = true;
+    };
+    rumble.enable = true;
   };
   hyprland = {
     enable = true;
@@ -36,10 +47,6 @@
       firefox = {
         command = "firefox";
         workspace = 1;
-      };
-      steam = {
-        command = "steam";
-        workspace = 2;
       };
     };
   };
