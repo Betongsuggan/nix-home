@@ -3,7 +3,8 @@ with lib;
 
 {
   options.walker = {
-    enable = mkEnableOption "Enable Walker application launcher with home manager module";
+    enable = mkEnableOption
+      "Enable Walker application launcher with home manager module";
   };
 
   config = mkIf config.walker.enable {
@@ -18,17 +19,18 @@ with lib;
         terminal_title_flag = "";
         locale = "";
         close_when_open = false;
-        theme = lib.mkForce "local";
+        theme = lib.mkForce "gruvbox";
         monitor = "";
         hotreload_theme = true;
         as_window = false;
         timeout = 0;
         disable_click_to_close = true;
         force_keyboard_focus = true;
+        keybinds.quick_activate = [ ];
 
         keys = {
           accept_typeahead = [ "tab" ];
-          trigger_labels = "lalt";
+          trigger_labels = "";
           next = [ "down" ];
           prev = [ "up" ];
           close = [ "esc" ];
@@ -58,10 +60,10 @@ with lib;
         list = {
           dynamic_sub = true;
           keyboard_scroll_style = "vim";
-          max_entries = 50;
+          max_entries = 15;
           show_initial_entries = true;
           single_click = true;
-          visibility_threshold = 20;
+          visibility_threshold = 1;
           placeholder = "No Results";
         };
 
@@ -72,9 +74,7 @@ with lib;
           resume_last_query = false;
         };
 
-        activation_mode = {
-          labels = "";
-        };
+        activation_mode = { labels = ""; };
 
         builtins = {
           applications = {
@@ -82,17 +82,17 @@ with lib;
             name = "applications";
             placeholder = "Applications";
             prioritize_new = false;
-            hide_actions_with_empty_query = true;
+            hide_actions_with_empty_query = false;
             context_aware = true;
             refresh = true;
             show_sub_when_single = true;
             show_icon_when_single = true;
-            show_generic = false;
+            show_generic = true;
             history = true;
             actions = {
               enabled = true;
               hide_category = false;
-              hide_without_query = true;
+              hide_without_query = false;
             };
           };
 
@@ -122,15 +122,14 @@ with lib;
             switcher_only = true;
             show_sub_when_single = true;
             anthropic = {
-              prompts = [
-                {
-                  model = "claude-3-7-sonnet-20250219";
-                  temperature = 1;
-                  max_tokens = 1000;
-                  label = "General Assistant";
-                  prompt = "You are a helpful general assistant. Keep your answers short and precise.";
-                }
-              ];
+              prompts = [{
+                model = "claude-3-7-sonnet-20250219";
+                temperature = 1;
+                max_tokens = 1000;
+                label = "General Assistant";
+                prompt =
+                  "You are a helpful general assistant. Keep your answers short and precise.";
+              }];
             };
           };
 
@@ -289,137 +288,122 @@ with lib;
         };
       };
 
-      theme.style = ''
-        #window,
-        #box,
-        #aiScroll,
-        #aiList,
-        #search,
-        #password,
-        #input,
-        #prompt,
-        #clear,
-        #typeahead,
-        #list,
-        child,
-        scrollbar,
-        slider,
-        #item,
-        #text,
-        #label,
-        #bar,
-        #sub,
-        #activationlabel {
-          all: unset;
-        }
+      theme = {
+        name = "gruvbox";
+        style = ''
+          @define-color window_bg_color #282828;
+          @define-color accent_bg_color #504945;
+          @define-color theme_fg_color #ebdbb2;
 
-        #cfgerr {
-          background: @theme_error_bg_color;
-          margin-top: 20px;
-          padding: 8px;
-          font-size: 1.2em;
-        }
+          * {
+            all: unset;
+          }
 
-        #window {
-          color: @theme_fg_color;
-        }
+          .normal-icons {
+            -gtk-icon-size: 14px;
+          }
 
-        #box {
-          border-radius: 2px;
-          background: @theme_bg_color;
-        }
+          .large-icons {
+            -gtk-icon-size: 24px;
+          }
 
-        #search {
-          background: @theme_bg_color;
-          border: 1px solid @theme_fg_color;
-          border-radius: 5px;
-          padding: 8px;
-        }
+          scrollbar {
+            opacity: 0;
+          }
 
-        #prompt {
-          margin-left: 4px;
-          margin-right: 12px;
-          color: @theme_fg_color;
-          opacity: 0.2;
-        }
+          .box-wrapper {
+            box-shadow:
+              0 19px 38px rgba(0, 0, 0, 0.3),
+              0 15px 12px rgba(0, 0, 0, 0.22);
+            background: @window_bg_color;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid darker(@accent_bg_color);
+          }
 
-        #clear {
-          color: @theme_fg_color;
-          opacity: 0.8;
-        }
+          .preview-box,
+          .elephant-hint,
+          .placeholder {
+            color: @theme_fg_color;
+          }
 
-        #password,
-        #input,
-        #typeahead {
-          border-radius: 2px;
-        }
+          .box {
+            background: @window_bg_color;
+          }
 
-        #input {
-          background: none;
-        }
+          .search-container {
+            border-radius: 6px;
+            background: @window_bg_color;
+          }
 
-        #spinner {
-          padding: 8px;
-        }
+          .input placeholder {
+            opacity: 0.5;
+          }
 
-        #typeahead {
-          color: @theme_fg_color;
-          opacity: 0.8;
-        }
+          .input {
+            caret-color: @theme_fg_color;
+            background: lighter(@window_bg_color);
+            padding: 8px;
+            color: @theme_fg_color;
+          }
 
-        #input placeholder {
-          opacity: 0.5;
-        }
+          .input:focus,
+          .input:active {
+            background: lighter(@window_bg_color);
+          }
 
-        child {
-          padding: 8px;
-          border-radius: 2px;
-        }
+          .content-container {
+            background: @window_bg_color;
+          }
 
-        child:selected,
-        child:hover {
-          background: alpha(@theme_error_bg_color, 1.0);
-        }
+          .placeholder {
+            color: @theme_fg_color;
+          }
 
-        #icon {
-          margin-right: 8px;
-        }
+          .scroll {
+            background: @window_bg_color;
+          }
 
-        #text {
-          font-size: 1.2em;
-        }
+          .list {
+            color: @theme_fg_color;
+            background: @window_bg_color;
+          }
 
-        #label {
-          font-weight: 500;
-        }
+          child {
+            background: @window_bg_color;
+          }
 
-        #sub {
-          opacity: 0.5;
-          font-size: 0.6em;
-        }
+          .item-box {
+            border-radius: 4px;
+            padding: 4px 8px;
+            background: @window_bg_color;
+            color: @theme_fg_color;
+          }
 
-        .aiItem {
-          padding: 10px;
-          border-radius: 2px;
-          color: @theme_fg_color;
-          background: @theme_bg_color;
-        }
+          .item-quick-activation {
+            display: none;
+          }
 
-        .aiItem.user {
-          padding-left: 0;
-          padding-right: 0;
-        }
+          child:hover .item-box,
+          child:selected .item-box {
+            background: alpha(@accent_bg_color, 0.25);
+          }
 
-        .aiItem.assistant {
-          background: lighter(@theme_bg_color);
-        }
+          .item-image {
+            color: @theme_fg_color;
+            margin-right: 8px;
+          }
 
-        .activation #text,
-        .activation #icon,
-        .activation #search {
-          opacity: 0.5;
-        }
-      '';
+          .item-text {
+            color: @theme_fg_color;
+          }
+
+          .item-sub {
+            color: alpha(@theme_fg_color, 0.7);
+          }
+        '';
+      };
     };
   };
 }
+

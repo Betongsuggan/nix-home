@@ -214,7 +214,7 @@ in {
 
           ### Launchers
           # Emojis
-          "$mod, e, exec, walker --modules=emojis"
+          "$mod, e, exec, walker -m symbols"
 
           # Wifi
           "$mod, u, exec, iwmenu --launcher walker --spaces 2"
@@ -223,15 +223,15 @@ in {
           "$mod, z, exec, bzmenu --launcher walker --spaces 2"
 
           # Websearch
-          "$mod, d, exec, walker --modules=websearch"
+          "$mod, d, exec, walker -m websearch"
 
           # Applications
-          "$mod, o, exec, walker --modules=applications"
+          "$mod, o, exec, walker -m desktopapplications"
           # Clipboard
-          "$mod, c, exec, walker --modules=clipboard"
+          "$mod, c, exec, walker -m clipboard"
 
           # AI
-          "$mod, a, exec, walker --autoselect --modules=ai"
+          "$mod, a, exec, walker -m ai"
 
           ### Power Management
           # Power menu
