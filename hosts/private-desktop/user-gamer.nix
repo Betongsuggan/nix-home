@@ -1,23 +1,30 @@
 { pkgs, ... }:
 
 {
+  imports = [
+    ../../modules/users
+  ];
+
   home.username = "gamer";
   home.homeDirectory = "/home/gamer";
   home.stateVersion = "25.05";
 
+  # Enable gaming setup with enhanced MangoHud and controller support
+  games = {
+    enable = true;
+    mangohud = {
+      enable = true;
+      detailedMode = true;
+      controllerToggle = true;
+      position = "top-left";
+      fontSize = 22;
+    };
+  };
+
   home.packages = with pkgs; [
-    steam
-    steam-run
-
-    gamescope
-    mangohud
-    gamemode
-
     htop
-
     pulseaudio
     pavucontrol
-
     xdg-utils
   ];
 
@@ -26,7 +33,7 @@
     profileExtra = ''
       # Auto-start Steam Big Picture Mode if not already running and on main console
       if [[ -z "$DISPLAY" && "$XDG_VTNR" = "1" ]]; then
-        export MANGOHUD=1
+        # MANGOHUD is now handled by the games module
         export STEAM_FORCE_DESKTOPUI_SCALING=1
         
         # Ensure input devices are accessible to gamescope
@@ -51,9 +58,8 @@
   };
 
   home.sessionVariables = {
-    MANGOHUD = "1";
-    MANGOHUD_DLSYM = "1";
-    DXVK_HUD = "fps";
+    # MangoHud variables are now handled by the games module
+    # DXVK_HUD = "fps";  # Might conflict with MangoHud
     # AMD GPU optimizations for gamescope
     RADV_PERFTEST = "gpl";
     MESA_VK_WSI_PRESENT_MODE = "mailbox";

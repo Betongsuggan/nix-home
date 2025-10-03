@@ -23,7 +23,7 @@
   firefox.enable = true;
   walker = {
     enable = true;
-    runAsService = false;
+    runAsService = true;
   };
   hyprland = {
     enable = true;
