@@ -2,13 +2,11 @@
   imports = [
     ./alacritty
     ./autorandr
-    ./bash
     ./battery-monitor
     ./communication
     ./controller
     ./development
     ./firefox
-    ./fish
     ./flatpak
     ./games
     ./general
@@ -18,11 +16,11 @@
     ./kanshi
     ./launcher
     ./notifications
-    ./nushell
     ./picom
     ./polybar
     ./qutebrowser
     ./secrets
+    ./shell
     ./starship
     ./sway
     ./theming

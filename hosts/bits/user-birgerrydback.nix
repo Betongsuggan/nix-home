@@ -17,9 +17,8 @@
   communication.enable = true;
   neovim.enable = true;
   alacritty.enable = true;
-  bash.enable = true;
-  nushell.enable = true;
-  fish.enable = true;
+  shell.enable = true;
+  shell.defaultShell = "fish";
   starship.enable = true;
   notifications.enable = true;
   battery-monitor.enable = true;

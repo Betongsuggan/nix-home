@@ -18,7 +18,8 @@
   neovim.enable = true;
   alacritty.enable = true;
   starship.enable = true;
-  bash.enable = true;
+  shell.enable = true;
+  shell.defaultShell = "bash";
   notifications.enable = true;
   battery-monitor.enable = true;
   kanshi.enable = true;

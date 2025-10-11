@@ -41,7 +41,8 @@
   };
 
   hyprland.enable = true;
-  bash.enable = true;
+  shell.enable = true;
+  shell.defaultShell = "bash";
   theme = {
     enable = true;
     wallpaper = ../../assets/wallpaper/zeal.jpg;

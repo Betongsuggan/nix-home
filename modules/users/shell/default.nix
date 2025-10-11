@@ -1,0 +1,115 @@
+{ config, lib, pkgs, ... }:
+with lib;
+
+{
+  imports = [
+    ./bash
+    ./fish
+    ./nushell
+  ];
+
+  options.shell = {
+    enable = mkEnableOption "Enable shell configuration";
+
+    defaultShell = mkOption {
+      description = "Default shell to use";
+      type = types.enum [ "bash" "fish" "nushell" ];
+      default = "bash";
+    };
+
+    aliases = mkOption {
+      description = "Shell aliases shared across all shells";
+      type = types.attrsOf types.str;
+      default = {
+        cloud = "cd ~/Development/cloud";
+        dashboard = "cd ~/Development/web/apps/dashboard";
+        nocode = "cd ~/Development/web/apps/nocode";
+        demo = "cd ~/Development/web/apps/nocode-demo";
+        ll = "ls -la --color=auto";
+        ls = "ls --color=auto";
+        vim = "nvim";
+        hm = "home-manager";
+        gw = "./gradlew --no-daemon";
+      };
+    };
+
+    editor = mkOption {
+      description = "Default editor";
+      type = types.str;
+      default = "nvim";
+    };
+
+    viMode = mkOption {
+      description = "Enable vi mode in shells";
+      type = types.bool;
+      default = true;
+    };
+
+    extraPaths = mkOption {
+      description = "Extra paths to add to PATH";
+      type = types.listOf types.str;
+      default = [ "~/.cargo/bin/" ];
+    };
+
+    bash = {
+      enable = mkOption {
+        description = "Enable bash shell";
+        type = types.bool;
+        default = config.shell.defaultShell == "bash";
+      };
+
+      extraInit = mkOption {
+        description = "Extra bash initialization";
+        type = types.lines;
+        default = "";
+      };
+    };
+
+    fish = {
+      enable = mkOption {
+        description = "Enable fish shell";
+        type = types.bool;
+        default = config.shell.defaultShell == "fish";
+      };
+
+      enableNixIndex = mkOption {
+        description = "Enable nix-index integration for fish";
+        type = types.bool;
+        default = true;
+      };
+
+      extraInit = mkOption {
+        description = "Extra fish initialization";
+        type = types.lines;
+        default = "";
+      };
+    };
+
+    nushell = {
+      enable = mkOption {
+        description = "Enable nushell";
+        type = types.bool;
+        default = config.shell.defaultShell == "nushell";
+      };
+
+      showBanner = mkOption {
+        description = "Show nushell banner";
+        type = types.bool;
+        default = false;
+      };
+
+      extraConfig = mkOption {
+        description = "Extra nushell configuration";
+        type = types.lines;
+        default = "";
+      };
+    };
+  };
+
+  config = mkIf config.shell.enable {
+    # Enable the selected default shell
+    bash.enable = mkIf (config.shell.defaultShell == "bash") (mkDefault true);
+    fish.enable = mkIf (config.shell.defaultShell == "fish") (mkDefault true);
+    nushell.enable = mkIf (config.shell.defaultShell == "nushell") (mkDefault true);
+  };
+}
