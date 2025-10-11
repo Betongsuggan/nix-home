@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   home.username = "birgerrydback";
@@ -7,8 +7,6 @@
 
   imports = [
     ../../modules/users
-    inputs.walker.homeManagerModules.default
-    inputs.stylix.homeModules.stylix
   ];
 
   # Home-manager module configurations
@@ -23,7 +21,7 @@
   nushell.enable = true;
   fish.enable = true;
   starship.enable = true;
-  dunst.enable = true;
+  notifications.enable = true;
   battery-monitor.enable = true;
   kanshi.enable = true;
   thunar.enable = true;

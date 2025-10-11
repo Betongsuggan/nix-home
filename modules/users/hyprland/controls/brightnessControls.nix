@@ -1,12 +1,22 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
+  # Build notification command using the notifications module
+  notifyBrightness = config.notifications.send {
+    urgency = "low";
+    icon = "whitebalance";
+    appName = "Brightness";
+    summary = "";
+    hints = {
+      "string:x-dunst-stack-tag" = "brightnessControl";
+      "int:value" = "\$brightness";
+    };
+  };
+
   brightnessControl = pkgs.writeShellScriptBin "brightness-control" ''
     #!/usr/bin/env bash
-    
-    # Arbitrary but unique message tag
-    tag="brightnessControl"
+
     while getopts i:d:ms option
-    do 
+    do
         echo "$option"
         case "''${option}"
             in
@@ -14,10 +24,10 @@ let
             d) ${pkgs.light}/bin/light -U ''${OPTARG};;
         esac
     done
-    
+
     brightness="$(${pkgs.light}/bin/light | sed 's/\..*//')"
 
-    ${pkgs.dunst}/bin/dunstify -u low -i whitebalance -h string:x-dunst-stack-tag:$tag -h int:value:$brightness -a "Brightness" "" 
+    ${notifyBrightness}
   '';
 in
 brightnessControl

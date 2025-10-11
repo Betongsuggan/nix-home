@@ -7,7 +7,6 @@
     ./communication
     ./controller
     ./development
-    ./dunst
     ./firefox
     ./fish
     ./flatpak
@@ -18,6 +17,7 @@
     ./i3
     ./kanshi
     ./neovim
+    ./notifications
     ./nushell
     ./picom
     ./polybar

@@ -5,6 +5,39 @@ with lib;
 let
   cfg = config.battery-monitor;
 
+  # Notification commands using the notifications module
+  notifyChargerConnected = config.notifications.send {
+    urgency = "low";
+    icon = "battery-charging";
+    appName = "Battery Monitor";
+    summary = "Charger Connected";
+    body = "Battery: \$PERCENT%";
+  };
+
+  notifyChargerDisconnected = config.notifications.send {
+    urgency = "normal";
+    icon = "battery-discharging";
+    appName = "Battery Monitor";
+    summary = "Charger Disconnected";
+    body = "Battery: \$PERCENT%";
+  };
+
+  notifyCritical = config.notifications.send {
+    urgency = "critical";
+    icon = "battery-caution";
+    appName = "Battery Monitor";
+    summary = "Critical Battery Level!";
+    body = "Battery at \$PERCENT%\\nPlease connect charger immediately!";
+  };
+
+  notifyLow = config.notifications.send {
+    urgency = "normal";
+    icon = "battery-low";
+    appName = "Battery Monitor";
+    summary = "Low Battery";
+    body = "Battery at \$PERCENT%\\nConsider connecting charger soon.";
+  };
+
   batteryMonitorScript = pkgs.writeShellScriptBin "battery-monitor-check" ''
     #!/usr/bin/env bash
 
@@ -40,7 +73,7 @@ let
     if [ "$STATE" = "charging" ] || [ "$STATE" = "fully-charged" ]; then
       # Notify on charger connect if state changed
       if [ "$PREV_STATE" = "discharging" ]; then
-        ${pkgs.dunst}/bin/dunstify -u low -i battery-charging -a "Battery Monitor" "Charger Connected" "Battery: $PERCENT%"
+        ${notifyChargerConnected}
       fi
 
       # Reset flags when charging
@@ -51,17 +84,17 @@ let
     elif [ "$STATE" = "discharging" ]; then
       # Notify on charger disconnect if state changed
       if [ "$PREV_STATE" = "charging" ] || [ "$PREV_STATE" = "fully-charged" ]; then
-        ${pkgs.dunst}/bin/dunstify -u normal -i battery-discharging -a "Battery Monitor" "Charger Disconnected" "Battery: $PERCENT%"
+        ${notifyChargerDisconnected}
       fi
 
       # Critical threshold check
       if [ "$PERCENT" -le "${toString cfg.criticalThreshold}" ] && [ "$NOTIFIED_CRITICAL" = "false" ]; then
-        ${pkgs.dunst}/bin/dunstify -u critical -i battery-caution -a "Battery Monitor" "Critical Battery Level!" "Battery at $PERCENT%\nPlease connect charger immediately!"
+        ${notifyCritical}
         NOTIFIED_CRITICAL=true
 
       # Low threshold check
       elif [ "$PERCENT" -le "${toString cfg.lowThreshold}" ] && [ "$NOTIFIED_LOW" = "false" ]; then
-        ${pkgs.dunst}/bin/dunstify -u normal -i battery-low -a "Battery Monitor" "Low Battery" "Battery at $PERCENT%\nConsider connecting charger soon."
+        ${notifyLow}
         NOTIFIED_LOW=true
       fi
     fi
@@ -98,6 +131,9 @@ in {
   };
 
   config = mkIf cfg.enable {
+    # Auto-enable notifications when battery-monitor is enabled
+    notifications.enable = mkDefault true;
+
     home.packages = [ batteryMonitorScript ];
 
     # Systemd service to check battery

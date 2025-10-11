@@ -1,7 +1,54 @@
-{ pkgs, ... }: {
+{ config, pkgs, ... }:
+let
+  # Build notification commands using the notifications module
+  notifyTime = config.notifications.send {
+    urgency = "low";
+    icon = "clock";
+    appName = "Time";
+    summary = "\$(date --rfc-3339=seconds)";
+    hints = {
+      "string:x-dunst-stack-tag" = "timeNotifier";
+    };
+  };
+
+  notifyWorkspace = config.notifications.send {
+    urgency = "low";
+    icon = "system";
+    appName = "Workspaces";
+    summary = "Current: \$currentWorkspace";
+    body = "\$notification";
+    hints = {
+      "string:x-dunst-stack-tag" = "workspaceNotifier";
+    };
+  };
+
+  notifyBattery = config.notifications.send {
+    urgency = "low";
+    icon = "battery";
+    appName = "Battery";
+    summary = "";
+    body = "<b>State</b>: \$status\\n<b>Percent</b>: \$percent%\$time_info";
+    hints = {
+      "string:x-dunst-stack-tag" = "batteryNotifier";
+    };
+  };
+
+  notifySystem = config.notifications.send {
+    urgency = "low";
+    icon = "cpu";
+    appName = "System";
+    summary = "";
+    body = "<b>CPU</b>: \$cpu 🧠\\n<b>Memory</b>: \$memUsedPercent% \$usedMem GB| \$totalMem GB🪜\\n<b>Storage</b>: \$deviceUsedPercent% \$deviceUsed GB| \$deviceCapacity GB 🪣";
+    hints = {
+      "string:x-dunst-stack-tag" = "systemNotifier";
+    };
+  };
+
+in {
   time = pkgs.writeShellScriptBin "time-notifier" ''
     #!/usr/bin/env bash
-    ${pkgs.dunst}/bin/dunstify -u low -i clock -h string:x-dunst-stack-tag:timeNotifier -a "Time" "$(date --rfc-3339=seconds)" '';
+    ${notifyTime}
+  '';
 
   workspaces = pkgs.writeShellScriptBin "workspace-notifier" ''
     #!/usr/bin/env bash
@@ -23,7 +70,7 @@
       done
     done
 
-    ${pkgs.dunst}/bin/dunstify -u low -i system -h string:x-dunst-stack-tag:workspaceNotifier -a "Workspaces" "Current: ''${currentWorkspace}" "''${notification}"
+    ${notifyWorkspace}
   '';
 
   battery = pkgs.writeShellScriptBin "battery-notifier" ''
@@ -58,7 +105,7 @@
       status="''${status} 💯"
     fi
 
-    ${pkgs.dunst}/bin/dunstify -h string:x-dunst-stack-tag:batteryNotifier -i battery -a 'Battery' "" "<b>State</b>: $status\n<b>Percent</b>: $percent%$time_info"
+    ${notifyBattery}
   '';
 
   system = pkgs.writeShellScriptBin "system-notifier" ''
@@ -80,13 +127,13 @@
 
     deviceUsedPercent=$(echo "scale=1; $deviceUsed * 100 / $deviceCapacity" | ${pkgs.bc}/bin/bc)
 
-    ${pkgs.dunst}/bin/dunstify -h string:x-dunst-stack-tag:batteryNotifier -i cpu -a 'System' "" "<b>CPU</b>: $cpu 🧠\n<b>Memory</b>: $memUsedPercent% $usedMem GB| $totalMem GB🪜\n<b>Storage</b>: $deviceUsedPercent% $deviceUsed GB| $deviceCapacity GB 🪣"
+    ${notifySystem}
   '';
 
   autoScreenRotation = pkgs.writeShellScriptBin "auto-screen-rotation" ''
     #!/usr/bin/env bash
 
-    ${pkgs.iio-sensor-proxy}/bin/monitor-sensor | 
+    ${pkgs.iio-sensor-proxy}/bin/monitor-sensor |
     while read -r line; do
       change=$(echo "$line" | awk '{print($1)}')
       if [ "$change" == "Accelerometer" ]

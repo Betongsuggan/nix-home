@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let controls = import ./controls { inherit pkgs; };
+let controls = import ./controls { inherit config pkgs; };
 in {
   options.hyprland = {
     enable = mkEnableOption "Enable Hyprland";
@@ -37,6 +37,9 @@ in {
   };
 
   config = mkIf config.hyprland.enable {
+    # Auto-enable notifications when hyprland is enabled (for util notifiers)
+    notifications.enable = mkDefault true;
+
     # Multi-gestures
     # services.touchegg.enable = true;  # TODO: Move to system level
 

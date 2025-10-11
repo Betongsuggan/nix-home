@@ -22,7 +22,7 @@
   alacritty.enable = true;
   nushell.enable = true;
   starship.enable = true;
-  dunst.enable = true;
+  notifications.enable = true;
   battery-monitor.enable = true;
   kanshi.enable = true;
   development.enable = true;

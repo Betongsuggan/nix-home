@@ -1,4 +1,58 @@
-{ pkgs, ... }: {
+{ config, pkgs, ... }:
+let
+  # Build notification commands using the notifications module
+  notifySuspend = config.notifications.send {
+    urgency = "normal";
+    icon = "system-suspend";
+    appName = "Power";
+    summary = "Suspending system...";
+    timeout = 2000;
+  };
+
+  notifyHibernate = config.notifications.send {
+    urgency = "normal";
+    icon = "system-hibernate";
+    appName = "Power";
+    summary = "Hibernating system...";
+    timeout = 2000;
+  };
+
+  notifyLogout = config.notifications.send {
+    urgency = "normal";
+    icon = "system-log-out";
+    appName = "Power";
+    summary = "Logging out...";
+    timeout = 2000;
+  };
+
+  notifyReboot = config.notifications.send {
+    urgency = "normal";
+    icon = "system-reboot";
+    appName = "Power";
+    summary = "Rebooting system...";
+    timeout = 2000;
+  };
+
+  notifyShutdown = config.notifications.send {
+    urgency = "normal";
+    icon = "system-shutdown";
+    appName = "Power";
+    summary = "Shutting down system...";
+    timeout = 2000;
+  };
+
+  notifyStatus = config.notifications.send {
+    urgency = "low";
+    icon = "computer";
+    appName = "Power Status";
+    summary = "System Status";
+    body = "Uptime: \$uptime_info\\nLoad: \$load_avg\\nHypridle: \$hypridle_status\\n\$battery_status";
+    hints = {
+      "string:x-dunst-stack-tag" = "powerStatus";
+    };
+  };
+
+in {
   power = pkgs.writeShellScriptBin "power-control" ''
     #!/usr/bin/env bash
 
@@ -7,20 +61,20 @@
     case "$1" in
       suspend)
         # Use systemctl to trigger proper suspend with hypridle handling
-        ${pkgs.dunst}/bin/dunstify -u normal -i system-suspend -a "Power" "Suspending system..." -t 2000
+        ${notifySuspend}
         ${pkgs.systemd}/bin/systemctl suspend
         ;;
 
       hibernate)
         # Use systemctl to trigger proper hibernate with hypridle handling
-        ${pkgs.dunst}/bin/dunstify -u normal -i system-hibernate -a "Power" "Hibernating system..." -t 2000
+        ${notifyHibernate}
         ${pkgs.systemd}/bin/systemctl hibernate
         ;;
 
       logout)
         # Confirm logout
         if [ "$2" = "--confirm" ] || ${pkgs.coreutils}/bin/echo -e "y\nn" | ${pkgs.walker}/bin/walker --dmenu --placeholder "Logout? (y/N)" | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
-          ${pkgs.dunst}/bin/dunstify -u normal -i system-log-out -a "Power" "Logging out..." -t 2000
+          ${notifyLogout}
           ${pkgs.coreutils}/bin/sleep 1
           ${pkgs.hyprland}/bin/hyprctl dispatch exit
         fi
@@ -29,7 +83,7 @@
       reboot)
         # Confirm reboot
         if [ "$2" = "--confirm" ] || ${pkgs.coreutils}/bin/echo -e "y\nn" | ${pkgs.walker}/bin/walker --dmenu --placeholder "Reboot? (y/N)" | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
-          ${pkgs.dunst}/bin/dunstify -u normal -i system-reboot -a "Power" "Rebooting system..." -t 2000
+          ${notifyReboot}
           ${pkgs.coreutils}/bin/sleep 1
           ${pkgs.systemd}/bin/systemctl reboot
         fi
@@ -38,7 +92,7 @@
       shutdown)
         # Confirm shutdown
         if [ "$2" = "--confirm" ] || ${pkgs.coreutils}/bin/echo -e "y\nn" | ${pkgs.walker}/bin/walker --dmenu --placeholder "Shutdown? (y/N)" | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
-          ${pkgs.dunst}/bin/dunstify -u normal -i system-shutdown -a "Power" "Shutting down system..." -t 2000
+          ${notifyShutdown}
           ${pkgs.coreutils}/bin/sleep 1
           ${pkgs.systemd}/bin/systemctl poweroff
         fi
@@ -94,7 +148,7 @@
           hypridle_status="✅ Running"
         fi
 
-        ${pkgs.dunst}/bin/dunstify -h string:x-dunst-stack-tag:powerStatus -i computer -a "Power Status" "System Status" "Uptime: $uptime_info\nLoad: $load_avg\nHypridle: $hypridle_status\n$battery_status"
+        ${notifyStatus}
         ;;
 
       *)

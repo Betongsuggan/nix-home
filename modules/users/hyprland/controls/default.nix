@@ -1,8 +1,8 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
-  utils = import ./utilNotifications.nix { inherit pkgs; };
-  mediaPlayer = import ./mediaPlayerControls.nix { inherit pkgs; };
-  volume = import ./volumeControls.nix { inherit pkgs; };
-  brightness = import ./brightnessControls.nix { inherit pkgs; };
-  power = import ./powerControls.nix { inherit pkgs; };
+  utils = import ./utilNotifications.nix { inherit config pkgs; };
+  mediaPlayer = import ./mediaPlayerControls.nix { inherit config pkgs; };
+  volume = import ./volumeControls.nix { inherit config pkgs; };
+  brightness = import ./brightnessControls.nix { inherit config pkgs; };
+  power = import ./powerControls.nix { inherit config pkgs; };
 }

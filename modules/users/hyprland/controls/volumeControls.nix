@@ -1,12 +1,32 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
+  # Build notification commands using the notifications module
+  notifyMuted = config.notifications.send {
+    urgency = "low";
+    icon = "audio-volume-muted";
+    appName = "\$sink";
+    summary = "Muted";
+    hints = {
+      "string:x-dunst-stack-tag" = "volumeControl";
+    };
+  };
+
+  notifyVolume = config.notifications.send {
+    urgency = "low";
+    icon = "audio-volume-high";
+    appName = "\$sink";
+    summary = "";
+    hints = {
+      "string:x-dunst-stack-tag" = "volumeControl";
+      "int:value" = "\$volume";
+    };
+  };
+
   volumeControl = pkgs.writeShellScriptBin "volume-control" ''
     #!/usr/bin/env bash
-    
-    # Arbitrary but unique message tag
-    tag="volumeControl"
+
     while getopts i:d:ms option
-    do 
+    do
         echo "$option"
         case "''${option}"
             in
@@ -15,16 +35,16 @@ let
             m) ${pkgs.pamixer}/bin/pamixer -t ;;
         esac
     done
-    
+
     volume="$(${pkgs.pamixer}/bin/pamixer --get-volume-human | sed 's/%//g')"
     sink="$(${pkgs.pamixer}/bin/pamixer --get-default-sink |  awk -F '"' '{print $4}' | awk 'NF')"
 
     if [[ "$volume" == "0" || "$volume" == "muted" ]]; then
         # Show the sound muted notification
-        ${pkgs.dunst}/bin/dunstify -u low -i audio-volume-muted -h string:x-dunst-stack-tag:$tag -a "$sink" "Muted"
+        ${notifyMuted}
     else
         # Show the volume notification
-        ${pkgs.dunst}/bin/dunstify -u low -i audio-volume-high -h string:x-dunst-stack-tag:$tag -h int:value:"$volume" -a "$sink" ""
+        ${notifyVolume}
     fi
   '';
 in
