@@ -40,7 +40,9 @@
     rumble.enable = true;
   };
 
-  hyprland.enable = true;
+  windowManager.enable = true;
+  windowManager.type = "hyprland";
+
   shell.enable = true;
   shell.defaultShell = "bash";
   theme = {

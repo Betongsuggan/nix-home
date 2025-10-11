@@ -19,7 +19,8 @@
   communication.enable = true;
   shell.enable = true;
   shell.defaultShell = "bash";
-  alacritty.enable = true;
+  terminal.enable = true;
+  terminal.defaultTerminal = "alacritty";
   starship.enable = true;
   notifications.enable = true;
   battery-monitor.enable = true;
@@ -34,8 +35,9 @@
     wallpaper = ../../assets/wallpaper/zeal.jpg;
   };
 
-  hyprland = {
+  windowManager = {
     enable = true;
+    type = "hyprland";
     autostartApps = {
       firefox = {
         command = "firefox";

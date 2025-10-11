@@ -4,6 +4,40 @@ with lib;
 let
   inherit (pkgs) pamixer playerctl;
   modifier = "Mod4";
+
+  # Convert Hyprland monitor format to Sway output format
+  # Hyprland: "name,resolution@refresh,position,scale"
+  # Sway: "output name resolution WxH@RHz position X Y scale S"
+  convertMonitorToSwayOutput = monitorStr:
+    let
+      parts = lib.splitString "," monitorStr;
+      name = if (builtins.elemAt parts 0) == "" then "*" else (builtins.elemAt parts 0);
+      resolution = builtins.elemAt parts 1;
+      position = builtins.elemAt parts 2;
+      scale = builtins.elemAt parts 3;
+
+      # Format resolution (add Hz if it contains @)
+      resolutionFormatted =
+        if resolution == "preferred" then "preferred"
+        else if lib.hasInfix "@" resolution then
+          let
+            resParts = lib.splitString "@" resolution;
+            res = builtins.elemAt resParts 0;
+            refresh = builtins.elemAt resParts 1;
+          in "${res}@${refresh}Hz"
+        else resolution;
+
+      # Format position (convert "0x0" to "0 0" or keep "auto")
+      positionFormatted =
+        if position == "auto" then "auto"
+        else lib.replaceStrings ["x"] [" "] position;
+    in
+    "output ${name} resolution ${resolutionFormatted} position ${positionFormatted} scale ${scale}";
+
+  # Generate output configurations for all monitors
+  monitorOutputs = lib.concatStringsSep "\n"
+    (map convertMonitorToSwayOutput config.windowManager.monitors);
+
 in {
   options.sway = { enable = mkEnableOption "Enable Sway"; };
 
@@ -34,7 +68,12 @@ in {
         startup = [{
           command = "blueman-applet";
           always = false;
-        }];
+        }] ++ (builtins.map (app: {
+          command = if app.workspace != null
+            then "swaymsg 'workspace ${toString app.workspace}; exec ${app.command}'"
+            else app.command;
+          always = false;
+        }) (builtins.filter (app: app != null) (builtins.attrValues config.windowManager.autostartApps)));
 
         gaps = {
           top = 6;
@@ -102,6 +141,9 @@ in {
         window.titlebar = false;
       };
       extraConfig = ''
+        # Monitor configuration
+        ${monitorOutputs}
+
         input * xkb_layout "us,us"
         input * xkb_variant "colemak,"
         input * xkb_options "caps:escape,compose:ralt,grp:shifts_toggle"

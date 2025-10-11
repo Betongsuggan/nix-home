@@ -1,6 +1,41 @@
 { config, pkgs, lib, ... }:
 with lib;
-let mod = "Mod4";
+let
+  mod = "Mod4";
+
+  # Convert Hyprland monitor format to xrandr command
+  # Hyprland: "name,resolution@refresh,position,scale"
+  # xrandr: "--output NAME --mode WxH --rate R --pos X*Y --scale SxS"
+  convertMonitorToXrandr = monitorStr:
+    let
+      parts = lib.splitString "," monitorStr;
+      name = builtins.elemAt parts 0;
+      resolution = builtins.elemAt parts 1;
+      position = builtins.elemAt parts 2;
+      scale = builtins.elemAt parts 3;
+
+      # Parse resolution and refresh rate
+      resolutionParts = if lib.hasInfix "@" resolution then
+        lib.splitString "@" resolution
+      else [ resolution "" ];
+      res = builtins.elemAt resolutionParts 0;
+      refresh = if (builtins.length resolutionParts) > 1
+        then builtins.elemAt resolutionParts 1
+        else "";
+
+      # Build xrandr command parts
+      outputArg = if name == "" then "--output auto" else "--output ${name}";
+      modeArg = if res == "preferred" then "--auto" else "--mode ${res}";
+      rateArg = if refresh != "" then "--rate ${refresh}" else "";
+      posArg = if position == "auto" then "--auto" else "--pos ${lib.replaceStrings ["x"] ["*"] position}";
+      scaleArg = if scale != "1" then "--scale ${scale}x${scale}" else "";
+    in
+    "${outputArg} ${modeArg} ${rateArg} ${posArg} ${scaleArg}";
+
+  # Generate full xrandr command for all monitors
+  xrandrCommand = "${pkgs.xorg.xrandr}/bin/xrandr " +
+    (lib.concatStringsSep " " (map convertMonitorToXrandr config.windowManager.monitors));
+
 in {
   options.i3 = { enable = mkEnableOption "Enable I3 window manager"; };
 
@@ -15,6 +50,11 @@ in {
       package = pkgs.i3-gaps;
       config = {
         startup = [
+          {
+            command = xrandrCommand;
+            always = false;
+            notification = false;
+          }
           {
             command = "systemctl --user restart polybar.service";
             always = true;
@@ -40,7 +80,13 @@ in {
             always = false;
             notification = false;
           }
-        ];
+        ] ++ (builtins.map (app: {
+          command = if app.workspace != null
+            then "i3-msg 'workspace ${toString app.workspace}; exec ${app.command}'"
+            else app.command;
+          always = false;
+          notification = false;
+        }) (builtins.filter (app: app != null) (builtins.attrValues config.windowManager.autostartApps)));
 
         modifier = mod;
 
