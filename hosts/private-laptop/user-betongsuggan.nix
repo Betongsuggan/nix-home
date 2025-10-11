@@ -17,7 +17,6 @@
   firefox.enable = true;
   games.enable = true;
   communication.enable = true;
-  neovim.enable = true;
   shell.enable = true;
   shell.defaultShell = "bash";
   alacritty.enable = true;

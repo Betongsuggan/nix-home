@@ -1,7 +1,11 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
+with lib;
+
 let
+  cfg = config.controls.mediaPlayer;
+  
   # Build notification command using the notifications module
-  notifyMedia = config.notifications.send {
+  notifyMedia = optionalString cfg.notifications (config.notifications.send {
     urgency = "low";
     icon = "\$icon";
     appName = "\$artist";
@@ -9,7 +13,7 @@ let
     hints = {
       "string:x-dunst-stack-tag" = "mediaPlayer";
     };
-  };
+  });
 
   mediaPlayerControl = pkgs.writeShellScriptBin "media-player" ''
     #!/usr/bin/env bash
@@ -75,4 +79,11 @@ let
     fi
   '';
 in
-mediaPlayerControl
+{
+  config = mkIf (config.controls.enable && cfg.enable) {
+    home.packages = [
+      mediaPlayerControl
+      pkgs.playerctl
+    ];
+  };
+}

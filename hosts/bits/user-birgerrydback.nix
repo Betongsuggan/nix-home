@@ -15,10 +15,11 @@
   games.enable = true;
   flatpak.enable = true;
   communication.enable = true;
-  neovim.enable = true;
   alacritty.enable = true;
-  shell.enable = true;
-  shell.defaultShell = "fish";
+  shell = {
+    enable = true;
+    defaultShell = "bash";
+  };
   starship.enable = true;
   notifications.enable = true;
   battery-monitor.enable = true;

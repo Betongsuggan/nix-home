@@ -1,8 +1,7 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let controls = import ./controls { inherit config pkgs; };
-in {
+{
   options.hyprland = {
     enable = mkEnableOption "Enable Hyprland";
 
@@ -43,6 +42,10 @@ in {
     # Auto-enable launcher when hyprland is enabled
     launcher.enable = mkDefault true;
 
+    # Auto-enable controls when hyprland is enabled
+    controls.enable = mkDefault true;
+    controls.windowManager = "hyprland";
+
     # Multi-gestures
     # services.touchegg.enable = true;  # TODO: Move to system level
 
@@ -55,29 +58,11 @@ in {
         };
       };
       packages = with pkgs; [
-        controls.mediaPlayer
-        controls.volume
-        controls.brightness
-        controls.utils.time
-        controls.utils.workspaces
-        controls.utils.battery
-        controls.utils.system
-        controls.utils.autoScreenRotation
-        controls.power.power
         swaylock-fancy
         grim
         slurp
         wl-clipboard
-        brightnessctl
         systemd
-        procps
-        hyprland
-        coreutils
-        gnugrep
-        gnused
-        gawk
-        which
-        upower
       ];
     };
 

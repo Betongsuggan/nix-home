@@ -5,6 +5,7 @@
     ./battery-monitor
     ./communication
     ./controller
+    ./controls
     ./development
     ./firefox
     ./flatpak

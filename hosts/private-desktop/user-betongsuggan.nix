@@ -15,7 +15,6 @@
   games.enable = true;
   communication.enable = true;
   development.enable = true;
-  neovim.enable = true;
   alacritty.enable = true;
   starship.enable = true;
   shell.enable = true;

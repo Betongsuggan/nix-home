@@ -27,7 +27,7 @@ with lib;
         demo = "cd ~/Development/web/apps/nocode-demo";
         ll = "ls -la --color=auto";
         ls = "ls --color=auto";
-        vim = "nvim";
+        vim = "nix run github:/Betongsuggan/nvim";
         hm = "home-manager";
         gw = "./gradlew --no-daemon";
       };
@@ -36,7 +36,7 @@ with lib;
     editor = mkOption {
       description = "Default editor";
       type = types.str;
-      default = "nvim";
+      default = "nix run github:/Betongsuggan/nvim";
     };
 
     viMode = mkOption {
@@ -107,9 +107,7 @@ with lib;
   };
 
   config = mkIf config.shell.enable {
-    # Enable the selected default shell
-    bash.enable = mkIf (config.shell.defaultShell == "bash") (mkDefault true);
-    fish.enable = mkIf (config.shell.defaultShell == "fish") (mkDefault true);
-    nushell.enable = mkIf (config.shell.defaultShell == "nushell") (mkDefault true);
+    # The individual shell modules are enabled based on the shell.{bash,fish,nushell}.enable options
+    # which are automatically set based on the defaultShell selection
   };
 }
