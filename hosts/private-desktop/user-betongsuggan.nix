@@ -20,6 +20,7 @@
   starship.enable = true;
   bash.enable = true;
   dunst.enable = true;
+  battery-monitor.enable = true;
   kanshi.enable = true;
   thunar.enable = true;
   firefox.enable = true;

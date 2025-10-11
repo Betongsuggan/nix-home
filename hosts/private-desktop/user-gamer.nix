@@ -23,6 +23,8 @@
     };
   };
 
+  battery-monitor.enable = true;
+
   # Disable walker for gaming user
   walker.enable = false;
 
@@ -49,7 +51,14 @@
     };
   };
 
-  home.packages = with pkgs; [ htop pulseaudio pavucontrol xdg-utils ];
+  home.packages = with pkgs; [
+    steam
+    steam-run
+    htop
+    pulseaudio
+    pavucontrol
+    xdg-utils
+  ];
 
   programs.bash = {
     enable = true;

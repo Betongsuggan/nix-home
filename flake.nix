@@ -26,7 +26,10 @@
           awscli-local = awscli-local.packages.${self.system}.default;
         })
         (final: prev: {
-          unstable = nixpkgs-unstable.legacyPackages.${prev.system};
+          unstable = import nixpkgs-unstable {
+            system = prev.system;
+            config.allowUnfree = true;
+          };
         })
         (import ./overrides/aws-cdk.nix)
       ];
@@ -38,7 +41,12 @@
             inherit overlays;
             config.allowUnfree = true;
           };
-          modules = [ userModule inputs.stylix.homeModules.stylix inputs.walker.homeManagerModules.default ];
+
+          modules = [
+            userModule
+            inputs.stylix.homeModules.stylix
+            inputs.walker.homeManagerModules.default
+          ];
           extraSpecialArgs = { inherit inputs overlays; };
         };
     in {

@@ -23,6 +23,7 @@
   nushell.enable = true;
   starship.enable = true;
   dunst.enable = true;
+  battery-monitor.enable = true;
   kanshi.enable = true;
   development.enable = true;
   thunar.enable = true;

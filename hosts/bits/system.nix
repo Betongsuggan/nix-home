@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   users.users.birgerrydback = {
@@ -42,6 +42,8 @@
 
   nixpkgs.config = {
     allowUnfree = true;
+    allowUnfreePredicate = pkg:
+      builtins.elem (lib.getName pkg) [ "claude-code" ];
     permittedInsecurePackages = [ "electron-25.9.0" ];
   };
 
@@ -93,6 +95,17 @@
   firewall = {
     enable = true;
     tcpPorts = [ 8080 ];
+  };
+
+  # Enable XDG Desktop Portal for screen sharing
+  services.xserver.desktopManager.runXdgAutostartIfNone = true;
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-hyprland
+      xdg-desktop-portal-gtk
+    ];
+    config.hyprland.default = [ "hyprland" "gtk" ];
   };
 }
 

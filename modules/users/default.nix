@@ -3,6 +3,7 @@
     ./alacritty
     ./autorandr
     ./bash
+    ./battery-monitor
     ./communication
     ./controller
     ./development

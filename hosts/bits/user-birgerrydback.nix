@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 
 {
   home.username = "birgerrydback";
@@ -24,6 +24,7 @@
   fish.enable = true;
   starship.enable = true;
   dunst.enable = true;
+  battery-monitor.enable = true;
   kanshi.enable = true;
   thunar.enable = true;
   walker.enable = true;

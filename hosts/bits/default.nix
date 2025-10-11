@@ -10,12 +10,16 @@ inputs.nixpkgs.lib.nixosSystem {
     ./system.nix
 
     {
-      nixpkgs = { inherit overlays; };
+      nixpkgs = {
+        inherit overlays;
+        config = { allowUnfree = true; };
+      };
 
       home-manager = {
         useGlobalPkgs = true;
         useUserPackages = true;
         extraSpecialArgs = { inherit inputs overlays; };
+        sharedModules = [ inputs.walker.homeManagerModules.default ];
         users.birgerrydback = import ./user-birgerrydback.nix;
       };
     }

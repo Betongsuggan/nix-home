@@ -19,7 +19,7 @@ with lib;
       terraform
 
       # AI tools
-      claude-code
+      unstable.claude-code
 
       # Python
       python3

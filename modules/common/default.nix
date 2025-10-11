@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }: {
+{ lib, pkgs, ... }: {
   options = {
     unfreePackages = lib.mkOption {
       type = lib.types.listOf lib.types.str;
@@ -38,11 +38,6 @@
         auto-optimise-store = true;
       };
     };
-
-    # Allow specified unfree packages (identified elsewhere)
-    # Retrieves package object based on string name
-    nixpkgs.config.allowUnfreePredicate = pkg:
-      builtins.elem (lib.getName pkg) config.unfreePackages;
 
     # Basic common system packages for all devices
     environment.systemPackages = with pkgs; [ git vim wget curl ];
