@@ -1,6 +1,5 @@
 { ... }: {
   imports = [
-    ./alacritty
     ./autorandr
     ./battery-monitor
     ./communication
@@ -12,8 +11,6 @@
     ./games
     ./general
     ./git
-    ./hyprland
-    ./i3
     ./kanshi
     ./launcher
     ./notifications
@@ -23,11 +20,11 @@
     ./secrets
     ./shell
     ./starship
-    ./sway
+    ./terminal
     ./theming
     ./thunar
-    ./urxvt
     ./waybar
+    ./window-manager
     ./x11
     ./zellij
   ];

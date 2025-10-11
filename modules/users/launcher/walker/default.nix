@@ -424,5 +424,13 @@ in {
         cfg.walker.theme
       ];
     };
+
+    # Override walker systemd service to add restart delay
+    # This prevents race condition when Hyprland restarts
+    systemd.user.services.walker = {
+      Service = {
+        RestartSec = 3;  # Wait 3 seconds before restarting
+      };
+    };
   };
 }

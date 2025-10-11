@@ -15,7 +15,8 @@
   games.enable = true;
   communication.enable = true;
   development.enable = true;
-  alacritty.enable = true;
+  terminal.enable = true;
+  terminal.defaultTerminal = "alacritty";
   starship.enable = true;
   shell.enable = true;
   shell.defaultShell = "bash";
@@ -38,9 +39,10 @@
     };
     rumble.enable = true;
   };
-  hyprland = {
+  windowManager = {
     enable = true;
-    monitorResolutions = [
+    type = "hyprland";
+    monitors = [
       ",3440x1440@100,auto,1"
       "HDMI-A-1,3840x2160@120,auto,2"
       ",preferred,auto,1"

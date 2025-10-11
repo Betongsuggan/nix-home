@@ -4,35 +4,6 @@ with lib;
 {
   options.hyprland = {
     enable = mkEnableOption "Enable Hyprland";
-
-    monitorResolutions = mkOption {
-      description = "Monitor resolutions";
-      type = types.listOf types.str;
-      default = [ ",preferred,auto,1" ];
-    };
-
-    autostartApps = mkOption {
-      description =
-        "Applications to autostart with exec-once, with optional workspace assignment";
-      type = types.attrsOf (types.nullOr (types.submodule {
-        options = {
-          command = mkOption {
-            type = types.str;
-            description = "Command to execute";
-            example = "firefox";
-          };
-
-          workspace = mkOption {
-            type = types.nullOr types.int;
-            description =
-              "Workspace number to launch the application in (null for no specific workspace)";
-            default = null;
-            example = 1;
-          };
-        };
-      }));
-      default = { };
-    };
   };
 
   config = mkIf config.hyprland.enable {
@@ -113,7 +84,7 @@ with lib;
       enable = true;
       systemd.variables = [ "--all" ];
       settings = {
-        monitor = config.hyprland.monitorResolutions;
+        monitor = config.windowManager.monitors;
 
         cursor = { enable_hyprcursor = false; };
 
@@ -135,7 +106,7 @@ with lib;
                 else
                   "";
               in [ "${workspacePrefix}${app.command}" ])
-          config.hyprland.autostartApps));
+          config.windowManager.autostartApps));
 
         general = {
           "col.active_border" = "rgb(${
