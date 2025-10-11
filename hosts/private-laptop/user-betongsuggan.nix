@@ -27,7 +27,8 @@
   kanshi.enable = true;
   development.enable = true;
   thunar.enable = true;
-  walker.enable = true;
+  launcher.enable = true;
+  launcher.backend = "walker";
 
   theme = {
     enable = true;

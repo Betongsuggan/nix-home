@@ -40,6 +40,9 @@ in {
     # Auto-enable notifications when hyprland is enabled (for util notifiers)
     notifications.enable = mkDefault true;
 
+    # Auto-enable launcher when hyprland is enabled
+    launcher.enable = mkDefault true;
+
     # Multi-gestures
     # services.touchegg.enable = true;  # TODO: Move to system level
 
@@ -217,24 +220,24 @@ in {
 
           ### Launchers
           # Emojis
-          "$mod, e, exec, walker -m symbols"
+          "$mod, e, exec, ${config.launcher.show { mode = "symbols"; }}"
 
           # Wifi
-          "$mod, u, exec, iwmenu --launcher walker --spaces 2"
+          "$mod, u, exec, ${config.launcher.wifi {}}"
 
           # Bluetooth
-          "$mod, z, exec, bzmenu --launcher walker --spaces 2"
+          "$mod, z, exec, ${config.launcher.bluetooth {}}"
 
           # Websearch
-          "$mod, d, exec, walker -m websearch"
+          "$mod, d, exec, ${config.launcher.show { mode = "websearch"; }}"
 
           # Applications
-          "$mod, o, exec, walker -m desktopapplications"
+          "$mod, o, exec, ${config.launcher.show { mode = "applications"; }}"
           # Clipboard
-          "$mod, c, exec, walker -m clipboard"
+          "$mod, c, exec, ${config.launcher.show { mode = "clipboard"; }}"
 
           # AI
-          "$mod, a, exec, walker -m ai"
+          "$mod, a, exec, ${config.launcher.show { mode = "ai"; }}"
 
           ### Power Management
           # Power menu

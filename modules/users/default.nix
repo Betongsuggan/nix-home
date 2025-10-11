@@ -16,22 +16,19 @@
     ./hyprland
     ./i3
     ./kanshi
-    ./neovim
+    ./launcher
     ./notifications
     ./nushell
     ./picom
     ./polybar
     ./qutebrowser
-    ./rofi
     ./secrets
     ./starship
     ./sway
     ./theming
     ./thunar
     ./urxvt
-    ./walker
     ./waybar
-    ./wofi
     ./x11
     ./zellij
   ];

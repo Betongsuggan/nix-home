@@ -25,7 +25,8 @@
   battery-monitor.enable = true;
   kanshi.enable = true;
   thunar.enable = true;
-  walker.enable = true;
+  launcher.enable = true;
+  launcher.backend = "walker";
   development.enable = true;
 
   hyprland = {

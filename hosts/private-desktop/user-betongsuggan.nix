@@ -24,7 +24,8 @@
   kanshi.enable = true;
   thunar.enable = true;
   firefox.enable = true;
-  walker.enable = true;
+  launcher.enable = true;
+  launcher.backend = "walker";
   
   # Enable PS5 controller support with MangoHud toggle
   controller = {

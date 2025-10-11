@@ -25,8 +25,8 @@
 
   battery-monitor.enable = true;
 
-  # Disable walker for gaming user
-  walker.enable = false;
+  # Disable launcher for gaming user
+  launcher.enable = false;
 
   # Enable PS5 controller support with MangoHud toggle
   controller = {

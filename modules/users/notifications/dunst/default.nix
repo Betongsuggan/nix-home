@@ -15,6 +15,9 @@ in {
   };
 
   config = mkIf (cfg.enable && cfg.backend == "dunst") {
+    # Auto-enable launcher for dmenu functionality
+    launcher.enable = mkDefault true;
+
     services.dunst = {
       enable = true;
       iconTheme = {
@@ -28,7 +31,7 @@ in {
             layer = "overlay";
             follow = "keyboard";
             markup = "full";
-            dmenu = "${pkgs.wofi}/bin/wofi --dmenu";
+            dmenu = config.launcher.dmenu {};
             show_indicators = false;
             font = "${config.theme.font.name} ${builtins.toString config.theme.font.size}";
             format = "<b>%a</b>\\n%s\\n\\n%b";
