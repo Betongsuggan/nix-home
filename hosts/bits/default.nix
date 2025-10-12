@@ -19,7 +19,10 @@ inputs.nixpkgs.lib.nixosSystem {
         useGlobalPkgs = true;
         useUserPackages = true;
         extraSpecialArgs = { inherit inputs overlays; };
-        sharedModules = [ inputs.walker.homeManagerModules.default ];
+        sharedModules = [
+          inputs.walker.homeManagerModules.default
+          inputs.stylix.homeModules.stylix
+        ];
         users.birgerrydback = import ./user-birgerrydback.nix;
       };
     }

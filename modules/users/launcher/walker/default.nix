@@ -5,22 +5,49 @@ with lib;
 let
   cfg = config.launcher;
 
+  buildDmenuCmd = { prompt ? null, password ? false, insensitive ? false
+    , multiSelect ? false, allowImages ? null, additionalArgs ? [ ] }:
+    let additionalArgsStr = concatStringsSep " " additionalArgs;
+    in "${pkgs.walker}/bin/walker -m dmenu ${additionalArgsStr}";
+
+  buildShowCmd = { mode ? "applications" # applications, runner, websearch, etc.
+    , additionalArgs ? [ ] }:
+    let additionalArgsStr = concatStringsSep " " additionalArgs;
+    in "${pkgs.walker}/bin/walker -m ${mode}";
+
 in {
   options.launcher.walker = {
     config = mkOption {
       type = types.attrs;
-      default = {};
+      default = { };
       description = "Walker configuration (merged with defaults)";
     };
 
     theme = mkOption {
       type = types.attrs;
-      default = {};
+      default = { };
       description = "Walker theme configuration";
+    };
+
+    buildDmenuCmd = mkOption {
+      type = types.functionTo types.str;
+      internal = true;
+      readOnly = true;
+      description = "Function to build walker dmenu commands";
+    };
+
+    buildShowCmd = mkOption {
+      type = types.functionTo types.str;
+      internal = true;
+      readOnly = true;
+      description = "Function to build walker show commands";
     };
   };
 
   config = mkIf (cfg.enable && cfg.backend == "walker") {
+    launcher.walker.buildDmenuCmd = buildDmenuCmd;
+    launcher.walker.buildShowCmd = buildShowCmd;
+
     # Walker uses external tools (iwmenu, bzmenu) so we ensure they're available
     home.packages = with pkgs; [ unstable.bzmenu unstable.iwmenu ];
 
@@ -271,7 +298,8 @@ in {
                 }
                 {
                   name = "Home manager options";
-                  url = "https://home-manager-options.extranix.com/?query=%TERM%";
+                  url =
+                    "https://home-manager-options.extranix.com/?query=%TERM%";
                   switcher_only = true;
                 }
                 {
@@ -429,7 +457,7 @@ in {
     # This prevents race condition when Hyprland restarts
     systemd.user.services.walker = {
       Service = {
-        RestartSec = 3;  # Wait 3 seconds before restarting
+        RestartSec = 3; # Wait 3 seconds before restarting
       };
     };
   };

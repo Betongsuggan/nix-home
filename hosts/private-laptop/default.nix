@@ -14,6 +14,10 @@ inputs.nixpkgs.lib.nixosSystem {
       home-manager = {
         useGlobalPkgs = true;
         useUserPackages = true;
+        sharedModules = [
+          inputs.walker.homeManagerModules.default
+          inputs.stylix.homeModules.stylix
+        ];
         extraSpecialArgs = { inherit inputs overlays; };
         users.betongsuggan = import ./user-betongsuggan.nix;
       };

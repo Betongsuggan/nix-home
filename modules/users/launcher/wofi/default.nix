@@ -5,6 +5,33 @@ with lib;
 let
   cfg = config.launcher;
 
+  # Helper to build wofi dmenu command
+  buildDmenuCmd = { prompt ? null, password ? false, insensitive ? false
+    , multiSelect ? false, allowImages ? null, additionalArgs ? [ ] }:
+    let
+      promptFlag = optionalString (prompt != null) ''--prompt "${prompt}"'';
+      passwordFlag = optionalString password "--password";
+      insensitiveFlag = optionalString insensitive "--insensitive";
+      multiSelectFlag = optionalString multiSelect "--multi-select";
+      allowImagesFlag = optionalString (allowImages != null)
+        "--allow-images=${if allowImages then "true" else "false"}";
+      additionalArgsStr = concatStringsSep " " additionalArgs;
+    in "${pkgs.wofi}/bin/wofi --dmenu ${promptFlag} ${passwordFlag} ${insensitiveFlag} ${multiSelectFlag} ${allowImagesFlag} ${additionalArgsStr}";
+
+  # Helper to build wofi show command (application launcher)
+  buildShowCmd = { mode ? "drun" # drun, run, dmenu
+    , additionalArgs ? [ ] }:
+    let
+      # Map generic modes to wofi-specific modes
+      wofiMode = if mode == "applications" then
+        "drun"
+      else if mode == "symbols" then
+        "drun" # wofi-emoji handled separately
+      else
+        mode;
+      additionalArgsStr = concatStringsSep " " additionalArgs;
+    in "${pkgs.wofi}/bin/wofi --show ${wofiMode} ${additionalArgsStr}";
+
   # WiFi control script using wofi
   wifiControl = import ./launchers/wifiControls.nix { inherit config pkgs; };
 
@@ -33,6 +60,20 @@ in {
       description = "Custom wofi CSS styling";
     };
 
+    buildDmenuCmd = mkOption {
+      type = types.functionTo types.str;
+      internal = true;
+      readOnly = true;
+      description = "Function to build wofi dmenu commands";
+    };
+
+    buildShowCmd = mkOption {
+      type = types.functionTo types.str;
+      internal = true;
+      readOnly = true;
+      description = "Function to build wofi show commands";
+    };
+
     wifi = mkOption {
       type = types.package;
       internal = true;
@@ -49,6 +90,8 @@ in {
   };
 
   config = mkIf (cfg.enable && cfg.backend == "wofi") {
+    launcher.wofi.buildDmenuCmd = buildDmenuCmd;
+    launcher.wofi.buildShowCmd = buildShowCmd;
     launcher.wofi.wifi = wifiControl;
     launcher.wofi.bluetooth = bluetoothControl;
 

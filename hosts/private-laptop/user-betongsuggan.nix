@@ -1,38 +1,45 @@
-{ pkgs, inputs, ... }:
-
-{
+{ pkgs, ... }: {
   home = {
     username = "betongsuggan";
     homeDirectory = "/home/betongsuggan";
     stateVersion = "24.05";
   };
 
-  imports = [
-    ../../modules/users
-    inputs.walker.homeManagerModules.default
-    inputs.stylix.homeModules.stylix
-  ];
+  imports = [ ../../modules/users ];
 
   general.enable = true;
   firefox.enable = true;
   games.enable = true;
   communication.enable = true;
-  shell.enable = true;
-  shell.defaultShell = "bash";
-  terminal.enable = true;
-  terminal.defaultTerminal = "alacritty";
   starship.enable = true;
   notifications.enable = true;
   battery-monitor.enable = true;
   kanshi.enable = true;
   development.enable = true;
   thunar.enable = true;
-  launcher.enable = true;
-  launcher.backend = "walker";
+
+  shell = {
+    enable = true;
+    defaultShell = "bash";
+  };
+
+  terminal = {
+    enable = true;
+    defaultTerminal = "alacritty";
+  };
+
+  launcher = {
+    enable = true;
+    backend = "walker";
+  };
 
   theme = {
     enable = true;
     wallpaper = ../../assets/wallpaper/zeal.jpg;
+    cursor = {
+      package = pkgs.banana-cursor;
+      name = "Banana";
+    };
   };
 
   windowManager = {

@@ -5,6 +5,30 @@ with lib;
 let
   cfg = config.launcher;
 
+  # Helper to build rofi dmenu command
+  buildDmenuCmd = { prompt ? null, password ? false, insensitive ? false
+    , multiSelect ? false, allowImages ? null, additionalArgs ? [ ] }:
+    let
+      promptFlag = optionalString (prompt != null) ''-p "${prompt}"'';
+      passwordFlag = optionalString password "-password";
+      insensitiveFlag = optionalString insensitive "-i";
+      multiSelectFlag = optionalString multiSelect "-multi-select";
+      additionalArgsStr = concatStringsSep " " additionalArgs;
+    in "${pkgs.rofi}/bin/rofi -dmenu ${promptFlag} ${passwordFlag} ${insensitiveFlag} ${multiSelectFlag} ${additionalArgsStr}";
+
+  # Helper to build rofi show command
+  buildShowCmd = { mode ? "drun", additionalArgs ? [ ] }:
+    let
+      # Map generic modes to rofi-specific modes
+      rofiMode = if mode == "applications" then
+        "drun"
+      else if mode == "symbols" then
+        "emoji"
+      else
+        mode;
+      additionalArgsStr = concatStringsSep " " additionalArgs;
+    in "${pkgs.rofi}/bin/rofi -show ${rofiMode} ${additionalArgsStr}";
+
   # WiFi control script using rofi
   # TODO: Port wifi-control to use rofi
   wifiControl = pkgs.writeShellScriptBin "wifi-control" ''
@@ -35,6 +59,20 @@ in {
       description = "Rofi theme to use";
     };
 
+    buildDmenuCmd = mkOption {
+      type = types.functionTo types.str;
+      internal = true;
+      readOnly = true;
+      description = "Function to build rofi dmenu commands";
+    };
+
+    buildShowCmd = mkOption {
+      type = types.functionTo types.str;
+      internal = true;
+      readOnly = true;
+      description = "Function to build rofi show commands";
+    };
+
     wifi = mkOption {
       type = types.package;
       internal = true;
@@ -51,6 +89,8 @@ in {
   };
 
   config = mkIf (cfg.enable && cfg.backend == "rofi") {
+    launcher.rofi.buildDmenuCmd = buildDmenuCmd;
+    launcher.rofi.buildShowCmd = buildShowCmd;
     launcher.rofi.wifi = wifiControl;
     launcher.rofi.bluetooth = bluetoothControl;
 

@@ -24,6 +24,7 @@
       overlays = [
         (self: super: {
           awscli-local = awscli-local.packages.${self.system}.default;
+          walker = inputs.walker.packages.${self.system}.default;
         })
         (final: prev: {
           unstable = import nixpkgs-unstable {
@@ -65,7 +66,7 @@
           mkHomeConfiguration ./hosts/private-desktop/user-betongsuggan.nix;
         "gamer@private-desktop" =
           mkHomeConfiguration ./hosts/private-desktop/user-gamer.nix;
-        "betongsuggan@private-laptpo" =
+        "betongsuggan@private-laptop" =
           mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
         "birgerrydback@bits" =
           mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;

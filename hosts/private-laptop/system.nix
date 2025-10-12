@@ -55,7 +55,7 @@
   swapDevices =
     [{ device = "/dev/disk/by-uuid/da3b504d-b0fa-450e-8974-e332c5ce5608"; }];
 
-  environment.systemPackages = with pkgs; [ iio-sensor-proxy ];
+  environment.systemPackages = with pkgs; [ iio-sensor-proxy home-manager ];
   services = { fwupd.enable = true; };
 
   console.keyMap = "colemak";

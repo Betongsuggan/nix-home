@@ -1,44 +1,50 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 
 {
   home.username = "betongsuggan";
   home.homeDirectory = "/home/betongsuggan";
   home.stateVersion = "25.05";
 
-  imports = [
-    ../../modules/users
-    inputs.walker.homeManagerModules.default
-    inputs.stylix.homeModules.stylix
-  ];
+  imports = [ ../../modules/users ];
 
   general.enable = true;
   games.enable = true;
   communication.enable = true;
   development.enable = true;
-  terminal.enable = true;
-  terminal.defaultTerminal = "alacritty";
+
+  terminal = {
+    enable = true;
+    defaultTerminal = "alacritty";
+  };
+
   starship.enable = true;
-  shell.enable = true;
-  shell.defaultShell = "bash";
+  shell = {
+    enable = true;
+    defaultShell = "bash";
+  };
+
   notifications.enable = true;
   battery-monitor.enable = true;
   kanshi.enable = true;
   thunar.enable = true;
   firefox.enable = true;
-  launcher.enable = true;
-  launcher.backend = "walker";
-  
+  launcher = {
+    enable = true;
+    backend = "walker";
+  };
+
   # Enable PS5 controller support with MangoHud toggle
   controller = {
     enable = true;
     type = "ps5";
     mangohudToggle = {
       enable = true;
-      buttons = [ "square" "triangle" ];  # Press Square or Triangle to toggle
+      buttons = [ "square" "triangle" ]; # Press Square or Triangle to toggle
       autoStart = true;
     };
     rumble.enable = true;
   };
+
   windowManager = {
     enable = true;
     type = "hyprland";

@@ -2,9 +2,7 @@
 with lib;
 
 {
-  options.hyprland = {
-    enable = mkEnableOption "Enable Hyprland";
-  };
+  options.hyprland = { enable = mkEnableOption "Enable Hyprland"; };
 
   config = mkIf config.hyprland.enable {
     # Auto-enable notifications when hyprland is enabled (for util notifiers)
@@ -12,7 +10,6 @@ with lib;
 
     # Auto-enable launcher when hyprland is enabled
     launcher.enable = mkDefault true;
-
     # Auto-enable controls when hyprland is enabled
     controls.enable = mkDefault true;
     controls.windowManager = "hyprland";
@@ -28,13 +25,7 @@ with lib;
           inherit (config.theme.cursor) size;
         };
       };
-      packages = with pkgs; [
-        swaylock-fancy
-        grim
-        slurp
-        wl-clipboard
-        systemd
-      ];
+      packages = with pkgs; [ swaylock-fancy grim slurp wl-clipboard systemd ];
     };
 
     services.hyprpaper = {
@@ -176,19 +167,21 @@ with lib;
 
           ### Launchers
           # Emojis
-          "$mod, e, exec, ${config.launcher.show { mode = "emojis"; }}"
+          "$mod, e, exec, ${config.launcher.show { mode = "symbols"; }}"
 
           # Wifi
-          "$mod, u, exec, ${config.launcher.wifi {}}"
+          "$mod, u, exec, ${config.launcher.wifi { }}"
 
           # Bluetooth
-          "$mod, z, exec, ${config.launcher.bluetooth {}}"
+          "$mod, z, exec, ${config.launcher.bluetooth { }}"
 
           # Websearch
           "$mod, d, exec, ${config.launcher.show { mode = "websearch"; }}"
 
           # Applications
-          "$mod, o, exec, ${config.launcher.show { mode = "applications"; }}"
+          "$mod, o, exec, ${
+            config.launcher.show { mode = "desktopapplications"; }
+          }"
           # Clipboard
           "$mod, c, exec, ${config.launcher.show { mode = "clipboard"; }}"
 
