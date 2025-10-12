@@ -5,7 +5,10 @@
   home.homeDirectory = "/home/birgerrydback";
   home.stateVersion = "24.05";
 
-  imports = [ ../../modules/users ];
+  imports = [
+    ../../modules/users
+    inputs.stylix.homeModules.stylix
+  ];
 
   general.enable = true;
   development.enable = true;

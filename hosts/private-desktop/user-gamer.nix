@@ -3,7 +3,6 @@
 {
   imports = [
     ../../modules/users
-    inputs.walker.homeManagerModules.default # Required for walker module consistency
     inputs.stylix.homeModules.stylix
   ];
 

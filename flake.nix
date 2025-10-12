@@ -45,8 +45,8 @@
 
           modules = [
             userModule
-            inputs.stylix.homeModules.stylix
             inputs.walker.homeManagerModules.default
+            inputs.stylix.homeModules.stylix
           ];
           extraSpecialArgs = { inherit inputs overlays; };
         };

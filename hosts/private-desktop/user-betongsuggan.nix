@@ -1,11 +1,14 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   home.username = "betongsuggan";
   home.homeDirectory = "/home/betongsuggan";
   home.stateVersion = "25.05";
 
-  imports = [ ../../modules/users ];
+  imports = [
+    ../../modules/users
+    inputs.stylix.homeModules.stylix
+  ];
 
   general.enable = true;
   games.enable = true;

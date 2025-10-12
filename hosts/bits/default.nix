@@ -6,7 +6,6 @@ inputs.nixpkgs.lib.nixosSystem {
     inputs.home-manager.nixosModules.home-manager
     ../../modules/common
     ../../modules/system
-
     ./system.nix
 
     {
