@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 let
   # Build notification command using the notifications module
   # Note: This is a system module but needs to call user notifications
@@ -9,5 +9,4 @@ let
     # TODO: Implement actual network notification logic
     echo "Network notifier placeholder"
   '';
-in
-networkNotifier
+in networkNotifier

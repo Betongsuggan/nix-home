@@ -196,7 +196,7 @@ in {
               weight = 5;
               name = "emojis";
               placeholder = "Emojis";
-              switcher_only = true;
+              switcher_only = false;
               history = true;
               typeahead = true;
               show_unqualified = false;

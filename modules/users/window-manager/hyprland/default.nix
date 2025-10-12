@@ -176,7 +176,7 @@ with lib;
 
           ### Launchers
           # Emojis
-          "$mod, e, exec, ${config.launcher.show { mode = "symbols"; }}"
+          "$mod, e, exec, ${config.launcher.show { mode = "emojis"; }}"
 
           # Wifi
           "$mod, u, exec, ${config.launcher.wifi {}}"

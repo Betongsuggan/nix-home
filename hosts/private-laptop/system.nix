@@ -4,11 +4,11 @@
   users.users.betongsuggan = {
     isNormalUser = true;
     description = "Betongsuggan user";
-    extraGroups = [ "wheel" "networkmanager" "video" "docker" ];
+    extraGroups = [ "wheel" "networkmanager" "network" "video" "docker" ];
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackages_6_12;
+    kernelPackages = pkgs.linuxPackages_6_16;
     supportedFilesystems = [ "ntfs" ];
     initrd.availableKernelModules =
       [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
@@ -67,7 +67,7 @@
   audio.enable = true;
   docker.enable = true;
   bluetooth.enable = true;
-  wayland.enable = true;
+  wayland-security.enable = true;
   printers.enable = true;
   power-management.enable = true;
 
