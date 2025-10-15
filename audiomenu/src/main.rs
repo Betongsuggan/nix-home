@@ -41,10 +41,14 @@ fn run() -> anyhow::Result<()> {
     let device_id = AudioDevice::parse_id_from_selection(&selection)
         .ok_or_else(|| anyhow::anyhow!("Failed to parse device ID from selection"))?;
 
-    // Set as default
-    backend.set_default(device_id)?;
+    // Set as default and optionally move streams
+    backend.set_default_and_move_streams(device_id, device_type, cli.move_streams)?;
 
-    println!("Successfully set default {} to device ID: {}", device_type, device_id);
+    if cli.move_streams {
+        println!("Successfully set default {} to device ID: {} (and moved active streams)", device_type, device_id);
+    } else {
+        println!("Successfully set default {} to device ID: {}", device_type, device_id);
+    }
 
     Ok(())
 }

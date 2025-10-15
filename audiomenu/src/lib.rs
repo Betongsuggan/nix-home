@@ -31,13 +31,53 @@ pub struct AudioDevice {
 impl AudioDevice {
     /// Format device for display in launcher
     pub fn format_for_display(&self) -> String {
-        let prefix = if self.is_default { "[*]" } else { "   " };
-        format!("{} {} (ID: {})", prefix, self.description, self.id)
+        // Emoji for device type
+        let device_emoji = match self.device_type {
+            DeviceType::Sink => "🔊",   // Output devices
+            DeviceType::Source => "🎤", // Input devices
+        };
+
+        // Indicator for current default
+        let status = if self.is_default {
+            "✓" // Checkmark for current default
+        } else {
+            " " // Space for alignment
+        };
+
+        let hint = self.get_device_hint();
+        let hint_str = if !hint.is_empty() {
+            format!(" {}", hint)
+        } else {
+            String::new()
+        };
+
+        format!("{} {} {}{} (ID: {})", status, device_emoji, self.description, hint_str, self.id)
+    }
+
+    /// Get a hint about the device type from its name
+    fn get_device_hint(&self) -> String {
+        let name_lower = self.description.to_lowercase();
+
+        // Add contextual emojis based on device name
+        if name_lower.contains("hdmi") || name_lower.contains("displayport") {
+            "📺".to_string() // Monitor/TV
+        } else if name_lower.contains("usb") || name_lower.contains("arctis") {
+            "🎧".to_string() // Headset/USB audio
+        } else if name_lower.contains("speaker") {
+            "🔈".to_string() // Built-in speakers
+        } else if name_lower.contains("headphone") {
+            "🎧".to_string() // Headphones
+        } else if name_lower.contains("digital microphone") || name_lower.contains("mic") {
+            "🎙️".to_string() // Microphone
+        } else {
+            "".to_string() // No extra hint
+        }
     }
 
     /// Parse device from launcher selection
     pub fn parse_id_from_selection(selection: &str) -> Option<u32> {
-        // Extract ID from format: "[*]  Device Name (ID: 123)"
+        // Format: "✓ 🔊 Device Name 🎧 (ID: 123)"
+        // Extract ID from "(ID: 123)" at the end
         selection
             .split("(ID: ")
             .nth(1)?

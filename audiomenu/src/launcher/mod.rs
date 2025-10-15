@@ -16,9 +16,9 @@ impl Launcher {
     fn get_command(&self, prompt: Option<&str>) -> (String, Vec<String>) {
         match self {
             Launcher::Walker => {
-                let mut args = vec!["-m".to_string(), "dmenu".to_string()];
+                let mut args = vec!["-d".to_string()];
                 if let Some(p) = prompt {
-                    args.push("--placeholder".to_string());
+                    args.push("-p".to_string());
                     args.push(p.to_string());
                 }
                 ("walker".to_string(), args)

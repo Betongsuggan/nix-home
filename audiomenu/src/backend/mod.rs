@@ -11,6 +11,9 @@ pub trait AudioBackend {
     /// Set the default device
     fn set_default(&self, device_id: u32) -> Result<()>;
 
+    /// Set the default device and optionally move existing streams
+    fn set_default_and_move_streams(&self, device_id: u32, device_type: DeviceType, move_streams: bool) -> Result<()>;
+
     /// Get the name of this backend
     fn name(&self) -> &str;
 }

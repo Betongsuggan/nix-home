@@ -23,6 +23,10 @@ pub struct Cli {
     /// Additional spaces before device name (for alignment)
     #[arg(long, default_value = "2")]
     pub spaces: usize,
+
+    /// Move existing audio streams to the new device
+    #[arg(short = 'm', long, default_value = "true")]
+    pub move_streams: bool,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
