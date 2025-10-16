@@ -113,8 +113,7 @@ with lib;
         bind = [
           ### Keyboard layouts
           # Qwerty
-          ''
-            $modShift, b, exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant ""''
+          "$modShift, b, exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant"
 
           # Colemak
           "$modShift, c, exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant colemak"
@@ -185,8 +184,9 @@ with lib;
           # Clipboard
           "$mod, c, exec, ${config.launcher.show { mode = "clipboard"; }}"
 
-          # AI
-          "$mod, a, exec, ${config.launcher.show { mode = "ai"; }}"
+          # Audio sink/source launchers
+          "$mod, a, exec, ${config.launcher.audioOutput { }}"
+          "$modShift, a, exec, ${config.launcher.audioInput { }}"
 
           ### Power Management
           # Power menu

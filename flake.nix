@@ -16,6 +16,7 @@
     };
 
     awscli-local.url = "github:Betongsuggan/awscli-local";
+    audiomenu.url = "github:Betongsuggan/audiomenu";
     walker.url = "github:abenz1267/walker";
   };
 
@@ -25,6 +26,7 @@
         (self: super: {
           awscli-local = awscli-local.packages.${self.system}.default;
           walker = inputs.walker.packages.${self.system}.default;
+          audiomenu = inputs.audiomenu.packages.${self.system}.default;
         })
         (final: prev: {
           unstable = import nixpkgs-unstable {

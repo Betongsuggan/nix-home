@@ -2,11 +2,7 @@
 with lib;
 
 {
-  imports = [
-    ./bash
-    ./fish
-    ./nushell
-  ];
+  imports = [ ./bash ./fish ./nushell ];
 
   options.shell = {
     enable = mkEnableOption "Enable shell configuration";
@@ -27,7 +23,7 @@ with lib;
         demo = "cd ~/Development/web/apps/nocode-demo";
         ll = "ls -la --color=auto";
         ls = "ls --color=auto";
-        vim = "nix run github:/Betongsuggan/nvim";
+        vim = "nix run github:/Betongsuggan/nvim --refresh";
         hm = "home-manager";
         gw = "./gradlew --no-daemon";
       };

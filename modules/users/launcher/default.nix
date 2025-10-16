@@ -53,6 +53,32 @@ let
     else
       throw "Unsupported launcher backend: ${cfg.backend}";
 
+  # Audio output launcher - delegates to backend-specific implementation
+  launcherAudioOutputCmd = { additionalArgs ? [ ] }:
+    if cfg.backend == "wofi" then
+      throw "Audio menu not yet implemented for wofi"
+    else if cfg.backend == "rofi" then
+      throw "Audio menu not yet implemented for rofi"
+    else if cfg.backend == "walker" then
+      "${pkgs.audiomenu}/bin/audiomenu sink --launcher walker ${
+        concatStringsSep " " additionalArgs
+      }"
+    else
+      throw "Unsupported launcher backend: ${cfg.backend}";
+
+  # Audio input launcher - delegates to backend-specific implementation
+  launcherAudioInputCmd = { additionalArgs ? [ ] }:
+    if cfg.backend == "wofi" then
+      throw "Audio menu not yet implemented for wofi"
+    else if cfg.backend == "rofi" then
+      throw "Audio menu not yet implemented for rofi"
+    else if cfg.backend == "walker" then
+      "${pkgs.audiomenu}/bin/audiomenu source --launcher walker ${
+        concatStringsSep " " additionalArgs
+      }"
+    else
+      throw "Unsupported launcher backend: ${cfg.backend}";
+
 in {
   imports = [ ./wofi ./rofi ./walker ];
 
@@ -134,6 +160,38 @@ in {
         Returns a shell command string.
       '';
     };
+
+    audioOutput = mkOption {
+      type = types.functionTo types.str;
+      internal = true;
+      readOnly = true;
+      description = ''
+        Function to generate audio output device selection launcher.
+
+        Usage:
+          config.launcher.audioOutput {
+            additionalArgs = [];
+          }
+
+        Returns a shell command string.
+      '';
+    };
+
+    audioInput = mkOption {
+      type = types.functionTo types.str;
+      internal = true;
+      readOnly = true;
+      description = ''
+        Function to generate audio input device selection launcher.
+
+        Usage:
+          config.launcher.audioInput {
+            additionalArgs = [];
+          }
+
+        Returns a shell command string.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -142,5 +200,7 @@ in {
     launcher.show = launcherShowCmd;
     launcher.wifi = launcherWifiCmd;
     launcher.bluetooth = launcherBluetoothCmd;
+    launcher.audioOutput = launcherAudioOutputCmd;
+    launcher.audioInput = launcherAudioInputCmd;
   };
 }
