@@ -17,6 +17,7 @@
     ./power-management
     ./printers
     ./networking
+    ./secure-boot
     ./thunar
     ./touchpad
     ./undervolting

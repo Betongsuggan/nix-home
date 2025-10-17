@@ -18,6 +18,11 @@
     awscli-local.url = "github:Betongsuggan/awscli-local";
     audiomenu.url = "github:Betongsuggan/audiomenu";
     walker.url = "github:abenz1267/walker";
+
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v0.4.1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { nixpkgs-unstable, awscli-local, ... }@inputs:
