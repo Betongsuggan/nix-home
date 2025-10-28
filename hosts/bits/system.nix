@@ -75,6 +75,7 @@
   console.keyMap = "colemak";
 
   touchpad.enable = true;
+  backlight.enable = true;
   graphics = {
     enable = true;
     amd = true;

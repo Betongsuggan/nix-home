@@ -32,6 +32,11 @@
 
   notifications.enable = true;
 
+  controls = {
+    enable = true;
+    brightness.backend = "brightnessctl";
+  };
+
   launcher = {
     enable = true;
     backend = "walker";

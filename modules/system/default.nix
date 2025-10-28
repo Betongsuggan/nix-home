@@ -2,6 +2,7 @@
   imports = [
     ./audio
     ./autologin
+    ./backlight
     ./bluetooth
     ./colemak
     ./disk-encryption

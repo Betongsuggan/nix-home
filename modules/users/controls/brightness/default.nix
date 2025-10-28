@@ -25,8 +25,8 @@ let
       get = "${brightnessBackend}/bin/light";
     };
     brightnessctl = {
-      increase = "${brightnessBackend}/bin/brightnessctl set +";
-      decrease = "${brightnessBackend}/bin/brightnessctl set ";
+      increase = "${brightnessBackend}/bin/brightnessctl set";
+      decrease = "${brightnessBackend}/bin/brightnessctl set --";
       get = "${brightnessBackend}/bin/brightnessctl get";
     };
   };
@@ -38,18 +38,20 @@ let
 
     while getopts i:d:ms option
     do
-        echo "$option"
         case "''${option}"
             in
-            i) ${cmds.increase} ''${OPTARG};;
-            d) ${cmds.decrease} ''${OPTARG};;
+            i) ${cmds.increase} +''${OPTARG};;
+            d) ${cmds.decrease} -''${OPTARG};;
         esac
     done
 
     ${if cfg.backend == "light" then ''
       brightness="$(${cmds.get} | sed 's/\..*//')"
     '' else ''
-      brightness="$(${cmds.get})"
+      # Calculate percentage for brightnessctl (raw value / max * 100)
+      current="$(${cmds.get})"
+      max="$(${brightnessBackend}/bin/brightnessctl max)"
+      brightness="$((current * 100 / max))"
     ''}
 
     ${notifyBrightness}
