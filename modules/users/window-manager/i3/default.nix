@@ -45,6 +45,13 @@ in {
 
     home.packages = with pkgs; [ feh brightnessctl i3lock-fancy-rapid ];
 
+    # Configure keyboard layout and compose key for X11
+    home.keyboard = {
+      layout = "us";
+      variant = "colemak";
+      options = [ "caps:escape" "compose:${config.windowManager.composeKey}" ];
+    };
+
     xsession.windowManager.i3 = {
       enable = true;
       package = pkgs.i3-gaps;

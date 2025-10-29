@@ -146,7 +146,7 @@ in {
 
         input * xkb_layout "us,us"
         input * xkb_variant "colemak,"
-        input * xkb_options "caps:escape,compose:ralt,grp:shifts_toggle"
+        input * xkb_options "caps:escape,compose:${config.windowManager.composeKey},grp:shifts_toggle"
 
         # Brightness
         bindsym XF86MonBrightnessDown exec light -U 10

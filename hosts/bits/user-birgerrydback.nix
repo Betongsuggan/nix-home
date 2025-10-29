@@ -5,10 +5,7 @@
   home.homeDirectory = "/home/birgerrydback";
   home.stateVersion = "24.05";
 
-  imports = [
-    ../../modules/users
-    inputs.stylix.homeModules.stylix
-  ];
+  imports = [ ../../modules/users inputs.stylix.homeModules.stylix ];
 
   general.enable = true;
   development.enable = true;
@@ -16,7 +13,6 @@
   communication.enable = true;
   games.enable = true;
   battery-monitor.enable = true;
-  kanshi.enable = true;
   thunar.enable = true;
   starship.enable = true;
 
@@ -45,7 +41,8 @@
   windowManager = {
     enable = true;
     type = "hyprland";
-    monitors = [ "1,3840x2560@60,auto,1" ",preferred,auto,1" ];
+    composeKey = "ralt";
+    monitors = [ ",preferred,auto,1" ];
     autostartApps = {
       firefox = {
         command = "firefox";

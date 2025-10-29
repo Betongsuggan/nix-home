@@ -17,6 +17,7 @@
 
     awscli-local.url = "github:Betongsuggan/awscli-local";
     audiomenu.url = "github:Betongsuggan/audiomenu";
+    monitormenu.url = "github:Betongsuggan/monitormenu";
     walker.url = "github:abenz1267/walker";
 
     lanzaboote = {
@@ -32,6 +33,7 @@
           awscli-local = awscli-local.packages.${self.system}.default;
           walker = inputs.walker.packages.${self.system}.default;
           audiomenu = inputs.audiomenu.packages.${self.system}.default;
+          monitormenu = inputs.monitormenu.packages.${self.system}.default;
         })
         (final: prev: {
           unstable = import nixpkgs-unstable {

@@ -79,6 +79,19 @@ let
     else
       throw "Unsupported launcher backend: ${cfg.backend}";
 
+  # Monitor launcher - delegates to backend-specific implementation
+  launcherMonitorCmd = { additionalArgs ? [ ] }:
+    if cfg.backend == "wofi" then
+      throw "Monitor menu not yet implemented for wofi"
+    else if cfg.backend == "rofi" then
+      throw "Monitor menu not yet implemented for rofi"
+    else if cfg.backend == "walker" then
+      "${pkgs.monitormenu}/bin/monitormenu --launcher walker ${
+        concatStringsSep " " additionalArgs
+      }"
+    else
+      throw "Unsupported launcher backend: ${cfg.backend}";
+
 in {
   imports = [ ./wofi ./rofi ./walker ];
 
@@ -192,6 +205,22 @@ in {
         Returns a shell command string.
       '';
     };
+
+    monitor = mkOption {
+      type = types.functionTo types.str;
+      internal = true;
+      readOnly = true;
+      description = ''
+        Function to generate monitor configuration launcher.
+
+        Usage:
+          config.launcher.monitor {
+            additionalArgs = [];
+          }
+
+        Returns a shell command string.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -202,5 +231,6 @@ in {
     launcher.bluetooth = launcherBluetoothCmd;
     launcher.audioOutput = launcherAudioOutputCmd;
     launcher.audioInput = launcherAudioInputCmd;
+    launcher.monitor = launcherMonitorCmd;
   };
 }

@@ -149,8 +149,6 @@ with lib;
           "$modShift, q, killactive,"
 
           ### Notifiers
-          # Current media playback
-          "$mod, m, exec, media-player status"
 
           # Battery status
           "$mod, b, exec, battery-notifier"
@@ -173,6 +171,9 @@ with lib;
 
           # Bluetooth
           "$mod, z, exec, ${config.launcher.bluetooth { }}"
+
+          # Monitors
+          "$mod, m, exec, ${config.launcher.monitor { }}"
 
           # Websearch
           "$mod, d, exec, ${config.launcher.show { mode = "websearch"; }}"
@@ -236,12 +237,17 @@ with lib;
           vfr = true;
         };
 
+        debug = {
+          enable_stdout_logs = true;
+          disable_logs = false;
+        };
+
         gestures = { workspace_swipe = true; };
 
         input = {
           kb_layout = "us";
           kb_variant = "colemak";
-          kb_options = "caps:escape,compose:ralt";
+          kb_options = "caps:escape,compose:${config.windowManager.composeKey}";
           resolve_binds_by_sym = 1;
           touchdevice = { output = "eDP-1"; };
         };

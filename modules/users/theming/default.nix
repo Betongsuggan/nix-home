@@ -176,6 +176,9 @@ in {
       enable = true;
       defaultFonts = {
         monospace = [ config.theme.font.name "Noto Color Emoji" ];
+        sansSerif = [ "DejaVu Sans" "Noto Color Emoji" ];
+        serif = [ "DejaVu Serif" "Noto Color Emoji" ];
+        emoji = [ "Noto Color Emoji" ];
       };
     };
 
