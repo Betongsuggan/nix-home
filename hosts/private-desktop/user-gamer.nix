@@ -32,12 +32,13 @@
     type = "ps5";
     mangohudToggle = {
       enable = true;
-      buttons = [ "square" "triangle" ]; # Press Square or Triangle to toggle
+      buttons = [ "share" "square" ]; # Press Share or Square to toggle
       autoStart = true;
     };
     rumble.enable = true;
   };
 
+  general.enable = true;
   hyprland.enable = true;
   bash.enable = true;
   theme = {

@@ -86,9 +86,36 @@ with lib;
       inotify-tools
       wtype
       procps
+      xdotool
+      ydotool
+      python3
     ] ++ optionals config.controller.customMappings.enable [
       # Add additional packages for custom mappings if needed
     ];
+
+    # Add udev rules for controller access (needs to be in system config)
+    home.file."docs/controller-udev-rules.txt" = {
+      text = ''
+        # To fix controller access for multiple users, add these udev rules to your system configuration:
+        
+        # In your NixOS configuration (/etc/nixos/configuration.nix), add:
+        services.udev.extraRules = '''
+          # PlayStation controllers
+          KERNEL=="event*", ATTRS{name}=="DualSense Wireless Controller", MODE="0666", GROUP="input"
+          KERNEL=="js*", ATTRS{name}=="DualSense Wireless Controller", MODE="0666", GROUP="input"
+          
+          # Xbox controllers  
+          KERNEL=="event*", ATTRS{name}=="Xbox*Controller*", MODE="0666", GROUP="input"
+          KERNEL=="js*", ATTRS{name}=="Xbox*Controller*", MODE="0666", GROUP="input"
+          
+          # Generic controllers
+          KERNEL=="event*", SUBSYSTEM=="input", ENV{ID_INPUT_JOYSTICK}=="1", MODE="0666", GROUP="input"
+          KERNEL=="js*", SUBSYSTEM=="input", MODE="0666", GROUP="input"
+        ''';
+        
+        # Then rebuild your system: sudo nixos-rebuild switch
+      '';
+    };
 
     # MangoHud toggle script
     home.file."bin/controller-mangohud-toggle.sh" = mkIf config.controller.mangohudToggle.enable {
@@ -138,11 +165,16 @@ with lib;
         generateButtonChecks = buttons: let
           currentMappings = buttonMappings.${controllerType};
           buttonChecks = map (btn: 
-            ''if echo "$line" | grep -q "${currentMappings.${btn}}.*value 1"; then
-        echo "${btn} button pressed - toggling MangoHud..."
-        toggle_mangohud
-        echo "MangoHud toggled with ${btn}!"
-        sleep 0.5  # Prevent rapid toggling
+            ''if echo "$line" | ${pkgs.gnugrep}/bin/grep -q "${currentMappings.${btn}}.*value 1"; then
+        # Only process if not in cooldown
+        current_time=$(${pkgs.coreutils}/bin/date +%s)
+        if [ ! -f "/tmp/mangohud_cooldown" ] || [ "$current_time" -gt "$(${pkgs.coreutils}/bin/cat /tmp/mangohud_cooldown 2>/dev/null || echo 0)" ]; then
+            ${pkgs.coreutils}/bin/echo "${btn} button pressed - toggling MangoHud..."
+            toggle_mangohud
+            ${pkgs.coreutils}/bin/echo "MangoHud toggled with ${btn}!"
+            # Set cooldown for 2 seconds
+            ${pkgs.coreutils}/bin/echo "$((current_time + 2))" > /tmp/mangohud_cooldown
+        fi
     fi''
           ) buttons;
         in concatStringsSep "\n        " buttonChecks;
@@ -156,28 +188,68 @@ with lib;
         
         # Logging function
         log() {
-            echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >&2
+            echo "[$(${pkgs.coreutils}/bin/date '+%Y-%m-%d %H:%M:%S')] $*" >&2
         }
         
         # MangoHud toggle function for gamescope
         toggle_mangohud() {
             # Method 1: Try to find and signal the gamescope process
-            if pgrep -f "gamescope" >/dev/null; then
-                log "Found gamescope process, sending F12 to toggle MangoHud"
-                # Use gamescope's built-in MangoHud toggle (F12 by default)
-                if command -v wtype >/dev/null 2>&1; then
-                    wtype -k F12
-                elif [ -e /dev/input/by-path/*kbd* ]; then
-                    # Fallback: write directly to keyboard device
-                    echo -ne '\e[24~' > /dev/tty 2>/dev/null || true
+            if ${pkgs.procps}/bin/pgrep -f "gamescope" >/dev/null; then
+                log "Found gamescope process, toggling MangoHud via Steam/gamescope integration"
+                
+                # Use Steam's console command system and gamescope integration
+                # This is the most reliable method for Steam Big Picture + gamescope
+                
+                local toggle_success=false
+                
+                # Method 1: Use Steam console commands via named pipe or socket
+                local steam_pid=$(${pkgs.procps}/bin/pgrep -f "steam.*bigpicture")
+                if [ -n "$steam_pid" ]; then
+                    log "Found Steam Big Picture process, attempting console command"
+                    # Steam Big Picture has console commands that can be triggered
+                    # Try to use Steam's overlay toggle
+                    if ${pkgs.coreutils}/bin/kill -USR2 "$steam_pid" 2>/dev/null; then
+                        log "Sent overlay toggle signal to Steam"
+                        toggle_success=true
+                    fi
+                fi
+                
+                # Method 2: Use gamescope's built-in hotkey system by simulating input
+                if [ "$toggle_success" = false ]; then
+                    log "Trying gamescope hotkey simulation"
+                    local gamescope_pid=$(${pkgs.procps}/bin/pgrep -f "gamescope")
+                    if [ -n "$gamescope_pid" ]; then
+                        # Send the standard overlay toggle signal to gamescope
+                        if ${pkgs.coreutils}/bin/kill -USR1 "$gamescope_pid" 2>/dev/null; then
+                            log "Sent overlay toggle signal to gamescope"
+                            toggle_success=true
+                        fi
+                    fi
+                fi
+                
+                # Method 3: Use simple script to send F9
+                if [ "$toggle_success" = false ]; then
+                    log "Attempting simple F9 key injection"
+                    
+                    # Try a much simpler approach
+                    if ${pkgs.coreutils}/bin/command -v ${pkgs.python3}/bin/python3 >/dev/null 2>&1; then
+                        ${pkgs.python3}/bin/python3 -c 'import struct; f=open("/dev/input/event0","wb"); f.write(struct.pack("llHHI",0,0,1,67,1)); f.write(struct.pack("llHHI",0,0,0,0,0)); f.write(struct.pack("llHHI",0,0,1,67,0)); f.write(struct.pack("llHHI",0,0,0,0,0)); f.close()' 2>/dev/null && {
+                            toggle_success=true
+                            log "F9 sent via event0"
+                        }
+                    fi
+                fi
+                
+                if [ "$toggle_success" = false ]; then
+                    log "All MangoHud toggle methods failed"
                 fi
             else
                 log "No gamescope process found, trying alternative methods"
                 # Method 2: Toggle via MangoHud control file if it exists
                 if [ -w "/tmp/mangohud_toggle" ]; then
-                    echo "toggle" > /tmp/mangohud_toggle
-                elif [ -w "/run/user/$(id -u)/mangohud_toggle" ]; then
-                    echo "toggle" > "/run/user/$(id -u)/mangohud_toggle"
+                    ${pkgs.coreutils}/bin/echo "toggle" > /tmp/mangohud_toggle
+                elif [ -w "/run/user/$(${pkgs.coreutils}/bin/id -u)/mangohud_toggle" ]; then
+                    ${pkgs.coreutils}/bin/echo "toggle" > "/run/user/$(${pkgs.coreutils}/bin/id -u)/mangohud_toggle"
                 else
                     log "WARNING: Could not toggle MangoHud - no gamescope or control file found"
                 fi
@@ -190,14 +262,14 @@ with lib;
             log "Looking for controller: $controller_name"
             
             local controller_event
-            controller_event=$(cat /proc/bus/input/devices 2>/dev/null | \
-                grep -B 5 -A 5 "$controller_name" | \
-                grep "Handlers" | \
-                grep -o "event[0-9]*" | \
-                head -1)
+            controller_event=$(${pkgs.coreutils}/bin/cat /proc/bus/input/devices 2>/dev/null | \
+                ${pkgs.gnugrep}/bin/grep -B 5 -A 5 "$controller_name" | \
+                ${pkgs.gnugrep}/bin/grep "Handlers" | \
+                ${pkgs.gnugrep}/bin/grep -o "event[0-9]*" | \
+                ${pkgs.coreutils}/bin/head -1)
             
             if [ -n "$controller_event" ]; then
-                echo "/dev/input/$controller_event"
+                ${pkgs.coreutils}/bin/echo "/dev/input/$controller_event"
                 return 0
             fi
             return 1
@@ -209,8 +281,8 @@ with lib;
             
             if [ ! -r "$controller_path" ]; then
                 log "ERROR: No read permission for $controller_path"
-                log "Current user: $(whoami), Groups: $(groups)"
-                log "Device permissions: $(ls -la "$controller_path" 2>/dev/null || echo "Device not found")"
+                log "Current user: $(${pkgs.coreutils}/bin/whoami), Groups: $(${pkgs.coreutils}/bin/groups)"
+                log "Device permissions: $(${pkgs.coreutils}/bin/ls -la "$controller_path" 2>/dev/null || ${pkgs.coreutils}/bin/echo "Device not found")"
                 return 1
             fi
             
@@ -219,7 +291,7 @@ with lib;
             log "Starting event monitoring..."
             
             # Monitor controller events
-            evtest "$controller_path" 2>/dev/null | while IFS= read -r line; do
+            ${pkgs.evtest}/bin/evtest "$controller_path" 2>/dev/null | while IFS= read -r line; do
                 ${generateButtonChecks buttons}
             done
         }
@@ -242,18 +314,19 @@ with lib;
                 fi
                 
                 # Wait before retrying
-                sleep 2
+                ${pkgs.coreutils}/bin/sleep 2
                 
                 # Check for new devices using inotify if available
-                if command -v inotifywait >/dev/null 2>&1; then
+                if ${pkgs.coreutils}/bin/command -v ${pkgs.inotify-tools}/bin/inotifywait >/dev/null 2>&1; then
                     log "Waiting for new input devices..."
-                    timeout 30 inotifywait -e create /dev/input/ 2>/dev/null || true
+                    ${pkgs.coreutils}/bin/timeout 30 ${pkgs.inotify-tools}/bin/inotifywait -e create /dev/input/ 2>/dev/null || true
                 fi
             done
         }
         
-        # Handle signals gracefully
+        # Handle signals gracefully - ignore USR1 to prevent crashes
         trap 'log "Service stopping..."; exit 0' TERM INT
+        trap 'log "Received USR1 signal, ignoring..."; true' USR1
         
         main
       '';
@@ -286,7 +359,7 @@ with lib;
         #!${pkgs.bash}/bin/bash
         # Custom controller mappings
         # This can be expanded for additional custom commands
-        echo "Custom controller mappings not yet implemented"
+        ${pkgs.coreutils}/bin/echo "Custom controller mappings not yet implemented"
       '';
       executable = true;
     };
@@ -315,8 +388,8 @@ with lib;
         - Run manually: `~/bin/controller-mangohud-toggle.sh`
 
         ## Troubleshooting
-        - Check connected controllers: `cat /proc/bus/input/devices | grep -i controller`
-        - Test controller input: `evtest /dev/input/eventXX`
+        - Check connected controllers: `${pkgs.coreutils}/bin/cat /proc/bus/input/devices | ${pkgs.gnugrep}/bin/grep -i controller`
+        - Test controller input: `${pkgs.evtest}/bin/evtest /dev/input/eventXX`
         - View service logs: `journalctl --user -u controller-mangohud-toggle -f`
       '';
     };

@@ -81,7 +81,24 @@
   swapDevices =
     [{ device = "/dev/disk/by-uuid/979c14c3-e740-4c1b-8b3d-cd817ac9b61b"; }];
 
-  services = { fwupd.enable = true; };
+  services = { 
+    fwupd.enable = true;
+    
+    # Add udev rules for controller access by multiple users
+    udev.extraRules = ''
+      # PlayStation controllers
+      KERNEL=="event*", ATTRS{name}=="DualSense Wireless Controller", MODE="0666", GROUP="input"
+      KERNEL=="js*", ATTRS{name}=="DualSense Wireless Controller", MODE="0666", GROUP="input"
+      
+      # Xbox controllers  
+      KERNEL=="event*", ATTRS{name}=="Xbox*Controller*", MODE="0666", GROUP="input"
+      KERNEL=="js*", ATTRS{name}=="Xbox*Controller*", MODE="0666", GROUP="input"
+      
+      # Generic controllers
+      KERNEL=="event*", SUBSYSTEM=="input", ENV{ID_INPUT_JOYSTICK}=="1", MODE="0666", GROUP="input"
+      KERNEL=="js*", SUBSYSTEM=="input", MODE="0666", GROUP="input"
+    '';
+  };
 
   programs.gamemode.enable = true;
 
