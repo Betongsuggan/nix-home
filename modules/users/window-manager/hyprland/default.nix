@@ -162,6 +162,28 @@ with lib;
           # Clock
           "$mod, t, exec, time-notifier"
 
+          ### Power Management
+          # Power menu
+          "$mod, Escape, exec, power-control menu"
+
+          # Quick lock
+          "$modCtrl, l, exec, power-control lock"
+
+          # Quick suspend
+          "$modCtrl, s, exec, power-control suspend"
+
+          # Power status
+          "$modShift, Escape, exec, power-control status"
+
+          ### Control
+          # Media
+          ", XF86AudioPlay, exec, media-player play"
+          "$mod, s, exec, media-player play"
+          ", XF86AudioNext, exec, media-player next"
+          "$mod, n, exec, media-player next"
+          ", XF86AudioPrev, exec, media-player previous"
+          "$mod, p, exec, media-player previous"
+        ] ++ (lib.optionals config.launcher.enable [
           ### Launchers
           # Emojis
           "$mod, e, exec, ${config.launcher.show { mode = "symbols"; }}"
@@ -188,29 +210,7 @@ with lib;
           # Audio sink/source launchers
           "$mod, a, exec, ${config.launcher.audioOutput { }}"
           "$modShift, a, exec, ${config.launcher.audioInput { }}"
-
-          ### Power Management
-          # Power menu
-          "$mod, Escape, exec, power-control menu"
-
-          # Quick lock
-          "$modCtrl, l, exec, power-control lock"
-
-          # Quick suspend
-          "$modCtrl, s, exec, power-control suspend"
-
-          # Power status
-          "$modShift, Escape, exec, power-control status"
-
-          ### Control
-          # Media
-          ", XF86AudioPlay, exec, media-player play"
-          "$mod, s, exec, media-player play"
-          ", XF86AudioNext, exec, media-player next"
-          "$mod, n, exec, media-player next"
-          ", XF86AudioPrev, exec, media-player previous"
-          "$mod, p, exec, media-player previous"
-        ] ++ (builtins.concatLists (builtins.genList (x:
+        ]) ++ (builtins.concatLists (builtins.genList (x:
           let
             ws = let c = (x + 1) / 10; in builtins.toString (x + 1 - (c * 10));
           in [

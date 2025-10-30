@@ -2,14 +2,13 @@
 
 with lib;
 
-let
-  cfg = config.notifications;
+let cfg = config.notifications;
 
 in {
   options.notifications.dunst = {
     settings = mkOption {
       type = types.attrs;
-      default = {};
+      default = { };
       description = "Additional dunst configuration (merged with defaults)";
     };
   };
@@ -31,9 +30,11 @@ in {
             layer = "overlay";
             follow = "keyboard";
             markup = "full";
-            dmenu = config.launcher.dmenu {};
+            dmenu = if config.launcher.enable then config.launcher.dmenu { } else "${pkgs.coreutils}/bin/true";
             show_indicators = false;
-            font = "${config.theme.font.name} ${builtins.toString config.theme.font.size}";
+            font = "${config.theme.font.name} ${
+                builtins.toString config.theme.font.size
+              }";
             format = "<b>%a</b>\\n%s\\n\\n%b";
             width = "(0,400)";
             offset = "40x40";
@@ -52,7 +53,8 @@ in {
           };
           slack = {
             desktop_entry = "Slack";
-            new_icon = "/run/current-system/sw/share/icons/Papirus/24x24/apps/slack.svg";
+            new_icon =
+              "/run/current-system/sw/share/icons/Papirus/24x24/apps/slack.svg";
           };
           discord = {
             desktop_entry = "Discord";
@@ -67,3 +69,4 @@ in {
     };
   };
 }
+

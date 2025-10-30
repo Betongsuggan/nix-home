@@ -5,10 +5,7 @@
   home.homeDirectory = "/home/betongsuggan";
   home.stateVersion = "25.05";
 
-  imports = [
-    ../../modules/users
-    inputs.stylix.homeModules.stylix
-  ];
+  imports = [ ../../modules/users inputs.stylix.homeModules.stylix ];
 
   general.enable = true;
   games.enable = true;
@@ -28,7 +25,6 @@
 
   notifications.enable = true;
   battery-monitor.enable = true;
-  kanshi.enable = true;
   thunar.enable = true;
   firefox.enable = true;
   launcher = {
