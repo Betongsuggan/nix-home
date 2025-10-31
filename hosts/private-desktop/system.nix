@@ -26,6 +26,7 @@
     permittedInsecurePackages = [ "freeimage-3.18.0-unstable-2024-04-18" ];
   };
 
+  secure-boot.enable = true;
   boot = {
     # Zen kernel optimized for desktop/gaming performance on Ryzen CPUs
     kernelPackages = pkgs.linuxPackages_zen;
@@ -77,6 +78,10 @@
     "/" = {
       device = "/dev/disk/by-uuid/7bd243d3-6b04-4df9-b4d7-3c590f7ebe3d";
       fsType = "ext4";
+    };
+    "/boot" = {
+      device = "/dev/disk/by-uuid/4CF6-EC25";
+      fsType = "vfat";
     };
   };
 
