@@ -52,6 +52,8 @@ with lib;
           ""
           "${pkgs.util-linux}/sbin/agetty --autologin ${config.autologin.user} --noclear --keep-baud ${config.autologin.tty} 115200,38400,9600 $TERM"
         ];
+        # Don't restart so quickly if the session exits
+        RestartSec = "5";
       };
     };
 

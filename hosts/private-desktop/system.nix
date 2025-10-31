@@ -27,7 +27,8 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackages_6_16;
+    # Zen kernel optimized for desktop/gaming performance on Ryzen CPUs
+    kernelPackages = pkgs.linuxPackages_zen;
 
     initrd.availableKernelModules = [
       "xhci_pci"
@@ -48,7 +49,8 @@
       grub.configurationLimit = 10;
     };
 
-    extraModulePackages = [ pkgs.linuxPackages_6_16.ryzen-smu ];
+    # Add ryzen-smu module for Ryzen CPU monitoring and control
+    extraModulePackages = with pkgs.linuxPackages_zen; [ ryzen-smu ];
     kernelModules = [ "iwlwifi" "amdgpu" "ryzen_smu" ];
     supportedFilesystems = [ "ntfs" ];
 
@@ -114,6 +116,8 @@
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     config.common.default = "*";
   };
+
+  wayland-security.enable = true;
   networkmanager = {
     enable = true;
     hostName = "home-desktop";

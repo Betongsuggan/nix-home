@@ -19,6 +19,7 @@
     audiomenu.url = "github:Betongsuggan/audiomenu";
     monitormenu.url = "github:Betongsuggan/monitormenu";
     walker.url = "github:abenz1267/walker";
+    console-mode.url = "github:Betongsuggan/console-mode";
 
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v0.4.1";
@@ -34,6 +35,7 @@
           walker = inputs.walker.packages.${self.system}.default;
           audiomenu = inputs.audiomenu.packages.${self.system}.default;
           monitormenu = inputs.monitormenu.packages.${self.system}.default;
+          console-mode = inputs.console-mode.packages.${self.system}.default;
         })
         (final: prev: {
           unstable = import nixpkgs-unstable {
@@ -56,6 +58,7 @@
             userModule
             inputs.walker.homeManagerModules.default
             inputs.stylix.homeModules.stylix
+            inputs.console-mode.homeManagerModules.default
           ];
           extraSpecialArgs = { inherit inputs overlays; };
         };

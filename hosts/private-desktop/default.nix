@@ -18,6 +18,7 @@ inputs.nixpkgs.lib.nixosSystem {
         sharedModules = [
           inputs.walker.homeManagerModules.default
           inputs.stylix.homeModules.stylix
+          inputs.console-mode.homeManagerModules.default
         ];
         users.betongsuggan = import ./user-betongsuggan.nix;
         users.gamer = import ./user-gamer.nix;
