@@ -17,6 +17,7 @@ with lib;
       unstable.nodePackages.aws-cdk
       awscli2
       terraform
+      d2
 
       # AI tools
       unstable.claude-code

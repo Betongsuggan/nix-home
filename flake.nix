@@ -20,6 +20,7 @@
     monitormenu.url = "github:Betongsuggan/monitormenu";
     walker.url = "github:abenz1267/walker";
     console-mode.url = "github:Betongsuggan/console-mode";
+    d2.url = "github:Betongsuggan/terrastruct-d2-nix";
 
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v0.4.2";
@@ -36,6 +37,7 @@
           audiomenu = inputs.audiomenu.packages.${self.system}.default;
           monitormenu = inputs.monitormenu.packages.${self.system}.default;
           console-mode = inputs.console-mode.packages.${self.system}.default;
+          d2 = inputs.d2.packages.${self.system}.default;
         })
         (final: prev: {
           unstable = import nixpkgs-unstable {
