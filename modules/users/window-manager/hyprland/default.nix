@@ -85,6 +85,7 @@ with lib;
 
         exec-once = [
           # Common start applications
+          "${pkgs.walker}/bin/walker --gapplication-service"
         ] ++ builtins.concatLists (builtins.attrValues (builtins.mapAttrs
           (name: app:
             if app == null then

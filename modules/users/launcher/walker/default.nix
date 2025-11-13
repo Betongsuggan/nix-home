@@ -53,7 +53,7 @@ in {
 
     programs.walker = {
       enable = true;
-      runAsService = true;
+      runAsService = false;
 
       config = mkMerge [
         {
@@ -333,9 +333,8 @@ in {
         cfg.walker.config
       ];
 
-      theme = mkMerge [
-        {
-          name = "gruvbox";
+      themes = {
+        "gruvbox" = {
           style = ''
             @define-color window_bg_color #282828;
             @define-color accent_bg_color #504945;
@@ -427,7 +426,7 @@ in {
             }
 
             .item-quick-activation {
-              display: none;
+              opacity: 0;
             }
 
             child:hover .item-box,
@@ -448,9 +447,8 @@ in {
               color: alpha(@theme_fg_color, 0.7);
             }
           '';
-        }
-        cfg.walker.theme
-      ];
+        };
+      };
     };
 
     # Override walker systemd service to add restart delay

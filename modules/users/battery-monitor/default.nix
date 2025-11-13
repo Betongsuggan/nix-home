@@ -11,7 +11,7 @@ let
     icon = "battery-charging";
     appName = "Battery Monitor";
     summary = "Charger Connected";
-    body = "Battery: \$PERCENT%";
+    body = "Battery: \$PERCENT%\\nPower: \$POWER_DRAW";
   };
 
   notifyChargerDisconnected = config.notifications.send {
@@ -19,7 +19,7 @@ let
     icon = "battery-discharging";
     appName = "Battery Monitor";
     summary = "Charger Disconnected";
-    body = "Battery: \$PERCENT%";
+    body = "Battery: \$PERCENT%\\nPower: \$POWER_DRAW";
   };
 
   notifyCritical = config.notifications.send {
@@ -27,7 +27,7 @@ let
     icon = "battery-caution";
     appName = "Battery Monitor";
     summary = "Critical Battery Level!";
-    body = "Battery at \$PERCENT%\\nPlease connect charger immediately!";
+    body = "Battery at \$PERCENT%\\nPower: \$POWER_DRAW\\nPlease connect charger immediately!";
   };
 
   notifyLow = config.notifications.send {
@@ -35,7 +35,7 @@ let
     icon = "battery-low";
     appName = "Battery Monitor";
     summary = "Low Battery";
-    body = "Battery at \$PERCENT%\\nConsider connecting charger soon.";
+    body = "Battery at \$PERCENT%\\nPower: \$POWER_DRAW\\nConsider connecting charger soon.";
   };
 
   batteryMonitorScript = pkgs.writeShellScriptBin "battery-monitor-check" ''
@@ -56,9 +56,17 @@ let
 
     BATTERY_INFO=$(${pkgs.upower}/bin/upower -i "$BATTERY_PATH")
 
-    # Extract battery percentage and state
+    # Extract battery percentage, state, and energy rate (power draw)
     PERCENT=$(echo "$BATTERY_INFO" | ${pkgs.gnugrep}/bin/grep 'percentage' | ${pkgs.gawk}/bin/awk '{print $2}' | ${pkgs.gnused}/bin/sed 's/%//')
     STATE=$(echo "$BATTERY_INFO" | ${pkgs.gnugrep}/bin/grep 'state' | ${pkgs.gawk}/bin/awk '{print $2}')
+    ENERGY_RATE=$(echo "$BATTERY_INFO" | ${pkgs.gnugrep}/bin/grep 'energy-rate' | ${pkgs.gawk}/bin/awk '{print $2, $3}')
+
+    # Format power draw message
+    if [ -n "$ENERGY_RATE" ]; then
+      POWER_DRAW="$ENERGY_RATE"
+    else
+      POWER_DRAW="N/A"
+    fi
 
     # Read previous state
     PREV_STATE=""

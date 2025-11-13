@@ -8,7 +8,6 @@
     ./disk-encryption
     ./docker
     ./fingerprint
-    ./firefox
     ./firewall
     ./game-streaming
     ./graphics

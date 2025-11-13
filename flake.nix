@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
+    nur.url = "github:nix-community/NUR";
 
     home-manager = {
       url = "github:nix-community/home-manager/release-25.05";
@@ -18,7 +19,7 @@
     awscli-local.url = "github:Betongsuggan/awscli-local";
     audiomenu.url = "github:Betongsuggan/audiomenu";
     monitormenu.url = "github:Betongsuggan/monitormenu";
-    walker.url = "github:abenz1267/walker";
+    walker.url = "github:abenz1267/walker/v2.10.0";
     console-mode.url = "github:Betongsuggan/console-mode";
     d2.url = "github:Betongsuggan/terrastruct-d2-nix";
 
@@ -28,9 +29,10 @@
     };
   };
 
-  outputs = { nixpkgs-unstable, awscli-local, ... }@inputs:
+  outputs = { nixpkgs-unstable, awscli-local, nur, ... }@inputs:
     let
       overlays = [
+        nur.overlays.default
         (self: super: {
           awscli-local = awscli-local.packages.${self.system}.default;
           walker = inputs.walker.packages.${self.system}.default;

@@ -9,7 +9,8 @@
 
   general.enable = true;
   development.enable = true;
-  qutebrowser.enable = true;
+  firefox.enable = true;
+  #qutebrowser.enable = true;
   communication.enable = true;
   games.enable = true;
   battery-monitor.enable = true;
@@ -93,5 +94,7 @@
   };
 
   programs.home-manager.enable = true;
+
+  services.ssh-agent.enable = true;
 }
 

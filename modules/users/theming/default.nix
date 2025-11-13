@@ -187,6 +187,7 @@ in {
       config.theme.cursor.package
       config.theme.font.package
       noto-fonts-emoji
+      dejavu_fonts
       glibcLocales
     ];
 

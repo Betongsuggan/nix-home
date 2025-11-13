@@ -10,8 +10,13 @@ with lib;
     virtualisation.docker = {
       enable = true;
       rootless = {
-        enable = true;
+        enable = false;
         setSocketVariable = true;
+      };
+      daemon.settings = {
+        features = {
+          buildkit = true;
+        };
       };
     };
   };
