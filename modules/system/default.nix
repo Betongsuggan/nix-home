@@ -21,6 +21,7 @@
     ./thunar
     ./touchpad
     ./undervolting
+    ./waydroid
     ./wayland-security
     ./xserver
   ];

@@ -53,7 +53,7 @@ in {
 
     programs.walker = {
       enable = true;
-      runAsService = false;
+      runAsService = true;
 
       config = mkMerge [
         {
@@ -451,11 +451,41 @@ in {
       };
     };
 
-    # Override walker systemd service to add restart delay
-    # This prevents race condition when Hyprland restarts
+    # Configure walker systemd service
+    # Override the auto-generated service to add elephant dependency
     systemd.user.services.walker = {
+      Unit = {
+        Description = lib.mkForce "Walker application launcher";
+        After = lib.mkForce [ "graphical-session.target" "elephant.service" ];
+        PartOf = lib.mkForce [ "graphical-session.target" ];
+        Requires = lib.mkForce [ "elephant.service" ];
+      };
       Service = {
-        RestartSec = 3; # Wait 3 seconds before restarting
+        ExecStart = lib.mkForce "${pkgs.walker}/bin/walker --gapplication-service";
+        Restart = lib.mkForce "on-failure";
+        RestartSec = lib.mkForce 3;
+        Type = lib.mkForce "simple";
+      };
+      Install = {
+        WantedBy = lib.mkForce [ "graphical-session.target" ];
+      };
+    };
+
+    # Configure elephant service to run as backend for walker
+    # Use mkForce to override the version from unstable nixpkgs
+    systemd.user.services.elephant = {
+      Unit = {
+        Description = lib.mkForce "Elephant launcher backend";
+        After = lib.mkForce [ "graphical-session-pre.target" ];
+        PartOf = lib.mkForce [ "graphical-session.target" ];
+      };
+      Service = {
+        ExecStart = lib.mkForce "${pkgs.elephant}/bin/elephant";
+        Restart = lib.mkForce "on-failure";
+        RestartSec = lib.mkForce 3;
+      };
+      Install = {
+        WantedBy = lib.mkForce [ "graphical-session.target" ];
       };
     };
   };

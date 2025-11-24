@@ -97,6 +97,7 @@
     enable = true;
     tcpPorts = [ 8080 ];
   };
+  waydroid.enable = true;
 
   # Enable XDG Desktop Portal for screen sharing
   services.xserver.desktopManager.runXdgAutostartIfNone = true;

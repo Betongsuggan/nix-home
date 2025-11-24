@@ -19,7 +19,11 @@
     awscli-local.url = "github:Betongsuggan/awscli-local";
     audiomenu.url = "github:Betongsuggan/audiomenu";
     monitormenu.url = "github:Betongsuggan/monitormenu";
-    walker.url = "github:abenz1267/walker/v2.10.0";
+    walker.url = "github:abenz1267/walker/v2.11.2";
+    elephant.url = "github:abenz1267/elephant/v2.16.1";
+
+    # Override walker's elephant input to use our pinned version
+    walker.inputs.elephant.follows = "elephant";
     console-mode.url = "github:Betongsuggan/console-mode";
     d2.url = "github:Betongsuggan/terrastruct-d2-nix";
 
@@ -36,6 +40,7 @@
         (self: super: {
           awscli-local = awscli-local.packages.${self.system}.default;
           walker = inputs.walker.packages.${self.system}.default;
+          elephant = inputs.elephant.packages.${self.system}.default;
           audiomenu = inputs.audiomenu.packages.${self.system}.default;
           monitormenu = inputs.monitormenu.packages.${self.system}.default;
           console-mode = inputs.console-mode.packages.${self.system}.default;
