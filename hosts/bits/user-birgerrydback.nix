@@ -95,6 +95,14 @@
 
   programs.home-manager.enable = true;
 
-  services.ssh-agent.enable = true;
+  services.ssh-agent = {
+    enable = true;
+  };
+
+  # Ensure SSH_AUTH_SOCK is available in the systemd user environment
+  # so it gets propagated to Hyprland and all applications
+  systemd.user.sessionVariables = {
+    SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
+  };
 }
 

@@ -9,7 +9,7 @@ with lib;
   config = mkIf config.firefox.enable {
 
     home.sessionVariables = {
-      MOZ_X11_EGL = "1";
+      MOZ_ENABLE_WAYLAND = "1";
       LIBVA_DRIVER_NAME = "i965";
     };
     programs.firefox = {
