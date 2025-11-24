@@ -193,6 +193,22 @@ in {
 
     home.file.".background-image".source = cfg.wallpaper;
 
+    # Add custom fontconfig for emoji fallback
+    home.file.".config/fontconfig/conf.d/99-emoji-fallback.conf".text = ''
+      <?xml version="1.0"?>
+      <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+      <fontconfig>
+        <match target="pattern">
+          <test qual="any" name="family">
+            <string>${config.theme.font.name}</string>
+          </test>
+          <edit name="family" mode="append" binding="strong">
+            <string>Noto Color Emoji</string>
+          </edit>
+        </match>
+      </fontconfig>
+    '';
+
     stylix = {
       image = cfg.wallpaper;
       base16Scheme = {
@@ -217,19 +233,18 @@ in {
       polarity = "dark";
 
       targets = {
-        alacritty.enable = config.alacritty.enable;
-        btop.enable = true;
-        firefox.enable = config.firefox.enable;
-        font-packages.enable = true;
-        fontconfig.enable = true;
-        hyprland.enable = config.hyprland.enable;
-        hyprpaper.enable = config.hyprland.enable;
-        hyprlock.enable = config.hyprland.enable;
-        gtk.enable = true;
-        qt.enable = true;
-        mangohud.enable = true;
-        neovim.enable = true;
-        starship.enable = true;
+        #btop.enable = true;
+        #firefox.enable = config.firefox.enable;
+        #font-packages.enable = true;
+        #fontconfig.enable = true;
+        #hyprland.enable = config.hyprland.enable;
+        #hyprpaper.enable = config.hyprland.enable;
+        #hyprlock.enable = config.hyprland.enable;
+        #gtk.enable = true;
+        #qt.enable = true;
+        #mangohud.enable = true;
+        #neovim.enable = true;
+        #starship.enable = true;
       };
     };
   };

@@ -15,17 +15,21 @@ with lib;
       exfat
       gimp
       gedit
+      gnumake
       gparted
       gthumb
       gvfs
       htop
       iio-sensor-proxy
       imv
+      jq
+      kdePackages.okular
       kooha
       lf
       lm_sensors
       lshw
-      kdePackages.okular
+      ls-lint
+      openssl
       p7zip
       powertop
       ryzenadj

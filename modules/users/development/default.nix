@@ -27,9 +27,9 @@ with lib;
 
       # Kotlin
       kotlin
-      openjdk17-bootstrap
-      android-studio
-      jetbrains.idea-community
+      #openjdk17-bootstrap
+      #android-studio
+      #jetbrains.idea-community
 
       # Node stuff
       yarn
@@ -54,16 +54,6 @@ with lib;
       gotools
       gofumpt
       golines
-
-      # Utilities
-      altair
-      docker-compose
-      gnumake
-      jq
-      ls-lint
-      newman
-      silver-searcher
-      openssl
     ];
     programs.go.enable = true;
 
