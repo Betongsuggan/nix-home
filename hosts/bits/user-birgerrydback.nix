@@ -36,7 +36,13 @@
 
   launcher = {
     enable = true;
-    backend = "walker";
+    backend = "vicinae";
+    vicinae = {
+      extensions = with pkgs; [
+        vicinae-wifi-commander
+        vicinae-bluetooth
+      ];
+    };
   };
 
   windowManager = {
@@ -95,9 +101,7 @@
 
   programs.home-manager.enable = true;
 
-  services.ssh-agent = {
-    enable = true;
-  };
+  services.ssh-agent = { enable = true; };
 
   # Ensure SSH_AUTH_SOCK is available in the systemd user environment
   # so it gets propagated to Hyprland and all applications

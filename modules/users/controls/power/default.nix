@@ -3,7 +3,13 @@ with lib;
 
 let
   cfg = config.controls.power;
-  
+
+  # Build dmenu commands with specific prompts
+  dmenuLogout = config.launcher.dmenu { prompt = "Logout? (y/N)"; };
+  dmenuReboot = config.launcher.dmenu { prompt = "Reboot? (y/N)"; };
+  dmenuShutdown = config.launcher.dmenu { prompt = "Shutdown? (y/N)"; };
+  dmenuPowerMenu = config.launcher.dmenu { prompt = "Power Options"; };
+
   # Build notification commands using the notifications module
   notifySuspend = optionalString cfg.notifications (config.notifications.send {
     urgency = "normal";
@@ -95,7 +101,7 @@ let
       logout)
         # Confirm logout
         ${optionalString cfg.confirmActions ''
-        if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${config.controls.launcher} --placeholder "Logout? (y/N)" | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
+        if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${dmenuLogout} | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
           exit 0
         fi
         ''}
@@ -107,7 +113,7 @@ let
       reboot)
         # Confirm reboot
         ${optionalString cfg.confirmActions ''
-        if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${config.controls.launcher} --placeholder "Reboot? (y/N)" | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
+        if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${dmenuReboot} | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
           exit 0
         fi
         ''}
@@ -119,7 +125,7 @@ let
       shutdown)
         # Confirm shutdown
         ${optionalString cfg.confirmActions ''
-        if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${config.controls.launcher} --placeholder "Shutdown? (y/N)" | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
+        if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${dmenuShutdown} | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
           exit 0
         fi
         ''}
@@ -135,7 +141,7 @@ let
 
       menu)
         # Show power menu using configured launcher
-        choice=$(${pkgs.coreutils}/bin/echo -e "🔒 Lock\n💤 Suspend\n🛌 Hibernate\n🚪 Logout\n🔄 Reboot\n⏻ Shutdown" | ${config.controls.launcher} --placeholder "Power Options")
+        choice=$(${pkgs.coreutils}/bin/echo -e "🔒 Lock\n💤 Suspend\n🛌 Hibernate\n🚪 Logout\n🔄 Reboot\n⏻ Shutdown" | ${dmenuPowerMenu})
 
         case "$choice" in
           "🔒 Lock")

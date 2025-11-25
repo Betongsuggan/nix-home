@@ -19,11 +19,6 @@ with lib;
       default = "generic";
     };
 
-    launcher = mkOption {
-      description = "Launcher command for menus";
-      type = types.str;
-      default = "${pkgs.walker}/bin/walker --dmenu";
-    };
 
     brightness = {
       enable = mkOption {

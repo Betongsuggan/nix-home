@@ -21,6 +21,10 @@
     monitormenu.url = "github:Betongsuggan/monitormenu";
     walker.url = "github:abenz1267/walker/v2.11.2";
     elephant.url = "github:abenz1267/elephant/v2.16.1";
+    vicinae.url = "path:/home/birgerrydback/Development/vicinae-fork";
+    vicinae.inputs.nixpkgs.follows = "nixpkgs";
+    vicinae-extensions-fork.url = "path:/home/birgerrydback/Development/vicinae-extensions-fork";
+    vicinae-extensions-fork.inputs.nixpkgs.follows = "nixpkgs";
 
     # Override walker's elephant input to use our pinned version
     walker.inputs.elephant.follows = "elephant";
@@ -45,6 +49,12 @@
           monitormenu = inputs.monitormenu.packages.${self.system}.default;
           console-mode = inputs.console-mode.packages.${self.system}.default;
           d2 = inputs.d2.packages.${self.system}.default;
+          vicinae = inputs.vicinae.packages.${self.system}.default;
+
+          # Custom-built Vicinae extensions with React bundled
+          vicinaeExtensions = self.callPackage ./pkgs/vicinae-extensions.nix { inherit inputs; };
+          vicinae-wifi-commander = self.vicinaeExtensions.wifi-commander;
+          vicinae-bluetooth = self.vicinaeExtensions.bluetooth;
         })
         (final: prev: {
           unstable = import nixpkgs-unstable {
@@ -66,6 +76,7 @@
           modules = [
             userModule
             inputs.walker.homeManagerModules.default
+            inputs.vicinae.homeManagerModules.default
             inputs.stylix.homeModules.stylix
             inputs.console-mode.homeManagerModules.default
           ];

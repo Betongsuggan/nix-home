@@ -84,8 +84,7 @@ with lib;
         "$modCtrl" = "SUPER_CTRL";
 
         exec-once = [
-          # Common start applications
-          "${pkgs.walker}/bin/walker --gapplication-service"
+          # Launcher daemons (walker, vicinae) are started via systemd services
         ] ++ builtins.concatLists (builtins.attrValues (builtins.mapAttrs
           (name: app:
             if app == null then
