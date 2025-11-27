@@ -18,6 +18,7 @@ inputs.nixpkgs.lib.nixosSystem {
         sharedModules = [
           inputs.walker.homeManagerModules.default
           inputs.stylix.homeModules.stylix
+          inputs.vicinae.homeManagerModules.default
         ];
         extraSpecialArgs = { inherit inputs overlays; };
         users.betongsuggan = import ./user-betongsuggan.nix;

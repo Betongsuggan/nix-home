@@ -22,6 +22,7 @@ inputs.nixpkgs.lib.nixosSystem {
         sharedModules = [
           inputs.walker.homeManagerModules.default
           inputs.stylix.homeModules.stylix
+          inputs.vicinae.homeManagerModules.default
         ];
         users.birgerrydback = import ./user-birgerrydback.nix;
       };

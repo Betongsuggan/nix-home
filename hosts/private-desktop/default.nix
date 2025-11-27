@@ -19,6 +19,7 @@ inputs.nixpkgs.lib.nixosSystem {
           inputs.walker.homeManagerModules.default
           inputs.stylix.homeModules.stylix
           inputs.console-mode.homeManagerModules.default
+          inputs.vicinae.homeManagerModules.default
         ];
         users.betongsuggan = import ./user-betongsuggan.nix;
         users.gamer = import ./user-gamer.nix;

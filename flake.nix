@@ -19,15 +19,24 @@
     awscli-local.url = "github:Betongsuggan/awscli-local";
     audiomenu.url = "github:Betongsuggan/audiomenu";
     monitormenu.url = "github:Betongsuggan/monitormenu";
-    walker.url = "github:abenz1267/walker/v2.11.2";
     elephant.url = "github:abenz1267/elephant/v2.16.1";
-    vicinae.url = "path:/home/birgerrydback/Development/vicinae-fork";
-    vicinae.inputs.nixpkgs.follows = "nixpkgs";
-    vicinae-extensions-fork.url = "path:/home/birgerrydback/Development/vicinae-extensions-fork";
-    vicinae-extensions-fork.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Override walker's elephant input to use our pinned version
-    walker.inputs.elephant.follows = "elephant";
+    walker = {
+      url = "github:abenz1267/walker/v2.11.2";
+      inputs.elephant.follows = "elephant";
+    };
+
+    vicinae = {
+      url = "github:Betongsuggan/vicinae-fork";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    vicinae-extensions = {
+      url =
+        "github:Betongsuggan/vicinae-extensions/add-hyprland-monitor-extension";
+      flake = false;
+    };
+
     console-mode.url = "github:Betongsuggan/console-mode";
     d2.url = "github:Betongsuggan/terrastruct-d2-nix";
 
@@ -41,21 +50,34 @@
     let
       overlays = [
         nur.overlays.default
-        (self: super: {
-          awscli-local = awscli-local.packages.${self.system}.default;
-          walker = inputs.walker.packages.${self.system}.default;
-          elephant = inputs.elephant.packages.${self.system}.default;
-          audiomenu = inputs.audiomenu.packages.${self.system}.default;
-          monitormenu = inputs.monitormenu.packages.${self.system}.default;
-          console-mode = inputs.console-mode.packages.${self.system}.default;
-          d2 = inputs.d2.packages.${self.system}.default;
-          vicinae = inputs.vicinae.packages.${self.system}.default;
+        (self: super:
+          let
+            mkVicinaeExtension =
+              inputs.vicinae.packages.${self.system}.mkVicinaeExtension;
+          in {
+            awscli-local = awscli-local.packages.${self.system}.default;
+            walker = inputs.walker.packages.${self.system}.default;
+            elephant = inputs.elephant.packages.${self.system}.default;
+            audiomenu = inputs.audiomenu.packages.${self.system}.default;
+            monitormenu = inputs.monitormenu.packages.${self.system}.default;
+            console-mode = inputs.console-mode.packages.${self.system}.default;
+            d2 = inputs.d2.packages.${self.system}.default;
+            vicinae = inputs.vicinae.packages.${self.system}.default;
 
-          # Custom-built Vicinae extensions with React bundled
-          vicinaeExtensions = self.callPackage ./pkgs/vicinae-extensions.nix { inherit inputs; };
-          vicinae-wifi-commander = self.vicinaeExtensions.wifi-commander;
-          vicinae-bluetooth = self.vicinaeExtensions.bluetooth;
-        })
+            # Vicinae extensions
+            vicinae-wifi-commander = mkVicinaeExtension {
+              pname = "wifi-commander";
+              src = "${inputs.vicinae-extensions}/extensions/wifi-commander";
+            };
+            vicinae-bluetooth = mkVicinaeExtension {
+              pname = "bluetooth";
+              src = "${inputs.vicinae-extensions}/extensions/bluetooth";
+            };
+            vicinae-monitor = mkVicinaeExtension {
+              pname = "hyprland-monitors";
+              src = "${inputs.vicinae-extensions}/extensions/hyprland-monitors";
+            };
+          })
         (final: prev: {
           unstable = import nixpkgs-unstable {
             system = prev.system;

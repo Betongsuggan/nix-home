@@ -41,6 +41,7 @@
       extensions = with pkgs; [
         vicinae-wifi-commander
         vicinae-bluetooth
+        vicinae-monitor
       ];
     };
   };

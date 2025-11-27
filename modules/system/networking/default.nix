@@ -16,7 +16,7 @@ in
   };
 
   config = mkIf config.networkmanager.enable {
-    environment.systemPackages = [ notifier ];
+    environment.systemPackages = [ notifier pkgs.networkmanager ];
     networking = {
       inherit (config.networkmanager) hostName;
       wireless = {

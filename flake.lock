@@ -764,7 +764,7 @@
         "nur": "nur",
         "stylix": "stylix",
         "vicinae": "vicinae",
-        "vicinae-extensions-fork": "vicinae-extensions-fork",
+        "vicinae-extensions": "vicinae-extensions",
         "walker": "walker"
       }
     },
@@ -1112,31 +1112,34 @@
         "systems": "systems_8"
       },
       "locked": {
-        "lastModified": 1764104174,
-        "narHash": "sha256-RiY0qz/T1sl/NupABR/HUIpXGO08a4eHRF0C2sYFkqY=",
-        "path": "/home/birgerrydback/Development/vicinae-fork",
-        "type": "path"
+        "lastModified": 1764107572,
+        "narHash": "sha256-kG8D7mwI4fjiSleAclDB8ZBmlTK40g8Q6ytA28rYZBk=",
+        "owner": "Betongsuggan",
+        "repo": "vicinae-fork",
+        "rev": "58a66b85a0ab5abe7a42bc677dc9a11ce205d10d",
+        "type": "github"
       },
       "original": {
-        "path": "/home/birgerrydback/Development/vicinae-fork",
-        "type": "path"
+        "owner": "Betongsuggan",
+        "repo": "vicinae-fork",
+        "type": "github"
       }
     },
-    "vicinae-extensions-fork": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
+    "vicinae-extensions": {
+      "flake": false,
       "locked": {
-        "lastModified": 1764104195,
-        "narHash": "sha256-DtmbuOyJlKONS9sCsl3PgEMld3/xh+uKV+8a+QYKTxY=",
-        "path": "/home/birgerrydback/Development/vicinae-extensions-fork",
-        "type": "path"
+        "lastModified": 1764150801,
+        "narHash": "sha256-Tmq6pwrKvWo5Ho+tEaO1DKpuDoA1JXf187rTFRGPMH4=",
+        "owner": "Betongsuggan",
+        "repo": "vicinae-extensions",
+        "rev": "a3a310e9557653a277683ee6df56bc19c1c409a1",
+        "type": "github"
       },
       "original": {
-        "path": "/home/birgerrydback/Development/vicinae-extensions-fork",
-        "type": "path"
+        "owner": "Betongsuggan",
+        "ref": "add-hyprland-monitor-extension",
+        "repo": "vicinae-extensions",
+        "type": "github"
       }
     },
     "walker": {
