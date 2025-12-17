@@ -14,6 +14,8 @@ with lib; {
       xfce.thunar
       xfce.thunar-archive-plugin
       xfce.thunar-volman
+      xfce.tumbler
+      ffmpegthumbnailer
     ];
   };
 }

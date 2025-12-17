@@ -14,8 +14,8 @@ with lib;
       localstack
       awscli-local
       nodePackages.aws-cdk-local
-      unstable.nodePackages.aws-cdk
-      awscli2
+      aws-cdk
+      unstable.awscli2
       terraform
       d2
 
@@ -49,8 +49,8 @@ with lib;
 
       # Go
       delve
-      golangci-lint
-      golangci-lint-langserver
+      unstable.golangci-lint
+      unstable.golangci-lint-langserver
       gotools
       gofumpt
       golines

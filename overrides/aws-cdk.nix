@@ -1,4 +1,38 @@
 (final: prev: {
+  # Custom aws-cdk built from npm to get the latest version
+  aws-cdk = prev.stdenv.mkDerivation rec {
+    pname = "aws-cdk";
+    version = "2.1033.0";
+
+    src = prev.fetchurl {
+      url = "https://registry.npmjs.org/aws-cdk/-/aws-cdk-${version}.tgz";
+      hash = "sha256-lfEnTSHYWNlVgtCjzq6rmHE75GLqvmU94cZhf8nTxJ4=";
+    };
+
+    nativeBuildInputs = [ prev.nodejs_20 prev.makeWrapper ];
+
+    unpackPhase = ''
+      mkdir -p source
+      tar -xzf $src -C source --strip-components=1
+    '';
+
+    installPhase = ''
+      mkdir -p $out/lib/node_modules/aws-cdk
+      cp -r source/* $out/lib/node_modules/aws-cdk/
+
+      mkdir -p $out/bin
+      makeWrapper ${prev.nodejs_20}/bin/node $out/bin/cdk \
+        --add-flags "$out/lib/node_modules/aws-cdk/bin/cdk" \
+        --set NODE_PATH "$out/lib/node_modules"
+    '';
+
+    meta = {
+      description = "AWS Cloud Development Kit CLI";
+      homepage = "https://github.com/aws/aws-cdk";
+      license = prev.lib.licenses.asl20;
+    };
+  };
+
   nodePackages = prev.nodePackages // {
 
     aws-cdk-local = prev.stdenv.mkDerivation rec {
@@ -18,10 +52,7 @@
         sha256 = "sha256-Eq/4dNcQH4h4dSKlZ4HzgkD+ZopUXvAtO8X6UCvaak8=";
       };
 
-      nativeBuildInputs = [
-        prev.nodejs_20
-        prev.makeWrapper
-      ];
+      nativeBuildInputs = [ prev.nodejs_20 prev.makeWrapper ];
 
       buildPhase = ''
         # Create a package directory
@@ -41,7 +72,7 @@
         # Create the cdklocal executable with proper NODE_PATH
         makeWrapper ${prev.nodejs_20}/bin/node $out/bin/cdklocal \
           --add-flags "$out/lib/node_modules/aws-cdk-local/bin/cdklocal" \
-          --set NODE_PATH "$out/lib/node_modules/aws-cdk-local/node_modules:${prev.nodePackages.aws-cdk}/lib/node_modules:${prev.nodejs_20}/lib/node_modules"
+          --set NODE_PATH "$out/lib/node_modules/aws-cdk-local/node_modules:${final.aws-cdk}/lib/node_modules:${prev.nodejs_20}/lib/node_modules"
                 
         chmod +x $out/bin/cdklocal
       '';

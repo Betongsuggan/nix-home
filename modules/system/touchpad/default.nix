@@ -8,7 +8,12 @@ with lib;
 
   config = mkIf config.touchpad.enable {
     services.libinput.enable = true;
-    services.libinput.touchpad.tapping = true;
+    services.libinput.touchpad = {
+      tapping = true;
+      accelProfile = "flat";
+      accelSpeed = "0";
+      disableWhileTyping = true;
+    };
     #hardware.keyboard.qmk.enable = true;
   };
 }

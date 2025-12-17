@@ -34,6 +34,8 @@ with lib;
         enable32Bit = true;
         extraPackages = with pkgs; [
           mesa
+          libva
+          libva-utils
           vaapiVdpau
           libvdpau-va-gl
           mangohud

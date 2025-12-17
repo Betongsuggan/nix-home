@@ -129,6 +129,23 @@ with lib;
           ''
             $modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" ~/media/images/$(${pkgs.coreutils}/bin/date -Iseconds).png''
 
+          # Record screen (toggle: press to start, press again to stop)
+          # Records the currently focused monitor using H.264 in MKV container (more resilient)
+          ''
+            $mod, v, exec, ${pkgs.procps}/bin/pkill -SIGINT wf-recorder && ${
+              config.notifications.send {
+                summary = "Recording Stopped";
+                icon = "media-playback-stop";
+                appName = "Screen Recorder";
+              }
+            } || { ${
+              config.notifications.send {
+                summary = "Recording Started";
+                icon = "media-record";
+                appName = "Screen Recorder";
+              }
+            }; ${pkgs.wf-recorder}/bin/wf-recorder -o "$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name')" -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv; }''
+
           ### Screen handling
           # Forcus navigation
           "$mod, h, movefocus, l"
@@ -250,6 +267,15 @@ with lib;
           kb_options = "caps:escape,compose:${config.windowManager.composeKey}";
           resolve_binds_by_sym = 1;
           touchdevice = { output = "eDP-1"; };
+
+          touchpad = {
+            natural_scroll = false;
+            disable_while_typing = true;
+            scroll_factor = 1.0;
+          };
+
+          sensitivity = 0;
+          accel_profile = "flat";
         };
       };
     };

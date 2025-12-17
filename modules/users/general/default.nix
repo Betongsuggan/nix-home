@@ -7,7 +7,10 @@ with lib;
   };
 
   config = mkIf config.general.enable {
+    dconf.enable = true;
+
     home.packages = with pkgs; [
+      dconf
       btop
       coreutils
       pciutils
@@ -24,7 +27,7 @@ with lib;
       imv
       jq
       kdePackages.okular
-      kooha
+      wf-recorder
       lf
       lm_sensors
       lshw
