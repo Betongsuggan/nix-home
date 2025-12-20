@@ -130,11 +130,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1762026963,
-        "narHash": "sha256-uwBIlfSwW/egGtTen/kwoBxwaBq/yJEPDpdH0qDcApo=",
+        "lastModified": 1766255098,
+        "narHash": "sha256-7FU+uLDYPiGgSu/4ix4PGAQF9kCeQWIeN0khonx1j00=",
         "owner": "Betongsuggan",
         "repo": "console-mode",
-        "rev": "6cc1021d59f9daf611f701a42d226bbe62470141",
+        "rev": "bc84fdc11c94a1517e4c25863b748d32ea03c7bb",
         "type": "github"
       },
       "original": {
@@ -646,11 +646,11 @@
         "nixpkgs": "nixpkgs_8"
       },
       "locked": {
-        "lastModified": 1766220794,
-        "narHash": "sha256-616QF2DVVcDKv7V6Z/tuu3lm5yyZmfE3g/rzMcNzfPg=",
+        "lastModified": 1766252611,
+        "narHash": "sha256-At7jWdyYghMHUz7A0b19JdOSPyMxbU24xrVCSjCz6cw=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "188dbc144fabd2068e35dfc8dd8bbbe0686f059a",
+        "rev": "aa55278e402ffee660775149ba76a9c0cf11b9c3",
         "type": "github"
       },
       "original": {
@@ -1064,11 +1064,11 @@
     "vicinae-extensions": {
       "flake": false,
       "locked": {
-        "lastModified": 1764150801,
-        "narHash": "sha256-Tmq6pwrKvWo5Ho+tEaO1DKpuDoA1JXf187rTFRGPMH4=",
+        "lastModified": 1766237874,
+        "narHash": "sha256-b9vu28wMbycAw90P3akqX2SxZphMjv302r+dAuftbdk=",
         "owner": "Betongsuggan",
         "repo": "vicinae-extensions",
-        "rev": "a3a310e9557653a277683ee6df56bc19c1c409a1",
+        "rev": "9edf41e19b64efe082daf0acc2e8838d8b761f7b",
         "type": "github"
       },
       "original": {

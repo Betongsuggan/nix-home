@@ -4,7 +4,7 @@
   users.users.gamer = {
     isNormalUser = true;
     description = "Gaming User";
-    extraGroups = [ "networkmanager" "video" "audio" "input" "gamemode" ];
+    extraGroups = [ "networkmanager" "video" "audio" "input" "uinput" "gamemode" ];
   };
 
   users.users.betongsuggan = {
@@ -91,6 +91,10 @@
   services = { fwupd.enable = true; };
 
   programs.gamemode.enable = true;
+  game-streaming.server = {
+    enable = true;
+    display = "DP-2"; # Hyprland uses DP-2 format (not card1-DP-2)
+  };
 
   environment.systemPackages = with pkgs; [
     iio-sensor-proxy
@@ -118,7 +122,10 @@
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+      pkgs.xdg-desktop-portal-wlr # For Sunshine WLR capture
+    ];
     config.common.default = "*";
   };
 

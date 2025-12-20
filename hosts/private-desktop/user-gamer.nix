@@ -19,7 +19,7 @@
     };
   };
 
-  battery-monitor.enable = true;
+  firefox.enable = true;
 
   launcher = {
     enable = true;
@@ -44,12 +44,20 @@
     rumble.enable = true;
   };
 
+  # Enable Hyprland for gaming session
+  # Steam Big Picture and Sunshine auto-start in Hyprland
   windowManager = {
     enable = true;
     type = "hyprland";
+    monitors = [
+      ",3440x1440@100,auto,1"
+      "HDMI-A-1,3840x2160@120,auto,2"
+      ",preferred,auto,1"
+    ];
+
     autostartApps = {
-      console-mode = {
-        command = ''console-mode --launcher "walker -d"'';
+      steam = {
+        command = "steam -bigpicture";
         workspace = 1;
       };
     };
@@ -123,19 +131,23 @@
       gamescopeUnstable
     ];
 
-  # Bash is enabled automatically by console-mode's autoStart option
   programs.bash = {
     enable = true;
-    # Set XDG_VTNR if not already set (for console-mode autoStart to work)
     profileExtra = ''
+      # Set XDG_VTNR if not already set
       if [[ -z "$XDG_VTNR" ]]; then
-        # Extract VT number from tty
         TTY=$(tty)
         case "$TTY" in
           /dev/tty[0-9]*)
             export XDG_VTNR="''${TTY##*/tty}"
             ;;
         esac
+      fi
+
+      # Launch Hyprland on TTY1 (if not already in a graphical session)
+      # Hyprland auto-starts Steam Big Picture and Sunshine
+      if [[ "$XDG_VTNR" = "1" && -z "$WAYLAND_DISPLAY" ]]; then
+        exec Hyprland
       fi
     '';
   };
