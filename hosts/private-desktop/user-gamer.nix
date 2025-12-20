@@ -23,7 +23,14 @@
 
   launcher = {
     enable = true;
-    backend = "walker";
+    backend = "vicinae";
+    vicinae = {
+      extensions = with pkgs; [
+        vicinae-wifi-commander
+        vicinae-bluetooth
+        vicinae-monitor
+      ];
+    };
   };
 
   controller = {

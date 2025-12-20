@@ -259,7 +259,7 @@ with lib;
           disable_logs = false;
         };
 
-        gestures = { workspace_swipe = true; };
+        gestures = { };
 
         input = {
           kb_layout = "us";

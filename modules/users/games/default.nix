@@ -142,7 +142,7 @@ with lib;
       # Standard RetroArch is still included if you want to use it separately
       steam
       steam-run
-      steamcontroller
+      sc-controller
     ];
   };
 }

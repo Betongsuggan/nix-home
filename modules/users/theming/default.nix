@@ -186,7 +186,7 @@ in {
       papirus-icon-theme
       config.theme.cursor.package
       config.theme.font.package
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       dejavu_fonts
       glibcLocales
     ];

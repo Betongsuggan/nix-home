@@ -18,37 +18,27 @@ with lib;
 
   config = mkIf config.graphics.enable {
     # Make vulkan-tools available system-wide
-    environment.systemPackages = with pkgs; [
-      vulkan-tools
-    ];
+    environment.systemPackages = with pkgs; [ vulkan-tools ];
 
     # Configure video drivers based on hardware
-    services.xserver.videoDrivers =
-      (optional config.graphics.amd "amdgpu") ++
-      (optional config.graphics.nvidia "nvidia") ++
-      (optional config.graphics.intel "intel");
+    services.xserver.videoDrivers = (optional config.graphics.amd "amdgpu")
+      ++ (optional config.graphics.nvidia "nvidia")
+      ++ (optional config.graphics.intel "intel");
 
     hardware = {
       graphics = {
         enable = true;
         enable32Bit = true;
-        extraPackages = with pkgs; [
-          mesa
-          libva
-          libva-utils
-          vaapiVdpau
-          libvdpau-va-gl
-          mangohud
-        ] ++ (optionals config.graphics.intel [
-          vaapiIntel
-          intel-media-driver
-          #intel-media-driver # LIBVA_DRIVER_NAME=iHD
-          #intel-compute-runtime # OpenCL support
-          #intel-vaapi-driver # LIBVA_DRIVER_NAME=i965 (older but can be more stable)
-        ]);
-        extraPackages32 = with pkgs; [
-          mangohud
-        ];
+        extraPackages = with pkgs;
+          [ mesa libva libva-utils libva-vdpau-driver libvdpau-va-gl mangohud ]
+          ++ (optionals config.graphics.intel [
+            vaapiIntel
+            intel-media-driver
+            #intel-media-driver # LIBVA_DRIVER_NAME=iHD
+            #intel-compute-runtime # OpenCL support
+            #intel-vaapi-driver # LIBVA_DRIVER_NAME=i965 (older but can be more stable)
+          ]);
+        extraPackages32 = with pkgs; [ mangohud ];
       };
     };
 

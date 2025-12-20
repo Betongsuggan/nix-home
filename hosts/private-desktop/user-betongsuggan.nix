@@ -29,7 +29,14 @@
   firefox.enable = true;
   launcher = {
     enable = true;
-    backend = "walker";
+    backend = "vicinae";
+    vicinae = {
+      extensions = with pkgs; [
+        vicinae-wifi-commander
+        vicinae-bluetooth
+        vicinae-monitor
+      ];
+    };
   };
 
   # Enable PS5 controller support with MangoHud toggle

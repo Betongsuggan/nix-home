@@ -2,17 +2,17 @@
   description = "Betongsuggan's flake to rule them all";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-25.05";
+    nixpkgs.url = "nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     nur.url = "github:nix-community/NUR";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     stylix = {
-      url = "github:nix-community/stylix/release-25.05";
+      url = "github:nix-community/stylix/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -41,7 +41,7 @@
     d2.url = "github:Betongsuggan/terrastruct-d2-nix";
 
     lanzaboote = {
-      url = "github:nix-community/lanzaboote/v0.4.2";
+      url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
