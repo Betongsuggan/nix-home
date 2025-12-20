@@ -37,11 +37,22 @@
     rumble.enable = true;
   };
 
-  windowManager.enable = true;
-  windowManager.type = "hyprland";
+  windowManager = {
+    enable = true;
+    type = "hyprland";
+    autostartApps = {
+      console-mode = {
+        command = ''console-mode --launcher "walker -d"'';
+        workspace = 1;
+      };
+    };
+  };
 
-  shell.enable = true;
-  shell.defaultShell = "bash";
+  shell = {
+    enable = true;
+    defaultShell = "bash";
+  };
+
   theme = {
     enable = true;
     wallpaper = ../../assets/wallpaper/zeal.jpg;
@@ -51,11 +62,16 @@
     };
   };
 
+  git = {
+    enable = true;
+    userName = "Betongsuggan";
+    userEmail = "rydback@gmail.com";
+  };
+
   programs.console-mode = {
     enable = true;
 
-    autoStart = true;
-    autoStartVT = 1;
+    autoStart = false;
 
     gamescopeBin = "${pkgs.unstable.gamescope}/bin/gamescope";
     steamBin = "${pkgs.steam}/bin/steam";

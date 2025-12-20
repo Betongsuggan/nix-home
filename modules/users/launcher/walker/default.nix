@@ -49,7 +49,8 @@ in {
     launcher.walker.buildShowCmd = buildShowCmd;
 
     # Walker uses external tools (iwmenu, bzmenu) so we ensure they're available
-    home.packages = with pkgs; [ unstable.bzmenu unstable.iwmenu ];
+    # app2unit is needed by elephant's desktopapplications provider to launch apps
+    home.packages = with pkgs; [ unstable.bzmenu unstable.iwmenu unstable.app2unit ];
 
     programs.walker = {
       enable = true;
