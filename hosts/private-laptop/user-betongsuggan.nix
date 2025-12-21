@@ -33,7 +33,14 @@
 
   launcher = {
     enable = true;
-    backend = "walker";
+    backend = "vicinae";
+    vicinae = {
+      extensions = with pkgs; [
+        vicinae-wifi-commander
+        vicinae-bluetooth
+        vicinae-monitor
+      ];
+    };
   };
 
   theme = {
@@ -42,41 +49,6 @@
     cursor = {
       package = pkgs.banana-cursor;
       name = "Banana";
-    };
-  };
-
-  programs.console-mode = {
-    enable = true;
-
-    autoStart = false;
-
-    gamescopeBin = "${pkgs.unstable.gamescope}/bin/gamescope";
-    steamBin = "${pkgs.steam}/bin/steam";
-    steamArgs =
-      [ "-steamos3" ]; # Enable Steam Deck features (Bluetooth management, etc.)
-
-    # Display settings auto-detected from EDID
-    # Uncomment to override:
-    # display = "card1-HDMI-A-1";
-    # resolution = "2560x1440";
-    # refreshRate = 144;
-    # forceVrr = true;
-    # forceHdr = true;
-
-    environmentVariables = {
-      RADV_PERFTEST = "gpl";
-      MESA_VK_WSI_PRESENT_MODE = "mailbox";
-      STEAM_USE_DYNAMIC_VRS = "0";
-      SDL_JOYSTICK_HIDAPI = "0";
-    };
-
-    createDesktopEntry = true;
-    desktopEntry = {
-      name = "Gamescope Gaming Session";
-      genericName = "Steam Big Picture (Gamescope)";
-      comment = "Launch Steam Big Picture in Gamescope session";
-      icon = "steam";
-      categories = [ "Game" "Application" ];
     };
   };
 

@@ -8,7 +8,7 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackages_6_16;
+    kernelPackages = pkgs.linuxPackages_latest;
     supportedFilesystems = [ "ntfs" ];
     initrd.availableKernelModules =
       [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
@@ -30,12 +30,19 @@
     permittedInsecurePackages = [ "electron-25.9.0" ];
   };
 
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = "*";
+  };
+
   hardware = {
     enableAllFirmware = true;
     enableRedistributableFirmware = true;
     i2c.enable = true;
     sensor.iio.enable = true;
   };
+  game-streaming.client.enable = true;
 
   time.timeZone = "Europe/Stockholm";
 

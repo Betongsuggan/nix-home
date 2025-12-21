@@ -1,4 +1,10 @@
-{ config, lib, pkgs, osConfig ? {}, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  osConfig ? { },
+  ...
+}:
 with lib;
 
 {
@@ -11,9 +17,12 @@ with lib;
     home.sessionVariables = {
       MOZ_ENABLE_WAYLAND = "1";
       LIBVA_DRIVER_NAME =
-        if (osConfig.graphics.amd or false) then "radeonsi"
-        else if (osConfig.graphics.intel or false) then "i965"
-        else "i965";  # Default fallback for standalone home-manager
+        if (osConfig.graphics.amd or false) then
+          "radeonsi"
+        else if (osConfig.graphics.intel or false) then
+          "i965"
+        else
+          "i965"; # Default fallback for standalone home-manager
     };
     programs.firefox = {
       enable = true;
@@ -77,34 +86,35 @@ with lib;
           default = "ddg";
           engines = {
             "Nix Packages" = {
-              urls = [{
-                template = "https://search.nixos.org/packages";
-                params = [
-                  {
-                    name = "type";
-                    value = "packages";
-                  }
-                  {
-                    name = "query";
-                    value = "{searchTerms}";
-                  }
-                ];
-              }];
-              icon =
-                "''${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
+              urls = [
+                {
+                  template = "https://search.nixos.org/packages";
+                  params = [
+                    {
+                      name = "type";
+                      value = "packages";
+                    }
+                    {
+                      name = "query";
+                      value = "{searchTerms}";
+                    }
+                  ];
+                }
+              ];
+              icon = "''${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
               definedAliases = [ "@np" ];
             };
             "NixOS Wiki" = {
-              urls = [{
-                template =
-                  "https://wiki.nixos.org/w/index.php?search={searchTerms}";
-              }];
+              urls = [
+                {
+                  template = "https://wiki.nixos.org/w/index.php?search={searchTerms}";
+                }
+              ];
               icon = "https://wiki.nixos.org/favicon.ico";
               definedAliases = [ "@nw" ];
             };
             "GitHub" = {
-              urls =
-                [{ template = "https://github.com/search?q={searchTerms}"; }];
+              urls = [ { template = "https://github.com/search?q={searchTerms}"; } ];
               icon = "https://github.com/favicon.ico";
               definedAliases = [ "@gh" ];
             };
@@ -114,4 +124,3 @@ with lib;
     };
   };
 }
-
