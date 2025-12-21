@@ -93,7 +93,7 @@
   programs.gamemode.enable = true;
   game-streaming.server = {
     enable = true;
-    display = "DP-2"; # Hyprland uses DP-2 format (not card1-DP-2)
+    display = "DP-2";
   };
 
   environment.systemPackages = with pkgs; [
