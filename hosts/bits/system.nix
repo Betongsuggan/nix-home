@@ -57,7 +57,7 @@
     };
 
     "/boot" = {
-      device = "/dev/disk/by-uuid/D4CC-FF5B";
+      device = "/dev/disk/by-uuid/52E6-3BEE";
       fsType = "vfat";
     };
   };
@@ -65,7 +65,7 @@
   diskEncryption = {
     enable = true;
     diskId = "f3fd4fdf-b8ef-45c7-8e96-2ca5bfe32cd9";
-    headerId = "1abd4b51-8a97-4d04-97f1-326b2ef1dcbe";
+    headerId = "ccbec134-bf84-41ad-a903-c99989071e6b";
   };
 
   swapDevices =

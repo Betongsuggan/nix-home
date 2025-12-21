@@ -41,7 +41,8 @@ with lib;
           "privacy.donottrackheader.enabled" = true;
           "browser.send_pings" = false;
           "browser.urlbar.speculativeConnect.enabled" = false;
-          "dom.event.clipboardevents.enabled" = false;
+          "dom.event.clipboardevents.enabled" = true;
+          "dom.allow_cut_copy" = true;
           "media.navigator.enabled" = false;
           "network.cookie.cookieBehavior" = 1;
           "network.http.referer.XOriginPolicy" = 2;
@@ -75,20 +76,31 @@ with lib;
               urls = [{
                 template = "https://search.nixos.org/packages";
                 params = [
-                  { name = "type"; value = "packages"; }
-                  { name = "query"; value = "{searchTerms}"; }
+                  {
+                    name = "type";
+                    value = "packages";
+                  }
+                  {
+                    name = "query";
+                    value = "{searchTerms}";
+                  }
                 ];
               }];
-              icon = "''${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
+              icon =
+                "''${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
               definedAliases = [ "@np" ];
             };
             "NixOS Wiki" = {
-              urls = [{ template = "https://wiki.nixos.org/w/index.php?search={searchTerms}"; }];
+              urls = [{
+                template =
+                  "https://wiki.nixos.org/w/index.php?search={searchTerms}";
+              }];
               icon = "https://wiki.nixos.org/favicon.ico";
               definedAliases = [ "@nw" ];
             };
             "GitHub" = {
-              urls = [{ template = "https://github.com/search?q={searchTerms}"; }];
+              urls =
+                [{ template = "https://github.com/search?q={searchTerms}"; }];
               icon = "https://github.com/favicon.ico";
               definedAliases = [ "@gh" ];
             };
