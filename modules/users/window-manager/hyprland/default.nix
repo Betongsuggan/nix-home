@@ -2,7 +2,14 @@
 with lib;
 
 {
-  options.hyprland = { enable = mkEnableOption "Enable Hyprland"; };
+  options.hyprland = {
+    enable = mkEnableOption "Enable Hyprland";
+    lockscreen.enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Enable lockscreen functionality (swaylock, idle lock, etc.)";
+    };
+  };
 
   config = mkIf config.hyprland.enable {
     # Auto-enable notifications when hyprland is enabled (for util notifiers)
@@ -41,12 +48,13 @@ with lib;
       enable = true;
       settings = {
         general = {
+          after_sleep_cmd = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
+          ignore_dbus_inhibit = false;
+        } // (if config.hyprland.lockscreen.enable then {
           lock_cmd =
             "${pkgs.procps}/bin/pidof swaylock || ${pkgs.swaylock-fancy}/bin/swaylock-fancy";
           before_sleep_cmd = "${pkgs.systemd}/bin/loginctl lock-session";
-          after_sleep_cmd = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
-          ignore_dbus_inhibit = false;
-        };
+        } else {});
 
         listener = [
           {
@@ -54,10 +62,12 @@ with lib;
             on-timeout = "${pkgs.brightnessctl}/bin/brightnessctl -s set 10";
             on-resume = "${pkgs.brightnessctl}/bin/brightnessctl -r";
           }
+        ] ++ (if config.hyprland.lockscreen.enable then [
           {
             timeout = 600; # 10 minutes
             on-timeout = "${pkgs.systemd}/bin/loginctl lock-session";
           }
+        ] else []) ++ [
           {
             timeout = 630; # 10.5 minutes
             on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
@@ -77,6 +87,12 @@ with lib;
       settings = {
         monitor = config.windowManager.monitors;
 
+        # Workspace to monitor bindings
+        workspace = map (wb:
+          "${toString wb.workspace}, monitor:${wb.monitor}"
+          + (if wb.default then ", default:true" else "")
+        ) config.windowManager.workspaceBindings;
+
         cursor = { enable_hyprcursor = false; };
 
         "$mod" = "SUPER";
@@ -85,19 +101,29 @@ with lib;
 
         exec-once = [
           # Launcher daemons (walker, vicinae) are started via systemd services
-        ] ++ builtins.concatLists (builtins.attrValues (builtins.mapAttrs
-          (name: app:
-            if app == null then
-              [ ]
-            else
-              let
-                # Autostart applications on provided worspace
-                workspacePrefix = if app.workspace != null then
-                  "[workspace ${toString app.workspace}] "
-                else
-                  "";
-              in [ "${workspacePrefix}${app.command}" ])
-          config.windowManager.autostartApps));
+        ]
+          # Create persistent virtual/headless monitors at startup
+          # Then restart Sunshine so it detects them (required for headless streaming)
+          ++ (if config.windowManager.virtualMonitors != [] then
+            (map (name:
+              "${pkgs.hyprland}/bin/hyprctl output create headless ${name}"
+            ) config.windowManager.virtualMonitors)
+            ++ [ "sleep 2 && ${pkgs.systemd}/bin/systemctl --user restart sunshine || true" ]
+          else [])
+          # Autostart applications
+          ++ builtins.concatLists (builtins.attrValues (builtins.mapAttrs
+            (name: app:
+              if app == null then
+                [ ]
+              else
+                let
+                  # Autostart applications on provided worspace
+                  workspacePrefix = if app.workspace != null then
+                    "[workspace ${toString app.workspace}] "
+                  else
+                    "";
+                in [ "${workspacePrefix}${app.command}" ])
+            config.windowManager.autostartApps));
 
         general = {
           "col.active_border" = "rgb(${
@@ -121,9 +147,10 @@ with lib;
           ### Applications
           # Terminal
           "$mod, RETURN, exec, ${pkgs.alacritty}/bin/alacritty"
-
+        ] ++ (lib.optionals config.hyprland.lockscreen.enable [
           # Lock screen
           "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
+        ]) ++ [
 
           # Print screen
           ''

@@ -8,6 +8,7 @@
     ./development
     ./firefox
     ./flatpak
+    ./game-streaming
     ./games
     ./general
     ./git

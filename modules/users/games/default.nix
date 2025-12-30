@@ -138,6 +138,7 @@ with lib;
       evtest
       gamemode
       lutris
+      nexusmods-app
 
       # Standard RetroArch is still included if you want to use it separately
       steam

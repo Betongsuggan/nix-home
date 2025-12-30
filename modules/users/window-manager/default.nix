@@ -55,6 +55,49 @@ with lib;
       ];
     };
 
+    virtualMonitors = mkOption {
+      description = ''
+        Virtual/headless monitor names to create at window manager startup.
+        Useful for streaming (e.g., Sunshine) without a physical display connected.
+
+        Configure resolution in the regular 'monitors' option, e.g.:
+          monitors = [ "SUNSHINE,1920x1080@60,auto,1" ];
+          virtualMonitors = [ "SUNSHINE" ];
+      '';
+      type = types.listOf types.str;
+      default = [ ];
+      example = [ "SUNSHINE" ];
+    };
+
+    workspaceBindings = mkOption {
+      description = "Bind workspaces to specific monitors";
+      type = types.listOf (types.submodule {
+        options = {
+          workspace = mkOption {
+            type = types.int;
+            description = "Workspace number";
+            example = 10;
+          };
+          monitor = mkOption {
+            type = types.str;
+            description = "Monitor name (e.g., DP-1, SUNSHINE)";
+            example = "DP-1";
+          };
+          default = mkOption {
+            type = types.bool;
+            default = false;
+            description = "Make this the default workspace for the monitor";
+          };
+        };
+      });
+      default = [ ];
+      example = [{
+        workspace = 10;
+        monitor = "SUNSHINE";
+        default = true;
+      }];
+    };
+
     composeKey = mkOption {
       type = types.str;
       default = "ralt";

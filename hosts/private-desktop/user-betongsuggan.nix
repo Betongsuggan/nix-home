@@ -55,8 +55,8 @@
     enable = true;
     type = "hyprland";
     monitors = [
-      ",3440x1440@100,auto,1"
-      "HDMI-A-1,3840x2160@120,auto,2"
+      "DP-2,3440x1440@240,auto,1,bitdepth,10"
+      "HDMI-A-1,disable"
       ",preferred,auto,1"
     ];
     autostartApps = {

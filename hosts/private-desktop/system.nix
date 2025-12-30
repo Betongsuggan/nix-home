@@ -4,7 +4,8 @@
   users.users.gamer = {
     isNormalUser = true;
     description = "Gaming User";
-    extraGroups = [ "networkmanager" "video" "audio" "input" "uinput" "gamemode" ];
+    extraGroups =
+      [ "networkmanager" "video" "audio" "input" "uinput" "gamemode" ];
   };
 
   users.users.betongsuggan = {
@@ -93,7 +94,8 @@
   programs.gamemode.enable = true;
   game-streaming.server = {
     enable = true;
-    display = "DP-2";
+    display = "SUNSHINE";
+    workspace = 10;
   };
 
   environment.systemPackages = with pkgs; [

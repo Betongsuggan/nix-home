@@ -19,7 +19,16 @@
     };
   };
 
+  general.enable = true;
   firefox.enable = true;
+  thunar.enable = true;
+
+  communication.enable = true;
+  starship.enable = true;
+  terminal = {
+    enable = true;
+    defaultTerminal = "alacritty";
+  };
 
   launcher = {
     enable = true;
@@ -45,15 +54,21 @@
   };
 
   # Enable Hyprland for gaming session
-  # Steam Big Picture and Sunshine auto-start in Hyprland
+  # Steam Big Picture is managed by Sunshine when streaming clients connect
+  hyprland.lockscreen.enable = false; # Gaming user doesn't need lockscreen
+
   windowManager = {
     enable = true;
     type = "hyprland";
     monitors = [
-      ",3440x1440@100,auto,1"
-      "HDMI-A-1,3840x2160@120,auto,2"
+      "SUNSHINE,1920x1080@120,auto,1,vrr,1,bitdepth,10"
+      "DP-2,3440x1440@240,auto,1,vrr,1,bitdepth,10"
+      "HDMI-A-1,3840x2160@120,auto,2,vrr,1,bitdepth,10"
       ",preferred,auto,1"
     ];
+
+    # Virtual monitor for headless streaming
+    virtualMonitors = [ "SUNSHINE" ];
 
     autostartApps = {
       steam = {
