@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -28,8 +33,7 @@ with lib;
       controllerToggle = mkOption {
         type = types.bool;
         default = false;
-        description =
-          "Enable controller-based MangoHud toggle (deprecated - use controller module instead)";
+        description = "Enable controller-based MangoHud toggle (deprecated - use controller module instead)";
       };
 
       position = mkOption {
@@ -138,7 +142,6 @@ with lib;
       evtest
       gamemode
       lutris
-      #nexusmods-app
 
       # Standard RetroArch is still included if you want to use it separately
       steam

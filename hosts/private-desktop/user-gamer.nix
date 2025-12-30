@@ -1,7 +1,10 @@
 { pkgs, inputs, ... }:
 
 {
-  imports = [ ../../modules/users inputs.stylix.homeModules.stylix ];
+  imports = [
+    ../../modules/users
+    inputs.stylix.homeModules.stylix
+  ];
 
   home.username = "gamer";
   home.homeDirectory = "/home/gamer";
@@ -50,7 +53,10 @@
     type = "ps5";
     mangohudToggle = {
       enable = true;
-      buttons = [ "square" "triangle" ]; # Press Square or Triangle to toggle
+      buttons = [
+        "square"
+        "triangle"
+      ]; # Press Square or Triangle to toggle
       autoStart = true;
     };
     rumble.enable = true;
@@ -108,8 +114,7 @@
 
     gamescopeBin = "${pkgs.unstable.gamescope}/bin/gamescope";
     steamBin = "${pkgs.steam}/bin/steam";
-    steamArgs =
-      [ "-steamos3" ]; # Enable Steam Deck features (Bluetooth management, etc.)
+    steamArgs = [ "-steamos3" ]; # Enable Steam Deck features (Bluetooth management, etc.)
 
     # Display settings auto-detected from EDID
     # Uncomment to override:
@@ -132,13 +137,19 @@
       genericName = "Steam Big Picture (Gamescope)";
       comment = "Launch Steam Big Picture in Gamescope session";
       icon = "steam";
-      categories = [ "Game" "Application" ];
+      categories = [
+        "Game"
+        "Application"
+      ];
     };
   };
 
-  home.packages = with pkgs;
-    let gamescopeUnstable = unstable.gamescope;
-    in [
+  home.packages =
+    with pkgs;
+    let
+      gamescopeUnstable = unstable.gamescope;
+    in
+    [
       steam
       steam-run
       htop
@@ -190,4 +201,3 @@
 
   programs.home-manager.enable = true;
 }
-
