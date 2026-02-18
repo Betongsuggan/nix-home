@@ -9,6 +9,7 @@
 
   general.enable = true;
   development.enable = true;
+  direnv.enable = true;
   firefox.enable = true;
   #qutebrowser.enable = true;
   communication.enable = true;

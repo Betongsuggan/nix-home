@@ -6,6 +6,7 @@
     ./controller
     ./controls
     ./development
+    ./direnv
     ./firefox
     ./flatpak
     ./game-streaming

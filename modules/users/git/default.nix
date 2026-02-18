@@ -33,9 +33,7 @@ with lib;
           email = config.git.userEmail;
         };
         core.pager = "diff-so-fancy | less --tabs=4 -RFX";
-        credential.helper = "${
-            pkgs.git.override { withLibsecret = true; }
-          }/bin/git-credential-libsecret";
+        credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
         url = {
           "ssh://git@github.com" = { insteadOf = "https://github.com"; };
         };

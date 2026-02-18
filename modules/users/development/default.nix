@@ -9,6 +9,8 @@ with lib;
   config = mkIf config.development.enable {
 
     home.packages = with pkgs; [
+      # Github
+      gh
 
       # Infrastructure
       localstack

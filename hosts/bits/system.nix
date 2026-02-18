@@ -44,7 +44,7 @@
     allowUnfree = true;
     allowUnfreePredicate = pkg:
       builtins.elem (lib.getName pkg) [ "claude-code" ];
-    permittedInsecurePackages = [ "electron-25.9.0" ];
+    permittedInsecurePackages = [ "electron-25.9.0" "nexusmods-app-0.21.1" ];
   };
 
   time.timeZone = "Europe/Stockholm";
