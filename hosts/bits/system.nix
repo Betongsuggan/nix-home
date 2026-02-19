@@ -11,6 +11,16 @@
   boot = {
     kernelPackages = pkgs.linuxPackages_6_12;
 
+    kernelParams = [
+      "amd_pstate=active" # Modern AMD CPU frequency scaling
+    ];
+
+    kernel.sysctl = {
+      "vm.laptop_mode" = 5;
+      "vm.dirty_writeback_centisecs" = 1500;
+      "vm.swappiness" = 10;
+    };
+
     initrd.availableKernelModules = [
       "nvme"
       "xhci_pci"
@@ -91,13 +101,17 @@
   printers.enable = true;
   power-management = {
     enable = true;
-    powerModes.ac = "powersave";
+    # Removed powerModes.ac = "powersave" to use default "performance"
   };
   firewall = {
     enable = true;
     tcpPorts = [ 8080 ];
   };
   waydroid.enable = true;
+
+  # Don't start Android container at boot (saves resources)
+  # Start manually when needed: sudo systemctl start waydroid-container
+  systemd.services.waydroid-container.wantedBy = lib.mkForce [ ];
 
   # Enable XDG Desktop Portal for screen sharing
   services.xserver.desktopManager.runXdgAutostartIfNone = true;
