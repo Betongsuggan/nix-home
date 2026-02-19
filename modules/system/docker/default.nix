@@ -8,10 +8,16 @@ with lib;
 
     environment.systemPackages = [ pkgs.docker-compose ];
 
+    # Allow rootless Docker to bind to privileged ports (< 1024)
+    boot.kernel.sysctl."net.ipv4.ip_unprivileged_port_start" = 0;
+
+    # Set DOCKER_HOST environment variable for rootless mode
+    environment.sessionVariables.DOCKER_HOST = "unix:///run/user/1000/docker.sock";
+
     virtualisation.docker = {
       enable = true;
       rootless = {
-        enable = false;
+        enable = true;
         setSocketVariable = true;
       };
       daemon.settings = { features = { buildkit = true; }; };

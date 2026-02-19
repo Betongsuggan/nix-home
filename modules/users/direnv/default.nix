@@ -10,6 +10,11 @@ with lib;
     programs.direnv = {
       enable = true;
       nix-direnv.enable = true; # Better nix integration with caching
+      config.global.hide_env_diff = true;
+    };
+
+    programs.bash.sessionVariables = {
+      DIRENV_LOG_FORMAT = ""; # Suppress direnv log output
     };
   };
 }

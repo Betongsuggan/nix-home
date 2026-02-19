@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, osConfig ? {}, ... }:
 with lib;
 
 {
@@ -10,7 +10,10 @@ with lib;
 
     home.sessionVariables = {
       MOZ_ENABLE_WAYLAND = "1";
-      LIBVA_DRIVER_NAME = "i965";
+      LIBVA_DRIVER_NAME =
+        if (osConfig.graphics.amd or false) then "radeonsi"
+        else if (osConfig.graphics.intel or false) then "i965"
+        else "i965";  # Default fallback for standalone home-manager
     };
     programs.firefox = {
       enable = true;
@@ -43,7 +46,8 @@ with lib;
           "browser.urlbar.speculativeConnect.enabled" = false;
           "dom.event.clipboardevents.enabled" = true;
           "dom.allow_cut_copy" = true;
-          "media.navigator.enabled" = false;
+          "media.navigator.enabled" = true;
+          "media.peerconnection.enabled" = true;
           "network.cookie.cookieBehavior" = 1;
           "network.http.referer.XOriginPolicy" = 2;
           "network.http.referer.XOriginTrimmingPolicy" = 2;
