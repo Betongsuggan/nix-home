@@ -6,6 +6,6 @@ with lib;
 
   config = mkIf config.wayland-security.enable {
     security.polkit.enable = true;
-    security.pam.services.swaylock = { text = "auth include login"; };
+    programs.hyprlock.enable = true;
   };
 }

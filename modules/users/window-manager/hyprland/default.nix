@@ -7,7 +7,7 @@ with lib;
     lockscreen.enable = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable lockscreen functionality (swaylock, idle lock, etc.)";
+      description = "Enable lockscreen functionality (hyprlock, idle lock, etc.)";
     };
   };
 
@@ -32,7 +32,7 @@ with lib;
           inherit (config.theme.cursor) size;
         };
       };
-      packages = with pkgs; [ swaylock-fancy grim slurp wl-clipboard systemd ];
+      packages = with pkgs; [ hyprlock grim slurp wl-clipboard systemd ];
     };
 
     services.hyprpaper = {
@@ -52,32 +52,93 @@ with lib;
           ignore_dbus_inhibit = false;
         } // (if config.hyprland.lockscreen.enable then {
           lock_cmd =
-            "${pkgs.procps}/bin/pidof swaylock || ${pkgs.swaylock-fancy}/bin/swaylock-fancy";
+            "${pkgs.procps}/bin/pgrep -x hyprlock || ${pkgs.hyprlock}/bin/hyprlock";
           before_sleep_cmd = "${pkgs.systemd}/bin/loginctl lock-session";
         } else {});
 
         listener = [
           {
-            timeout = 300; # 5 minutes
+            timeout = 240; # 4 minutes
             on-timeout = "${pkgs.brightnessctl}/bin/brightnessctl -s set 10";
             on-resume = "${pkgs.brightnessctl}/bin/brightnessctl -r";
           }
         ] ++ (if config.hyprland.lockscreen.enable then [
           {
-            timeout = 600; # 10 minutes
+            timeout = 300; # 5 minutes
             on-timeout = "${pkgs.systemd}/bin/loginctl lock-session";
           }
         ] else []) ++ [
           {
-            timeout = 630; # 10.5 minutes
+            timeout = 330; # 5.5 minutes
             on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
             on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
           }
           {
-            timeout = 1800; # 30 minutes
+            timeout = 900; # 15 minutes
             on-timeout = "${pkgs.systemd}/bin/systemctl suspend";
           }
         ];
+      };
+    };
+
+    # Bind hypridle to hyprland-session.target so it restarts when Hyprland restarts
+    # (e.g., after nixos-rebuild switch)
+    systemd.user.services.hypridle = {
+      Unit = {
+        BindsTo = [ "hyprland-session.target" ];
+        After = [ "hyprland-session.target" ];
+      };
+    };
+
+    programs.hyprlock = mkIf config.hyprland.lockscreen.enable {
+      enable = true;
+      settings = {
+        general = {
+          hide_cursor = true;
+          grace = 0;
+          no_fade_out = true;
+          no_fade_in = true;
+        };
+
+        auth = {
+          fingerprint = {
+            enabled = true;
+            ready_message = "Scan fingerprint to unlock";
+            present_message = "Scanning...";
+          };
+        };
+
+        background = [{
+          path = "${config.theme.wallpaper}";
+          blur_passes = 2;
+          blur_size = 4;
+        }];
+
+        input-field = [{
+          size = "300, 50";
+          outline_thickness = 2;
+          dots_size = 0.2;
+          dots_spacing = 0.5;
+          outer_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
+          inner_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.background})";
+          font_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
+          fade_on_empty = false;
+          placeholder_text = "<i>$FPRINTPROMPT</i>";
+          hide_input = false;
+          position = "0, -50";
+          halign = "center";
+          valign = "center";
+        }];
+
+        label = [{
+          text = "$TIME";
+          color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
+          font_size = 64;
+          font_family = "monospace";
+          position = "0, 150";
+          halign = "center";
+          valign = "center";
+        }];
       };
     };
 
@@ -149,7 +210,7 @@ with lib;
           "$mod, RETURN, exec, ${pkgs.alacritty}/bin/alacritty"
         ] ++ (lib.optionals config.hyprland.lockscreen.enable [
           # Lock screen
-          "$modShift, x, exec, ${pkgs.swaylock-fancy}/bin/swaylock-fancy"
+          "$modShift, x, exec, ${pkgs.hyprlock}/bin/hyprlock"
         ]) ++ [
 
           # Print screen
@@ -276,6 +337,16 @@ with lib;
           ", XF86AudioMute, exec, volume-control -m"
         ];
 
+        # Lid switch bindings for lock and display power management
+        bindl = lib.optionals config.hyprland.lockscreen.enable [
+          # Lock screen when lid closes
+          ", switch:on:Lid Switch, exec, ${pkgs.procps}/bin/pgrep -x hyprlock || ${pkgs.hyprlock}/bin/hyprlock"
+          # Turn off display when lid closes (power saving while locked)
+          ", switch:on:Lid Switch, exec, ${pkgs.hyprland}/bin/hyprctl dispatch dpms off"
+          # Turn display back on when lid opens
+          ", switch:off:Lid Switch, exec, ${pkgs.hyprland}/bin/hyprctl dispatch dpms on"
+        ];
+
         misc = {
           disable_splash_rendering = true;
           vfr = true;
@@ -293,7 +364,6 @@ with lib;
           kb_variant = "colemak";
           kb_options = "caps:escape,compose:${config.windowManager.composeKey}";
           resolve_binds_by_sym = 1;
-          touchdevice = { output = "eDP-1"; };
 
           touchpad = {
             natural_scroll = false;
@@ -303,6 +373,8 @@ with lib;
 
           sensitivity = 0;
           accel_profile = "flat";
+        } // optionalAttrs (config.windowManager.touchOutput != null) {
+          touchdevice = { output = config.windowManager.touchOutput; };
         };
       };
     };

@@ -124,6 +124,17 @@ with lib;
       '';
       example = "menu";
     };
+
+    touchOutput = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = ''
+        Output name to map touchscreen input to. Set to null to disable
+        touchscreen output mapping (uses default behavior).
+        Common values: "eDP-1" for laptop displays.
+      '';
+      example = "eDP-1";
+    };
   };
 
   config = mkIf config.windowManager.enable {

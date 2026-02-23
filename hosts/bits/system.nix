@@ -97,6 +97,7 @@
   };
   docker.enable = true;
   bluetooth.enable = true;
+  fingerprint.enable = true;
   wayland-security.enable = true;
   printers.enable = true;
   power-management = {
@@ -108,6 +109,21 @@
     tcpPorts = [ 8080 ];
   };
   waydroid.enable = true;
+  file-sharing = {
+    enable = true;
+    samba = {
+      enable = true;
+      shares = [
+        {
+          name = "shared";
+          path = "/home/birgerrydback/shared";
+          validUsers = [ "birgerrydback" ];
+          readOnly = false;
+        }
+      ];
+      openFirewall = true;
+    };
+  };
 
   # Don't start Android container at boot (saves resources)
   # Start manually when needed: sudo systemctl start waydroid-container

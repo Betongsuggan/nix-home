@@ -2,7 +2,52 @@
 with lib;
 
 {
-  options.polybar = { enable = mkEnableOption "Enable Polybar"; };
+  options.polybar = {
+    enable = mkEnableOption "Enable Polybar";
+
+    monitor = mkOption {
+      type = types.str;
+      default = "eDP-1";
+      description = "Monitor output name for the polybar";
+      example = "DP-1";
+    };
+
+    audioSink = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = ''
+        PulseAudio sink name. Set to null to use default sink.
+        Example: "alsa_output.pci-0000_00_1f.3.analog-stereo"
+      '';
+    };
+
+    battery = {
+      device = mkOption {
+        type = types.str;
+        default = "BAT0";
+        description = "Battery device name (found in /sys/class/power_supply/)";
+        example = "BAT1";
+      };
+      adapter = mkOption {
+        type = types.str;
+        default = "ADP1";
+        description = "AC adapter device name (found in /sys/class/power_supply/)";
+        example = "AC0";
+      };
+    };
+
+    backlight = {
+      card = mkOption {
+        type = types.str;
+        default = "intel_backlight";
+        description = ''
+          Backlight card name (found in /sys/class/backlight/).
+          Common values: intel_backlight, amdgpu_bl0, amdgpu_bl1, acpi_video0
+        '';
+        example = "amdgpu_bl0";
+      };
+    };
+  };
 
   config = mkIf config.polybar.enable {
     services.polybar = {
@@ -13,7 +58,7 @@ with lib;
       };
       config = with builtins; {
         "bar/bottom" = {
-          monitor = "eDP-1";
+          monitor = config.polybar.monitor;
           bottom = true;
           width = "100%";
           height = "2%";
@@ -52,7 +97,6 @@ with lib;
         };
         "module/pulseaudio" = {
           type = "internal/pulseaudio";
-          sink = "alsa_output.pci-0000_00_1f.3.analog-stereo";
           use-ui-max = false;
           interval = 5;
 
@@ -63,52 +107,54 @@ with lib;
           format-volume = "<ramp-volume>";
           format-volume-font = 2;
 
-          ramp-volume-0 = "";
-          ramp-volume-1 = "";
-          ramp-volume-2 = "";
+          ramp-volume-0 = "";
+          ramp-volume-1 = "";
+          ramp-volume-2 = "";
+        } // optionalAttrs (config.polybar.audioSink != null) {
+          sink = config.polybar.audioSink;
         };
         "module/battery" = {
           type = "internal/battery";
-          battery = "BAT0";
-          adapter = "ADP1";
+          battery = config.polybar.battery.device;
+          adapter = config.polybar.battery.adapter;
           full-at = "98";
 
           format-full-font = 2;
-          label-full = "";
+          label-full = "";
 
           format-discharging = "<ramp-capacity>";
           format-discharging-font = 2;
-          ramp-capacity-0 = "";
+          ramp-capacity-0 = "";
           ramp-capacity-0-foreground = "${config.theme.colors.normal.red}";
-          ramp-capacity-1 = "";
+          ramp-capacity-1 = "";
           ramp-capacity-1-foreground = "${config.theme.colors.normal.white}";
-          ramp-capacity-2 = "";
-          ramp-capacity-3 = "";
-          ramp-capacity-4 = "";
+          ramp-capacity-2 = "";
+          ramp-capacity-3 = "";
+          ramp-capacity-4 = "";
           ramp-capacity-foreground = "${config.theme.colors.bright.white}";
 
           format-charging = "<animation-charging>";
           format-charging-font = 2;
-          animation-charging-0 = "";
-          animation-charging-1 = "";
-          animation-charging-2 = "";
-          animation-charging-3 = "";
-          animation-charging-4 = "";
+          animation-charging-0 = "";
+          animation-charging-1 = "";
+          animation-charging-2 = "";
+          animation-charging-3 = "";
+          animation-charging-4 = "";
           animation-charging-foreground = "${config.theme.colors.bright.white}";
           animation-charging-framerate = "750";
         };
         "module/backlight" = {
           type = "internal/backlight";
-          card = "intel_backlight";
+          card = config.polybar.backlight.card;
           use-actual-backlight = true;
           format = "<ramp>";
           format-font = 3;
 
-          ramp-0 = "";
-          ramp-1 = "";
-          ramp-2 = "";
-          ramp-3 = "";
-          ramp-4 = "";
+          ramp-0 = "";
+          ramp-1 = "";
+          ramp-2 = "";
+          ramp-3 = "";
+          ramp-4 = "";
         };
         "module/date" = {
           type = "internal/date";
@@ -121,7 +167,7 @@ with lib;
           type = "internal/cpu";
 
           interval = "0.5";
-          label = ": %percentage%%";
+          label = ": %percentage%%";
         };
         "module/memory" = {
           type = "internal/memory";

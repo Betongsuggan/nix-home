@@ -7,6 +7,7 @@
     ./colemak
     ./disk-encryption
     ./docker
+    ./file-sharing
     ./fingerprint
     ./firewall
     ./game-streaming
