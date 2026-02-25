@@ -57,8 +57,8 @@ in {
       wrapperFeatures.gtk = true;
       config = rec {
         inherit modifier;
-        terminal = "alacritty";
-        menu = "wofi --show drun";
+        terminal = config.terminal.command;
+        menu = config.launcher.show { mode = "drun"; };
 
         fonts = with config.theme.font; {
           inherit style size;
@@ -91,7 +91,7 @@ in {
         }];
 
         keybindings = lib.mkOptionDefault {
-          "${modifier}+o" = "exec ${pkgs.wofi}/bin/wofi --show drun";
+          "${modifier}+o" = "exec ${config.launcher.show { mode = "drun"; }}";
 
           "${modifier}+Shift+x" =
             "exec ${pkgs.swaylock-fancy}/bin/swaylock-fancy";

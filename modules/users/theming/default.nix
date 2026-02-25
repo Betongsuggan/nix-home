@@ -240,7 +240,7 @@ in {
         #hyprland.enable = config.hyprland.enable;
         #hyprpaper.enable = config.hyprland.enable;
         #hyprlock.enable = config.hyprland.enable;
-        #gtk.enable = true;
+        gtk.enable = true;
         #qt.enable = true;
         #mangohud.enable = true;
         #neovim.enable = true;

@@ -49,8 +49,8 @@ in {
   options.launcher.rofi = {
     terminal = mkOption {
       type = types.str;
-      default = "urxvt";
-      description = "Terminal to use with rofi";
+      default = config.terminal.command;
+      description = "Terminal to use with rofi (defaults to config.terminal.command)";
     };
 
     theme = mkOption {

@@ -1,6 +1,22 @@
 { config, lib, pkgs, ... }:
 with lib;
 
+let
+  cfg = config.terminal;
+
+  # Build the terminal command based on backend
+  terminalCommand =
+    if cfg.backend == "alacritty" then "${pkgs.alacritty}/bin/alacritty"
+    else if cfg.backend == "urxvt" then "${pkgs.rxvt-unicode}/bin/urxvt"
+    else throw "Unsupported terminal backend: ${cfg.backend}";
+
+  # Build the terminal command with working directory
+  terminalCommandWithCwd = { cwd }:
+    if cfg.backend == "alacritty" then "${pkgs.alacritty}/bin/alacritty --working-directory \"${cwd}\""
+    else if cfg.backend == "urxvt" then "${pkgs.rxvt-unicode}/bin/urxvt -cd \"${cwd}\""
+    else throw "Unsupported terminal backend: ${cfg.backend}";
+
+in
 {
   imports = [
     ./alacritty
@@ -10,10 +26,28 @@ with lib;
   options.terminal = {
     enable = mkEnableOption "Enable terminal configuration";
 
-    defaultTerminal = mkOption {
-      description = "Default terminal emulator to use";
+    backend = mkOption {
+      description = "Terminal emulator backend to use";
       type = types.enum [ "alacritty" "urxvt" ];
       default = "alacritty";
+    };
+
+    # Internal API for cross-module use
+    command = mkOption {
+      type = types.str;
+      internal = true;
+      readOnly = true;
+      description = "Command to launch the default terminal";
+    };
+
+    commandWithCwd = mkOption {
+      type = types.functionTo types.str;
+      internal = true;
+      readOnly = true;
+      description = ''
+        Function to launch terminal in a specific directory.
+        Usage: config.terminal.commandWithCwd { cwd = "/path/to/dir"; }
+      '';
     };
 
     font = {
@@ -48,7 +82,7 @@ with lib;
       enable = mkOption {
         description = "Enable Alacritty terminal";
         type = types.bool;
-        default = config.terminal.defaultTerminal == "alacritty";
+        default = cfg.backend == "alacritty";
       };
 
       extraSettings = mkOption {
@@ -62,7 +96,7 @@ with lib;
       enable = mkOption {
         description = "Enable urxvt terminal";
         type = types.bool;
-        default = config.terminal.defaultTerminal == "urxvt";
+        default = cfg.backend == "urxvt";
       };
 
       extraConfig = mkOption {
@@ -82,8 +116,9 @@ with lib;
     };
   };
 
-  config = mkIf config.terminal.enable {
-    # The individual terminal modules are enabled based on terminal.{alacritty,urxvt}.enable options
-    # which are automatically set based on the defaultTerminal selection
+  config = mkIf cfg.enable {
+    # Set the internal API options
+    terminal.command = terminalCommand;
+    terminal.commandWithCwd = terminalCommandWithCwd;
   };
 }

@@ -103,10 +103,10 @@ in {
         };
 
         keybindings = lib.mkOptionDefault {
-          "${mod}+Return" = "exec urxvt";
+          "${mod}+Return" = "exec ${config.terminal.command}";
           "${mod}+x" =
             "exec sh -c '${pkgs.maim}/bin/maim -s | xclip -selection clipboard -t image/png'";
-          "${mod}+o" = "exec rofi -show run";
+          "${mod}+o" = "exec ${config.launcher.show { mode = "run"; }}";
           "${mod}+Shift+x" =
             "exec sh -c '${pkgs.i3lock-fancy-rapid}/bin/i3lock-fancy-rapid 15 8'";
 

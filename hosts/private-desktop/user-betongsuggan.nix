@@ -14,18 +14,21 @@
 
   terminal = {
     enable = true;
-    defaultTerminal = "alacritty";
+    backend = "alacritty";
   };
 
   starship.enable = true;
   shell = {
     enable = true;
-    defaultShell = "bash";
+    backend = "bash";
   };
 
   notifications.enable = true;
   battery-monitor.enable = true;
-  thunar.enable = true;
+  fileManager = {
+    enable = true;
+    backend = "thunar";
+  };
   firefox.enable = true;
   launcher = {
     enable = true;
@@ -53,7 +56,7 @@
 
   windowManager = {
     enable = true;
-    type = "hyprland";
+    backend = "hyprland";
     monitors = [
       "DP-2,3440x1440@240,auto,1,bitdepth,10"
       "HDMI-A-1,disable"

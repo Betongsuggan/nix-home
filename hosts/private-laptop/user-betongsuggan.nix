@@ -16,16 +16,19 @@
   battery-monitor.enable = true;
   kanshi.enable = true;
   development.enable = true;
-  thunar.enable = true;
+  fileManager = {
+    enable = true;
+    backend = "thunar";
+  };
 
   shell = {
     enable = true;
-    defaultShell = "bash";
+    backend = "bash";
   };
 
   terminal = {
     enable = true;
-    defaultTerminal = "alacritty";
+    backend = "alacritty";
   };
 
   launcher = {
@@ -79,7 +82,7 @@
 
   windowManager = {
     enable = true;
-    type = "hyprland";
+    backend = "hyprland";
     autostartApps = {
       firefox = {
         command = "firefox";

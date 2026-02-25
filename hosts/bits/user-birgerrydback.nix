@@ -15,17 +15,20 @@
   communication.enable = true;
   games.enable = true;
   battery-monitor.enable = true;
-  thunar.enable = true;
+  fileManager = {
+    enable = true;
+    backend = "thunar";
+  };
   starship.enable = true;
 
   terminal = {
     enable = true;
-    defaultTerminal = "alacritty";
+    backend = "alacritty";
   };
 
   shell = {
     enable = true;
-    defaultShell = "bash";
+    backend = "bash";
   };
 
   notifications.enable = true;
@@ -49,7 +52,7 @@
 
   windowManager = {
     enable = true;
-    type = "hyprland";
+    backend = "hyprland";
     composeKey = "ralt";
     monitors = [ ",preferred,auto,1" ];
     autostartApps = {

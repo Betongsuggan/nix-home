@@ -21,13 +21,16 @@
 
   general.enable = true;
   firefox.enable = true;
-  thunar.enable = true;
+  fileManager = {
+    enable = true;
+    backend = "thunar";
+  };
 
   communication.enable = true;
   starship.enable = true;
   terminal = {
     enable = true;
-    defaultTerminal = "alacritty";
+    backend = "alacritty";
   };
 
   launcher = {
@@ -59,7 +62,7 @@
 
   windowManager = {
     enable = true;
-    type = "hyprland";
+    backend = "hyprland";
     monitors = [
       "SUNSHINE,1920x1080@120,auto,1,vrr,1,bitdepth,10"
       "DP-2,3440x1440@240,auto,1,vrr,1,bitdepth,10"
@@ -80,7 +83,7 @@
 
   shell = {
     enable = true;
-    defaultShell = "bash";
+    backend = "bash";
   };
 
   theme = {

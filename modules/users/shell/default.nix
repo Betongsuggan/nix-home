@@ -7,8 +7,8 @@ with lib;
   options.shell = {
     enable = mkEnableOption "Enable shell configuration";
 
-    defaultShell = mkOption {
-      description = "Default shell to use";
+    backend = mkOption {
+      description = "Shell backend to use";
       type = types.enum [ "bash" "fish" "nushell" ];
       default = "bash";
     };
@@ -51,7 +51,7 @@ with lib;
       enable = mkOption {
         description = "Enable bash shell";
         type = types.bool;
-        default = config.shell.defaultShell == "bash";
+        default = config.shell.backend == "bash";
       };
 
       extraInit = mkOption {
@@ -65,7 +65,7 @@ with lib;
       enable = mkOption {
         description = "Enable fish shell";
         type = types.bool;
-        default = config.shell.defaultShell == "fish";
+        default = config.shell.backend == "fish";
       };
 
       enableNixIndex = mkOption {
@@ -85,7 +85,7 @@ with lib;
       enable = mkOption {
         description = "Enable nushell";
         type = types.bool;
-        default = config.shell.defaultShell == "nushell";
+        default = config.shell.backend == "nushell";
       };
 
       showBanner = mkOption {
@@ -104,6 +104,6 @@ with lib;
 
   config = mkIf config.shell.enable {
     # The individual shell modules are enabled based on the shell.{bash,fish,nushell}.enable options
-    # which are automatically set based on the defaultShell selection
+    # which are automatically set based on the backend selection
   };
 }

@@ -19,7 +19,7 @@
     ./printers
     ./networking
     ./secure-boot
-    ./thunar
+    ./file-manager
     ./touchpad
     ./undervolting
     ./waydroid

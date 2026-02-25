@@ -24,7 +24,7 @@
     ./starship
     ./terminal
     ./theming
-    ./thunar
+    ./file-manager
     ./waybar
     ./window-manager
     ./x11

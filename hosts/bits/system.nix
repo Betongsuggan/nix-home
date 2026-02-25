@@ -4,7 +4,7 @@
   users.users.birgerrydback = {
     isNormalUser = true;
     description = "Birger Rydback";
-    extraGroups = [ "wheel" "networkmanager" "network" "video" "docker" ];
+    extraGroups = [ "wheel" "networkmanager" "network" "video" "docker" "storage" ];
   };
 
   system.stateVersion = "24.05";
@@ -100,6 +100,7 @@
   fingerprint.enable = true;
   wayland-security.enable = true;
   printers.enable = true;
+  fileManagerSystem.enable = true;
   power-management = {
     enable = true;
     # Removed powerModes.ac = "powersave" to use default "performance"

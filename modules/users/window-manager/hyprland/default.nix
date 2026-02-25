@@ -207,7 +207,7 @@ with lib;
 
           ### Applications
           # Terminal
-          "$mod, RETURN, exec, ${pkgs.alacritty}/bin/alacritty"
+          "$mod, RETURN, exec, ${config.terminal.command}"
         ] ++ (lib.optionals config.hyprland.lockscreen.enable [
           # Lock screen
           "$modShift, x, exec, ${pkgs.hyprlock}/bin/hyprlock"
