@@ -33,19 +33,19 @@ in {
 
     font = {
       package = mkOption {
-        type = types.attrs;
+        type = types.package;
         description = "Font package";
-        default = pkgs.nerd-fonts.hasklug;
+        default = pkgs.hasklig;
       };
       name = mkOption {
         type = types.str;
         description = "Name of the font to use";
-        default = "Hasklug Nerd Font Mono";
+        default = "Hasklig";
       };
       style = mkOption {
         type = types.str;
         description = "Style of the font to use";
-        default = "Hasklig Medium";
+        default = "Medium";
       };
       size = mkOption {
         type = types.number;
@@ -175,39 +175,25 @@ in {
     fonts.fontconfig = {
       enable = true;
       defaultFonts = {
-        monospace = [ config.theme.font.name "Noto Color Emoji" ];
+        monospace = [ config.theme.font.name "Symbols Nerd Font Mono" "Noto Color Emoji" ];
         sansSerif = [ "DejaVu Sans" "Noto Color Emoji" ];
         serif = [ "DejaVu Serif" "Noto Color Emoji" ];
         emoji = [ "Noto Color Emoji" ];
       };
     };
 
+
     home.packages = with pkgs; [
       papirus-icon-theme
       config.theme.cursor.package
       config.theme.font.package
+      nerd-fonts.symbols-only
       noto-fonts-color-emoji
       dejavu_fonts
       glibcLocales
     ];
 
     home.file.".background-image".source = cfg.wallpaper;
-
-    # Add custom fontconfig for emoji fallback
-    home.file.".config/fontconfig/conf.d/99-emoji-fallback.conf".text = ''
-      <?xml version="1.0"?>
-      <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-      <fontconfig>
-        <match target="pattern">
-          <test qual="any" name="family">
-            <string>${config.theme.font.name}</string>
-          </test>
-          <edit name="family" mode="append" binding="strong">
-            <string>Noto Color Emoji</string>
-          </edit>
-        </match>
-      </fontconfig>
-    '';
 
     stylix = {
       image = cfg.wallpaper;

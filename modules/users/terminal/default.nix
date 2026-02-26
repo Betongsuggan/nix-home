@@ -8,12 +8,14 @@ let
   terminalCommand =
     if cfg.backend == "alacritty" then "${pkgs.alacritty}/bin/alacritty"
     else if cfg.backend == "urxvt" then "${pkgs.rxvt-unicode}/bin/urxvt"
+    else if cfg.backend == "ghostty" then "${pkgs.ghostty}/bin/ghostty"
     else throw "Unsupported terminal backend: ${cfg.backend}";
 
   # Build the terminal command with working directory
   terminalCommandWithCwd = { cwd }:
     if cfg.backend == "alacritty" then "${pkgs.alacritty}/bin/alacritty --working-directory \"${cwd}\""
     else if cfg.backend == "urxvt" then "${pkgs.rxvt-unicode}/bin/urxvt -cd \"${cwd}\""
+    else if cfg.backend == "ghostty" then "${pkgs.ghostty}/bin/ghostty --working-directory=\"${cwd}\""
     else throw "Unsupported terminal backend: ${cfg.backend}";
 
 in
@@ -21,6 +23,7 @@ in
   imports = [
     ./alacritty
     ./urxvt
+    ./ghostty
   ];
 
   options.terminal = {
@@ -28,7 +31,7 @@ in
 
     backend = mkOption {
       description = "Terminal emulator backend to use";
-      type = types.enum [ "alacritty" "urxvt" ];
+      type = types.enum [ "alacritty" "urxvt" "ghostty" ];
       default = "alacritty";
     };
 
@@ -112,6 +115,20 @@ in
           "Shift-Control-V" = "eval:paste_clipboard";
           "Shift-Control-C" = "eval:selection_to_clipboard";
         };
+      };
+    };
+
+    ghostty = {
+      enable = mkOption {
+        description = "Enable Ghostty terminal";
+        type = types.bool;
+        default = cfg.backend == "ghostty";
+      };
+
+      extraSettings = mkOption {
+        description = "Extra Ghostty settings";
+        type = types.attrs;
+        default = {};
       };
     };
   };

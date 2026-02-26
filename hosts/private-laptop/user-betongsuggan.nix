@@ -1,11 +1,15 @@
-{ pkgs, inputs, ... }: {
+{ pkgs, inputs, ... }:
+{
   home = {
     username = "betongsuggan";
     homeDirectory = "/home/betongsuggan";
     stateVersion = "24.05";
   };
 
-  imports = [ ../../modules/users inputs.stylix.homeModules.stylix ];
+  imports = [
+    ../../modules/users
+    inputs.stylix.homeModules.stylix
+  ];
 
   general.enable = true;
   firefox.enable = true;
@@ -28,7 +32,8 @@
 
   terminal = {
     enable = true;
-    backend = "alacritty";
+    backend = "ghostty";
+    colors.useTheme = true;
   };
 
   launcher = {
