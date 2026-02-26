@@ -69,7 +69,8 @@
   touchpad.enable = true;
   graphics = {
     enable = true;
-    intel = true;
+    intel.enable = true;
+    # intel.generation = "modern"; # Set to "legacy" or "arc" if needed
   };
   audio.enable = true;
   docker.enable = true;
@@ -77,6 +78,7 @@
   wayland-security.enable = true;
   printers.enable = true;
   power-management.enable = true;
+  fileManagerSystem.enable = true;
 
   networkmanager = {
     enable = true;

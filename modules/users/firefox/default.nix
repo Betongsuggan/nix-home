@@ -19,10 +19,10 @@ with lib;
       LIBVA_DRIVER_NAME =
         if (osConfig.graphics.amd or false) then
           "radeonsi"
-        else if (osConfig.graphics.intel or false) then
-          "i965"
+        else if (osConfig.graphics.intel.enable or false) then
+          (if (osConfig.graphics.intel.generation or "modern") == "legacy" then "i965" else "iHD")
         else
-          "i965"; # Default fallback for standalone home-manager
+          "iHD"; # Default fallback for standalone home-manager
     };
     programs.firefox = {
       enable = true;
