@@ -1,10 +1,17 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, inputs, ... }:
 
 {
   users.users.birgerrydback = {
     isNormalUser = true;
     description = "Birger Rydback";
-    extraGroups = [ "wheel" "networkmanager" "network" "video" "docker" "storage" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "network"
+      "video"
+      "docker"
+      "storage"
+    ];
   };
 
   system.stateVersion = "24.05";
@@ -52,9 +59,11 @@
 
   nixpkgs.config = {
     allowUnfree = true;
-    allowUnfreePredicate = pkg:
-      builtins.elem (lib.getName pkg) [ "claude-code" ];
-    permittedInsecurePackages = [ "electron-25.9.0" "nexusmods-app-0.21.1" ];
+    allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "claude-code" ];
+    permittedInsecurePackages = [
+      "electron-25.9.0"
+      "nexusmods-app-0.21.1"
+    ];
   };
 
   time.timeZone = "Europe/Stockholm";
@@ -78,8 +87,9 @@
     headerId = "ccbec134-bf84-41ad-a903-c99989071e6b";
   };
 
-  swapDevices =
-    [{ device = "/dev/disk/by-uuid/08fd16ed-033c-456a-af0e-f16c933f08a3"; }];
+  swapDevices = [
+    { device = "/dev/disk/by-uuid/08fd16ed-033c-456a-af0e-f16c933f08a3"; }
+  ];
 
   services.fwupd.enable = true;
   console.keyMap = "colemak";
@@ -135,10 +145,9 @@
   xdg.portal = {
     enable = true;
     extraPortals = with pkgs; [
-      xdg-desktop-portal-hyprland
+      xdg-desktop-portal-gnome
       xdg-desktop-portal-gtk
     ];
-    config.hyprland.default = [ "hyprland" "gtk" ];
+    configPackages = [ pkgs.niri-stable ];
   };
 }
-

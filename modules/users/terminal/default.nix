@@ -130,6 +130,12 @@ in
         type = types.attrs;
         default = {};
       };
+
+      keybindings = mkOption {
+        description = "Ghostty keybindings (list of 'key=action' strings)";
+        type = types.listOf types.str;
+        default = [];
+      };
     };
   };
 

@@ -92,6 +92,26 @@ let
         fi
       done
     '';
+    niri = ''
+      # Get workspace info from niri
+      workspaceJson=$(niri msg -j workspaces)
+      currentWorkspace=$(echo "$workspaceJson" | ${pkgs.jq}/bin/jq -r '.[] | select(.is_focused==true).idx')
+      notification="Workspaces:\n"
+
+      # Group by output
+      outputs=$(echo "$workspaceJson" | ${pkgs.jq}/bin/jq -r '.[].output' | sort -u)
+      for output in $outputs; do
+        notification+="$output:\n"
+        workspaces=$(echo "$workspaceJson" | ${pkgs.jq}/bin/jq -r ".[] | select(.output==\"$output\") | .idx")
+        for workspace in $workspaces; do
+          if [ "$workspace" == "$currentWorkspace" ]; then
+            notification+="  → $workspace\n"
+          else
+            notification+="    $workspace\n"
+          fi
+        done
+      done
+    '';
     generic = ''
       currentWorkspace="N/A"
       notification="Workspace info not available for this window manager"
@@ -214,7 +234,7 @@ in
     ] ++ optionals cfg.autoScreenRotation [
       autoScreenRotation
       iio-sensor-proxy
-    ] ++ optionals (cfg.workspaces && (config.controls.windowManager == "i3" || config.controls.windowManager == "sway")) [
+    ] ++ optionals (cfg.workspaces && (config.controls.windowManager == "i3" || config.controls.windowManager == "sway" || config.controls.windowManager == "niri")) [
       jq
     ];
   };

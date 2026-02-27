@@ -81,6 +81,12 @@ in {
       description = "Which notification daemon to use";
     };
 
+    windowManager = mkOption {
+      type = types.enum [ "hyprland" "niri" "sway" "i3" "generic" ];
+      default = "generic";
+      description = "Window manager for session integration.";
+    };
+
     # Expose the notification function for other modules to use
     send = mkOption {
       type = types.functionTo types.str;

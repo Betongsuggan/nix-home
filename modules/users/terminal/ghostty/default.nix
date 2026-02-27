@@ -83,7 +83,10 @@ let
   emojiFont = "Noto Color Emoji";
   emojiMapLines = map (range: "font-codepoint-map = ${range}=${emojiFont}") emojiRanges;
 
-  configText = concatStringsSep "\n" (settingsLines ++ paletteLines ++ emojiMapLines);
+  # Generate keybind lines
+  keybindLines = map (kb: "keybind = ${kb}") cfg.ghostty.keybindings;
+
+  configText = concatStringsSep "\n" (settingsLines ++ paletteLines ++ emojiMapLines ++ keybindLines);
 
 in
 {

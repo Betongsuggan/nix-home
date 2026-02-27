@@ -5,6 +5,7 @@ with lib;
   imports = [
     ./hyprland
     ./i3
+    ./niri
     ./sway
   ];
 
@@ -13,7 +14,7 @@ with lib;
 
     backend = mkOption {
       description = "Window manager backend to use";
-      type = types.enum [ "hyprland" "i3" "sway" ];
+      type = types.enum [ "hyprland" "i3" "niri" "sway" ];
       default = "hyprland";
     };
 
@@ -141,6 +142,7 @@ with lib;
     # Automatically enable the selected window manager
     hyprland.enable = mkIf (config.windowManager.backend == "hyprland") (mkDefault true);
     i3.enable = mkIf (config.windowManager.backend == "i3") (mkDefault true);
+    niri.enable = mkIf (config.windowManager.backend == "niri") (mkDefault true);
     sway.enable = mkIf (config.windowManager.backend == "sway") (mkDefault true);
 
     # Custom compose sequences for special characters (works across all window managers)

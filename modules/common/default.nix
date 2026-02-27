@@ -28,11 +28,15 @@
       settings = {
         # Add community Cachix to binary cache
         builders-use-substitutes = true;
-        substituters =
-          [ "https://nix-community.cachix.org" "https://walker.cachix.org" ];
+        substituters = [
+          "https://nix-community.cachix.org"
+          "https://walker.cachix.org"
+          "https://niri.cachix.org"
+        ];
         trusted-public-keys = [
           "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
           "walker.cachix.org-1:fG8q+uAaMqhsMxWjwvk0IMb4mFPFLqHjuvfwQxE4oJM="
+          "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
         ];
 
         auto-optimise-store = true;

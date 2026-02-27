@@ -70,6 +70,9 @@ let
     i3 = {
       logout = "${pkgs.i3}/bin/i3-msg exit";
     };
+    niri = {
+      logout = "niri msg action quit --skip-confirmation";
+    };
     sway = {
       logout = "${pkgs.sway}/bin/swaymsg exit";
     };

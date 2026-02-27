@@ -17,6 +17,7 @@ in {
     # Auto-enable launcher for dmenu functionality
     launcher.enable = mkDefault true;
 
+    # Dunst uses systemd (graphical-session.target) for all window managers
     services.dunst = {
       enable = true;
       iconTheme = {

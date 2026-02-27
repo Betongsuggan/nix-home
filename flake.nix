@@ -44,6 +44,8 @@
       url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    niri.url = "github:sodiboo/niri-flake";
   };
 
   outputs = { nixpkgs-unstable, awscli-local, nur, ... }@inputs:
@@ -85,6 +87,7 @@
           };
         })
         (import ./overrides/aws-cdk.nix)
+        (import ./overrides/niri.nix { inherit inputs; })
       ];
 
       mkHomeConfiguration = userModule:
@@ -101,6 +104,7 @@
             inputs.vicinae.homeManagerModules.default
             inputs.stylix.homeModules.stylix
             inputs.console-mode.homeManagerModules.default
+            inputs.niri.homeModules.niri
           ];
           extraSpecialArgs = { inherit inputs overlays; };
         };

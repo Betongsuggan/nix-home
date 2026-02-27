@@ -15,7 +15,7 @@ with lib;
 
     windowManager = mkOption {
       description = "Window manager type for controls integration";
-      type = types.enum [ "hyprland" "i3" "sway" "generic" ];
+      type = types.enum [ "hyprland" "i3" "niri" "sway" "generic" ];
       default = "generic";
     };
 

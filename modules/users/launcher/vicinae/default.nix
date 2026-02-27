@@ -103,6 +103,7 @@ in {
     services.vicinae = {
       enable = true;
       package = pkgs.vicinae;
+      # Use systemd autostart for all window managers (graphical-session.target)
       autoStart = true;
       useLayerShell = cfg.vicinae.useLayerShell;
 

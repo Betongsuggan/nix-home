@@ -5,7 +5,10 @@
   home.homeDirectory = "/home/birgerrydback";
   home.stateVersion = "24.05";
 
-  imports = [ ../../modules/users inputs.stylix.homeModules.stylix ];
+  imports = [
+    ../../modules/users
+    inputs.stylix.homeModules.stylix
+  ];
 
   general.enable = true;
   development.enable = true;
@@ -52,18 +55,16 @@
 
   windowManager = {
     enable = true;
-    backend = "hyprland";
+    backend = "niri";
     composeKey = "ralt";
     monitors = [ ",preferred,auto,1" ];
     autostartApps = {
       firefox = {
         command = "firefox";
-        workspace = 1;
       };
 
       slack = {
         command = "slack";
-        workspace = 9;
       };
     };
   };
@@ -106,7 +107,9 @@
 
   programs.home-manager.enable = true;
 
-  services.ssh-agent = { enable = true; };
+  services.ssh-agent = {
+    enable = true;
+  };
 
   # Ensure SSH_AUTH_SOCK is available in the systemd user environment
   # so it gets propagated to Hyprland and all applications
@@ -114,4 +117,3 @@
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
   };
 }
-

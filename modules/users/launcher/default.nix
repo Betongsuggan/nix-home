@@ -131,6 +131,12 @@ in {
       description = "Which launcher to use";
     };
 
+    windowManager = mkOption {
+      type = types.enum [ "hyprland" "niri" "sway" "i3" "generic" ];
+      default = "generic";
+      description = "Window manager for session integration.";
+    };
+
     dmenu = mkOption {
       type = types.functionTo types.str;
       internal = true;
