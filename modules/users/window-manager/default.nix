@@ -157,5 +157,12 @@ with lib;
       <Multi_key> <a> <a> : "å"
       <Multi_key> <A> <A> : "Å"
     '';
+
+    # Environment variables for XIM to make .XCompose work in XWayland apps
+    home.sessionVariables = {
+      GTK_IM_MODULE = "xim";   # GTK apps (e.g., Slack) read .XCompose
+      QT_IM_MODULE = "xim";    # Qt apps read .XCompose
+      XMODIFIERS = "@im=none"; # Disable other input method frameworks
+    };
   };
 }

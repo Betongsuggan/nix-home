@@ -103,7 +103,7 @@ in {
         swaybg
         xwayland-satellite
       ] ++ optionals cfg.lockscreen.enable [
-        swaylock
+        swaylock-effects
       ];
     };
 
@@ -140,17 +140,33 @@ in {
         }
         {
           event = "lock";
-          command = "${pkgs.swaylock}/bin/swaylock -f";
+          command = "${pkgs.swaylock-effects}/bin/swaylock -f";
         }
       ] else [];
     };
 
-    # Swaylock configuration
+    # Swaylock configuration (styled to match hyprlock)
     programs.swaylock = mkIf cfg.lockscreen.enable {
       enable = true;
+      package = pkgs.swaylock-effects;
       settings = {
+        # Background with blur (like hyprlock blur_passes=2, blur_size=4)
         image = "${config.theme.wallpaper}";
         scaling = "fill";
+        effect-blur = "7x5";
+        effect-vignette = "0.5:0.5";
+
+        # Clock display (like hyprlock's time label)
+        clock = true;
+        timestr = "%H:%M";
+        datestr = "";
+
+        # Indicator styling to match hyprlock input-field look
+        indicator = true;
+        indicator-radius = 100;
+        indicator-thickness = 7;
+
+        # Colors matching theme (like hyprlock)
         color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
         inside-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
         inside-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
@@ -160,13 +176,20 @@ in {
         ring-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
         ring-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
         ring-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        ring-wrong-color = "ff0000";
+        ring-wrong-color = lib.strings.removePrefix "#" config.theme.colors.normal.red;
         line-color = "00000000";
         text-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
+        text-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
+        text-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
+        text-wrong-color = lib.strings.removePrefix "#" config.theme.colors.normal.red;
+
+        # Font settings
         font = config.theme.font.name;
         font-size = 24;
-        indicator-radius = 100;
-        indicator-thickness = 10;
+
+        # Behavior (matching hyprlock's no_fade_in/out)
+        fade-in = 0;
+        grace = 0;
         show-failed-attempts = true;
       };
     };
@@ -315,14 +338,14 @@ in {
 
           # Lock screen
           "Mod+Shift+X".action = if cfg.lockscreen.enable
-            then { spawn = [ "${pkgs.swaylock}/bin/swaylock" "-f" ]; }
+            then { spawn = [ "${pkgs.swaylock-effects}/bin/swaylock" "-f" ]; }
             else null;
 
           # Screenshot (region)
           "Mod+Shift+P".action.screenshot-screen = {};
 
-          # Screenshot (window)
-          "Mod+P".action.screenshot-window = {};
+          # Screenshot (area selection)
+          "Mod+P".action.screenshot = {};
 
           # Screen recording toggle
           "Mod+V".action.spawn = [
@@ -416,13 +439,27 @@ in {
           "XF86AudioLowerVolume".action.spawn = [ "volume-control" "-d" "2" ];
           "XF86AudioMute".action.spawn = [ "volume-control" "-m" ];
 
-          # Named workspace shortcuts
-          "Mod+1".action.focus-workspace = "browser";
-          "Mod+2".action.focus-workspace = "chat";
-          "Mod+3".action.focus-workspace = "code";
-          "Mod+Shift+1".action.move-column-to-workspace = "browser";
-          "Mod+Shift+2".action.move-column-to-workspace = "chat";
-          "Mod+Shift+3".action.move-column-to-workspace = "code";
+          # Workspace shortcuts by index (1-9 and 0 for 10)
+          "Mod+1".action.focus-workspace = 1;
+          "Mod+2".action.focus-workspace = 2;
+          "Mod+3".action.focus-workspace = 3;
+          "Mod+4".action.focus-workspace = 4;
+          "Mod+5".action.focus-workspace = 5;
+          "Mod+6".action.focus-workspace = 6;
+          "Mod+7".action.focus-workspace = 7;
+          "Mod+8".action.focus-workspace = 8;
+          "Mod+9".action.focus-workspace = 9;
+          "Mod+0".action.focus-workspace = 10;
+          "Mod+Shift+1".action.move-column-to-workspace = 1;
+          "Mod+Shift+2".action.move-column-to-workspace = 2;
+          "Mod+Shift+3".action.move-column-to-workspace = 3;
+          "Mod+Shift+4".action.move-column-to-workspace = 4;
+          "Mod+Shift+5".action.move-column-to-workspace = 5;
+          "Mod+Shift+6".action.move-column-to-workspace = 6;
+          "Mod+Shift+7".action.move-column-to-workspace = 7;
+          "Mod+Shift+8".action.move-column-to-workspace = 8;
+          "Mod+Shift+9".action.move-column-to-workspace = 9;
+          "Mod+Shift+0".action.move-column-to-workspace = 10;
 
           # Switch between monitors (H/L only, J/K used for window focus)
           "Mod+Ctrl+H".action.focus-monitor-left = {};

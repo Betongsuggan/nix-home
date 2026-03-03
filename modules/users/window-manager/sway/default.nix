@@ -39,17 +39,25 @@ let
     (map convertMonitorToSwayOutput config.windowManager.monitors);
 
 in {
-  options.sway = { enable = mkEnableOption "Enable Sway"; };
+  options.sway = {
+    enable = mkEnableOption "Enable Sway";
+    lockscreen.enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Enable lockscreen functionality (swaylock, idle lock, etc.)";
+    };
+  };
 
   config = mkIf config.sway.enable {
 
     home.packages = with pkgs; [
-      swaylock-fancy
       swayidle
       sway-contrib.grimshot
       wl-clipboard
       #mako
       networkmanager_dmenu
+    ] ++ optionals config.sway.lockscreen.enable [
+      swaylock-effects
     ];
 
     wayland.windowManager.sway = {
@@ -90,15 +98,15 @@ in {
           command = "waybar";
         }];
 
-        keybindings = lib.mkOptionDefault {
+        keybindings = lib.mkOptionDefault ({
           "${modifier}+o" = "exec ${config.launcher.show { mode = "drun"; }}";
-
-          "${modifier}+Shift+x" =
-            "exec ${pkgs.swaylock-fancy}/bin/swaylock-fancy";
 
           "${modifier}+Shift+p" =
             "exec ${pkgs.sway-contrib.grimshot}/bin/grimshot save area ~/Pictures/$(date -Iseconds)";
-        };
+        } // optionalAttrs config.sway.lockscreen.enable {
+          "${modifier}+Shift+x" =
+            "exec ${pkgs.swaylock-effects}/bin/swaylock -f";
+        });
 
         input = { "*" = { tap = "enabled"; }; };
 
@@ -162,6 +170,55 @@ in {
         bindsym XF86AudioNext exec '${playerctl}/bin/playerctl next'
         bindsym XF86AudioPrev exec '${playerctl}/bin/playerctl previous'
       '';
+    };
+
+    # Swaylock configuration (styled to match hyprlock)
+    programs.swaylock = mkIf config.sway.lockscreen.enable {
+      enable = true;
+      package = pkgs.swaylock-effects;
+      settings = {
+        # Background with blur (like hyprlock blur_passes=2, blur_size=4)
+        image = "${config.theme.wallpaper}";
+        scaling = "fill";
+        effect-blur = "7x5";
+        effect-vignette = "0.5:0.5";
+
+        # Clock display (like hyprlock's time label)
+        clock = true;
+        timestr = "%H:%M";
+        datestr = "";
+
+        # Indicator styling
+        indicator = true;
+        indicator-radius = 100;
+        indicator-thickness = 7;
+
+        # Colors matching theme
+        color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
+        inside-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
+        inside-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
+        inside-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
+        inside-wrong-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
+        key-hl-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
+        ring-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
+        ring-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
+        ring-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
+        ring-wrong-color = lib.strings.removePrefix "#" config.theme.colors.normal.red;
+        line-color = "00000000";
+        text-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
+        text-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
+        text-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
+        text-wrong-color = lib.strings.removePrefix "#" config.theme.colors.normal.red;
+
+        # Font settings
+        font = config.theme.font.name;
+        font-size = 24;
+
+        # Behavior (matching hyprlock's no_fade_in/out)
+        fade-in = 0;
+        grace = 0;
+        show-failed-attempts = true;
+      };
     };
   };
 }
