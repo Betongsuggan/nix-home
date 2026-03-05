@@ -14,9 +14,7 @@
   development.enable = true;
   direnv.enable = true;
   firefox.enable = true;
-  #qutebrowser.enable = true;
   communication.enable = true;
-  games.enable = true;
   battery-monitor.enable = true;
   fileManager = {
     enable = true;
@@ -111,8 +109,6 @@
     enable = true;
   };
 
-  # Ensure SSH_AUTH_SOCK is available in the systemd user environment
-  # so it gets propagated to Hyprland and all applications
   systemd.user.sessionVariables = {
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
   };

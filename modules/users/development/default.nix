@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 with lib;
 
 {
@@ -28,7 +33,7 @@ with lib;
       python3
 
       # Kotlin
-      kotlin
+      #kotlin
       #openjdk17-bootstrap
       #android-studio
       #jetbrains.idea-community
@@ -39,15 +44,15 @@ with lib;
       nodejs_20
 
       # Haskell
-      ghc
-      cabal-install
+      #ghc
+      #cabal-install
 
       # Rust
-      cargo
-      rustc
-      rustfmt
-      gcc
-      clippy
+      #cargo
+      #rustc
+      #rustfmt
+      #gcc
+      #clippy
 
       # Go
       delve
@@ -60,9 +65,7 @@ with lib;
     programs.go.enable = true;
 
     home.sessionVariables = {
-      JAVA_HOME = "${pkgs.openjdk17-bootstrap}";
       PATH = "$HOME/node_modules/bin:$PATH";
     };
-    # unfreePackages moved to system level configuration
   };
 }

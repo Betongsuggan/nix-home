@@ -34,12 +34,9 @@
 
     initrd.availableKernelModules = [
       "xhci_pci"
-      "xhci_hcd"
       "nvme"
-      "ahci"
       "usb_storage"
       "sd_mod"
-      "usb_storage"
     ];
 
     loader = {

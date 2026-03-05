@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -9,9 +14,6 @@ with lib;
   config = mkIf config.communication.enable {
     home.packages = with pkgs; [
       slack
-      slack-term
     ];
-
-    # unfreePackages moved to system level configuration
   };
 }

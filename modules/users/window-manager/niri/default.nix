@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
@@ -7,7 +12,8 @@ let
   # Convert Hyprland monitor format to Niri output format
   # Hyprland: "name,resolution@refresh,position,scale"
   # Niri: outputs."name" = { mode = { width = W; height = H; refresh = R; }; scale = S; }
-  parseMonitor = monitorStr:
+  parseMonitor =
+    monitorStr:
     let
       parts = lib.splitString "," monitorStr;
       name = builtins.elemAt parts 0;
@@ -17,13 +23,22 @@ let
 
       # Parse resolution (e.g., "3440x1440@240" or "preferred")
       resolutionParsed =
-        if resolution == "preferred" then null
+        if resolution == "preferred" then
+          null
         else
           let
             hasRefresh = lib.hasInfix "@" resolution;
-            resParts = if hasRefresh then lib.splitString "@" resolution else [ resolution "60" ];
+            resParts =
+              if hasRefresh then
+                lib.splitString "@" resolution
+              else
+                [
+                  resolution
+                  "60"
+                ];
             dimParts = lib.splitString "x" (builtins.elemAt resParts 0);
-          in {
+          in
+          {
             width = lib.toInt (builtins.elemAt dimParts 0);
             height = lib.toInt (builtins.elemAt dimParts 1);
             refresh = lib.toFloat (builtins.elemAt resParts 1);
@@ -31,15 +46,18 @@ let
 
       # Parse position (e.g., "0x0" or "auto")
       positionParsed =
-        if position == "auto" then null
+        if position == "auto" then
+          null
         else
           let
             posParts = lib.splitString "x" position;
-          in {
+          in
+          {
             x = lib.toInt (builtins.elemAt posParts 0);
             y = lib.toInt (builtins.elemAt posParts 1);
           };
-    in {
+    in
+    {
       inherit name;
       mode = resolutionParsed;
       position = positionParsed;
@@ -49,15 +67,20 @@ let
   # Generate outputs configuration for Niri
   monitorOutputs = builtins.listToAttrs (
     builtins.filter (x: x.name != "") (
-      map (monitorStr:
-        let parsed = parseMonitor monitorStr;
-        in {
+      map (
+        monitorStr:
+        let
+          parsed = parseMonitor monitorStr;
+        in
+        {
           name = if parsed.name == "" then null else parsed.name;
           value = {
             scale = parsed.scale;
-          } // optionalAttrs (parsed.mode != null) {
+          }
+          // optionalAttrs (parsed.mode != null) {
             mode = parsed.mode;
-          } // optionalAttrs (parsed.position != null) {
+          }
+          // optionalAttrs (parsed.position != null) {
             position = parsed.position;
           };
         }
@@ -66,9 +89,12 @@ let
   );
 
   # Check if we have any named monitors
-  hasNamedMonitors = builtins.any (m: (builtins.elemAt (lib.splitString "," m) 0) != "") config.windowManager.monitors;
+  hasNamedMonitors = builtins.any (
+    m: (builtins.elemAt (lib.splitString "," m) 0) != ""
+  ) config.windowManager.monitors;
 
-in {
+in
+{
   options.niri = {
     enable = mkEnableOption "Enable Niri scrollable-tiling compositor";
     lockscreen.enable = mkOption {
@@ -95,16 +121,19 @@ in {
       pointerCursor = {
         inherit (config.theme.cursor) name package;
       };
-      packages = with pkgs; [
-        grim
-        slurp
-        wl-clipboard
-        systemd
-        swaybg
-        xwayland-satellite
-      ] ++ optionals cfg.lockscreen.enable [
-        swaylock-effects
-      ];
+      packages =
+        with pkgs;
+        [
+          grim
+          slurp
+          wl-clipboard
+          systemd
+          swaybg
+          xwayland-satellite
+        ]
+        ++ optionals cfg.lockscreen.enable [
+          swaylock-effects
+        ];
     };
 
     # Idle management using swayidle
@@ -117,12 +146,19 @@ in {
           command = "${pkgs.brightnessctl}/bin/brightnessctl -s set 10";
           resumeCommand = "${pkgs.brightnessctl}/bin/brightnessctl -r";
         }
-      ] ++ (if cfg.lockscreen.enable then [
-        {
-          timeout = 300; # 5 minutes
-          command = "${pkgs.systemd}/bin/loginctl lock-session";
-        }
-      ] else []) ++ [
+      ]
+      ++ (
+        if cfg.lockscreen.enable then
+          [
+            {
+              timeout = 300; # 5 minutes
+              command = "${pkgs.systemd}/bin/loginctl lock-session";
+            }
+          ]
+        else
+          [ ]
+      )
+      ++ [
         {
           timeout = 330; # 5.5 minutes
           command = "niri msg action power-off-monitors";
@@ -133,16 +169,20 @@ in {
           command = "${pkgs.systemd}/bin/systemctl suspend";
         }
       ];
-      events = if cfg.lockscreen.enable then [
-        {
-          event = "before-sleep";
-          command = "${pkgs.systemd}/bin/loginctl lock-session";
-        }
-        {
-          event = "lock";
-          command = "${pkgs.swaylock-effects}/bin/swaylock -f";
-        }
-      ] else [];
+      events =
+        if cfg.lockscreen.enable then
+          [
+            {
+              event = "before-sleep";
+              command = "${pkgs.systemd}/bin/loginctl lock-session";
+            }
+            {
+              event = "lock";
+              command = "${pkgs.swaylock-effects}/bin/swaylock -f";
+            }
+          ]
+        else
+          [ ];
     };
 
     # Swaylock configuration (styled to match hyprlock)
@@ -199,12 +239,7 @@ in {
       enable = true;
       package = pkgs.niri-stable;
       settings = {
-        # Named workspaces (browser, chat, code - rest are dynamic)
-        workspaces = {
-          "browser" = {};
-          "chat" = {};
-          "code" = {};
-        };
+        # Fully dynamic workspaces (no named workspaces)
 
         # Prefer server-side decorations
         prefer-no-csd = true;
@@ -214,7 +249,10 @@ in {
 
         # Input configuration
         input = {
-          focus-follows-mouse.enable = true;
+          focus-follows-mouse = {
+            enable = true;
+            max-scroll-amount = "0%";
+          };
 
           keyboard = {
             xkb = {
@@ -241,7 +279,7 @@ in {
         };
 
         # Output/monitor configuration
-        outputs = if hasNamedMonitors then monitorOutputs else {};
+        outputs = if hasNamedMonitors then monitorOutputs else { };
 
         # Layout configuration
         layout = {
@@ -254,7 +292,9 @@ in {
             { proportion = 2.0 / 3.0; }
           ];
 
-          default-column-width = { proportion = 1.0 / 2.0; };
+          default-column-width = {
+            proportion = 1.0 / 2.0;
+          };
 
           focus-ring = {
             enable = true;
@@ -272,16 +312,38 @@ in {
         # Note: Services like vicinae and dunst use systemd (graphical-session.target) instead
         spawn-at-startup = [
           # Wallpaper
-          { command = [ "${pkgs.swaybg}/bin/swaybg" "-i" "${config.theme.wallpaper}" "-m" "fill" ]; }
+          {
+            command = [
+              "${pkgs.swaybg}/bin/swaybg"
+              "-i"
+              "${config.theme.wallpaper}"
+              "-m"
+              "fill"
+            ];
+          }
           # Start XWayland satellite for X11 app compatibility
           { command = [ "${pkgs.xwayland-satellite}/bin/xwayland-satellite" ]; }
         ]
         # Autostart applications
-        ++ builtins.concatLists (builtins.attrValues (builtins.mapAttrs
-          (name: app:
-            if app == null then []
-            else [{ command = [ "sh" "-c" app.command ]; }]
-          ) config.windowManager.autostartApps));
+        ++ builtins.concatLists (
+          builtins.attrValues (
+            builtins.mapAttrs (
+              name: app:
+              if app == null then
+                [ ]
+              else
+                [
+                  {
+                    command = [
+                      "sh"
+                      "-c"
+                      app.command
+                    ];
+                  }
+                ]
+            ) config.windowManager.autostartApps
+          )
+        );
 
         # Cursor configuration
         cursor = {
@@ -292,14 +354,26 @@ in {
         # Hotkey inhibitor (for nested compositors, games, etc.)
         hotkey-overlay.skip-at-startup = true;
 
+        # Disable hot corner for overview
+        gestures.hot-corners.enable = false;
+
         # Window rules
         window-rules = [
           # Round corners on all windows
           {
-            geometry-corner-radius = let r = 5.0; in { top-left = r; top-right = r; bottom-left = r; bottom-right = r; };
+            geometry-corner-radius =
+              let
+                r = 5.0;
+              in
+              {
+                top-left = r;
+                top-right = r;
+                bottom-left = r;
+                bottom-right = r;
+              };
             clip-to-geometry = true;
           }
-          # Browsers -> browser workspace
+          # Browsers -> workspace 1
           {
             matches = [
               { app-id = "^firefox$"; }
@@ -309,10 +383,10 @@ in {
               { app-id = "^zen-browser$"; }
               { app-id = "^brave-browser$"; }
             ];
-            open-on-workspace = "browser";
+            open-on-workspace = "1";
             open-maximized = true;
           }
-          # Chat apps -> chat workspace
+          # Chat apps -> workspace 2
           {
             matches = [
               { app-id = "^Slack$"; }
@@ -323,7 +397,7 @@ in {
               { app-id = "^signal$"; }
               { app-id = "^Element$"; }
             ];
-            open-on-workspace = "chat";
+            open-on-workspace = "2";
             open-maximized = true;
           }
         ];
@@ -331,25 +405,37 @@ in {
         # Keybindings
         binds = {
           # Keyboard layout switching
-          "Mod+Shift+B".action.spawn = [ "sh" "-c" "niri msg action switch-keyboard-layout" ];
+          "Mod+Shift+B".action.spawn = [
+            "sh"
+            "-c"
+            "niri msg action switch-keyboard-layout"
+          ];
 
           # Terminal
           "Mod+Return".action.spawn = [ config.terminal.command ];
 
           # Lock screen
-          "Mod+Shift+X".action = if cfg.lockscreen.enable
-            then { spawn = [ "${pkgs.swaylock-effects}/bin/swaylock" "-f" ]; }
-            else null;
+          "Mod+Shift+X".action =
+            if cfg.lockscreen.enable then
+              {
+                spawn = [
+                  "${pkgs.swaylock-effects}/bin/swaylock"
+                  "-f"
+                ];
+              }
+            else
+              null;
 
           # Screenshot (region)
-          "Mod+Shift+P".action.screenshot-screen = {};
+          "Mod+Shift+P".action.screenshot-screen = { };
 
           # Screenshot (area selection)
-          "Mod+P".action.screenshot = {};
+          "Mod+P".action.screenshot = { };
 
           # Screen recording toggle
           "Mod+V".action.spawn = [
-            "sh" "-c"
+            "sh"
+            "-c"
             ''
               if ${pkgs.procps}/bin/pkill -SIGINT wf-recorder; then
                 ${config.notifications.send {
@@ -369,28 +455,28 @@ in {
           ];
 
           # Focus navigation (Niri uses columns horizontally, workspaces vertically)
-          "Mod+H".action.focus-column-left = {};
-          "Mod+L".action.focus-column-right = {};
-          "Mod+K".action.focus-workspace-up = {};
-          "Mod+J".action.focus-workspace-down = {};
+          "Mod+H".action.focus-column-left = { };
+          "Mod+L".action.focus-column-right = { };
+          "Mod+K".action.focus-workspace-up = { };
+          "Mod+J".action.focus-workspace-down = { };
 
           # Move column between workspaces
-          "Mod+Shift+H".action.move-column-left = {};
-          "Mod+Shift+L".action.move-column-right = {};
-          "Mod+Shift+K".action.move-column-to-workspace-up = {};
-          "Mod+Shift+J".action.move-column-to-workspace-down = {};
+          "Mod+Shift+H".action.move-column-left = { };
+          "Mod+Shift+L".action.move-column-right = { };
+          "Mod+Shift+K".action.move-column-to-workspace-up = { };
+          "Mod+Shift+J".action.move-column-to-workspace-down = { };
 
           # Focus window within column
-          "Mod+Ctrl+K".action.focus-window-up = {};
-          "Mod+Ctrl+J".action.focus-window-down = {};
+          "Mod+Ctrl+K".action.focus-window-up = { };
+          "Mod+Ctrl+J".action.focus-window-down = { };
 
           # Move window within column
-          "Mod+Ctrl+Shift+K".action.move-window-up = {};
-          "Mod+Ctrl+Shift+J".action.move-window-down = {};
+          "Mod+Ctrl+Shift+K".action.move-window-up = { };
+          "Mod+Ctrl+Shift+J".action.move-window-down = { };
 
           # Consume/expel windows into/from columns
-          "Mod+Comma".action.consume-window-into-column = {};
-          "Mod+Period".action.expel-window-from-column = {};
+          "Mod+Comma".action.consume-window-into-column = { };
+          "Mod+Period".action.expel-window-from-column = { };
 
           # Column width adjustments
           "Mod+Minus".action.set-column-width = "-10%";
@@ -401,13 +487,13 @@ in {
           "Mod+Shift+Equal".action.set-window-height = "+10%";
 
           # Maximize column (like fullscreen in traditional WMs)
-          "Mod+F".action.maximize-column = {};
+          "Mod+F".action.maximize-column = { };
 
           # Fullscreen window
-          "Mod+Shift+F".action.fullscreen-window = {};
+          "Mod+Shift+F".action.fullscreen-window = { };
 
           # Kill window
-          "Mod+Shift+Q".action.close-window = {};
+          "Mod+Shift+Q".action.close-window = { };
 
           # Notifiers
           "Mod+B".action.spawn = [ "battery-notifier" ];
@@ -416,28 +502,77 @@ in {
           "Mod+T".action.spawn = [ "time-notifier" ];
 
           # Power management
-          "Mod+Escape".action.spawn = [ "power-control" "menu" ];
-          "Mod+Ctrl+X".action.spawn = [ "power-control" "lock" ];
-          "Mod+Ctrl+S".action.spawn = [ "power-control" "suspend" ];
-          "Mod+Shift+Escape".action.spawn = [ "power-control" "status" ];
+          "Mod+Escape".action.spawn = [
+            "power-control"
+            "menu"
+          ];
+          "Mod+Ctrl+X".action.spawn = [
+            "power-control"
+            "lock"
+          ];
+          "Mod+Ctrl+S".action.spawn = [
+            "power-control"
+            "suspend"
+          ];
+          "Mod+Shift+Escape".action.spawn = [
+            "power-control"
+            "status"
+          ];
 
           # Media controls
-          "XF86AudioPlay".action.spawn = [ "media-player" "play" ];
-          "Mod+S".action.spawn = [ "media-player" "play" ];
-          "XF86AudioNext".action.spawn = [ "media-player" "next" ];
-          "Mod+N".action.spawn = [ "media-player" "next" ];
-          "XF86AudioPrev".action.spawn = [ "media-player" "previous" ];
+          "XF86AudioPlay".action.spawn = [
+            "media-player"
+            "play"
+          ];
+          "Mod+S".action.spawn = [
+            "media-player"
+            "play"
+          ];
+          "XF86AudioNext".action.spawn = [
+            "media-player"
+            "next"
+          ];
+          "Mod+N".action.spawn = [
+            "media-player"
+            "next"
+          ];
+          "XF86AudioPrev".action.spawn = [
+            "media-player"
+            "previous"
+          ];
           # Note: Mod+P conflicts with screenshot, using Alt instead
-          "Mod+Alt+P".action.spawn = [ "media-player" "previous" ];
+          "Mod+Alt+P".action.spawn = [
+            "media-player"
+            "previous"
+          ];
 
           # Brightness controls (using allow-when-locked for these)
-          "XF86MonBrightnessUp".action.spawn = [ "brightness-control" "-i" "10" ];
-          "XF86MonBrightnessDown".action.spawn = [ "brightness-control" "-d" "10" ];
+          "XF86MonBrightnessUp".action.spawn = [
+            "brightness-control"
+            "-i"
+            "10"
+          ];
+          "XF86MonBrightnessDown".action.spawn = [
+            "brightness-control"
+            "-d"
+            "10"
+          ];
 
           # Volume controls
-          "XF86AudioRaiseVolume".action.spawn = [ "volume-control" "-i" "2" ];
-          "XF86AudioLowerVolume".action.spawn = [ "volume-control" "-d" "2" ];
-          "XF86AudioMute".action.spawn = [ "volume-control" "-m" ];
+          "XF86AudioRaiseVolume".action.spawn = [
+            "volume-control"
+            "-i"
+            "2"
+          ];
+          "XF86AudioLowerVolume".action.spawn = [
+            "volume-control"
+            "-d"
+            "2"
+          ];
+          "XF86AudioMute".action.spawn = [
+            "volume-control"
+            "-m"
+          ];
 
           # Workspace shortcuts by index (1-9 and 0 for 10)
           "Mod+1".action.focus-workspace = 1;
@@ -462,30 +597,70 @@ in {
           "Mod+Shift+0".action.move-column-to-workspace = 10;
 
           # Switch between monitors (H/L only, J/K used for window focus)
-          "Mod+Ctrl+H".action.focus-monitor-left = {};
-          "Mod+Ctrl+L".action.focus-monitor-right = {};
+          "Mod+Ctrl+H".action.focus-monitor-left = { };
+          "Mod+Ctrl+L".action.focus-monitor-right = { };
 
           # Move column to monitor (H/L only, J/K used for window movement)
-          "Mod+Shift+Ctrl+H".action.move-column-to-monitor-left = {};
-          "Mod+Shift+Ctrl+L".action.move-column-to-monitor-right = {};
+          "Mod+Shift+Ctrl+H".action.move-column-to-monitor-left = { };
+          "Mod+Shift+Ctrl+L".action.move-column-to-monitor-right = { };
 
           # Overview (Niri's built-in feature)
-          "Mod+Tab".action.toggle-overview = {};
+          "Mod+Tab".action.toggle-overview = { };
 
           # Quit Niri
-          "Mod+Shift+E".action.quit = { skip-confirmation = false; };
-        } // (if config.launcher.enable then {
-          # Launcher bindings
-          "Mod+E".action.spawn = [ "sh" "-c" (config.launcher.show { mode = "symbols"; }) ];
-          "Mod+U".action.spawn = [ "sh" "-c" (config.launcher.wifi { }) ];
-          "Mod+Z".action.spawn = [ "sh" "-c" (config.launcher.bluetooth { }) ];
-          # Note: Monitor keybinding removed - uses Hyprland-specific extension
-          "Mod+D".action.spawn = [ "sh" "-c" (config.launcher.show { mode = "websearch"; }) ];
-          "Mod+O".action.spawn = [ "sh" "-c" (config.launcher.show { mode = "desktopapplications"; }) ];
-          "Mod+C".action.spawn = [ "sh" "-c" (config.launcher.show { mode = "clipboard"; }) ];
-          "Mod+A".action.spawn = [ "sh" "-c" (config.launcher.audioOutput { }) ];
-          "Mod+Shift+A".action.spawn = [ "sh" "-c" (config.launcher.audioInput { }) ];
-        } else {});
+          "Mod+Shift+E".action.quit = {
+            skip-confirmation = false;
+          };
+        }
+        // (
+          if config.launcher.enable then
+            {
+              # Launcher bindings
+              "Mod+E".action.spawn = [
+                "sh"
+                "-c"
+                (config.launcher.show { mode = "symbols"; })
+              ];
+              "Mod+U".action.spawn = [
+                "sh"
+                "-c"
+                (config.launcher.wifi { })
+              ];
+              "Mod+Z".action.spawn = [
+                "sh"
+                "-c"
+                (config.launcher.bluetooth { })
+              ];
+              # Note: Monitor keybinding removed - uses Hyprland-specific extension
+              "Mod+D".action.spawn = [
+                "sh"
+                "-c"
+                (config.launcher.show { mode = "websearch"; })
+              ];
+              "Mod+O".action.spawn = [
+                "sh"
+                "-c"
+                (config.launcher.show { mode = "desktopapplications"; })
+              ];
+              "Mod+C".action.spawn = [
+                "sh"
+                "-c"
+                (config.launcher.show { mode = "clipboard"; })
+              ];
+              "Mod+A".action.spawn = [
+                "sh"
+                "-c"
+                (config.launcher.audioOutput { })
+              ];
+              "Mod+Shift+A".action.spawn = [
+                "sh"
+                "-c"
+                (config.launcher.audioInput { })
+              ];
+            }
+          else
+            { }
+        );
 
         # Animations
         animations = {

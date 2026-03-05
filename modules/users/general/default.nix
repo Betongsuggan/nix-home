@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -9,8 +14,6 @@ with lib;
   config = mkIf config.general.enable {
     dconf.enable = true;
 
-    # Explicitly set XDG_DATA_HOME to fix Ghostty cursor size bug
-    # (fontconfig behaves differently when this is not explicitly set)
     home.sessionVariables = {
       XDG_DATA_HOME = "$HOME/.local/share";
     };
@@ -20,13 +23,11 @@ with lib;
       btop
       coreutils
       pciutils
-      kazam
       exfat
       gimp
       gedit
       gnumake
       gparted
-      gthumb
       gvfs
       htop
       iio-sensor-proxy

@@ -20,10 +20,11 @@
         warn-dirty = false
       '';
 
-      #gc = {
-      #  automatic = true;
-      #  options = "--delete-older-than 7d";
-      #};
+      gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 14d";
+      };
 
       settings = {
         # Add community Cachix to binary cache
@@ -40,6 +41,13 @@
         ];
 
         auto-optimise-store = true;
+
+        # Parallel build settings for faster rebuilds
+        max-jobs = "auto";           # Build multiple derivations in parallel
+        cores = 0;                   # Use all cores per build (0 = auto)
+        keep-outputs = true;         # Keep build outputs for faster rebuilds
+        keep-derivations = true;     # Keep .drv files for debugging/rebuilds
+        connect-timeout = 5;         # Fail faster on unavailable substituters
       };
     };
 

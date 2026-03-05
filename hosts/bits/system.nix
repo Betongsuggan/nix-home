@@ -1,4 +1,8 @@
-{ pkgs, lib, inputs, ... }:
+{
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   users.users.birgerrydback = {
@@ -31,7 +35,6 @@
     initrd.availableKernelModules = [
       "nvme"
       "xhci_pci"
-      "ahci"
       "thunderbolt"
       "usb_storage"
       "sd_mod"
@@ -92,8 +95,12 @@
   ];
 
   services.fwupd.enable = true;
-  console.keyMap = "colemak";
 
+  # Defer fwupd to start on-demand instead of at boot
+  systemd.services.fwupd = {
+    wantedBy = lib.mkForce [ ];
+  };
+  console.keyMap = "colemak";
   touchpad.enable = true;
   backlight.enable = true;
   graphics = {
@@ -113,34 +120,12 @@
   fileManagerSystem.enable = true;
   power-management = {
     enable = true;
-    # Removed powerModes.ac = "powersave" to use default "performance"
   };
   firewall = {
     enable = true;
     tcpPorts = [ 8080 ];
   };
-  waydroid.enable = true;
-  file-sharing = {
-    enable = true;
-    samba = {
-      enable = true;
-      shares = [
-        {
-          name = "shared";
-          path = "/home/birgerrydback/shared";
-          validUsers = [ "birgerrydback" ];
-          readOnly = false;
-        }
-      ];
-      openFirewall = true;
-    };
-  };
 
-  # Don't start Android container at boot (saves resources)
-  # Start manually when needed: sudo systemctl start waydroid-container
-  systemd.services.waydroid-container.wantedBy = lib.mkForce [ ];
-
-  # Enable XDG Desktop Portal for screen sharing
   services.xserver.desktopManager.runXdgAutostartIfNone = true;
   xdg.portal = {
     enable = true;

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -115,7 +120,8 @@ let
     EOF
   '';
 
-in {
+in
+{
   options.battery-monitor = {
     enable = mkEnableOption "Enable battery monitoring with notifications";
 
@@ -163,7 +169,7 @@ in {
       };
 
       Timer = {
-        OnBootSec = "30s";
+        OnBootSec = "60s";
         OnUnitActiveSec = cfg.checkInterval;
         Unit = "battery-monitor.service";
       };
