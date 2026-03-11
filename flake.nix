@@ -32,8 +32,7 @@
     };
 
     vicinae-extensions = {
-      url =
-        "github:Betongsuggan/vicinae-extensions/add-hyprland-monitor-extension";
+      url = "github:Betongsuggan/vicinae-extensions/add-hyprland-monitor-extension";
       flake = false;
     };
 
@@ -48,15 +47,22 @@
     niri.url = "github:sodiboo/niri-flake";
   };
 
-  outputs = { nixpkgs-unstable, awscli-local, nur, ... }@inputs:
+  outputs =
+    {
+      nixpkgs-unstable,
+      awscli-local,
+      nur,
+      ...
+    }@inputs:
     let
       overlays = [
         nur.overlays.default
-        (self: super:
+        (
+          self: super:
           let
-            mkVicinaeExtension =
-              inputs.vicinae.packages.${self.system}.mkVicinaeExtension;
-          in {
+            mkVicinaeExtension = inputs.vicinae.packages.${self.system}.mkVicinaeExtension;
+          in
+          {
             awscli-local = awscli-local.packages.${self.system}.default;
             walker = inputs.walker.packages.${self.system}.default;
             elephant = inputs.elephant.packages.${self.system}.default;
@@ -79,7 +85,8 @@
               pname = "hyprland-monitors";
               src = "${inputs.vicinae-extensions}/extensions/hyprland-monitors";
             };
-          })
+          }
+        )
         (final: prev: {
           unstable = import nixpkgs-unstable {
             system = prev.system;
@@ -90,7 +97,8 @@
         (import ./overrides/niri.nix { inherit inputs; })
       ];
 
-      mkHomeConfiguration = userModule:
+      mkHomeConfiguration =
+        userModule:
         inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = import inputs.nixpkgs {
             system = "x86_64-linux";
@@ -108,7 +116,8 @@
           ];
           extraSpecialArgs = { inherit inputs overlays; };
         };
-    in {
+    in
+    {
       nixosConfigurations = {
         bits = import ./hosts/bits/default.nix { inherit inputs overlays; };
         private-laptop = import ./hosts/private-laptop/default.nix {
@@ -120,14 +129,10 @@
       };
 
       homeConfigurations = {
-        "betongsuggan@private-desktop" =
-          mkHomeConfiguration ./hosts/private-desktop/user-betongsuggan.nix;
-        "gamer@private-desktop" =
-          mkHomeConfiguration ./hosts/private-desktop/user-gamer.nix;
-        "betongsuggan@private-laptop" =
-          mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
-        "birgerrydback@bits" =
-          mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;
+        "betongsuggan@private-desktop" = mkHomeConfiguration ./hosts/private-desktop/user-betongsuggan.nix;
+        "gamer@private-desktop" = mkHomeConfiguration ./hosts/private-desktop/user-gamer.nix;
+        "betongsuggan@private-laptop" = mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
+        "birgerrydback@bits" = mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;
       };
     };
 }

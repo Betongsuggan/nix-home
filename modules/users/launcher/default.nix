@@ -110,12 +110,9 @@ let
         concatStringsSep " " additionalArgs
       }"
     else if cfg.backend == "vicinae" then
-      "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/birgerrydback/hyprland-monitors/list-monitors' ${
+      "${pkgs.monitormenu}/bin/monitormenu --launcher vicinae --backend ${cfg.windowManager} ${
         concatStringsSep " " additionalArgs
       }"
-      #"${pkgs.monitormenu}/bin/monitormenu --launcher vicinae ${
-      #      concatStringsSep " " additionalArgs
-      #   }"
     else
       throw "Unsupported launcher backend: ${cfg.backend}";
 

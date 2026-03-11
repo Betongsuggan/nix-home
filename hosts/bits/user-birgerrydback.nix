@@ -91,11 +91,6 @@
         envVarName = "TAVILY_API_KEY";
       }
       {
-        name = "anthropic_key_provider";
-        path = "$HOME/.config/anthropic/key_provider.sh";
-        envVarName = "ANTHROPIC_API_KEY";
-      }
-      {
         name = "localstack_key_provider";
         path = "$HOME/.config/localstack/key_provider.sh";
         envVarName = "LOCALSTACK_AUTH_TOKEN";

@@ -285,6 +285,8 @@ in
         layout = {
           gaps = 6;
           center-focused-column = "never";
+          # Always keep an empty workspace above the first one, allowing windows to be moved up
+          empty-workspace-above-first = true;
 
           preset-column-widths = [
             { proportion = 1.0 / 3.0; }
@@ -432,8 +434,33 @@ in
           # Screenshot (area selection)
           "Mod+P".action.screenshot = { };
 
-          # Screen recording toggle
+          # Screen recording toggle (region selection)
           "Mod+V".action.spawn = [
+            "sh"
+            "-c"
+            ''
+              if ${pkgs.procps}/bin/pkill -SIGINT wf-recorder; then
+                ${config.notifications.send {
+                  summary = "Recording Stopped";
+                  icon = "media-playback-stop";
+                  appName = "Screen Recorder";
+                }}
+              else
+                GEOMETRY=$(${pkgs.slurp}/bin/slurp)
+                if [ -n "$GEOMETRY" ]; then
+                  ${config.notifications.send {
+                    summary = "Recording Started (Region)";
+                    icon = "media-record";
+                    appName = "Screen Recorder";
+                  }}
+                  ${pkgs.wf-recorder}/bin/wf-recorder -g "$GEOMETRY" -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv
+                fi
+              fi
+            ''
+          ];
+
+          # Screen recording toggle (full screen)
+          "Mod+Shift+V".action.spawn = [
             "sh"
             "-c"
             ''
@@ -625,6 +652,11 @@ in
                 "sh"
                 "-c"
                 (config.launcher.wifi { })
+              ];
+              "Mod+M".action.spawn = [
+                "sh"
+                "-c"
+                (config.launcher.monitor { })
               ];
               "Mod+Z".action.spawn = [
                 "sh"
