@@ -52,22 +52,22 @@ with lib;
         extraPackages =
           with pkgs;
           [
-            mesa
             libva
             libva-utils
             libva-vdpau-driver
             libvdpau-va-gl
             mangohud
           ]
-          # Legacy Intel (pre-Broadwell): i965 driver
-          ++ (optionals (config.graphics.intel.enable && config.graphics.intel.generation == "legacy") [
-            intel-vaapi-driver # LIBVA_DRIVER_NAME=i965
-            intel-ocl # OpenCL for Ivy Bridge through Broadwell
+          ++ (optionals config.graphics.amd [
+            rocmPackages.clr.icd # OpenCL for AMD
           ])
-          # Modern Intel (Broadwell+): iHD driver
+          ++ (optionals (config.graphics.intel.enable && config.graphics.intel.generation == "legacy") [
+            intel-vaapi-driver
+            intel-ocl
+          ])
           ++ (optionals (config.graphics.intel.enable && config.graphics.intel.generation != "legacy") [
-            intel-media-driver # LIBVA_DRIVER_NAME=iHD
-            intel-compute-runtime # OpenCL for Gen8+
+            intel-media-driver
+            intel-compute-runtime
           ]);
         extraPackages32 = with pkgs; [ mangohud ];
       };
@@ -94,14 +94,21 @@ with lib;
     };
 
     # Environment variables
-    environment.variables = {
-      __NVFBC_CAPTURE = mkIf config.graphics.nvidia "1";
-      # Intel VA-API driver selection based on generation
-      LIBVA_DRIVER_NAME = mkIf config.graphics.intel.enable (
-        if config.graphics.intel.generation == "legacy" then "i965" else "iHD"
-      );
-      # Intel doesn't have native VDPAU, use va_gl to translate to VA-API
-      VDPAU_DRIVER = mkIf config.graphics.intel.enable "va_gl";
-    };
+    environment.variables = mkMerge [
+      {
+        __NVFBC_CAPTURE = mkIf config.graphics.nvidia "1";
+        LIBVA_DRIVER_NAME = mkIf config.graphics.intel.enable (
+          if config.graphics.intel.generation == "legacy" then "i965" else "iHD"
+        );
+        VDPAU_DRIVER = mkIf config.graphics.intel.enable "va_gl";
+      }
+      (mkIf config.graphics.amd {
+        RADV_PERFTEST = "gpl,ngg_culling,sam,rt"; # RDNA4 optimizations with RT
+        AMD_VULKAN_ICD = "RADV";
+        mesa_glthread = "true";
+        VKD3D_CONFIG = "dxr11,dxr"; # DXR 1.1 for RDNA4
+        ENABLE_HDR_WSI = "1"; # HDR support
+      })
+    ];
   };
 }

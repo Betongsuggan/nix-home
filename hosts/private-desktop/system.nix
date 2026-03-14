@@ -1,6 +1,11 @@
 { pkgs, ... }:
 
 {
+  nixpkgs.overlays = [
+    (final: prev: {
+      mesa = prev.unstable.mesa;
+    })
+  ];
   users.users.gamer = {
     isNormalUser = true;
     description = "Gaming User";
@@ -56,12 +61,37 @@
     kernelParams = [
       "amdgpu.ppfeaturemask=0xffffffff"
       "amdgpu.dpm=1"
+      "amdgpu.dcfeaturemask=0x8" # FreeSync on all displays
+      "amdgpu.sg_display=0" # Disable scatter-gather for RDNA4 stability
       "preempt=full"
       "threadirqs"
       "transparent_hugepage=madvise"
       "mitigations=off"
+      "amd_pstate=active" # Modern AMD P-State driver
+      "split_lock_detect=off" # Gaming performance
+      "tsc=reliable"
+      "clocksource=tsc"
+      "nowatchdog"
+      "nmi_watchdog=0"
+      "usbcore.usbfs_memory_mb=256" # Increase USB memory buffer for KVM USB ethernet
     ];
+
+    kernel.sysctl = {
+      "vm.swappiness" = 10;
+      "vm.max_map_count" = 2147483642; # Required for some games
+      "vm.vfs_cache_pressure" = 50;
+      "vm.dirty_ratio" = 20;
+      "vm.dirty_background_ratio" = 5;
+    };
   };
+
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 50;
+  };
+
+  powerManagement.cpuFreqGovernor = "performance";
 
   hardware = {
     enableAllFirmware = true;
@@ -86,9 +116,34 @@
   swapDevices =
     [{ device = "/dev/disk/by-uuid/979c14c3-e740-4c1b-8b3d-cd817ac9b61b"; }];
 
-  services = { fwupd.enable = true; };
+  services = {
+    fwupd.enable = true;
+    udev.extraRules = ''
+      ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/scheduler}="none"
+      # Disable USB autosuspend for VIA Labs hubs (KVM switch)
+      ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="2109", ATTR{power/autosuspend}="-1", ATTR{power/control}="on"
+      # Disable USB autosuspend for Realtek RTL8153 ethernet adapter
+      ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0bda", ATTR{idProduct}=="8153", ATTR{power/autosuspend}="-1", ATTR{power/control}="on"
+    '';
+  };
 
-  programs.gamemode.enable = true;
+  programs.gamemode = {
+    enable = true;
+    enableRenice = true;
+    settings = {
+      general = {
+        renice = 10;
+        softrealtime = "auto";
+        ioprio = 0;
+        inhibit_screensaver = 1;
+      };
+      gpu = {
+        apply_gpu_optimisations = "accept-responsibility";
+        gpu_device = 0;
+        amd_performance_level = "high";
+      };
+    };
+  };
   game-streaming.server = {
     enable = true;
     display = "SUNSHINE";
@@ -106,7 +161,10 @@
     enable = true;
     amd = true;
   };
-  audio.enable = true;
+  audio = {
+    enable = true;
+    lowLatency = true;
+  };
   bluetooth = {
     enable = true;
     wake = {

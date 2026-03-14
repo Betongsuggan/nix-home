@@ -2,9 +2,14 @@
 with lib;
 
 {
-  options.audio = { enable = mkEnableOption "Enable sound hardware"; };
+  options.audio = {
+    enable = mkEnableOption "Enable sound hardware";
+    lowLatency = mkEnableOption "Low-latency mode for gaming";
+  };
 
   config = mkIf config.audio.enable {
+    security.rtkit.enable = true;
+
     services.pipewire = {
       enable = true;
       alsa = {
@@ -33,9 +38,19 @@ with lib;
         };
       };
       pulse.enable = true;
+
+      extraConfig.pipewire = mkIf config.audio.lowLatency {
+        "99-low-latency" = {
+          "context.properties" = {
+            "default.clock.rate" = 48000;
+            "default.clock.quantum" = 64;
+            "default.clock.min-quantum" = 32;
+            "default.clock.max-quantum" = 256;
+          };
+        };
+      };
     };
 
-    # Audio control utility available system-wide
     environment.systemPackages = with pkgs; [ pavucontrol libfreeaptx ];
 
     #hardware.pulseaudio = {

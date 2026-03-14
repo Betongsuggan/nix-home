@@ -5,7 +5,10 @@
   home.homeDirectory = "/home/betongsuggan";
   home.stateVersion = "25.05";
 
-  imports = [ ../../modules/users inputs.stylix.homeModules.stylix ];
+  imports = [
+    ../../modules/users
+    inputs.stylix.homeModules.stylix
+  ];
 
   general.enable = true;
   games.enable = true;
@@ -24,7 +27,7 @@
   };
 
   notifications.enable = true;
-  battery-monitor.enable = true;
+  battery-monitor.enable = false;
   fileManager = {
     enable = true;
     backend = "thunar";
@@ -48,7 +51,10 @@
     type = "ps5";
     mangohudToggle = {
       enable = true;
-      buttons = [ "square" "triangle" ]; # Press Square or Triangle to toggle
+      buttons = [
+        "square"
+        "triangle"
+      ]; # Press Square or Triangle to toggle
       autoStart = true;
     };
     rumble.enable = true;
@@ -58,7 +64,7 @@
     enable = true;
     backend = "hyprland";
     monitors = [
-      "DP-2,3440x1440@240,auto,1,bitdepth,10"
+      "DP-2,3440x1440@240,auto,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,2.0"
       "HDMI-A-1,disable"
       ",preferred,auto,1"
     ];
@@ -84,13 +90,14 @@
   };
   secrets = {
     enable = true;
-    keyProviders = [{
-      name = "anthropic_key_provider";
-      path = "$HOME/.config/anthropic/key_provider.sh";
-      envVarName = "ANTHROPIC_API_KEY";
-    }];
+    keyProviders = [
+      {
+        name = "anthropic_key_provider";
+        path = "$HOME/.config/anthropic/key_provider.sh";
+        envVarName = "ANTHROPIC_API_KEY";
+      }
+    ];
   };
 
   programs.home-manager.enable = true;
 }
-

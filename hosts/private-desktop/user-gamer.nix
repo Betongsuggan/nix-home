@@ -10,16 +10,18 @@
   home.homeDirectory = "/home/gamer";
   home.stateVersion = "25.05";
 
-  # Enable gaming setup with enhanced MangoHud
   games = {
     enable = true;
     mangohud = {
       enable = true;
       detailedMode = true;
-      controllerToggle = false; # Now handled by controller module
+      controllerToggle = false;
       position = "top-left";
       fontSize = 22;
     };
+    vkbasalt.enable = true;
+    protonGE.enable = true;
+    tools.enable = true;
   };
 
   general.enable = true;
@@ -70,9 +72,9 @@
     enable = true;
     backend = "hyprland";
     monitors = [
-      "SUNSHINE,1920x1080@120,auto,1,vrr,1,bitdepth,10"
-      "DP-2,3440x1440@240,auto,1,vrr,1,bitdepth,10"
-      "HDMI-A-1,3840x2160@120,auto,2,vrr,1,bitdepth,10"
+      "SUNSHINE,1920x1080@120,auto,1,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,2.0"
+      "DP-2,3440x1440@240,auto,1,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,2.0"
+      "HDMI-A-1,3840x2160@120,auto,2,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,2.0"
       ",preferred,auto,1"
     ];
 
@@ -125,10 +127,27 @@
     # forceHdr = true;
 
     environmentVariables = {
-      RADV_PERFTEST = "gpl";
+      RADV_PERFTEST = "gpl,ngg_culling,sam,rt";
       MESA_VK_WSI_PRESENT_MODE = "mailbox";
+      AMD_VULKAN_ICD = "RADV";
+      mesa_glthread = "true";
+      VKD3D_CONFIG = "dxr11,dxr";
+      STEAM_FRAME_FORCE_CLOSE = "1";
       STEAM_USE_DYNAMIC_VRS = "0";
       SDL_JOYSTICK_HIDAPI = "0";
+      DXVK_ASYNC = "1";
+      ENABLE_HDR_WSI = "1";
+      DXVK_HDR = "1";
+      RADV_RT_WAVE64 = "1";
+
+      # Performance
+      PROTON_FORCE_LARGE_ADDRESS_AWARE = "1";
+      DXVK_LOG_LEVEL = "none";
+      VKD3D_LOG_LEVEL = "none";
+      STAGING_SHARED_MEMORY = "1";
+      PROTON_ENABLE_WAYLAND = "1";
+
+      PROTON_ENABLE_NVAPI = "1";
     };
 
     createDesktopEntry = true;
@@ -181,22 +200,39 @@
     '';
   };
 
-  # Session variables are now set by console-mode's environmentVariables
-  # They're kept here for consistency and system-wide availability
   home.sessionVariables = {
-    # MangoHud variables are now handled by the games module
-    # DXVK_HUD = "fps";  # Might conflict with MangoHud
-    # AMD GPU optimizations
-    RADV_PERFTEST = "gpl";
+    # AMD GPU - RDNA4 optimized
+    RADV_PERFTEST = "gpl,ngg_culling,sam,rt";
     MESA_VK_WSI_PRESENT_MODE = "mailbox";
-    # Controller and overlay fixes
+    AMD_VULKAN_ICD = "RADV";
+    mesa_glthread = "true";
+    VKD3D_CONFIG = "dxr11,dxr";
+
+    # Steam
+    STEAM_FRAME_FORCE_CLOSE = "1";
     STEAM_USE_DYNAMIC_VRS = "0";
+
+    # Proton/Wine
+    DXVK_ASYNC = "1";
+    PROTON_ENABLE_NVAPI = "1";
+
+    # Controller
     SDL_JOYSTICK_HIDAPI = "0";
-    #STEAM_FRAME_FORCE_CLOSE = "1";
-    # Enable FSR for compatible games
-    #WINE_FULLSCREEN_FSR = "1";
-    # Optimize Steam overlay - keep disabled for AMD
-    #STEAM_DISABLE_OVERLAY_DWM = "1";
+    SDL_VIDEODRIVER = "wayland,x11";
+
+    # HDR
+    ENABLE_HDR_WSI = "1";
+    DXVK_HDR = "1";
+
+    # RDNA4 specific
+    RADV_RT_WAVE64 = "1";
+
+    # Performance
+    PROTON_FORCE_LARGE_ADDRESS_AWARE = "1";
+    DXVK_LOG_LEVEL = "none";
+    VKD3D_LOG_LEVEL = "none";
+    STAGING_SHARED_MEMORY = "1";
+    PROTON_ENABLE_WAYLAND = "1";
   };
 
   programs.home-manager.enable = true;

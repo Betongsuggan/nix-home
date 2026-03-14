@@ -55,6 +55,22 @@ with lib;
         description = "MangoHud font size";
       };
     };
+
+    vkbasalt = {
+      enable = mkEnableOption "vkBasalt post-processing";
+    };
+
+    protonGE = {
+      enable = mkEnableOption "Proton-GE";
+    };
+
+    tools = {
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Install gaming tools (goverlay, protonup-qt, etc.)";
+      };
+    };
   };
 
   config = mkIf config.games.enable {
@@ -92,6 +108,7 @@ with lib;
         # System information
         throttling_status = true;
         fsr = true;
+        hdr = true;
         gamemode = config.games.mangohud.detailedMode;
         vulkan_driver = config.games.mangohud.detailedMode;
         engine_version = config.games.mangohud.detailedMode;
@@ -117,8 +134,8 @@ with lib;
         text_outline_thickness = 1.5;
         round_corners = 8;
 
-        # Controller toggle keybind (F9 key)
-        toggle_hud = "F9";
+        # Toggle keybind (Shift+F9 avoids game F-key conflicts)
+        toggle_hud = "Shift_L+F9";
 
         # Start hidden by default (toggle with controller)
         no_display = true;
@@ -135,18 +152,35 @@ with lib;
       };
     };
 
-    home.packages = with pkgs; [
-      chiaki
-      discord
-      libretro.snes9x
-      evtest
-      gamemode
-      lutris
+    home.packages = with pkgs;
+      [
+        chiaki
+        discord
+        libretro.snes9x
+        evtest
+        gamemode
+        lutris
+        steam
+        steam-run
+        sc-controller
+        vulkan-tools
+        mesa-demos
+      ]
+      ++ (optionals config.games.tools.enable [
+        protonup-qt # Proton-GE version manager
+        winetricks
+        protontricks
+        goverlay # MangoHud/vkBasalt GUI
+        bottles # Wine prefix manager
+        heroic # GOG/Epic launcher
+      ])
+      ++ (optionals config.games.vkbasalt.enable [
+        vkbasalt
+      ]);
 
-      # Standard RetroArch is still included if you want to use it separately
-      steam
-      steam-run
-      sc-controller
-    ];
+    # Install Proton-GE to Steam's compatibility tools directory
+    home.file = mkIf config.games.protonGE.enable {
+      ".steam/root/compatibilitytools.d/proton-ge".source = pkgs.proton-ge-bin;
+    };
   };
 }

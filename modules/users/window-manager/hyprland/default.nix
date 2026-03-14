@@ -17,6 +17,7 @@ with lib;
 
     # Auto-enable launcher when hyprland is enabled
     launcher.enable = mkDefault true;
+    launcher.windowManager = "hyprland";
     # Auto-enable controls when hyprland is enabled
     controls.enable = mkDefault true;
     controls.windowManager = "hyprland";
@@ -346,6 +347,11 @@ with lib;
           # Turn display back on when lid opens
           ", switch:off:Lid Switch, exec, ${pkgs.hyprland}/bin/hyprctl dispatch dpms on"
         ];
+
+        render = {
+          cm_enabled = true;
+          cm_fs_passthrough = 1; # HDR-capable apps opt-in to passthrough; others get compositor tone mapping
+        };
 
         misc = {
           disable_splash_rendering = true;

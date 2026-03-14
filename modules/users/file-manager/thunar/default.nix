@@ -354,15 +354,29 @@ in
       text = tumblerConfig;
     };
 
-    # Volume manager xfconf settings (generates thunar-volman.xml)
-    xfconf.settings = mkIf thunarCfg.volumeManager.enable {
-      thunar-volman = {
-        "automount-drives/enabled" = thunarCfg.volumeManager.autoMount;
-        "automount-media/enabled" = thunarCfg.volumeManager.autoMount;
-        "autobrowse/enabled" = thunarCfg.volumeManager.autoMount;
-        "autoopen/enabled" = false;  # Don't auto-open file manager on mount
-        "autorun/enabled" = thunarCfg.volumeManager.autoRun;
-      };
+    # Volume manager settings written as XML directly (avoids needing xfconfd)
+    home.file.".config/xfce4/xfconf/xfce-perchannel-xml/thunar-volman.xml" = mkIf thunarCfg.volumeManager.enable {
+      text = ''
+        <?xml version="1.0" encoding="UTF-8"?>
+        <channel name="thunar-volman" version="1.0">
+          <property name="automount-drives" type="empty">
+            <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoMount}"/>
+          </property>
+          <property name="automount-media" type="empty">
+            <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoMount}"/>
+          </property>
+          <property name="autobrowse" type="empty">
+            <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoMount}"/>
+          </property>
+          <property name="autoopen" type="empty">
+            <property name="enabled" type="bool" value="false"/>
+          </property>
+          <property name="autorun" type="empty">
+            <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoRun}"/>
+          </property>
+        </channel>
+      '';
+      force = true;
     };
   };
 }
