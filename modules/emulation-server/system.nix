@@ -94,6 +94,14 @@ in {
   };
 
   config = mkIf cfg.enable {
+    # Auto-enable the user-side module for the configured user
+    home-manager.users.${cfg.user} = { ... }: {
+      emulation-server.user = {
+        enable = mkDefault true;
+        dataDir = mkDefault cfg.dataDir;
+      };
+    };
+
     # Syncthing for save file synchronization
     services.syncthing = {
       enable = true;

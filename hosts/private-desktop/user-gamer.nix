@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ../../modules/users
+    ../../modules/user.nix
     inputs.stylix.homeModules.stylix
   ];
 
@@ -24,7 +24,6 @@
     tools.enable = true;
   };
 
-  emulation-server.enable = true;
   general.enable = true;
   firefox.enable = true;
   fileManager = {

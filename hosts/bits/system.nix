@@ -117,7 +117,6 @@
   fingerprint.enable = true;
   wayland-security.enable = true;
   printers.enable = true;
-  fileManagerSystem.enable = true;
   power-management = {
     enable = true;
   };

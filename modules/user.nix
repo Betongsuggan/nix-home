@@ -8,10 +8,10 @@
     ./development
     ./direnv
     ./emulation-client
-    ./emulation-server
+    ./emulation-server/user.nix
     ./firefox
     ./flatpak
-    ./game-streaming
+    ./game-streaming/user.nix
     ./games
     ./general
     ./git
@@ -27,7 +27,7 @@
     ./starship
     ./terminal
     ./theming
-    ./file-manager
+    ./file-manager/user.nix
     ./waybar
     ./window-manager
     ./x11

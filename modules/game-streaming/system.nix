@@ -130,18 +130,9 @@ in {
         default = true;
       };
     };
-    client = {
-      enable = mkOption {
-        description = "Enable game streaming client (Moonlight)";
-        type = types.bool;
-        default = false;
-      };
-    };
   };
 
-  config = mkMerge [
-    # Server configuration
-    (mkIf config.game-streaming.server.enable {
+  config = mkIf config.game-streaming.server.enable {
       # Sunshine requires uinput for virtual input devices (keyboard, mouse, gamepad injection)
       boot.kernelModules = [ "uinput" ];
       hardware.uinput.enable = true;
@@ -193,11 +184,5 @@ in {
         pkgs.jq
         pkgs.libva-utils # vainfo for verifying VAAPI encoder capabilities
       ];
-    })
-
-    # Client configuration
-    (mkIf config.game-streaming.client.enable {
-      environment.systemPackages = [ pkgs.moonlight-qt ];
-    })
-  ];
+  };
 }

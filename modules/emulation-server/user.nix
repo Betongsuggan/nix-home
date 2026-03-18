@@ -2,11 +2,11 @@
 with lib;
 
 let
-  cfg = config.emulation-server;
+  cfg = config.emulation-server.user;
 
   dataDir = cfg.dataDir;
 in {
-  options.emulation-server = {
+  options.emulation-server.user = {
     enable = mkEnableOption "Emulation server user configuration (directory structure)";
 
     dataDir = mkOption {

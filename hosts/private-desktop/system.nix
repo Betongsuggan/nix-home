@@ -174,8 +174,6 @@
     gamemode
     mangohud
   ];
-  fileManagerSystem.enable = true;
-
   graphics = {
     enable = true;
     amd = true;

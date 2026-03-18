@@ -14,31 +14,21 @@ if [[ "$file" == *"/SPEC.md" ]]; then
   exit 0
 fi
 
-# --- modules/system/<name>/ ---
-if [[ "$file" == *"/modules/system/"* ]]; then
-  module=$(echo "$file" | sed -n 's|.*/modules/system/\([^/]*\)/.*|\1|p')
+# --- modules/<name>/ ---
+if [[ "$file" == *"/modules/"* ]]; then
+  # Extract module name: the first path component after modules/
+  module=$(echo "$file" | sed -n 's|.*/modules/\([^/]*\)/.*|\1|p')
   if [[ -z "$module" ]]; then
     exit 0
   fi
-  repo_root=$(echo "$file" | sed 's|\(.*\)/modules/.*|\1|')
-  spec_file="${repo_root}/modules/system/${module}/SPEC.md"
-  if [[ -f "$spec_file" ]]; then
-    echo "IMPORTANT: You modified a file in modules/system/${module}/. You MUST check modules/system/${module}/SPEC.md for drift. If your changes affect module options or behavior, update the spec BEFORE continuing with other work."
-    exit 2
-  fi
-  exit 0
-fi
-
-# --- modules/users/<name>/ ---
-if [[ "$file" == *"/modules/users/"* ]]; then
-  module=$(echo "$file" | sed -n 's|.*/modules/users/\([^/]*\)/.*|\1|p')
-  if [[ -z "$module" ]]; then
+  # Skip aggregator files (system.nix, user.nix) and common
+  if [[ "$module" == "system.nix" || "$module" == "user.nix" || "$module" == "common" ]]; then
     exit 0
   fi
   repo_root=$(echo "$file" | sed 's|\(.*\)/modules/.*|\1|')
-  spec_file="${repo_root}/modules/users/${module}/SPEC.md"
+  spec_file="${repo_root}/modules/${module}/SPEC.md"
   if [[ -f "$spec_file" ]]; then
-    echo "IMPORTANT: You modified a file in modules/users/${module}/. You MUST check modules/users/${module}/SPEC.md for drift. If your changes affect module options or behavior, update the spec BEFORE continuing with other work."
+    echo "IMPORTANT: You modified a file in modules/${module}/. You MUST check modules/${module}/SPEC.md for drift. If your changes affect module options or behavior, update the spec BEFORE continuing with other work."
     exit 2
   fi
   exit 0

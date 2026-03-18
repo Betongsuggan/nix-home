@@ -1,10 +1,19 @@
 # File Manager
 
-Configurable graphical file manager module with backend selection, sidebar bookmarks, and a Thunar sub-module providing custom context menu actions, thumbnail settings, archive integration, and volume management.
+Unified module with system-level services and user-level configuration. The system half (`system.nix`) auto-enables when any user sets `fileManager.enable = true` — no separate system option needed.
+
+## System layer (auto-enabled)
+
+Installs Thunar with plugins and enables supporting system services: GVFS (virtual filesystem), Tumbler (thumbnails), udisks2 (disk management), and Polkit (privileged operations). Activates automatically when any home-manager user has `fileManager.enable = true`.
+
+## User layer
+
+Configurable graphical file manager with backend selection, sidebar bookmarks, and a Thunar sub-module providing custom context menu actions, thumbnail settings, archive integration, and volume management.
 
 ## Usage
 
 ```nix
+# In user config only — system services are auto-enabled
 fileManager = {
   enable = true;
   backend = "thunar";
@@ -17,7 +26,7 @@ fileManager = {
 };
 ```
 
-## Options
+## Options (user)
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -59,3 +68,4 @@ When `backend = "thunar"`, the Thunar sub-module is automatically enabled and pr
 - Exposes internal API options for cross-module use: `config.fileManager.open { path = "/path"; }`, `config.fileManager.select { file = "/path"; }`, and `config.fileManager.terminal { cwd = "/path"; }`.
 - Bookmarks are written to `~/.config/gtk-3.0/bookmarks`.
 - The Thunar sub-module writes custom actions to `~/.config/Thunar/uca.xml` and tumbler config to `~/.config/tumbler/tumbler.rc`.
+- System services (xfconf, Thunar, GVFS, Tumbler, udisks2, Polkit) are enabled automatically — no need for a separate system enable.

@@ -7,12 +7,13 @@
   };
 
   imports = [
-    ../../modules/users
+    ../../modules/user.nix
     inputs.stylix.homeModules.stylix
   ];
 
   general.enable = true;
   firefox.enable = true;
+  game-streaming.client.enable = true;
   games.enable = true;
   communication.enable = true;
   starship.enable = true;

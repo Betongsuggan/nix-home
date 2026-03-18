@@ -46,8 +46,6 @@
     i2c.enable = true;
     sensor.iio.enable = true;
   };
-  game-streaming.client.enable = true;
-
   time.timeZone = "Europe/Stockholm";
 
   # File systems must be declared in order to boot
@@ -82,8 +80,6 @@
   wayland-security.enable = true;
   printers.enable = true;
   power-management.enable = true;
-  fileManagerSystem.enable = true;
-
   networkmanager = {
     enable = true;
     hostName = "nixos";

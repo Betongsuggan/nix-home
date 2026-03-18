@@ -6,7 +6,7 @@ inputs.nixpkgs.lib.nixosSystem {
     inputs.home-manager.nixosModules.home-manager
     inputs.lanzaboote.nixosModules.lanzaboote
     ../../modules/common
-    ../../modules/system
+    ../../modules/system.nix
     ./system.nix
     {
       nixpkgs = { inherit overlays; };

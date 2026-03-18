@@ -7,11 +7,11 @@
     ./colemak
     ./disk-encryption
     ./docker
-    ./emulation-server
+    ./emulation-server/system.nix
     ./file-sharing
     ./fingerprint
     ./firewall
-    ./game-streaming
+    ./game-streaming/system.nix
     ./graphics
     ./kde
     ./keyboard
@@ -20,7 +20,7 @@
     ./printers
     ./networking
     ./secure-boot
-    ./file-manager
+    ./file-manager/system.nix
     ./touchpad
     ./undervolting
     ./waydroid

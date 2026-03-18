@@ -6,7 +6,7 @@
   home.stateVersion = "24.05";
 
   imports = [
-    ../../modules/users
+    ../../modules/user.nix
     inputs.stylix.homeModules.stylix
   ];
 
