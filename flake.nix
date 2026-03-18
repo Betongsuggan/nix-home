@@ -60,17 +60,17 @@
         (
           self: super:
           let
-            mkVicinaeExtension = inputs.vicinae.packages.${self.system}.mkVicinaeExtension;
+            mkVicinaeExtension = inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.mkVicinaeExtension;
           in
           {
-            awscli-local = awscli-local.packages.${self.system}.default;
-            walker = inputs.walker.packages.${self.system}.default;
-            elephant = inputs.elephant.packages.${self.system}.default;
-            audiomenu = inputs.audiomenu.packages.${self.system}.default;
-            monitormenu = inputs.monitormenu.packages.${self.system}.default;
-            console-mode = inputs.console-mode.packages.${self.system}.default;
-            d2 = inputs.d2.packages.${self.system}.default;
-            vicinae = inputs.vicinae.packages.${self.system}.default;
+            awscli-local = awscli-local.packages.${self.stdenv.hostPlatform.system}.default;
+            walker = inputs.walker.packages.${self.stdenv.hostPlatform.system}.default;
+            elephant = inputs.elephant.packages.${self.stdenv.hostPlatform.system}.default;
+            audiomenu = inputs.audiomenu.packages.${self.stdenv.hostPlatform.system}.default;
+            monitormenu = inputs.monitormenu.packages.${self.stdenv.hostPlatform.system}.default;
+            console-mode = inputs.console-mode.packages.${self.stdenv.hostPlatform.system}.default;
+            d2 = inputs.d2.packages.${self.stdenv.hostPlatform.system}.default;
+            vicinae = inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.default;
 
             # Vicinae extensions
             vicinae-wifi-commander = mkVicinaeExtension {
@@ -89,7 +89,7 @@
         )
         (final: prev: {
           unstable = import nixpkgs-unstable {
-            system = prev.system;
+            system = prev.stdenv.hostPlatform.system;
             config.allowUnfree = true;
           };
         })

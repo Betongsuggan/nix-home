@@ -1,6 +1,6 @@
 { inputs }:
 (final: prev: {
-  niri-stable = inputs.niri.packages.${prev.system}.niri-stable.overrideAttrs (oldAttrs: {
+  niri-stable = inputs.niri.packages.${prev.stdenv.hostPlatform.system}.niri-stable.overrideAttrs (oldAttrs: {
     doCheck = false;
   });
 })

@@ -21,6 +21,7 @@ inputs.nixpkgs.lib.nixosSystem {
           inputs.console-mode.homeManagerModules.default
           inputs.vicinae.homeManagerModules.default
           inputs.niri.homeModules.niri
+          { stylix.overlays.enable = false; }
         ];
         users.betongsuggan = import ./user-betongsuggan.nix;
         users.gamer = import ./user-gamer.nix;

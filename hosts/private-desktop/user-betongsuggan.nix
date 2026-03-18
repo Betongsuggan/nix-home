@@ -7,7 +7,6 @@
 
   imports = [
     ../../modules/user.nix
-    inputs.stylix.homeModules.stylix
   ];
 
   general.enable = true;

@@ -21,6 +21,7 @@ inputs.nixpkgs.lib.nixosSystem {
           inputs.stylix.homeModules.stylix
           inputs.vicinae.homeManagerModules.default
           inputs.niri.homeModules.niri
+          { stylix.overlays.enable = false; }
         ];
         extraSpecialArgs = { inherit inputs overlays; };
         users.betongsuggan = import ./user-betongsuggan.nix;

@@ -3,7 +3,6 @@
 {
   imports = [
     ../../modules/user.nix
-    inputs.stylix.homeModules.stylix
   ];
 
   home.username = "gamer";

@@ -36,30 +36,5 @@ with lib;
       }
     ];
 
-    # Warning about manual setup required
-    warnings = [
-      ''
-        Secure Boot has been enabled. After building and switching to this configuration,
-        you must complete the one-time setup process:
-
-        1. Create Secure Boot keys:
-           sudo sbctl create-keys
-
-        2. Enroll keys in firmware (this will enable Secure Boot):
-           sudo sbctl enroll-keys -m
-
-        3. Verify the system will boot with Secure Boot:
-           Check that /boot/EFI/Linux/*.efi files exist
-           These are the signed unified kernel images
-
-        4. Reboot and enable Secure Boot in BIOS/UEFI settings
-
-        5. After reboot, verify Secure Boot status:
-           sudo sbctl status
-
-        Note: systemd-boot will still allow you to select between NixOS generations
-        at boot time. Press Space during boot to see the boot menu.
-      ''
-    ];
   };
 }
