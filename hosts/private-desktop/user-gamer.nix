@@ -24,6 +24,7 @@
     tools.enable = true;
   };
 
+  emulation-server.enable = true;
   general.enable = true;
   firefox.enable = true;
   fileManager = {

@@ -7,6 +7,8 @@
     ./controls
     ./development
     ./direnv
+    ./emulation-client
+    ./emulation-server
     ./firefox
     ./flatpak
     ./game-streaming
