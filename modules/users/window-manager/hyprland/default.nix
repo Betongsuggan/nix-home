@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -8,6 +13,21 @@ with lib;
       type = types.bool;
       default = true;
       description = "Enable lockscreen functionality (hyprlock, idle lock, etc.)";
+    };
+    cmFsPassthrough = mkOption {
+      type = types.int;
+      default = 2;
+      description = "Fullscreen CM passthrough (0=off, 1=always, 2=HDR-only)";
+    };
+    windowRules = mkOption {
+      type = types.listOf types.str;
+      default = [];
+      description = "Additional Hyprland window rules (windowrulev2 format)";
+    };
+    workspaceRules = mkOption {
+      type = types.listOf types.str;
+      default = [];
+      description = "Additional Hyprland workspace rules";
     };
   };
 
@@ -33,7 +53,13 @@ with lib;
           inherit (config.theme.cursor) size;
         };
       };
-      packages = with pkgs; [ hyprlock grim slurp wl-clipboard systemd ];
+      packages = with pkgs; [
+        hyprlock
+        grim
+        slurp
+        wl-clipboard
+        systemd
+      ];
     };
 
     services.hyprpaper = {
@@ -51,11 +77,16 @@ with lib;
         general = {
           after_sleep_cmd = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
           ignore_dbus_inhibit = false;
-        } // (if config.hyprland.lockscreen.enable then {
-          lock_cmd =
-            "${pkgs.procps}/bin/pgrep -x hyprlock || ${pkgs.hyprlock}/bin/hyprlock";
-          before_sleep_cmd = "${pkgs.systemd}/bin/loginctl lock-session";
-        } else {});
+        }
+        // (
+          if config.hyprland.lockscreen.enable then
+            {
+              lock_cmd = "${pkgs.procps}/bin/pgrep -x hyprlock || ${pkgs.hyprlock}/bin/hyprlock";
+              before_sleep_cmd = "${pkgs.systemd}/bin/loginctl lock-session";
+            }
+          else
+            { }
+        );
 
         listener = [
           {
@@ -63,12 +94,19 @@ with lib;
             on-timeout = "${pkgs.brightnessctl}/bin/brightnessctl -s set 10";
             on-resume = "${pkgs.brightnessctl}/bin/brightnessctl -r";
           }
-        ] ++ (if config.hyprland.lockscreen.enable then [
-          {
-            timeout = 300; # 5 minutes
-            on-timeout = "${pkgs.systemd}/bin/loginctl lock-session";
-          }
-        ] else []) ++ [
+        ]
+        ++ (
+          if config.hyprland.lockscreen.enable then
+            [
+              {
+                timeout = 300; # 5 minutes
+                on-timeout = "${pkgs.systemd}/bin/loginctl lock-session";
+              }
+            ]
+          else
+            [ ]
+        )
+        ++ [
           {
             timeout = 330; # 5.5 minutes
             on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
@@ -109,37 +147,43 @@ with lib;
           };
         };
 
-        background = [{
-          path = "${config.theme.wallpaper}";
-          blur_passes = 2;
-          blur_size = 4;
-        }];
+        background = [
+          {
+            path = "${config.theme.wallpaper}";
+            blur_passes = 2;
+            blur_size = 4;
+          }
+        ];
 
-        input-field = [{
-          size = "300, 50";
-          outline_thickness = 2;
-          dots_size = 0.2;
-          dots_spacing = 0.5;
-          outer_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
-          inner_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.background})";
-          font_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
-          fade_on_empty = false;
-          placeholder_text = "<i>$FPRINTPROMPT</i>";
-          hide_input = false;
-          position = "0, -50";
-          halign = "center";
-          valign = "center";
-        }];
+        input-field = [
+          {
+            size = "300, 50";
+            outline_thickness = 2;
+            dots_size = 0.2;
+            dots_spacing = 0.5;
+            outer_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
+            inner_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.background})";
+            font_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
+            fade_on_empty = false;
+            placeholder_text = "<i>$FPRINTPROMPT</i>";
+            hide_input = false;
+            position = "0, -50";
+            halign = "center";
+            valign = "center";
+          }
+        ];
 
-        label = [{
-          text = "$TIME";
-          color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
-          font_size = 64;
-          font_family = "monospace";
-          position = "0, 150";
-          halign = "center";
-          valign = "center";
-        }];
+        label = [
+          {
+            text = "$TIME";
+            color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
+            font_size = 64;
+            font_family = "monospace";
+            position = "0, 150";
+            halign = "center";
+            valign = "center";
+          }
+        ];
       };
     };
 
@@ -149,13 +193,15 @@ with lib;
       settings = {
         monitor = config.windowManager.monitors;
 
-        # Workspace to monitor bindings
-        workspace = map (wb:
-          "${toString wb.workspace}, monitor:${wb.monitor}"
-          + (if wb.default then ", default:true" else "")
-        ) config.windowManager.workspaceBindings;
+        # Workspace to monitor bindings + user workspace rules
+        workspace = (map (
+          wb:
+          "${toString wb.workspace}, monitor:${wb.monitor}" + (if wb.default then ", default:true" else "")
+        ) config.windowManager.workspaceBindings) ++ config.hyprland.workspaceRules;
 
-        cursor = { enable_hyprcursor = false; };
+        cursor = {
+          enable_hyprcursor = false;
+        };
 
         "$mod" = "SUPER";
         "$modShift" = "SUPER_SHIFT";
@@ -164,39 +210,47 @@ with lib;
         exec-once = [
           # Launcher daemons (walker, vicinae) are started via systemd services
         ]
-          # Create persistent virtual/headless monitors at startup
-          # Then restart Sunshine so it detects them (required for headless streaming)
-          ++ (if config.windowManager.virtualMonitors != [] then
-            (map (name:
-              "${pkgs.hyprland}/bin/hyprctl output create headless ${name}"
+        # Create persistent virtual/headless monitors at startup
+        # Then restart Sunshine so it detects them (required for headless streaming)
+        ++ (
+          if config.windowManager.virtualMonitors != [ ] then
+            (map (
+              name: "${pkgs.hyprland}/bin/hyprctl output create headless ${name}"
             ) config.windowManager.virtualMonitors)
-            ++ [ "sleep 2 && ${pkgs.systemd}/bin/systemctl --user restart sunshine || true" ]
-          else [])
-          # Autostart applications
-          ++ builtins.concatLists (builtins.attrValues (builtins.mapAttrs
-            (name: app:
+            ++ [
+              "sleep 2 && ${pkgs.systemd}/bin/systemctl --user restart sunshine || true"
+            ]
+          else
+            [ ]
+        )
+        # Autostart applications
+        ++ builtins.concatLists (
+          builtins.attrValues (
+            builtins.mapAttrs (
+              name: app:
               if app == null then
                 [ ]
               else
                 let
                   # Autostart applications on provided worspace
-                  workspacePrefix = if app.workspace != null then
-                    "[workspace ${toString app.workspace}] "
-                  else
-                    "";
-                in [ "${workspacePrefix}${app.command}" ])
-            config.windowManager.autostartApps));
+                  workspacePrefix = if app.workspace != null then "[workspace ${toString app.workspace}] " else "";
+                in
+                [ "${workspacePrefix}${app.command}" ]
+            ) config.windowManager.autostartApps
+          )
+        );
 
         general = {
-          "col.active_border" = "rgb(${
-              lib.strings.removePrefix "#"
-              config.theme.colors.primary.foreground
-            })";
+          "col.active_border" = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
         };
 
-        dwindle = { force_split = 2; };
+        dwindle = {
+          force_split = 2;
+        };
 
-        decoration = { rounding = 5; };
+        decoration = {
+          rounding = 5;
+        };
 
         bind = [
           ### Keyboard layouts
@@ -209,31 +263,31 @@ with lib;
           ### Applications
           # Terminal
           "$mod, RETURN, exec, ${config.terminal.command}"
-        ] ++ (lib.optionals config.hyprland.lockscreen.enable [
+        ]
+        ++ (lib.optionals config.hyprland.lockscreen.enable [
           # Lock screen
           "$modShift, x, exec, ${pkgs.hyprlock}/bin/hyprlock"
-        ]) ++ [
+        ])
+        ++ [
 
           # Print screen
-          ''
-            $modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" ~/media/images/$(${pkgs.coreutils}/bin/date -Iseconds).png''
+          ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" ~/media/images/$(${pkgs.coreutils}/bin/date -Iseconds).png''
 
           # Record screen (toggle: press to start, press again to stop)
           # Records the currently focused monitor using H.264 in MKV container (more resilient)
-          ''
-            $mod, v, exec, ${pkgs.procps}/bin/pkill -SIGINT wf-recorder && ${
-              config.notifications.send {
-                summary = "Recording Stopped";
-                icon = "media-playback-stop";
-                appName = "Screen Recorder";
-              }
-            } || { ${
-              config.notifications.send {
-                summary = "Recording Started";
-                icon = "media-record";
-                appName = "Screen Recorder";
-              }
-            }; ${pkgs.wf-recorder}/bin/wf-recorder -o "$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name')" -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv; }''
+          ''$mod, v, exec, ${pkgs.procps}/bin/pkill -SIGINT wf-recorder && ${
+            config.notifications.send {
+              summary = "Recording Stopped";
+              icon = "media-playback-stop";
+              appName = "Screen Recorder";
+            }
+          } || { ${
+            config.notifications.send {
+              summary = "Recording Started";
+              icon = "media-record";
+              appName = "Screen Recorder";
+            }
+          }; ${pkgs.wf-recorder}/bin/wf-recorder -o "$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name')" -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv; }''
 
           ### Screen handling
           # Forcus navigation
@@ -289,7 +343,8 @@ with lib;
           "$mod, n, exec, media-player next"
           ", XF86AudioPrev, exec, media-player previous"
           "$mod, p, exec, media-player previous"
-        ] ++ (lib.optionals config.launcher.enable [
+        ]
+        ++ (lib.optionals config.launcher.enable [
           ### Launchers
           # Emojis
           "$mod, e, exec, ${config.launcher.show { mode = "symbols"; }}"
@@ -307,25 +362,35 @@ with lib;
           "$mod, d, exec, ${config.launcher.show { mode = "websearch"; }}"
 
           # Applications
-          "$mod, o, exec, ${
-            config.launcher.show { mode = "desktopapplications"; }
-          }"
+          "$mod, o, exec, ${config.launcher.show { mode = "desktopapplications"; }}"
           # Clipboard
           "$mod, c, exec, ${config.launcher.show { mode = "clipboard"; }}"
 
           # Audio sink/source launchers
           "$mod, a, exec, ${config.launcher.audioOutput { }}"
           "$modShift, a, exec, ${config.launcher.audioInput { }}"
-        ]) ++ (builtins.concatLists (builtins.genList (x:
-          let
-            ws = let c = (x + 1) / 10; in builtins.toString (x + 1 - (c * 10));
-          in [
-            # Move focus to workspace x
-            "$mod, ${ws}, workspace, ${toString (x + 1)}"
-            # Move focused application to workspace x
-            "$modShift, ${ws}, movetoworkspacesilent, ${toString (x + 1)}"
-          ]) 10));
-        binds = { movefocus_cycles_fullscreen = true; };
+        ])
+        ++ (builtins.concatLists (
+          builtins.genList (
+            x:
+            let
+              ws =
+                let
+                  c = (x + 1) / 10;
+                in
+                builtins.toString (x + 1 - (c * 10));
+            in
+            [
+              # Move focus to workspace x
+              "$mod, ${ws}, workspace, ${toString (x + 1)}"
+              # Move focused application to workspace x
+              "$modShift, ${ws}, movetoworkspacesilent, ${toString (x + 1)}"
+            ]
+          ) 10
+        ));
+        binds = {
+          movefocus_cycles_fullscreen = true;
+        };
         binde = [
           ### Controls
           # Brightness
@@ -350,8 +415,10 @@ with lib;
 
         render = {
           cm_enabled = true;
-          cm_fs_passthrough = 1; # HDR-capable apps opt-in to passthrough; others get compositor tone mapping
+          cm_fs_passthrough = config.hyprland.cmFsPassthrough;
         };
+
+        windowrulev2 = config.hyprland.windowRules;
 
         misc = {
           disable_splash_rendering = true;
@@ -379,8 +446,11 @@ with lib;
 
           sensitivity = 0;
           accel_profile = "flat";
-        } // optionalAttrs (config.windowManager.touchOutput != null) {
-          touchdevice = { output = config.windowManager.touchOutput; };
+        }
+        // optionalAttrs (config.windowManager.touchOutput != null) {
+          touchdevice = {
+            output = config.windowManager.touchOutput;
+          };
         };
       };
     };

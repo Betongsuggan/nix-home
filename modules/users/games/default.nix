@@ -90,7 +90,10 @@ with lib;
         gpu_mem_temp = true;
         gpu_power = true;
         gpu_fan = true;
+        gpu_core_clock = true;
+        gpu_mem_clock = true;
         gpu_name = config.games.mangohud.detailedMode;
+        gpu_voltage = true;
 
         # CPU information
         cpu_stats = true;
@@ -105,20 +108,31 @@ with lib;
         swap = config.games.mangohud.detailedMode;
         procmem = config.games.mangohud.detailedMode;
 
-        # System information
-        throttling_status = true;
+        # Gaming features
         fsr = true;
         hdr = true;
-        gamemode = config.games.mangohud.detailedMode;
-        vulkan_driver = config.games.mangohud.detailedMode;
+        refresh_rate = true;
+        show_fps_limit = true;
+        present_mode = true;
+        gamemode = true;
+        vkbasalt = config.games.vkbasalt.enable;
+        winesync = true;
+
+        # System information
+        throttling_status = true;
+        vulkan_driver = true;
         engine_version = config.games.mangohud.detailedMode;
-        wine = config.games.mangohud.detailedMode;
+        wine = true;
+        resolution = true;
         arch = config.games.mangohud.detailedMode;
-        resolution = config.games.mangohud.detailedMode;
         display_server = config.games.mangohud.detailedMode;
 
+        # Controller battery
+        device_battery = "gamepad";
+        device_battery_icon = true;
+
         # Time and system status
-        time = config.games.mangohud.detailedMode;
+        time = true;
         time_format = "%H:%M:%S";
         version = config.games.mangohud.detailedMode;
 
@@ -135,7 +149,7 @@ with lib;
         round_corners = 8;
 
         # Toggle keybind (Shift+F9 avoids game F-key conflicts)
-        toggle_hud = "Shift_L+F9";
+        toggle_hud = "Shift_R+F9";
 
         # Start hidden by default (toggle with controller)
         no_display = true;

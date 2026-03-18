@@ -65,7 +65,7 @@
     enable = true;
     backend = "hyprland";
     monitors = [
-      "DP-2,3440x1440@240,auto,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,2.0"
+      "DP-2,3440x1440@240,auto,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,1.5"
       "HDMI-A-1,disable"
       ",preferred,auto,1"
     ];

@@ -68,14 +68,23 @@
   # Enable Hyprland for gaming session
   # Steam Big Picture is managed by Sunshine when streaming clients connect
   hyprland.lockscreen.enable = false; # Gaming user doesn't need lockscreen
+  hyprland.cmFsPassthrough = 1; # Always passthrough in fullscreen for HDR gaming
+  hyprland.windowRules = [
+    "fullscreenstate 1 2, class:^(steam)$" # Maximize internally (CM applies) but Steam thinks fullscreen
+    "bordersize 0, class:^(steam)$"
+    "rounding 0, class:^(steam)$"
+  ];
+  hyprland.workspaceRules = [
+    "1, gapsin:0, gapsout:0" # No gaps on Steam workspace so maximize fills entire screen
+  ];
 
   windowManager = {
     enable = true;
     backend = "hyprland";
     monitors = [
-      "SUNSHINE,1920x1080@120,auto,1,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,2.0"
-      "DP-2,3440x1440@240,auto,1,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,2.0"
-      "HDMI-A-1,3840x2160@120,auto,2,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,2.0"
+      "SUNSHINE,1920x1080@120,auto,1,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,1.5"
+      "DP-2,3440x1440@240,auto,1,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,1.5"
+      "HDMI-A-1,3840x2160@120,auto,2,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,1.5"
       ",preferred,auto,1"
     ];
 
@@ -84,7 +93,7 @@
 
     autostartApps = {
       steam = {
-        command = "steam -bigpicture";
+        command = "steam -gamepadui";
         workspace = 1;
       };
     };

@@ -9,15 +9,28 @@
   users.users.gamer = {
     isNormalUser = true;
     description = "Gaming User";
-    extraGroups =
-      [ "networkmanager" "video" "audio" "input" "uinput" "gamemode" ];
+    extraGroups = [
+      "networkmanager"
+      "video"
+      "audio"
+      "input"
+      "uinput"
+      "gamemode"
+    ];
   };
 
   users.users.betongsuggan = {
     isNormalUser = true;
     description = "Betongsuggan user";
-    extraGroups =
-      [ "wheel" "networkmanager" "network" "video" "docker" "uinput" "input" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "network"
+      "video"
+      "docker"
+      "uinput"
+      "input"
+    ];
   };
 
   autologin = {
@@ -55,7 +68,11 @@
 
     # Add ryzen-smu module for Ryzen CPU monitoring and control
     extraModulePackages = with pkgs.linuxPackages_zen; [ ryzen-smu ];
-    kernelModules = [ "iwlwifi" "amdgpu" "ryzen_smu" ];
+    kernelModules = [
+      "iwlwifi"
+      "amdgpu"
+      "ryzen_smu"
+    ];
     supportedFilesystems = [ "ntfs" ];
 
     kernelParams = [
@@ -113,8 +130,9 @@
     };
   };
 
-  swapDevices =
-    [{ device = "/dev/disk/by-uuid/979c14c3-e740-4c1b-8b3d-cd817ac9b61b"; }];
+  swapDevices = [
+    { device = "/dev/disk/by-uuid/979c14c3-e740-4c1b-8b3d-cd817ac9b61b"; }
+  ];
 
   services = {
     fwupd.enable = true;
@@ -156,6 +174,7 @@
     gamemode
     mangohud
   ];
+  fileManagerSystem.enable = true;
 
   graphics = {
     enable = true;
@@ -193,11 +212,23 @@
   };
   firewall = {
     enable = true;
-    tcpPorts = [ 8080 27036 27037 53317 ];
-    udpPorts = [ 27031 27032 27033 27034 27035 27036 53317 ];
+    tcpPorts = [
+      8080
+      27036
+      27037
+      53317
+    ];
+    udpPorts = [
+      27031
+      27032
+      27033
+      27034
+      27035
+      27036
+      53317
+    ];
   };
   undervolting.enable = true;
 
   system.stateVersion = "25.05";
 }
-
