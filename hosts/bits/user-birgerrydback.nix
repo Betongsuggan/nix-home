@@ -15,6 +15,10 @@
   direnv.enable = true;
   firefox.enable = true;
   communication.enable = true;
+  localsend = {
+    enable = true;
+    cli = true;
+  };
   battery-monitor.enable = true;
   fileManager = {
     enable = true;

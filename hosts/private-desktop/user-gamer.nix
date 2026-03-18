@@ -32,6 +32,7 @@
   };
 
   communication.enable = true;
+  localsend.enable = true;
   starship.enable = true;
   terminal = {
     enable = true;

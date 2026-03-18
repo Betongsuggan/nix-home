@@ -123,7 +123,8 @@
   };
   firewall = {
     enable = true;
-    tcpPorts = [ 8080 ];
+    tcpPorts = [ 8080 53317 ];
+    udpPorts = [ 53317 ];
   };
 
   services.xserver.desktopManager.runXdgAutostartIfNone = true;

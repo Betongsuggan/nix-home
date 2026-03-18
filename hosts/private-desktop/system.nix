@@ -193,8 +193,8 @@
   };
   firewall = {
     enable = true;
-    tcpPorts = [ 8080 27036 27037 ];
-    udpPorts = [ 27031 27032 27033 27034 27035 27036 ];
+    tcpPorts = [ 8080 27036 27037 53317 ];
+    udpPorts = [ 27031 27032 27033 27034 27035 27036 53317 ];
   };
   undervolting.enable = true;
 

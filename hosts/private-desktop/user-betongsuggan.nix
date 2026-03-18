@@ -13,6 +13,7 @@
   general.enable = true;
   games.enable = true;
   communication.enable = true;
+  localsend.enable = true;
   development.enable = true;
 
   terminal = {

@@ -15,6 +15,7 @@
     ./git
     ./kanshi
     ./launcher
+    ./localsend
     ./notifications
     ./picom
     ./polybar
