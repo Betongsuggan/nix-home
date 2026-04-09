@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
@@ -37,7 +42,8 @@ let
 
   tmpfilesDir = path: "d ${path} 0775 ${cfg.user} users -";
 
-in {
+in
+{
   options.emulation-server = {
     enable = mkEnableOption "Emulation server with ROM sharing and save sync";
 
@@ -141,13 +147,13 @@ in {
             name = "emulation-roms";
             path = "${cfg.dataDir}/roms";
             validUsers = [ cfg.user ];
-            readOnly = true;
+            readOnly = false;
           }
           {
             name = "emulation-bios";
             path = "${cfg.dataDir}/bios";
             validUsers = [ cfg.user ];
-            readOnly = true;
+            readOnly = false;
           }
         ];
       };
