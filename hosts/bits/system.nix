@@ -114,7 +114,11 @@
   };
   docker.enable = true;
   bluetooth.enable = true;
-  fingerprint.enable = true;
+  fingerprint = {
+    enable = true;
+    clamshellAware = true;
+    lidStatePath = "/proc/acpi/button/lid/LID/state";
+  };
   wayland-security.enable = true;
   printers.enable = true;
   power-management = {
@@ -122,8 +126,29 @@
   };
   firewall = {
     enable = true;
-    tcpPorts = [ 8080 53317 ];
+    tcpPorts = [
+      8080
+      53317
+    ];
     udpPorts = [ 53317 ];
+  };
+
+  webcam = {
+    enable = true;
+    cameras = [
+      {
+        name = "mx-brio";
+        vendorId = "046d";
+        productId = "0944";
+        settings = {
+          brightness = 128;
+          contrast = 142;
+          saturation = 90;
+          # Discover controls with: v4l2-ctl --list-ctrls-menus
+          # Populate after using cameractrls to find preferred values, then rebuild
+        };
+      }
+    ];
   };
 
   services.xserver.desktopManager.runXdgAutostartIfNone = true;

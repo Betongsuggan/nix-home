@@ -23,6 +23,7 @@
     ./file-manager/system.nix
     ./touchpad
     ./undervolting
+    ./webcam
     ./waydroid
     ./wayland-security
     ./xserver
