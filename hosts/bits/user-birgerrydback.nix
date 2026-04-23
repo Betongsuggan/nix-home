@@ -13,6 +13,7 @@
   development.enable = true;
   direnv.enable = true;
   firefox.enable = true;
+  chromium.enable = true;
   communication.enable = true;
   localsend = {
     enable = true;

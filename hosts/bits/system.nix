@@ -144,6 +144,7 @@
           brightness = 128;
           contrast = 142;
           saturation = 90;
+          sharpness = 114;
           # Discover controls with: v4l2-ctl --list-ctrls-menus
           # Populate after using cameractrls to find preferred values, then rebuild
         };
