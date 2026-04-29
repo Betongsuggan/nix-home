@@ -12,7 +12,6 @@
   general.enable = true;
   development.enable = true;
   direnv.enable = true;
-  firefox.enable = true;
   chromium.enable = true;
   communication.enable = true;
   localsend = {
@@ -61,8 +60,8 @@
     composeKey = "ralt";
     monitors = [ ",preferred,auto,1" ];
     autostartApps = {
-      firefox = {
-        command = "firefox";
+      chromium = {
+        command = "chromium";
       };
 
       slack = {

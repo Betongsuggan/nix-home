@@ -11,7 +11,7 @@
   ];
 
   general.enable = true;
-  firefox.enable = true;
+  chromium.enable = true;
   game-streaming.client.enable = true;
   games.enable = true;
   communication.enable = true;
@@ -106,8 +106,8 @@
     enable = true;
     backend = "niri";
     autostartApps = {
-      firefox = {
-        command = "firefox";
+      chromium = {
+        command = "chromium";
         workspace = null;
       };
 

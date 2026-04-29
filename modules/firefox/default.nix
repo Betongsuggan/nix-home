@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  osConfig ? { },
   ...
 }:
 with lib;
@@ -16,13 +15,6 @@ with lib;
 
     home.sessionVariables = {
       MOZ_ENABLE_WAYLAND = "1";
-      LIBVA_DRIVER_NAME =
-        if (osConfig.graphics.amd or false) then
-          "radeonsi"
-        else if (osConfig.graphics.intel.enable or false) then
-          (if (osConfig.graphics.intel.generation or "modern") == "legacy" then "i965" else "iHD")
-        else
-          "iHD"; # Default fallback for standalone home-manager
     };
     programs.firefox = {
       enable = true;

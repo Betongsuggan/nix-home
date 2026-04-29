@@ -97,9 +97,13 @@ with lib;
     environment.variables = mkMerge [
       {
         __NVFBC_CAPTURE = mkIf config.graphics.nvidia "1";
-        LIBVA_DRIVER_NAME = mkIf config.graphics.intel.enable (
-          if config.graphics.intel.generation == "legacy" then "i965" else "iHD"
-        );
+        LIBVA_DRIVER_NAME =
+          mkIf (config.graphics.intel.enable || config.graphics.amd) (
+            if config.graphics.intel.enable then
+              (if config.graphics.intel.generation == "legacy" then "i965" else "iHD")
+            else
+              "radeonsi"
+          );
         VDPAU_DRIVER = mkIf config.graphics.intel.enable "va_gl";
       }
       (mkIf config.graphics.amd {

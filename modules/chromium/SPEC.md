@@ -17,9 +17,10 @@ chromium.enable = true;
 ## Notes
 
 - Uses `ungoogled-chromium` package which removes Google telemetry, service integrations, and tracking.
-- Automatically selects the correct VA-API driver (`radeonsi` for AMD, `iHD`/`i965` for Intel) based on `osConfig.graphics`.
+- VA-API driver selection (`LIBVA_DRIVER_NAME`) is handled by the system-level `graphics` module, not this module.
 - Pre-installed extensions: uBlock Origin, Bitwarden, Vimium.
 - Wayland support via `--ozone-platform-hint=auto` and `UseOzonePlatform` feature flag.
-- Hardware acceleration: VA-API video decode/encode, GPU rasterization, zero-copy, Vulkan rendering, EGL backend, GPU blocklist bypassed.
+- Hardware acceleration: VA-API video decode/encode, GPU rasterization, zero-copy, EGL backend, out-of-process canvas rasterization, GPU blocklist bypassed. Uses native OpenGL path (not Vulkan ANGLE) for optimal compositing performance.
+- PipeWire screen capture support via `WebRTCPipeWireCapturer` for Wayland screen sharing.
 - Privacy: MediaRouter (Google Cast), Breakpad crash reporting, domain reliability monitoring, and client-side phishing detection all disabled.
 - Extensions are managed via Chrome Web Store IDs through the home-manager chromium module.

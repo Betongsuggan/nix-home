@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
@@ -20,12 +25,12 @@ let
       productId = mkOption {
         type = types.nullOr types.str;
         default = null;
-        description = ''USB product ID (4 hex digits). Omit to match any product.'';
+        description = "USB product ID (4 hex digits). Omit to match any product.";
         example = "085b";
       };
       settings = mkOption {
         type = types.attrsOf types.int;
-        default = {};
+        default = { };
         description = "v4l2-ctl control name → integer value map. Discover controls with: v4l2-ctl --list-ctrls-menus";
         example = literalExpression ''
           {
@@ -38,22 +43,25 @@ let
     };
   };
 
-  mkCtrlArg = settings:
-    concatStringsSep ","
-      (mapAttrsToList (ctrl: val: "${ctrl}=${toString val}") settings);
+  mkCtrlArg =
+    settings: concatStringsSep "," (mapAttrsToList (ctrl: val: "${ctrl}=${toString val}") settings);
 
-  mkCameraScript = camera:
+  mkCameraScript =
+    camera:
     pkgs.writeShellScript "webcam-apply-${camera.name}" ''
       ${pkgs.v4l-utils}/bin/v4l2-ctl \
         --device=/dev/$1 \
         --set-ctrl=${mkCtrlArg camera.settings}
     '';
 
-  mkUdevRule = camera:
+  mkUdevRule =
+    camera:
     let
-      script       = mkCameraScript camera;
-      vendorMatch  = optionalString (camera.vendorId  != null) ''ATTRS{idVendor}=="${camera.vendorId}", '';
-      productMatch = optionalString (camera.productId != null) ''ATTRS{idProduct}=="${camera.productId}", '';
+      script = mkCameraScript camera;
+      vendorMatch = optionalString (camera.vendorId != null) ''ATTRS{idVendor}=="${camera.vendorId}", '';
+      productMatch = optionalString (
+        camera.productId != null
+      ) ''ATTRS{idProduct}=="${camera.productId}", '';
     in
     # ATTR{index}=="0" targets only the primary capture node, not the metadata node
     # (both appear under video4linux with the same USB IDs)
@@ -87,7 +95,6 @@ in
       pkgs.v4l-utils # CLI: v4l2-ctl, v4l2-compliance
     ];
 
-    services.udev.extraRules =
-      concatMapStringsSep "\n" mkUdevRule camerasWithSettings;
+    services.udev.extraRules = concatMapStringsSep "\n" mkUdevRule camerasWithSettings;
   };
 }

@@ -20,6 +20,10 @@
 
   system.stateVersion = "24.05";
   boot = {
+    extraModprobeConfig = ''
+      options uvcvideo quirks=0x100
+    '';
+
     kernelPackages = pkgs.linuxPackages_6_12;
 
     kernelParams = [
@@ -112,10 +116,12 @@
     enable = true;
     hostName = "bits-nixos";
   };
+  networking.nameservers = [ "1.1.1.1" ];
+
   docker.enable = true;
   bluetooth.enable = true;
   fingerprint = {
-    enable = true;
+    enable = false;
     clamshellAware = true;
     lidStatePath = "/proc/acpi/button/lid/LID/state";
   };
@@ -123,6 +129,8 @@
   printers.enable = true;
   power-management = {
     enable = true;
+    cpuVendor = "amd";
+    gpuVendor = "amd";
   };
   firewall = {
     enable = true;

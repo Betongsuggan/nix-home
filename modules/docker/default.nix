@@ -13,7 +13,6 @@ with lib;
 
     # Set DOCKER_HOST environment variable for rootless mode
     environment.sessionVariables.DOCKER_HOST = "unix:///run/user/1000/docker.sock";
-
     virtualisation.docker = {
       enable = true;
       rootless = {

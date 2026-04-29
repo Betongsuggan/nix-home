@@ -32,7 +32,7 @@
     enable = true;
     backend = "thunar";
   };
-  firefox.enable = true;
+  chromium.enable = true;
   launcher = {
     enable = true;
     backend = "vicinae";
@@ -69,8 +69,8 @@
       ",preferred,auto,1"
     ];
     autostartApps = {
-      firefox = {
-        command = "firefox";
+      chromium = {
+        command = "chromium";
         workspace = 1;
       };
     };

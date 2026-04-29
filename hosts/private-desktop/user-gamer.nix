@@ -24,7 +24,7 @@
   };
 
   general.enable = true;
-  firefox.enable = true;
+  chromium.enable = true;
   fileManager = {
     enable = true;
     backend = "thunar";
