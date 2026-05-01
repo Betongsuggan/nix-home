@@ -15,6 +15,7 @@
     ./git-server
     ./graphics
     ./headscale
+    ./input-remapper/system.nix
     ./kde
     ./keyboard
     ./logitech

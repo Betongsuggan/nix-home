@@ -230,5 +230,48 @@
   };
   undervolting.enable = true;
 
+  inputRemapper = {
+    enable = true;
+    devices."Logitech G13 Gaming Keypad" = {
+      preset = "gaming";
+      mappings = [
+        # G1-G10 -> 1-0
+        { input = [{ type = 1; code = 656; }]; output = "KEY_1"; }   # G1
+        { input = [{ type = 1; code = 657; }]; output = "KEY_2"; }   # G2
+        { input = [{ type = 1; code = 658; }]; output = "KEY_3"; }   # G3
+        { input = [{ type = 1; code = 659; }]; output = "KEY_4"; }   # G4
+        { input = [{ type = 1; code = 660; }]; output = "KEY_5"; }   # G5
+        { input = [{ type = 1; code = 661; }]; output = "KEY_6"; }   # G6
+        { input = [{ type = 1; code = 662; }]; output = "KEY_7"; }   # G7
+        { input = [{ type = 1; code = 663; }]; output = "KEY_8"; }   # G8
+        { input = [{ type = 1; code = 664; }]; output = "KEY_9"; }   # G9
+        { input = [{ type = 1; code = 665; }]; output = "KEY_0"; }   # G10
+        # G11-G20 -> Shift+1 through Shift+0
+        { input = [{ type = 1; code = 666; }]; output = "KEY_LEFTSHIFT + KEY_1"; }   # G11
+        { input = [{ type = 1; code = 667; }]; output = "KEY_LEFTSHIFT + KEY_2"; }   # G12
+        { input = [{ type = 1; code = 668; }]; output = "KEY_LEFTSHIFT + KEY_3"; }   # G13
+        { input = [{ type = 1; code = 669; }]; output = "KEY_LEFTSHIFT + KEY_4"; }   # G14
+        { input = [{ type = 1; code = 670; }]; output = "KEY_LEFTSHIFT + KEY_5"; }   # G15
+        { input = [{ type = 1; code = 671; }]; output = "KEY_LEFTSHIFT + KEY_6"; }   # G16
+        { input = [{ type = 1; code = 672; }]; output = "KEY_LEFTSHIFT + KEY_7"; }   # G17
+        { input = [{ type = 1; code = 673; }]; output = "KEY_LEFTSHIFT + KEY_8"; }   # G18
+        { input = [{ type = 1; code = 674; }]; output = "KEY_LEFTSHIFT + KEY_9"; }   # G19
+        { input = [{ type = 1; code = 675; }]; output = "KEY_LEFTSHIFT + KEY_0"; }   # G20
+        # G21-G22 — unmapped, customize as needed
+        # { input = [{ type = 1; code = 676; }]; output = "KEY_X"; }  # G21
+        # { input = [{ type = 1; code = 677; }]; output = "KEY_Y"; }  # G22
+      ];
+    };
+    devices."Logitech G13 Thumbstick" = {
+      preset = "wasd";
+      mappings = [
+        { input = [{ type = 3; code = 1; analog_threshold = -20; }]; output = "KEY_W"; }  # Up
+        { input = [{ type = 3; code = 1; analog_threshold = 20; }]; output = "KEY_S"; }   # Down
+        { input = [{ type = 3; code = 0; analog_threshold = -20; }]; output = "KEY_A"; }  # Left
+        { input = [{ type = 3; code = 0; analog_threshold = 20; }]; output = "KEY_D"; }   # Right
+      ];
+    };
+  };
+
   system.stateVersion = "25.05";
 }

@@ -10,11 +10,15 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - Sunshine game streaming server with virtual SUNSHINE monitor for headless streaming
 - Console-mode with Gamescope session for Steam Deck-like experience
 - Steam Big Picture auto-start on gamer session with SteamOS 3 features
+- Logitech G13 gaming keypad with declarative key remapping via input-remapper (auto-applies on connect)
 - PS5 DualSense controller support with rumble and MangoHud toggle
 - GameMode with GPU optimizations and CPU renicing for gaming performance
 - MangoHud overlay with detailed mode and vkBasalt post-processing
 - Proton-GE for enhanced Windows game compatibility
 - RDNA4-optimized Vulkan environment variables (RADV, ray tracing, HDR)
+- RetroArch with 10 libretro cores (SNES, NES, GB/GBC/GBA, N64, NDS, PSX, Mega Drive, Dreamcast, Saturn, Arcade)
+- Standalone emulators: PCSX2 (PS2), Dolphin (GameCube/Wii), PPSSPP (PSP), Duckstation (PSX)
+- BoilR and Steam ROM Manager for unified Steam library integration (all games in one console UI)
 - Emulation client (gamer user): Syncthing save sync and `mount-emulation-roms` helper targeting controller at `192.168.50.5`
 - Zen kernel optimized for desktop/gaming with ryzen-smu monitoring
 - ZRAM swap (zstd, 50% memory) for memory efficiency

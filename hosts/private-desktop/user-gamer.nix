@@ -21,6 +21,8 @@
     vkbasalt.enable = true;
     protonGE.enable = true;
     tools.enable = true;
+    emulators.enable = true;
+    steamIntegration.enable = true;
   };
 
   emulation-client = {
