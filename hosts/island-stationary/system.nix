@@ -149,6 +149,11 @@
     mangohud
   ];
 
+  programs.steam = {
+    enable = true;
+    gamescopeSession.enable = true;
+  };
+
   graphics = {
     enable = true;
     nvidia = true;

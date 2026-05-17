@@ -117,6 +117,7 @@ with lib;
         __GL_GSYNC_ALLOWED = "1";
         __GL_VRR_ALLOWED = "1";
         ELECTRON_OZONE_PLATFORM_HINT = "auto";
+        VK_DRIVER_FILES = "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.x86_64.json";
       })
       (mkIf config.graphics.amd {
         RADV_PERFTEST = "gpl,ngg_culling,sam,rt"; # RDNA4 optimizations with RT

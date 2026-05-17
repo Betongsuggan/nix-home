@@ -32,6 +32,6 @@ Intel GPU generations:
 
 - 32-bit graphics libraries and MangoHud are included for game compatibility.
 - AMD configuration sets RADV as the Vulkan ICD, enables mesa_glthread, and configures DXR 1.1 and HDR environment variables.
-- NVIDIA uses the stable proprietary driver with modesetting enabled and power management disabled (desktop default; laptop hosts should override `powerManagement.enable = true`). Sets `GBM_BACKEND`, `__GLX_VENDOR_LIBRARY_NAME`, `LIBVA_DRIVER_NAME`, `NVD_BACKEND`, and VRR env vars for Wayland compositor compatibility. Includes `nvidia-vaapi-driver` for hardware video decode.
+- NVIDIA uses the stable proprietary driver with modesetting enabled and power management disabled (desktop default; laptop hosts should override `powerManagement.enable = true`). Sets `GBM_BACKEND`, `__GLX_VENDOR_LIBRARY_NAME`, `LIBVA_DRIVER_NAME`, `NVD_BACKEND`, and VRR env vars for Wayland compositor compatibility. Includes `nvidia-vaapi-driver` for hardware video decode. Sets `VK_DRIVER_FILES` to the NVIDIA ICD only, excluding Mesa software renderers (lavapipe) and other unused ICDs. Hosts using `programs.steam` should enable it at the system level for proper GPU driver injection inside Steam's sandbox.
 - Intel `arc` generation enables GuC submission and HuC authentication via kernel parameters.
 - `vulkan-tools` is installed system-wide for diagnostics.

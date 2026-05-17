@@ -158,8 +158,6 @@
       gamescopeUnstable = unstable.gamescope;
     in
     [
-      steam
-      steam-run
       htop
       pulseaudio
       pavucontrol
