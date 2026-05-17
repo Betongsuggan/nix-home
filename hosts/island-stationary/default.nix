@@ -1,0 +1,31 @@
+{ inputs, overlays, ... }:
+
+inputs.nixpkgs.lib.nixosSystem {
+  system = "x86_64-linux";
+  modules = [
+    inputs.home-manager.nixosModules.home-manager
+    inputs.lanzaboote.nixosModules.lanzaboote
+    ../../modules/common
+    ../../modules/system.nix
+    ./system.nix
+    {
+      nixpkgs = { inherit overlays; };
+
+      home-manager = {
+        useGlobalPkgs = true;
+        useUserPackages = true;
+        extraSpecialArgs = { inherit inputs overlays; };
+        sharedModules = [
+          inputs.walker.homeManagerModules.default
+          inputs.stylix.homeModules.stylix
+          inputs.console-mode.homeManagerModules.default
+          inputs.vicinae.homeManagerModules.default
+          inputs.niri.homeModules.niri
+          { stylix.overlays.enable = false; }
+        ];
+        users.betongsuggan = import ./user-betongsuggan.nix;
+        users.gamer = import ./user-gamer.nix;
+      };
+    }
+  ];
+}
