@@ -29,7 +29,7 @@ with lib;
 
     amd = mkOption {
       type = types.bool;
-      default = true;
+      default = false;
       description = "Enable AMD graphics support";
     };
   };
@@ -68,6 +68,9 @@ with lib;
           ++ (optionals (config.graphics.intel.enable && config.graphics.intel.generation != "legacy") [
             intel-media-driver
             intel-compute-runtime
+          ])
+          ++ (optionals config.graphics.nvidia [
+            nvidia-vaapi-driver
           ]);
         extraPackages32 = with pkgs; [ mangohud ];
       };
@@ -87,7 +90,7 @@ with lib;
     # NVIDIA-specific configuration
     hardware.nvidia = mkIf config.graphics.nvidia {
       modesetting.enable = true;
-      powerManagement.enable = true;
+      powerManagement.enable = false;
       open = false;
       nvidiaSettings = true;
       package = config.boot.kernelPackages.nvidiaPackages.stable;
@@ -98,7 +101,8 @@ with lib;
       {
         __NVFBC_CAPTURE = mkIf config.graphics.nvidia "1";
         LIBVA_DRIVER_NAME =
-          mkIf (config.graphics.intel.enable || config.graphics.amd) (
+          if config.graphics.nvidia then "nvidia"
+          else mkIf (config.graphics.intel.enable || config.graphics.amd) (
             if config.graphics.intel.enable then
               (if config.graphics.intel.generation == "legacy" then "i965" else "iHD")
             else
@@ -106,6 +110,14 @@ with lib;
           );
         VDPAU_DRIVER = mkIf config.graphics.intel.enable "va_gl";
       }
+      (mkIf config.graphics.nvidia {
+        __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+        GBM_BACKEND = "nvidia-drm";
+        NVD_BACKEND = "direct";
+        __GL_GSYNC_ALLOWED = "1";
+        __GL_VRR_ALLOWED = "1";
+        ELECTRON_OZONE_PLATFORM_HINT = "auto";
+      })
       (mkIf config.graphics.amd {
         RADV_PERFTEST = "gpl,ngg_culling,sam,rt"; # RDNA4 optimizations with RT
         AMD_VULKAN_ICD = "RADV";

@@ -74,6 +74,7 @@
 
     kernelParams = [
       "nvidia-drm.modeset=1"
+      "nvidia-drm.fbdev=1"
       "preempt=full"
       "threadirqs"
       "transparent_hugepage=madvise"
@@ -134,7 +135,7 @@
     enableRenice = true;
     settings = {
       general = {
-        renice = 10;
+        renice = -10;
         softrealtime = "auto";
         ioprio = 0;
         inhibit_screensaver = 1;

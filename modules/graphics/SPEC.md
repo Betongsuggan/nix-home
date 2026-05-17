@@ -18,7 +18,7 @@ graphics = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable graphics hardware support |
-| amd | bool | true | Enable AMD graphics support |
+| amd | bool | false | Enable AMD graphics support |
 | nvidia | bool | false | Enable NVIDIA graphics support |
 | intel.enable | bool | false | Enable Intel graphics support |
 | intel.generation | enum: "legacy" "modern" "arc" | "modern" | Intel GPU generation (see below) |
@@ -32,6 +32,6 @@ Intel GPU generations:
 
 - 32-bit graphics libraries and MangoHud are included for game compatibility.
 - AMD configuration sets RADV as the Vulkan ICD, enables mesa_glthread, and configures DXR 1.1 and HDR environment variables.
-- NVIDIA uses the stable proprietary driver with modesetting and power management enabled.
+- NVIDIA uses the stable proprietary driver with modesetting enabled and power management disabled (desktop default; laptop hosts should override `powerManagement.enable = true`). Sets `GBM_BACKEND`, `__GLX_VENDOR_LIBRARY_NAME`, `LIBVA_DRIVER_NAME`, `NVD_BACKEND`, and VRR env vars for Wayland compositor compatibility. Includes `nvidia-vaapi-driver` for hardware video decode.
 - Intel `arc` generation enables GuC submission and HuC authentication via kernel parameters.
 - `vulkan-tools` is installed system-wide for diagnostics.
