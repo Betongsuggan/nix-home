@@ -234,6 +234,35 @@ in
       };
     };
 
+    # Workaround: xdg-desktop-portal-gnome gets D-Bus-activated before niri
+    # exports org.gnome.Mutter.ScreenCast, leaving the portal stuck with no
+    # screencast impl for the whole session. Wait for the interface, then
+    # kick the portal so screen sharing works without manual intervention.
+    systemd.user.services.niri-portal-fix = {
+      Unit = {
+        Description = "Restart xdg-desktop-portal once niri's ScreenCast is ready";
+        After = [ "graphical-session.target" ];
+        PartOf = [ "graphical-session.target" ];
+      };
+      Service = {
+        Type = "oneshot";
+        ExecStart = pkgs.writeShellScript "niri-portal-fix" ''
+          for _ in $(seq 1 50); do
+            if ${pkgs.systemd}/bin/busctl --user list \
+                | ${pkgs.gnugrep}/bin/grep -q org.gnome.Mutter.ScreenCast; then
+              break
+            fi
+            sleep 0.2
+          done
+          ${pkgs.systemd}/bin/systemctl --user restart \
+            xdg-desktop-portal-gnome.service xdg-desktop-portal.service
+        '';
+      };
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
+    };
+
     # Niri window manager configuration
     programs.niri = {
       enable = true;
