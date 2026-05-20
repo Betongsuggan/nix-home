@@ -12,6 +12,10 @@
   general.enable = true;
   starship.enable = true;
 
+  home.packages = with pkgs; [
+    unstable.claude-code
+  ];
+
   terminal = {
     enable = true;
     backend = "alacritty";

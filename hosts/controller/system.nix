@@ -33,6 +33,11 @@
     };
   };
 
+  nixpkgs.config = {
+    allowUnfree = true;
+    allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "claude-code" ];
+  };
+
   hardware = {
     cpu.intel.updateMicrocode = true;
     enableRedistributableFirmware = true;
@@ -109,5 +114,15 @@
     enable = true;
     tcpPorts = [ ];
     udpPorts = [ ];
+  };
+
+  git-server = {
+    enable = true;
+    repositories = [ "nix-vault" ];
+    authorizedKeys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAR/t68PUZdYs0cECO0yPuywEBvFJQAGVMp4t6IkZIRz rydback@gmail.com"
+      # paste the public key(s) allowed to push/pull, e.g.
+      # "ssh-ed25519 AAAA... user@host"
+    ];
   };
 }

@@ -10,6 +10,7 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 - Audio via PipeWire
 - NetworkManager with iwd backend
 - OpenSSH server (firewall port open)
+- Minimal SSH git server (git-shell, single bare repo)
 - Colemak keyboard layout
 - Stylix theming with Banana cursor
 - Single user: `betongsuggan`

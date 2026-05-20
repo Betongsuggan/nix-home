@@ -12,6 +12,7 @@
     ./fingerprint
     ./firewall
     ./game-streaming/system.nix
+    ./git-server
     ./graphics
     ./kde
     ./keyboard
