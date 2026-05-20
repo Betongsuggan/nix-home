@@ -137,6 +137,9 @@
         island-stationary = import ./hosts/island-stationary/default.nix {
           inherit inputs overlays;
         };
+        controller = import ./hosts/controller/default.nix {
+          inherit inputs overlays;
+        };
       };
 
       homeConfigurations = {
@@ -146,6 +149,7 @@
         "birgerrydback@bits" = mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;
         "betongsuggan@island-stationary" = mkHomeConfiguration ./hosts/island-stationary/user-betongsuggan.nix;
         "gamer@island-stationary" = mkHomeConfiguration ./hosts/island-stationary/user-gamer.nix;
+        "betongsuggan@controller" = mkHomeConfiguration ./hosts/controller/user-betongsuggan.nix;
       };
     };
 }
