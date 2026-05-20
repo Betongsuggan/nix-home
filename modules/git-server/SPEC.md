@@ -34,3 +34,4 @@ Clone with `git clone git@<host>:myrepo.git`.
 - The git user's shell is `git-shell`, which only permits git protocol commands. Interactive SSH (`ssh git@host`) is rejected.
 - Repositories are bare (`git init --bare`) and created idempotently by a oneshot systemd unit (`git-server-init.service`) on activation. Existing repos are never modified, so you can safely add new entries to `repositories` later.
 - No firewall changes are made by this module; port 22 must be reachable (e.g. via `openssh.openFirewall = true`).
+- **`authorizedKeys` grants clone *and* push, on every repository.** `git-shell` has no per-direction or per-repo ACL. Treat the list accordingly: every key in it can rewrite every repo here. For an internal secrets vault this is the desired model; if you ever serve repos that need stricter isolation, split them onto a separate host (separate user, separate `authorizedKeys`) rather than trying to add ACLs here.

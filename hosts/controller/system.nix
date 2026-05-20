@@ -10,6 +10,12 @@
       "network"
       "video"
     ];
+    openssh.authorizedKeys.keys = [
+      # Operator's YubiKey (FIDO resident, touch-only). Used during new-host
+      # enrollment to SSH in, edit nix-home / nix-vault, and rebuild controller.
+      # See hosts/controller/SPEC.md for the full flow.
+      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
+    ];
   };
 
   system.stateVersion = "25.11";
@@ -138,7 +144,12 @@
     enable = true;
     repositories = [ "nix-vault" ];
     authorizedKeys = [
+      # Operator's personal key (workstation)
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAR/t68PUZdYs0cECO0yPuywEBvFJQAGVMp4t6IkZIRz rydback@gmail.com"
+
+      # Operator's YubiKey (FIDO resident, touch-only). Used to clone nix-vault
+      # during new-host bootstrap and as a portable admin credential.
+      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
     ];
   };
 
