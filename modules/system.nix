@@ -19,7 +19,9 @@
     ./power-management
     ./printers
     ./networking
+    ./openssh
     ./secure-boot
+    ./sops/system.nix
     ./file-manager/system.nix
     ./touchpad
     ./undervolting

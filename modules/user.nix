@@ -25,6 +25,7 @@
     ./qutebrowser
     ./secrets
     ./shell
+    ./sops/user.nix
     ./starship
     ./terminal
     ./theming

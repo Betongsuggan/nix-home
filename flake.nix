@@ -45,6 +45,14 @@
     };
 
     niri.url = "github:sodiboo/niri-flake";
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Local path for now; switch to git+ssh:// once nix-secrets has an upstream.
+    nix-secrets.url = "path:/home/birgerrydback/nix-secrets";
   };
 
   outputs =

@@ -85,6 +85,8 @@
     userEmail = "birger.rydback@bits.bi";
   };
 
+  sops-edit.enable = true;
+
   secrets = {
     enable = true;
     keyProviders = [

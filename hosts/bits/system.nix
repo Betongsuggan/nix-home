@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  inputs,
   ...
 }:
 
@@ -99,6 +100,38 @@
   ];
 
   services.fwupd.enable = true;
+
+  sops-secrets = {
+    enable = true;
+    secretsFile = "${inputs.nix-secrets}/secrets/bits.yaml";
+  };
+
+  sops.secrets = {
+    "ssh-bits" = {
+      key = "users/birgerrydback/ssh/bits";
+      owner = "birgerrydback";
+      mode = "0600";
+      path = "/home/birgerrydback/.ssh/bits";
+    };
+    "ssh-bits-pub" = {
+      key = "users/birgerrydback/ssh/bits_pub";
+      owner = "birgerrydback";
+      mode = "0644";
+      path = "/home/birgerrydback/.ssh/bits.pub";
+    };
+    "ssh-id-rsa" = {
+      key = "users/birgerrydback/ssh/github";
+      owner = "birgerrydback";
+      mode = "0600";
+      path = "/home/birgerrydback/.ssh/id_rsa";
+    };
+    "ssh-id-rsa-pub" = {
+      key = "users/birgerrydback/ssh/github_pub";
+      owner = "birgerrydback";
+      mode = "0644";
+      path = "/home/birgerrydback/.ssh/id_rsa.pub";
+    };
+  };
 
   # Defer fwupd to start on-demand instead of at boot
   systemd.services.fwupd = {
