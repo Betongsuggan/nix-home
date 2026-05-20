@@ -105,6 +105,24 @@
     hostName = "controller";
   };
 
+  networking.networkmanager.ensureProfiles.profiles = {
+    enp1s0-static = {
+      connection = {
+        id = "enp1s0-static";
+        type = "ethernet";
+        interface-name = "enp1s0";
+        autoconnect = true;
+        autoconnect-priority = 100;
+      };
+      ipv4 = {
+        method = "manual";
+        address1 = "192.168.50.5/24,192.168.50.1";
+        dns = "192.168.50.1;1.1.1.1;";
+      };
+      ipv6.method = "auto";
+    };
+  };
+
   openssh = {
     enable = true;
     openFirewall = true;
@@ -121,8 +139,6 @@
     repositories = [ "nix-vault" ];
     authorizedKeys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAR/t68PUZdYs0cECO0yPuywEBvFJQAGVMp4t6IkZIRz rydback@gmail.com"
-      # paste the public key(s) allowed to push/pull, e.g.
-      # "ssh-ed25519 AAAA... user@host"
     ];
   };
 
