@@ -5,7 +5,7 @@ with lib;
 let cfg = config.sops-edit;
 in {
   options.sops-edit = {
-    enable = mkEnableOption "tools for editing the nix-secrets repository";
+    enable = mkEnableOption "tools for editing the nix-vault repository";
   };
 
   config = mkIf cfg.enable {

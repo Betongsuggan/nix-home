@@ -104,7 +104,7 @@
 
   sops-secrets = {
     enable = true;
-    secretsFile = "${inputs.nix-secrets}/secrets/bits.yaml";
+    secretsFile = "${inputs.nix-vault}/secrets/bits.yaml";
   };
 
   sops.secrets = {

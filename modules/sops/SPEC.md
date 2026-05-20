@@ -1,11 +1,11 @@
 # sops
 
-Integrates [sops-nix](https://github.com/Mic92/sops-nix) with a separate `nix-secrets` flake input. Secrets are committed (encrypted) to that repo and decrypted at activation using the host's SSH host key as the age identity. Admin recipients (a YubiKey-backed identity via `age-plugin-yubikey` and a software backup) are added to every secret so the operator can edit; hosts only ever decrypt with their own SSH host key.
+Integrates [sops-nix](https://github.com/Mic92/sops-nix) with a separate `nix-vault` flake input. Secrets are committed (encrypted) to that repo and decrypted at activation using the host's SSH host key as the age identity. Admin recipients (a YubiKey-backed identity via `age-plugin-yubikey` and a software backup) are added to every secret so the operator can edit; hosts only ever decrypt with their own SSH host key.
 
 The module has two halves:
 
 - **`system.nix`** — NixOS module: wires sops-nix, points it at the per-host encrypted file, configures the SSH host key as the decryption identity, and enables prerequisites. Implicitly enables the `openssh` module (so `/etc/ssh/ssh_host_ed25519_key` exists) and `services.pcscd` (for YubiKey access when editing).
-- **`user.nix`** — home-manager module: opt-in editing toolchain (`sops`, `age`, `age-plugin-yubikey`) for users who maintain the `nix-secrets` repo. Sets `SOPS_AGE_KEY_FILE` to the conventional `~/.config/sops/age/keys.txt`.
+- **`user.nix`** — home-manager module: opt-in editing toolchain (`sops`, `age`, `age-plugin-yubikey`) for users who maintain the `nix-vault` repo. Sets `SOPS_AGE_KEY_FILE` to the conventional `~/.config/sops/age/keys.txt`.
 
 ## Usage
 
@@ -16,7 +16,7 @@ The module has two halves:
 { inputs, ... }: {
   sops-secrets = {
     enable = true;
-    secretsFile = "${inputs.nix-secrets}/secrets/<host>.yaml";
+    secretsFile = "${inputs.nix-vault}/secrets/<host>.yaml";
   };
 
   sops.secrets."tavily_api_key" = {
@@ -56,7 +56,7 @@ sops-edit.enable = true;
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable sops-nix-managed secrets for this host |
-| secretsFile | path | (required) | Path to the encrypted YAML file (typically `"${inputs.nix-secrets}/secrets/<host>.yaml"`) |
+| secretsFile | path | (required) | Path to the encrypted YAML file (typically `"${inputs.nix-vault}/secrets/<host>.yaml"`) |
 
 When enabled, also flips on `openssh.enable = true;` (see `modules/openssh/SPEC.md`) and `services.pcscd`.
 
@@ -68,13 +68,13 @@ When enabled, also flips on `openssh.enable = true;` (see `modules/openssh/SPEC.
 
 ## Bootstrap
 
-The new host needs to (a) get a copy of `nix-vault` (the `nix-secrets` flake input, served via SSH from `controller`) onto the installer and (b) be able to decrypt secrets targeted at it. The operator's YubiKey is the credential used to clone `nix-vault` during install (see `hosts/controller/SPEC.md`). The sops-specific steps:
+The new host needs to (a) get a copy of `nix-vault` (the flake input, served via SSH from `controller`) onto the installer and (b) be able to decrypt secrets targeted at it. The operator's YubiKey is the credential used to clone `nix-vault` during install (see `hosts/controller/SPEC.md`). The sops-specific steps:
 
 1. Run `sudo ssh-keygen -A` (or let the openssh activation generate keys) to ensure `/etc/ssh/ssh_host_ed25519_key` exists.
 2. Convert the public half to an age recipient: `cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age`.
-3. Add that recipient and a `creation_rules` block for `secrets/<host>.yaml` to `nix-secrets/.sops.yaml`. Run `sops updatekeys secrets/<host>.yaml` so existing material is re-encrypted to the new recipient.
+3. Add that recipient and a `creation_rules` block for `secrets/<host>.yaml` to `nix-vault/.sops.yaml`. Run `sops updatekeys secrets/<host>.yaml` so existing material is re-encrypted to the new recipient.
 4. Create `secrets/<host>.yaml` via `sops` (if not already present).
-5. Set `sops-secrets.enable = true; secretsFile = "${inputs.nix-secrets}/secrets/<host>.yaml";` in the host config.
+5. Set `sops-secrets.enable = true; secretsFile = "${inputs.nix-vault}/secrets/<host>.yaml";` in the host config.
 
 ### First-boot ordering: when host-specific secrets are needed at activation
 
@@ -90,4 +90,4 @@ If the host doesn't need any host-specific encrypted material on first boot, one
 - Per-user secret *delivery* (e.g. SSH keys into `~/.ssh/`) is handled by the NixOS module using `sops.secrets.<name>.{owner,path}`. The home-manager half is only for editing tools.
 - Secrets are looked up in the YAML by the secret name, with `/` interpreted as nested-key separators. Use `sops.secrets.<name>.key` to override the lookup path when the secret name doesn't match the YAML structure.
 - `/etc/ssh/ssh_host_ed25519_key` lives outside `/nix/store` and survives rebuilds, so the host's decryption identity is stable.
-- Editing secrets requires the YubiKey (or the backup software age key from 1Password); see `nix-secrets/.sops.yaml` for the configured recipients.
+- Editing secrets requires the YubiKey (or the backup software age key from 1Password); see `nix-vault/.sops.yaml` for the configured recipients.

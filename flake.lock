@@ -539,10 +539,10 @@
         "type": "github"
       }
     },
-    "nix-secrets": {
+    "nix-vault": {
       "locked": {
-        "lastModified": 1779305131,
-        "narHash": "sha256-77Cm9xgq817gK8bJ1BntvWun3zhI+/qUnORcNfV6NTM=",
+        "lastModified": 1779315794,
+        "narHash": "sha256-jCqix5Id6WOW2SSvLb0diyWtXLCeeQee4iqHcpGxru0=",
         "path": "/home/betongsuggan/nix-vault",
         "type": "path"
       },
@@ -818,7 +818,7 @@
         "lanzaboote": "lanzaboote",
         "monitormenu": "monitormenu",
         "niri": "niri",
-        "nix-secrets": "nix-secrets",
+        "nix-vault": "nix-vault",
         "nixpkgs": "nixpkgs_8",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nur": "nur",

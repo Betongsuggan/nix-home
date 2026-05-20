@@ -11,7 +11,7 @@ in {
       type = types.path;
       description = ''
         Path to the encrypted YAML file for this host. Typically a path into
-        the nix-secrets flake input, e.g. `"\${inputs.nix-secrets}/secrets/<host>.yaml"`.
+        the nix-vault flake input, e.g. `"\${inputs.nix-vault}/secrets/<host>.yaml"`.
       '';
     };
   };

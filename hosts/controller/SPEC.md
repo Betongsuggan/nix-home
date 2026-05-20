@@ -28,12 +28,12 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 
 ## `nix-vault` enrollment role
 
-Controller is the single source of truth for the `nix-vault.git` bare repository (the `nix-secrets` flake input). Access is gated by `git-server.authorizedKeys` — a flat SSH pubkey allowlist (see `modules/git-server/SPEC.md`). The list is maintained by hand in this host's `system.nix`.
+Controller is the single source of truth for the `nix-vault.git` bare repository (the `nix-vault` flake input). Access is gated by `git-server.authorizedKeys` — a flat SSH pubkey allowlist (see `modules/git-server/SPEC.md`). The allowlist is derived automatically from `nix-vault`'s `keys.nix` (`lib.collect lib.isString inputs.nix-vault.keys.hosts`), plus the operator's YubiKey appended in this host's `system.nix` for bootstrap.
 
 The operator's YubiKey SSH key (FIDO `ed25519-sk` resident, touch-only) is authorized in **two** places on controller:
 
-- `git-server.authorizedKeys` — to clone/push `nix-vault.git` from a fresh installer or any machine with the YubiKey inserted.
-- `users.users.betongsuggan.openssh.authorizedKeys.keys` — to SSH in as `betongsuggan`, edit `git-server.authorizedKeys` and `nix-vault/.sops.yaml`, and `nixos-rebuild switch` controller.
+- `git-server.authorizedKeys` — to clone/push `nix-vault.git` from a fresh installer *before* the new host's key has been added to `keys.nix`.
+- `users.users.betongsuggan.openssh.authorizedKeys.keys` — to SSH in as `betongsuggan`, edit `nix-vault/keys.nix` and `nix-vault/.sops.yaml`, and `nixos-rebuild switch` controller.
 
 One credential, all access. The YubiKey lives in the drawer until the next new-host enrollment.
 
@@ -54,6 +54,6 @@ With the YubiKey inserted in either the new host or the operator's workstation:
    ```
 3. Make sure the new host has a `hosts/<new-host>/` entry in `flake.nix`.
 4. Generate the new host's `/etc/ssh/ssh_host_ed25519_key` (or boot, generate, then proceed — see sops two-pass note in `modules/sops/SPEC.md`). Convert pubkey to age recipient with `ssh-to-age`. Add the recipient to `nix-vault/.sops.yaml`; `sops updatekeys` affected files. Commit, push to controller's bare (YubiKey-authed).
-5. `nixos-install --flake .#<new-host> --override-input nix-secrets path:/path/to/nix-vault` (or rely on the flake's locked input, if the URL has been migrated to git+ssh:// and the host's key is registered).
+5. `nixos-install --flake .#<new-host> --override-input nix-vault path:/path/to/nix-vault` (or rely on the flake's locked input, if the URL has been migrated to git+ssh:// and the host's key is registered).
 
-To later allow a host to clone/pull `nix-vault` itself (e.g. for unattended `nix flake update`), authorize that host's `/etc/ssh/ssh_host_ed25519_key.pub` in `git-server.authorizedKeys` and rebuild controller. SSH client config is then a per-invocation concern (`ssh -i /etc/ssh/ssh_host_ed25519_key git@controller …` or per-user `~/.ssh/config`); there's no system module enforcing it.
+To later allow a host to clone/pull `nix-vault` itself (e.g. for unattended `nix flake update`), add that host's `/etc/ssh/ssh_host_ed25519_key.pub` under `hosts.<host>.users` (or a dedicated host slot) in `nix-vault/keys.nix`, push, and rebuild controller. SSH client config is then a per-invocation concern (`ssh -i /etc/ssh/ssh_host_ed25519_key git@controller …` or per-user `~/.ssh/config`); there's no system module enforcing it.

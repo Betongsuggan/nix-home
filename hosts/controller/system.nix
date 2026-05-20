@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, inputs, ... }:
 
 {
   users.users.betongsuggan = {
@@ -143,12 +143,14 @@
   git-server = {
     enable = true;
     repositories = [ "nix-vault" ];
-    authorizedKeys = [
-      # Operator's personal key (workstation)
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAR/t68PUZdYs0cECO0yPuywEBvFJQAGVMp4t6IkZIRz rydback@gmail.com"
-
-      # Operator's YubiKey (FIDO resident, touch-only). Used to clone nix-vault
-      # during new-host bootstrap and as a portable admin credential.
+    # Every SSH pubkey declared under `hosts.<host>.users` in nix-vault's
+    # keys.nix gets clone/push access. Adding a new user/host key there is
+    # enough — no separate enrollment step on controller.
+    authorizedKeys = (lib.collect lib.isString inputs.nix-vault.keys.hosts) ++ [
+      # Operator's YubiKey (FIDO resident, touch-only). Not stored in
+      # nix-vault because it's the bootstrap credential used *before* a new
+      # host has its own key registered. Used to clone nix-vault during
+      # new-host bootstrap and as a portable admin credential.
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
     ];
   };

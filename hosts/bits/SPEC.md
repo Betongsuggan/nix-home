@@ -18,7 +18,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Colemak keyboard layout
 - Stylix theming with Banana cursor
 - Secret management for Tavily and LocalStack API keys
-- sops-nix integration: SSH keys delivered from the external `nix-secrets` flake input; OpenSSH and pcscd auto-enabled by the `sops-secrets` module
+- sops-nix integration: SSH keys delivered from the external `nix-vault` flake input; OpenSSH and pcscd auto-enabled by the `sops-secrets` module
 - Firewall with ports open for LocalSend (53317) and dev server (8080)
 
 ## Notes

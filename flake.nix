@@ -52,11 +52,11 @@
     };
 
     # nix-vault.git is served by controller's git-server module. Switch to
-    #   nix-secrets.url = "git+ssh://git@192.168.50.50/var/lib/git/nix-vault.git";
+    #   nix-vault.url = "git+ssh://git@192.168.50.50/var/lib/git/nix-vault.git";
     # once you want hosts/installers to fetch over SSH instead of relying on a
-    # local clone. Bootstrap an installer via `--override-input nix-secrets path:...`
+    # local clone. Bootstrap an installer via `--override-input nix-vault path:...`
     # if the host's SSH key isn't yet authorized on controller.
-    nix-secrets.url = "path:/home/betongsuggan/nix-vault";
+    nix-vault.url = "path:/home/betongsuggan/nix-vault";
   };
 
   outputs =
