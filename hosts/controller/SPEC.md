@@ -11,6 +11,8 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 - NetworkManager with iwd backend
 - OpenSSH server (firewall port open)
 - Minimal SSH git server (git-shell, single bare repo)
+- Nginx reverse proxy with Let's Encrypt TLS
+- Headscale Tailscale coordination server with embedded DERP relay (declaratively provisioned users)
 - Colemak keyboard layout
 - Stylix theming with Banana cursor
 - Single user: `betongsuggan`

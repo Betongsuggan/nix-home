@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   inputs,
@@ -131,6 +132,19 @@
       mode = "0644";
       path = "/home/birgerrydback/.ssh/id_rsa.pub";
     };
+
+    "headscale-preauthkey" = {
+      key = "services/headscale-preauthkey";
+      owner = "root";
+      mode = "0400";
+    };
+  };
+
+  tailscale-client = {
+    enable = true;
+    loginServer = "https://headscale.betongsuggan.com";
+    authKeyFile = config.sops.secrets."headscale-preauthkey".path;
+    extraUpFlags = [ "--accept-routes" ];
   };
 
   # Defer fwupd to start on-demand instead of at boot

@@ -52,7 +52,7 @@
     };
 
     # Local path for now; switch to git+ssh:// once nix-secrets has an upstream.
-    nix-secrets.url = "path:/home/birgerrydback/nix-secrets";
+    nix-secrets.url = "path:/home/betongsuggan/nix-vault";
   };
 
   outputs =
@@ -147,7 +147,8 @@
         "gamer@private-desktop" = mkHomeConfiguration ./hosts/private-desktop/user-gamer.nix;
         "betongsuggan@private-laptop" = mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
         "birgerrydback@bits" = mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;
-        "betongsuggan@island-stationary" = mkHomeConfiguration ./hosts/island-stationary/user-betongsuggan.nix;
+        "betongsuggan@island-stationary" =
+          mkHomeConfiguration ./hosts/island-stationary/user-betongsuggan.nix;
         "gamer@island-stationary" = mkHomeConfiguration ./hosts/island-stationary/user-gamer.nix;
         "betongsuggan@controller" = mkHomeConfiguration ./hosts/controller/user-betongsuggan.nix;
       };

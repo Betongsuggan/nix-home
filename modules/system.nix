@@ -14,6 +14,7 @@
     ./game-streaming/system.nix
     ./git-server
     ./graphics
+    ./headscale
     ./kde
     ./keyboard
     ./logitech
@@ -21,9 +22,11 @@
     ./printers
     ./networking
     ./openssh
+    ./reverse-proxy
     ./secure-boot
     ./sops/system.nix
     ./file-manager/system.nix
+    ./tailscale-client
     ./touchpad
     ./undervolting
     ./webcam

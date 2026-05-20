@@ -541,13 +541,13 @@
     },
     "nix-secrets": {
       "locked": {
-        "lastModified": 1779224157,
-        "narHash": "sha256-exAj9lDdvLEMee/v4frZpDyaQSPic8BlVUzSJZkSENI=",
-        "path": "/home/birgerrydback/nix-secrets",
+        "lastModified": 1779305131,
+        "narHash": "sha256-77Cm9xgq817gK8bJ1BntvWun3zhI+/qUnORcNfV6NTM=",
+        "path": "/home/betongsuggan/nix-vault",
         "type": "path"
       },
       "original": {
-        "path": "/home/birgerrydback/nix-secrets",
+        "path": "/home/betongsuggan/nix-vault",
         "type": "path"
       }
     },

@@ -125,4 +125,20 @@
       # "ssh-ed25519 AAAA... user@host"
     ];
   };
+
+  reverse-proxy = {
+    enable = true;
+    acmeEmail = "rydback@gmail.com";
+    vhosts.headscale = {
+      domain = "headscale.betongsuggan.com";
+      upstream = "http://127.0.0.1:8080";
+    };
+  };
+
+  headscale = {
+    enable = true;
+    domain = "headscale.betongsuggan.com";
+    baseDomain = "tailnet.betongsuggan.com";
+    users = [ "birger" ];
+  };
 }

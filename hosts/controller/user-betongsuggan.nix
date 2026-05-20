@@ -27,7 +27,7 @@
   };
 
   sops-edit.enable = true;
-
+  chromium.enable = true;
   notifications.enable = true;
 
   launcher = {
