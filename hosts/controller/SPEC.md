@@ -13,6 +13,7 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 - Minimal SSH git server (git-shell, single bare repo)
 - Nginx reverse proxy with Let's Encrypt TLS
 - Headscale Tailscale coordination server with embedded DERP relay (declaratively provisioned users)
+- Sleep/suspend/hibernate fully disabled (systemd targets masked + logind ignores lid/power keys and idle)
 - Colemak keyboard layout
 - Stylix theming with Banana cursor
 - Single user: `betongsuggan`

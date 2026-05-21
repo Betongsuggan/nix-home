@@ -1,9 +1,12 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   home.username = "betongsuggan";
   home.homeDirectory = "/home/betongsuggan";
   home.stateVersion = "25.11";
+
+  home.file.".ssh/id_ed25519.pub".text =
+    inputs.nix-vault.keys.hosts.controller.users.betongsuggan.ssh_ed25519 + "\n";
 
   imports = [
     ../../modules/user.nix

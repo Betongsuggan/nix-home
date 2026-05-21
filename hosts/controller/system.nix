@@ -1,4 +1,9 @@
-{ pkgs, lib, inputs, ... }:
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 
 {
   users.users.betongsuggan = {
@@ -85,6 +90,20 @@
     { device = "/dev/disk/by-uuid/2aa51e50-2e51-46e9-a67c-4d75a5f3c9ad"; }
   ];
 
+  sops-secrets = {
+    enable = true;
+    secretsFile = "${inputs.nix-vault}/secrets/controller.yaml";
+  };
+
+  sops.secrets = {
+    "ssh-ed25519" = {
+      key = "users/betongsuggan/ssh/id_ed25519";
+      owner = "betongsuggan";
+      mode = "0600";
+      path = "/home/betongsuggan/.ssh/id_ed25519";
+    };
+  };
+
   services.xserver.desktopManager.runXdgAutostartIfNone = true;
   xdg.portal = {
     enable = true;
@@ -169,5 +188,26 @@
     domain = "headscale.betongsuggan.com";
     baseDomain = "tailnet.betongsuggan.com";
     users = [ "birger" ];
+  };
+
+  # Controller is a server — never let it sleep, suspend, or hibernate.
+  # Masking the systemd targets is the hard guarantee; logind settings stop
+  # power/suspend keys and idle from triggering them in the first place.
+  systemd.targets = {
+    sleep.enable = false;
+    suspend.enable = false;
+    hibernate.enable = false;
+    hybrid-sleep.enable = false;
+  };
+
+  services.logind = {
+    lidSwitch = "ignore";
+    lidSwitchExternalPower = "ignore";
+    lidSwitchDocked = "ignore";
+    settings.Login = {
+      HandleSuspendKey = "ignore";
+      HandleHibernateKey = "ignore";
+      IdleAction = "ignore";
+    };
   };
 }
