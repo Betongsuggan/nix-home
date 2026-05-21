@@ -109,6 +109,18 @@
     enable = true;
   };
 
+  programs.ssh = {
+    enable = true;
+    matchBlocks = {
+      "controller" = {
+        hostname = "192.168.50.50";
+        user = "betongsuggan";
+        identityFile = "/home/birgerrydback/.ssh/bits";
+        identitiesOnly = true;
+      };
+    };
+  };
+
   systemd.user.sessionVariables = {
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
   };

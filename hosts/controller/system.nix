@@ -20,6 +20,9 @@
       # enrollment to SSH in, edit nix-home / nix-vault, and rebuild controller.
       # See hosts/controller/SPEC.md for the full flow.
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
+
+      # Daily-driver identity: birgerrydback@bits.
+      inputs.nix-vault.keys.hosts.bits.users.birgerrydback.bits
     ];
   };
 

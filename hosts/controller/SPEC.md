@@ -38,6 +38,8 @@ The operator's YubiKey SSH key (FIDO `ed25519-sk` resident, touch-only) is autho
 
 One credential, all access. The YubiKey lives in the drawer until the next new-host enrollment.
 
+For everyday admin from the operator's `bits` laptop, `birgerrydback@bits`'s per-host SSH key (sourced from `inputs.nix-vault.keys.hosts.bits.users.birgerrydback.bits`) is also authorized on `betongsuggan` — no YubiKey touch required for routine work.
+
 ### Per-new-host enrollment runbook
 
 With the YubiKey inserted in either the new host or the operator's workstation:
