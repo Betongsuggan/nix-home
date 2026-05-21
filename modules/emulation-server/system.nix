@@ -13,19 +13,29 @@ let
     };
   };
 
-  peerType = types.submodule {
-    options = {
-      publicKey = mkOption {
-        type = types.str;
-        description = "WireGuard public key for this peer";
-      };
-      allowedIPs = mkOption {
-        type = types.listOf types.str;
-        description = "Allowed IP addresses for this peer";
-        example = [ "10.100.0.2/32" ];
-      };
-    };
-  };
+  defaultSystems = [
+    "snes"
+    "nes"
+    "gb"
+    "gbc"
+    "gba"
+    "n64"
+    "nds"
+    "psx"
+    "ps2"
+    "psp"
+    "megadrive"
+    "mastersystem"
+    "gamecube"
+    "wii"
+    "dreamcast"
+    "saturn"
+    "arcade"
+  ];
+
+  defaultEmulators = [ "retroarch" "ppsspp" "duckstation" "dolphin" ];
+
+  tmpfilesDir = path: "d ${path} 0775 ${cfg.user} users -";
 
 in {
   options.emulation-server = {
@@ -33,14 +43,38 @@ in {
 
     user = mkOption {
       type = types.str;
-      default = "gamer";
+      default = "betongsuggan";
       description = "User account that owns the emulation data";
     };
 
     dataDir = mkOption {
       type = types.path;
-      default = "/home/gamer/emulation";
+      default = "/var/lib/emulation";
       description = "Root directory for emulation data (roms, saves, bios)";
+    };
+
+    lanInterface = mkOption {
+      type = types.str;
+      default = "enp1s0";
+      description = "LAN network interface that should expose Syncthing/Samba ports";
+    };
+
+    lanSubnet = mkOption {
+      type = types.str;
+      default = "192.168.50.0/24";
+      description = "LAN subnet allowed to reach Samba shares";
+    };
+
+    systems = mkOption {
+      type = types.listOf types.str;
+      default = defaultSystems;
+      description = "Emulation systems to create ROM subdirectories for";
+    };
+
+    standaloneEmulators = mkOption {
+      type = types.listOf types.str;
+      default = defaultEmulators;
+      description = "Standalone emulators to create save subdirectories for";
     };
 
     syncthing = {
@@ -55,60 +89,28 @@ in {
         '';
       };
     };
-
-    wireguard = {
-      enable = mkEnableOption "WireGuard VPN for remote emulation access";
-
-      listenPort = mkOption {
-        type = types.port;
-        default = 51820;
-        description = "UDP port for WireGuard";
-      };
-
-      address = mkOption {
-        type = types.str;
-        default = "10.100.0.1/24";
-        description = "VPN address for this server";
-      };
-
-      privateKeyFile = mkOption {
-        type = types.path;
-        default = "/etc/wireguard/private.key";
-        description = "Path to the WireGuard private key file";
-      };
-
-      peers = mkOption {
-        type = types.listOf peerType;
-        default = [ ];
-        description = "WireGuard peers (clients) allowed to connect";
-        example = literalExpression ''
-          [
-            {
-              publicKey = "abc123...";
-              allowedIPs = [ "10.100.0.2/32" ];
-            }
-          ]
-        '';
-      };
-    };
   };
 
   config = mkIf cfg.enable {
-    # Auto-enable the user-side module for the configured user
-    home-manager.users.${cfg.user} = { ... }: {
-      emulation-server.user = {
-        enable = mkDefault true;
-        dataDir = mkDefault cfg.dataDir;
-      };
-    };
+    # Directory layout — owned by the configured user, group writable for Samba/Syncthing.
+    systemd.tmpfiles.rules =
+      [
+        (tmpfilesDir cfg.dataDir)
+        (tmpfilesDir "${cfg.dataDir}/roms")
+        (tmpfilesDir "${cfg.dataDir}/saves")
+        (tmpfilesDir "${cfg.dataDir}/bios")
+        (tmpfilesDir "${cfg.dataDir}/saves/retroarch/saves")
+        (tmpfilesDir "${cfg.dataDir}/saves/retroarch/states")
+      ]
+      ++ map (sys: tmpfilesDir "${cfg.dataDir}/roms/${sys}") cfg.systems
+      ++ map (emu: tmpfilesDir "${cfg.dataDir}/saves/${emu}") cfg.standaloneEmulators;
 
-    # Syncthing for save file synchronization
     services.syncthing = {
       enable = true;
       user = cfg.user;
       dataDir = cfg.dataDir;
       configDir = "/home/${cfg.user}/.config/syncthing";
-      openDefaultPorts = true;
+      openDefaultPorts = false;
 
       settings = {
         devices = mapAttrs (_name: device: {
@@ -128,12 +130,12 @@ in {
       };
     };
 
-    # Samba shares for ROMs and BIOS (read-only) via existing file-sharing module
     file-sharing = {
       enable = true;
       samba = {
         enable = true;
-        openFirewall = true;
+        openFirewall = false;
+        allowedSubnets = [ cfg.lanSubnet "100.64.0.0/10" ];
         shares = [
           {
             name = "emulation-roms";
@@ -151,20 +153,16 @@ in {
       };
     };
 
-    # WireGuard VPN for remote access
-    networking.wireguard.interfaces = mkIf cfg.wireguard.enable {
-      wg0 = {
-        ips = [ cfg.wireguard.address ];
-        listenPort = cfg.wireguard.listenPort;
-        privateKeyFile = cfg.wireguard.privateKeyFile;
-
-        peers = map (peer: {
-          inherit (peer) publicKey allowedIPs;
-        }) cfg.wireguard.peers;
+    # Expose Syncthing + Samba only on the LAN and tailnet interfaces.
+    networking.firewall.interfaces = {
+      ${cfg.lanInterface} = {
+        allowedTCPPorts = [ 22000 445 139 ];
+        allowedUDPPorts = [ 21027 137 138 ];
+      };
+      tailscale0 = {
+        allowedTCPPorts = [ 22000 445 139 ];
+        allowedUDPPorts = [ 21027 137 138 ];
       };
     };
-
-    networking.firewall.allowedUDPPorts =
-      mkIf cfg.wireguard.enable [ cfg.wireguard.listenPort ];
   };
 }

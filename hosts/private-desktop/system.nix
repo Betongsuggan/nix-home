@@ -225,23 +225,10 @@
       27034
       27035
       27036
-      51820 # WireGuard
       53317
     ];
   };
   undervolting.enable = true;
-
-  emulation-server = {
-    enable = true;
-    user = "gamer";
-    dataDir = "/home/gamer/emulation";
-    syncthing.devices = { }; # Add device IDs as devices connect
-    wireguard = {
-      enable = true;
-      privateKeyFile = "/etc/wireguard/private.key";
-      peers = [ ]; # Add peers later
-    };
-  };
 
   system.stateVersion = "25.05";
 }

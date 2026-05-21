@@ -7,7 +7,7 @@ User-level module for NixOS machines that connect to the emulation server. Enabl
 ```nix
 emulation-client = {
   enable = true;
-  server.address = "home-desktop";
+  server.address = "192.168.50.5";  # controller's LAN IP, or tailnet hostname
 };
 ```
 
@@ -24,9 +24,9 @@ emulation-client = {
 
 ### Prerequisites
 
-- A running emulation server (see `modules/system/emulation-server/`)
+- A running emulation server (see `modules/emulation-server/`)
 - The server's Syncthing device ID and Samba password
-- For remote access: WireGuard configured on both server and client
+- For off-LAN access: Tailscale on both ends (server reachable via its tailnet hostname / IP)
 
 ### What enabling this module does
 
@@ -51,14 +51,14 @@ Saves sync bidirectionally. Changes made offline sync automatically when devices
 Use the included helper script:
 
 ```bash
-# Uses the configured server address (default: home-desktop)
+# Uses the configured server address
 mount-emulation-roms
 
-# Override server address (e.g. via VPN)
-mount-emulation-roms 10.100.0.1
+# Override server address (e.g. tailnet hostname)
+mount-emulation-roms controller
 
 # Override both server and username
-mount-emulation-roms 10.100.0.1 gamer
+mount-emulation-roms controller betongsuggan
 ```
 
 This mounts read-only Samba shares at `~/emulation/roms` and `~/emulation/bios`. You will be prompted for the Samba password (set on the server with `smbpasswd`).
@@ -69,34 +69,9 @@ To unmount:
 sudo umount ~/emulation/roms ~/emulation/bios
 ```
 
-### WireGuard (remote access)
+### Off-LAN access
 
-For access outside the LAN, set up WireGuard on the client.
-
-Generate a keypair:
-
-```bash
-wg genkey | tee ~/wireguard-private.key | wg pubkey > ~/wireguard-public.key
-```
-
-Add WireGuard configuration to your system config:
-
-```nix
-networking.wireguard.interfaces.wg0 = {
-  ips = [ "10.100.0.2/24" ];
-  privateKeyFile = "/path/to/wireguard-private.key";
-  peers = [
-    {
-      publicKey = "server-public-key-here";
-      endpoint = "your-server-public-ip:51820";
-      allowedIPs = [ "10.100.0.0/24" ];
-      persistentKeepalive = 25;
-    }
-  ];
-};
-```
-
-Add your client's public key to the server's `wireguard.peers` config and rebuild the server. Once connected, use the VPN IP for Samba: `mount-emulation-roms 10.100.0.1`
+The server exposes Syncthing and Samba on its `tailscale0` interface as well as the LAN. To use the server while away from home, enable the `tailscale-client` module on this host and pass the server's tailnet hostname as `server.address` (or run `mount-emulation-roms <tailnet-hostname>` ad-hoc).
 
 ### Pointing emulators at the save directory
 

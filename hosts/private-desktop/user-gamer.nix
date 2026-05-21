@@ -23,6 +23,11 @@
     tools.enable = true;
   };
 
+  emulation-client = {
+    enable = true;
+    server.address = "192.168.50.5";
+  };
+
   general.enable = true;
   chromium.enable = true;
   fileManager = {

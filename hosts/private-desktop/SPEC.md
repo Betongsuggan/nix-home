@@ -15,7 +15,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - MangoHud overlay with detailed mode and vkBasalt post-processing
 - Proton-GE for enhanced Windows game compatibility
 - RDNA4-optimized Vulkan environment variables (RADV, ray tracing, HDR)
-- Emulation server with Syncthing and WireGuard support
+- Emulation client (gamer user): Syncthing save sync and `mount-emulation-roms` helper targeting controller at `192.168.50.5`
 - Zen kernel optimized for desktop/gaming with ryzen-smu monitoring
 - ZRAM swap (zstd, 50% memory) for memory efficiency
 - CPU governor set to performance mode with undervolting enabled
@@ -26,7 +26,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - Bluetooth with wake support for DualSense controller
 - Secure boot via Lanzaboote
 - FreeSync enabled on all displays via kernel parameter
-- Firewall with ports for Syncthing, Steam streaming, WireGuard, and LocalSend
+- Firewall with ports for Syncthing, Steam streaming, and LocalSend
 
 ## Notes
 

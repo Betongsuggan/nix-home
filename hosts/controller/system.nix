@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   inputs,
@@ -105,6 +106,28 @@
       mode = "0600";
       path = "/home/betongsuggan/.ssh/id_ed25519";
     };
+
+    #"headscale-preauthkey" = {
+    #  key = "services/headscale-preauthkey";
+    #  owner = "root";
+    #  mode = "0400";
+    #};
+  };
+
+  #tailscale-client = {
+  #  enable = true;
+  #  loginServer = "https://headscale.betongsuggan.com";
+  #  authKeyFile = config.sops.secrets."headscale-preauthkey".path;
+  #  extraUpFlags = [ "--accept-routes" ];
+  #};
+
+  emulation-server = {
+    enable = true;
+    user = "betongsuggan";
+    dataDir = "/var/lib/emulation";
+    lanInterface = "enp1s0";
+    lanSubnet = "192.168.50.0/24";
+    syncthing.devices = { };
   };
 
   services.xserver.desktopManager.runXdgAutostartIfNone = true;

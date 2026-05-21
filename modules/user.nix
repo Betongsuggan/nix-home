@@ -9,7 +9,6 @@
     ./development
     ./direnv
     ./emulation-client
-    ./emulation-server/user.nix
     ./firefox
     ./flatpak
     ./game-streaming/user.nix
