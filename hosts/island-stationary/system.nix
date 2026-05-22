@@ -40,6 +40,11 @@
     permittedInsecurePackages = [ "freeimage-3.18.0-unstable-2024-04-18" ];
   };
 
+  openssh = {
+    enable = true;
+    openFirewall = true;
+  };
+
   secure-boot.enable = true;
   boot = {
     # Zen kernel optimized for desktop/gaming performance on Ryzen CPUs
@@ -120,7 +125,10 @@
     "/boot" = {
       device = "/dev/disk/by-uuid/3AB6-AEB7";
       fsType = "vfat";
-      options = [ "fmask=0077" "dmask=0077" ];
+      options = [
+        "fmask=0077"
+        "dmask=0077"
+      ];
     };
   };
 
@@ -129,6 +137,20 @@
   ];
 
   services.fwupd.enable = true;
+
+  sops-secrets = {
+    enable = true;
+    secretsFile = "${inputs.nix-vault}/secrets/island.yaml";
+  };
+
+  sops.secrets = {
+    "ssh-id-rsa" = {
+      key = "users/betongsuggan/ssh/id_rsa";
+      owner = "betongsuggan";
+      mode = "0600";
+      path = "/home/betongsuggan/.ssh/id_rsa";
+    };
+  };
 
   programs.gamemode = {
     enable = true;

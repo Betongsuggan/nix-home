@@ -64,6 +64,7 @@
     };
     rumble.enable = true;
   };
+  sops-edit.enable = true;
 
   windowManager = {
     enable = true;
@@ -78,6 +79,25 @@
       };
     };
   };
+  services.ssh-agent = {
+    enable = true;
+  };
+
+  home.file.".ssh/id_rsa.pub".text =
+    inputs.nix-vault.keys.hosts.island.users.betongsuggan.id_rsa + "\n";
+
+  programs.ssh = {
+    enable = true;
+    matchBlocks = {
+      "controller" = {
+        hostname = "192.168.50.5";
+        user = "betongsuggan";
+        identityFile = "/home/betongsuggan/.ssh/id_rsa";
+        identitiesOnly = true;
+      };
+    };
+  };
+
   theme = {
     enable = true;
     wallpaper = ../../assets/wallpaper/zeal.jpg;

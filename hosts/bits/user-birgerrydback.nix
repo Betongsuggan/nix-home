@@ -109,21 +109,26 @@
 
   sops-edit.enable = true;
 
-  secrets = {
-    enable = true;
-    keyProviders = [
-      {
-        name = "tavily_key_provider";
-        path = "$HOME/.config/tavily/key_provider.sh";
-        envVarName = "TAVILY_API_KEY";
-      }
-      {
-        name = "localstack_key_provider";
-        path = "$HOME/.config/localstack/key_provider.sh";
-        envVarName = "LOCALSTACK_AUTH_TOKEN";
-      }
-    ];
-  };
+  #sops-secrets = {
+  #  enable = true;
+  #  secretsFile = "${inputs.nix-vault}/secrets/bits.yaml";
+  #};
+
+  #secrets = {
+  #  enable = true;
+  #  keyProviders = [
+  #    {
+  #      name = "tavily_key_provider";
+  #      path = "$HOME/.config/tavily/key_provider.sh";
+  #      envVarName = "TAVILY_API_KEY";
+  #    }
+  #    {
+  #      name = "localstack_key_provider";
+  #      path = "$HOME/.config/localstack/key_provider.sh";
+  #      envVarName = "LOCALSTACK_AUTH_TOKEN";
+  #    }
+  #  ];
+  #};
 
   programs.home-manager.enable = true;
 
