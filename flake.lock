@@ -541,8 +541,8 @@
     },
     "nix-vault": {
       "locked": {
-        "lastModified": 1779317830,
-        "narHash": "sha256-poWPuC9fVQrugXuafcFriImIWFHzNdG96T7tKQDpTR8=",
+        "lastModified": 1779463842,
+        "narHash": "sha256-7Ho21Tk1w/ZYvE0PEAf05aIAvpnqxQmBd8lYNIMy8Tg=",
         "path": "/home/betongsuggan/nix-vault",
         "type": "path"
       },

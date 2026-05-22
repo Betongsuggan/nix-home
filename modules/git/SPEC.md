@@ -25,5 +25,6 @@ git = {
 - Installs diff-so-fancy and uses it as the default pager.
 - Rewrites `https://github.com` URLs to `ssh://git@github.com`.
 - Enables `push.autoSetupRemote`.
+- Sets `init.defaultBranch` to `main` for new repositories.
 - Uses `git-credential-libsecret` for credential storage.
 - Includes aliases: `f` (fetch), `s` (status), `d` (diff), `co` (checkout), `br` (new branch), `cm` (commit -m), `ca` (amend), `aa` (add all), `p` (push), `fp` (force-with-lease push), `tree` (graph log), and more.

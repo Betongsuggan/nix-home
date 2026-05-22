@@ -33,6 +33,7 @@ with lib;
           email = config.git.userEmail;
         };
         core.pager = "diff-so-fancy | less --tabs=4 -RFX";
+        init.defaultBranch = "main";
         credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
         url = {
           "ssh://git@github.com" = { insteadOf = "https://github.com"; };
