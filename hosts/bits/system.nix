@@ -142,10 +142,19 @@
 
   tailscale-client = {
     enable = true;
-    loginServer = "https://headscale.betongsuggan.com";
+    loginServer = "https://vpn.rydback.net";
     authKeyFile = config.sops.secrets."headscale-preauthkey".path;
     extraUpFlags = [ "--accept-routes" ];
   };
+
+  # Let the Nix daemon (running as root) fetch git+ssh://git@rydback.net/...
+  # using the host's SSH key. Scoped to root so the user's own SSH config
+  # (e.g. birgerrydback's `bits` key) is unaffected.
+  programs.ssh.extraConfig = ''
+    Match user root host rydback.net
+      IdentityFile /etc/ssh/ssh_host_ed25519_key
+      IdentitiesOnly yes
+  '';
 
   # Defer fwupd to start on-demand instead of at boot
   systemd.services.fwupd = {

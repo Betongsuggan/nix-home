@@ -11,8 +11,8 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 - NetworkManager with iwd backend
 - OpenSSH server (firewall port open)
 - Minimal SSH git server (git-shell, single bare repo)
-- Nginx reverse proxy with Let's Encrypt TLS
-- Headscale Tailscale coordination server with embedded DERP relay (declaratively provisioned users)
+- Nginx reverse proxy with per-domain Let's Encrypt certs (HTTP-01), auto-renewing; currently `rydback.net` (404 stub) and `vpn.rydback.net` (proxies to headscale)
+- Headscale Tailscale coordination server at `vpn.rydback.net` with embedded DERP relay (declaratively provisioned users)
 - Tailscale client joined to the local headscale tailnet (`--accept-routes`)
 - Emulation server: Syncthing for save sync, Samba for read-only ROM/BIOS shares, data at `/var/lib/emulation`; Syncthing/Samba ports exposed only on `enp1s0` (LAN) and `tailscale0` (off-LAN)
 - Sleep/suspend/hibernate fully disabled (systemd targets masked + logind ignores lid/power keys and idle)

@@ -52,11 +52,11 @@
     };
 
     # nix-vault.git is served by controller's git-server module. Switch to
-    #   nix-vault.url = "git+ssh://git@192.168.50.50/var/lib/git/nix-vault.git";
+    nix-vault.url = "git+ssh://git@rydback.net/var/lib/git/nix-vault.git?ref=main";
     # once you want hosts/installers to fetch over SSH instead of relying on a
     # local clone. Bootstrap an installer via `--override-input nix-vault path:...`
     # if the host's SSH key isn't yet authorized on controller.
-    nix-vault.url = "path:/home/betongsuggan/nix-vault";
+    #nix-vault.url = "path:/home/betongsuggan/nix-vault";
   };
 
   outputs =
@@ -72,15 +72,19 @@
         (
           self: super:
           let
-            mkVicinaeExtension = inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.mkVicinaeExtension;
+            mkVicinaeExtension =
+              inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.mkVicinaeExtension;
           in
           {
             awscli-local = awscli-local.packages.${self.stdenv.hostPlatform.system}.default;
             walker = inputs.walker.packages.${self.stdenv.hostPlatform.system}.default;
             elephant = inputs.elephant.packages.${self.stdenv.hostPlatform.system}.default;
-            audiomenu = inputs.audiomenu.packages.${self.stdenv.hostPlatform.system}.default;
-            monitormenu = inputs.monitormenu.packages.${self.stdenv.hostPlatform.system}.default;
-            console-mode = inputs.console-mode.packages.${self.stdenv.hostPlatform.system}.default;
+            audiomenu =
+              inputs.audiomenu.packages.${self.stdenv.hostPlatform.system}.default;
+            monitormenu =
+              inputs.monitormenu.packages.${self.stdenv.hostPlatform.system}.default;
+            console-mode =
+              inputs.console-mode.packages.${self.stdenv.hostPlatform.system}.default;
             d2 = inputs.d2.packages.${self.stdenv.hostPlatform.system}.default;
             vicinae = inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.default;
 
@@ -147,14 +151,19 @@
       };
 
       homeConfigurations = {
-        "betongsuggan@private-desktop" = mkHomeConfiguration ./hosts/private-desktop/user-betongsuggan.nix;
-        "gamer@private-desktop" = mkHomeConfiguration ./hosts/private-desktop/user-gamer.nix;
-        "betongsuggan@private-laptop" = mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
+        "betongsuggan@private-desktop" =
+          mkHomeConfiguration ./hosts/private-desktop/user-betongsuggan.nix;
+        "gamer@private-desktop" =
+          mkHomeConfiguration ./hosts/private-desktop/user-gamer.nix;
+        "betongsuggan@private-laptop" =
+          mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
         "birgerrydback@bits" = mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;
         "betongsuggan@island-stationary" =
           mkHomeConfiguration ./hosts/island-stationary/user-betongsuggan.nix;
-        "gamer@island-stationary" = mkHomeConfiguration ./hosts/island-stationary/user-gamer.nix;
-        "betongsuggan@controller" = mkHomeConfiguration ./hosts/controller/user-betongsuggan.nix;
+        "gamer@island-stationary" =
+          mkHomeConfiguration ./hosts/island-stationary/user-gamer.nix;
+        "betongsuggan@controller" =
+          mkHomeConfiguration ./hosts/controller/user-betongsuggan.nix;
       };
     };
 }

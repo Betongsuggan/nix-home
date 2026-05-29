@@ -107,19 +107,28 @@
       path = "/home/betongsuggan/.ssh/id_ed25519";
     };
 
-    #"headscale-preauthkey" = {
-    #  key = "services/headscale-preauthkey";
-    #  owner = "root";
-    #  mode = "0400";
-    #};
+    "headscale-preauthkey" = {
+      key = "services/headscale-preauthkey";
+      owner = "root";
+      mode = "0400";
+    };
   };
 
-  #tailscale-client = {
-  #  enable = true;
-  #  loginServer = "https://headscale.betongsuggan.com";
-  #  authKeyFile = config.sops.secrets."headscale-preauthkey".path;
-  #  extraUpFlags = [ "--accept-routes" ];
-  #};
+  tailscale-client = {
+    enable = true;
+    loginServer = "https://vpn.rydback.net";
+    authKeyFile = config.sops.secrets."headscale-preauthkey".path;
+    extraUpFlags = [ "--accept-routes" ];
+  };
+
+  # Let the Nix daemon (root) fetch git+ssh://git@rydback.net/... — for
+  # controller, redirect to loopback so we don't hit NAT hairpinning.
+  programs.ssh.extraConfig = ''
+    Match user root host rydback.net
+      HostName 127.0.0.1
+      IdentityFile /etc/ssh/ssh_host_ed25519_key
+      IdentitiesOnly yes
+  '';
 
   emulation-server = {
     enable = true;
@@ -203,16 +212,20 @@
   reverse-proxy = {
     enable = true;
     acmeEmail = "rydback@gmail.com";
+    domains = [
+      "rydback.net"
+      "vpn.rydback.net"
+    ];
     vhosts.headscale = {
-      domain = "headscale.betongsuggan.com";
+      domain = "vpn.rydback.net";
       upstream = "http://127.0.0.1:8080";
     };
   };
 
   headscale = {
     enable = true;
-    domain = "headscale.betongsuggan.com";
-    baseDomain = "tailnet.betongsuggan.com";
+    domain = "vpn.rydback.net";
+    baseDomain = "ts.rydback.net";
     users = [ "birger" ];
   };
 

@@ -541,14 +541,18 @@
     },
     "nix-vault": {
       "locked": {
-        "lastModified": 1779463842,
-        "narHash": "sha256-7Ho21Tk1w/ZYvE0PEAf05aIAvpnqxQmBd8lYNIMy8Tg=",
-        "path": "/home/betongsuggan/nix-vault",
-        "type": "path"
+        "lastModified": 1780055057,
+        "narHash": "sha256-arPhc7czB27rWlm7MhZsxz2JEVaXX/9o0UkhftErSIQ=",
+        "ref": "main",
+        "rev": "2d4c130f4213b5cd774409a7e3f4b468fa813b31",
+        "revCount": 12,
+        "type": "git",
+        "url": "ssh://git@rydback.net/var/lib/git/nix-vault.git"
       },
       "original": {
-        "path": "/home/betongsuggan/nix-vault",
-        "type": "path"
+        "ref": "main",
+        "type": "git",
+        "url": "ssh://git@rydback.net/var/lib/git/nix-vault.git"
       }
     },
     "nixpkgs": {

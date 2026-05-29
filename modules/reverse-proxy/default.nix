@@ -18,14 +18,29 @@ in {
       description = "Open TCP 80 and 443 in the firewall.";
     };
 
+    domains = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
+      example = [ "rydback.net" "vpn.rydback.net" ];
+      description = ''
+        Domains to issue HTTP-01 certs for. Each needs a public A record
+        pointing at this host and TCP 80 reachable from the internet. A vhost
+        will exist for each domain — either from `vhosts` or, if no vhost
+        matches, a default 404 stub that still serves the ACME challenge.
+      '';
+    };
+
     vhosts = mkOption {
       default = { };
-      description = "Virtual hosts, keyed by short label.";
+      description = ''
+        Reverse-proxy vhosts keyed by short label. Each vhost's `domain` MUST
+        appear in `domains`.
+      '';
       type = types.attrsOf (types.submodule {
         options = {
           domain = mkOption {
             type = types.str;
-            description = "Fully-qualified domain name for the vhost.";
+            description = "FQDN this vhost serves. MUST appear in `domains`.";
           };
 
           upstream = mkOption {
@@ -45,6 +60,11 @@ in {
   };
 
   config = mkIf cfg.enable {
+    assertions = map (v: {
+      assertion = elem v.domain cfg.domains;
+      message = "reverse-proxy vhost domain '${v.domain}' must be listed in reverse-proxy.domains";
+    }) (attrValues cfg.vhosts);
+
     security.acme = {
       acceptTerms = true;
       defaults.email = cfg.acmeEmail;
@@ -56,16 +76,27 @@ in {
       recommendedTlsSettings = true;
       recommendedGzipSettings = true;
 
-      virtualHosts = mapAttrs (_name: v: {
-        serverName = v.domain;
-        enableACME = true;
-        forceSSL = true;
-        locations."/" = {
-          proxyPass = v.upstream;
-          proxyWebsockets = true;
-          extraConfig = v.extraConfig;
-        };
-      }) cfg.vhosts;
+      virtualHosts =
+        let
+          vhostByDomain = mapAttrs' (_n: v: nameValuePair v.domain v) cfg.vhosts;
+        in
+        genAttrs cfg.domains (d:
+          if vhostByDomain ? ${d} then {
+            serverName = d;
+            enableACME = true;
+            forceSSL = true;
+            locations."/" = {
+              proxyPass = vhostByDomain.${d}.upstream;
+              proxyWebsockets = true;
+              extraConfig = vhostByDomain.${d}.extraConfig;
+            };
+          } else {
+            serverName = d;
+            enableACME = true;
+            forceSSL = true;
+            locations."/".return = "404";
+          }
+        );
     };
 
     networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [ 80 443 ];
