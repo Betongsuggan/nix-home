@@ -25,11 +25,10 @@ with lib;
         "--ozone-platform-hint=auto"
 
         # Hardware acceleration
-        "--use-gl=egl"
         "--enable-gpu-rasterization"
         "--enable-zero-copy"
         "--ignore-gpu-blocklist"
-        "--enable-features=UseOzonePlatform,WaylandWindowDecorations,VaapiVideoDecoder,VaapiVideoEncoder,VaapiIgnoreDriverChecks,CanvasOopRasterization,WebRTCPipeWireCapturer"
+        "--enable-features=VaapiVideoDecoder,VaapiVideoEncoder,VaapiIgnoreDriverChecks,AcceleratedVideoDecodeLinuxGL,CanvasOopRasterization,WebRTCPipeWireCapturer"
 
         # Privacy
         "--disable-features=MediaRouter"

@@ -1,4 +1,9 @@
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  inputs,
+  lib,
+  ...
+}:
 
 {
   home.username = "birgerrydback";
@@ -9,8 +14,19 @@
     ../../modules/user.nix
   ];
 
+  home.file.".ssh/bits.pub".text =
+    inputs.nix-vault.keys.hosts.bits.users.birgerrydback.bits + "\n";
+  home.file.".ssh/id_rsa.pub".text =
+    inputs.nix-vault.keys.hosts.bits.users.birgerrydback.id_rsa + "\n";
+
   general.enable = true;
-  development.enable = true;
+  development = {
+    enable = true;
+    python.enable = true;
+    node.enable = true;
+    go.enable = true;
+    kotlin.enable = true;
+  };
   direnv.enable = true;
   chromium.enable = true;
   communication.enable = true;
@@ -113,10 +129,27 @@
     enable = true;
     matchBlocks = {
       "controller controller.ts.rydback.net" = {
-        hostname = "controller.ts.rydback.net";
+        hostname = builtins.head inputs.nix-vault.keys.hosts.controller.addresses;
         user = "betongsuggan";
         identityFile = "/home/birgerrydback/.ssh/bits";
         identitiesOnly = true;
+      };
+      "${lib.concatStringsSep " " inputs.nix-vault.keys.hosts.controller.addresses}" =
+        {
+          hostname = "%h";
+          user = "betongsuggan";
+          identityFile = "/home/birgerrydback/.ssh/bits";
+          identitiesOnly = true;
+        };
+      "github.com-betongsuggan" = {
+        hostname = "github.com";
+        user = "git";
+        identityFile = "/home/birgerrydback/.ssh/id_rsa";
+      };
+      "github.com" = {
+        hostname = "github.com";
+        user = "git";
+        identityFile = "/home/birgerrydback/.ssh/bits";
       };
     };
   };

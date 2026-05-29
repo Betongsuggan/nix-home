@@ -20,6 +20,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Secret management for Tavily and LocalStack API keys
 - sops-nix integration: SSH keys delivered from the external `nix-vault` flake input; OpenSSH and pcscd auto-enabled by the `sops-secrets` module
 - Declarative SSH client config for `controller` (Host stanza in `~/.ssh/config`, using the bits-host key) so `ssh controller` connects as `betongsuggan` without YubiKey touch
+- `betongsuggan@controller`'s SSH key is authorized on `birgerrydback` so the controller host can SSH back into bits (sourced from `inputs.nix-vault.keys.hosts.controller.users.betongsuggan.ssh_ed25519`)
 - Firewall with ports open for LocalSend (53317) and dev server (8080)
 
 ## Notes

@@ -13,7 +13,12 @@
   games.enable = true;
   communication.enable = true;
   localsend.enable = true;
-  development.enable = true;
+  development = {
+    enable = true;
+    python.enable = true;
+    node.enable = true;
+    go.enable = true;
+  };
 
   terminal = {
     enable = true;

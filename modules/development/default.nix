@@ -5,67 +5,81 @@
   ...
 }:
 with lib;
-
+let
+  cfg = config.development;
+in
 {
   options.development = {
-    enable = mkEnableOption "Enable development toolings";
+    enable = mkEnableOption "development tooling";
+
+    python.enable = mkEnableOption "Python toolchain";
+    node.enable = mkEnableOption "Node.js toolchain";
+    go.enable = mkEnableOption "Go toolchain";
+    kotlin.enable = mkEnableOption "Kotlin toolchain (installs JDK 21, sets JAVA_HOME)";
+    rust.enable = mkEnableOption "Rust toolchain";
+    haskell.enable = mkEnableOption "Haskell toolchain";
   };
 
-  config = mkIf config.development.enable {
+  config = mkIf cfg.enable {
 
-    home.packages = with pkgs; [
-      # Github
-      gh
+    home.packages =
+      with pkgs;
+      [
+        # Github
+        gh
 
-      # Infrastructure
-      localstack
-      awscli-local
-      nodePackages.aws-cdk-local
-      aws-cdk
-      unstable.awscli2
-      terraform
-      d2
+        # Infrastructure
+        localstack
+        awscli-local
+        nodePackages.aws-cdk-local
+        aws-cdk
+        unstable.awscli2
+        terraform
+        d2
 
-      # AI tools
-      unstable.claude-code
+        # AI tools
+        unstable.claude-code
+      ]
+      ++ optionals cfg.python.enable [
+        python3
+      ]
+      ++ optionals cfg.node.enable [
+        nodejs_20
+        yarn
+        nodePackages.pnpm
+      ]
+      ++ optionals cfg.go.enable [
+        delve
+        unstable.golangci-lint
+        unstable.golangci-lint-langserver
+        gotools
+        gofumpt
+        golines
+      ]
+      ++ optionals cfg.kotlin.enable [
+        kotlin
+        jdk21
+      ]
+      ++ optionals cfg.rust.enable [
+        cargo
+        rustc
+        rustfmt
+        clippy
+        gcc
+      ]
+      ++ optionals cfg.haskell.enable [
+        ghc
+        cabal-install
+      ];
 
-      # Python
-      python3
+    programs.go.enable = cfg.go.enable;
 
-      # Kotlin
-      #kotlin
-      #openjdk17-bootstrap
-      #android-studio
-      #jetbrains.idea-community
-
-      # Node stuff
-      yarn
-      nodePackages.pnpm
-      nodejs_20
-
-      # Haskell
-      #ghc
-      #cabal-install
-
-      # Rust
-      #cargo
-      #rustc
-      #rustfmt
-      #gcc
-      #clippy
-
-      # Go
-      delve
-      unstable.golangci-lint
-      unstable.golangci-lint-langserver
-      gotools
-      gofumpt
-      golines
-    ];
-    programs.go.enable = true;
-
-    home.sessionVariables = {
-      PATH = "$HOME/node_modules/bin:$PATH";
-    };
+    home.sessionVariables =
+      optionalAttrs cfg.node.enable {
+        PATH = "$HOME/node_modules/bin:$PATH";
+      }
+      // optionalAttrs cfg.kotlin.enable {
+        JAVA_HOME = "${pkgs.jdk21.home}";
+      };
   };
 }

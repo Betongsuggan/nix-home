@@ -18,6 +18,9 @@
       "docker"
       "storage"
     ];
+    openssh.authorizedKeys.keys = [
+      inputs.nix-vault.keys.hosts.controller.users.betongsuggan.ssh_ed25519
+    ];
   };
 
   system.stateVersion = "24.05";
@@ -114,23 +117,11 @@
       mode = "0600";
       path = "/home/birgerrydback/.ssh/bits";
     };
-    "ssh-bits-pub" = {
-      key = "users/birgerrydback/ssh/bits_pub";
-      owner = "birgerrydback";
-      mode = "0644";
-      path = "/home/birgerrydback/.ssh/bits.pub";
-    };
     "ssh-id-rsa" = {
       key = "users/birgerrydback/ssh/github";
       owner = "birgerrydback";
       mode = "0600";
       path = "/home/birgerrydback/.ssh/id_rsa";
-    };
-    "ssh-id-rsa-pub" = {
-      key = "users/birgerrydback/ssh/github_pub";
-      owner = "birgerrydback";
-      mode = "0644";
-      path = "/home/birgerrydback/.ssh/id_rsa.pub";
     };
 
     "headscale-preauthkey" = {
@@ -144,7 +135,7 @@
     enable = true;
     loginServer = "https://vpn.rydback.net";
     authKeyFile = config.sops.secrets."headscale-preauthkey".path;
-    extraUpFlags = [ "--accept-routes" ];
+    extraUpFlags = [ "--accept-routes" "--accept-dns" ];
   };
 
   # Let the Nix daemon (running as root) fetch nix-vault over the tailnet

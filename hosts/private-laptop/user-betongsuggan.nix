@@ -19,7 +19,12 @@
   notifications.enable = true;
   battery-monitor.enable = true;
   kanshi.enable = true;
-  development.enable = true;
+  development = {
+    enable = true;
+    python.enable = true;
+    node.enable = true;
+    go.enable = true;
+  };
   fileManager = {
     enable = true;
     backend = "thunar";
