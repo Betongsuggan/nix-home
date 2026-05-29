@@ -19,7 +19,7 @@
       "storage"
     ];
     openssh.authorizedKeys.keys = [
-      inputs.nix-vault.keys.hosts.controller.users.betongsuggan.ssh_ed25519
+      inputs.self.lib.hosts.controller.ssh.users.betongsuggan.ssh_ed25519
     ];
   };
 

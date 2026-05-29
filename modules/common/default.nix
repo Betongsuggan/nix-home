@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }: {
+{ lib, pkgs, inputs, ... }: {
   options = {
     unfreePackages = lib.mkOption {
       type = lib.types.listOf lib.types.str;
@@ -55,16 +55,13 @@
     environment.systemPackages = with pkgs; [ git vim wget curl ];
 
     # Controller's SSH host key, trusted on every host so new installs don't
-    # hit a TOFU prompt when fetching nix-vault via git+ssh://git@rydback.net/...
+    # hit a TOFU prompt when fetching nix-vault via the tailnet.
     programs.ssh.knownHosts."controller" = {
       hostNames = [
-        "rydback.net"
-        "vpn.rydback.net"
+        (inputs.self.lib.tailnet.fqdn "controller")
         "controller"
-        "controller.ts.rydback.net"
-        "192.168.50.5"
-      ];
-      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBGf64nW+ZcG2TfzvS4Ql2yJD2/gNpNsRcUQrK0jNKb9 root@controller";
+      ] ++ inputs.self.lib.hosts.controller.addresses;
+      publicKey = inputs.self.lib.hosts.controller.ssh.host;
     };
   };
 }

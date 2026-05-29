@@ -6,7 +6,7 @@
   home.stateVersion = "25.11";
 
   home.file.".ssh/id_ed25519.pub".text =
-    inputs.nix-vault.keys.hosts.controller.users.betongsuggan.ssh_ed25519 + "\n";
+    inputs.self.lib.hosts.controller.ssh.users.betongsuggan.ssh_ed25519 + "\n";
 
   imports = [
     ../../modules/user.nix

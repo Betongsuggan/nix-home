@@ -23,7 +23,7 @@
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
 
       # Daily-driver identity: birgerrydback@bits.
-      inputs.nix-vault.keys.hosts.bits.users.birgerrydback.bits
+      inputs.self.lib.hosts.bits.ssh.users.birgerrydback.bits
     ];
   };
 
@@ -199,14 +199,13 @@
   git-server = {
     enable = true;
     repositories = [ "nix-vault" ];
-    # Every SSH pubkey declared under `hosts.<host>.users` in nix-vault's
-    # keys.nix gets clone/push access. Adding a new user/host key there is
-    # enough — no separate enrollment step on controller.
-    authorizedKeys = (lib.collect lib.isString inputs.nix-vault.keys.hosts) ++ [
-      # Operator's YubiKey (FIDO resident, touch-only). Not stored in
-      # nix-vault because it's the bootstrap credential used *before* a new
-      # host has its own key registered. Used to clone nix-vault during
-      # new-host bootstrap and as a portable admin credential.
+    # Every SSH pubkey declared under `hosts.<host>.ssh` in lib/default.nix
+    # gets clone/push access. Adding a new user/host key there is enough — no
+    # separate enrollment step on controller.
+    authorizedKeys = inputs.self.lib.allSshKeys ++ [
+      # Operator's YubiKey (FIDO resident, touch-only). Kept inline because
+      # it's the bootstrap credential used *before* a new host has its own
+      # key registered in lib/default.nix. Portable admin credential.
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
     ];
   };

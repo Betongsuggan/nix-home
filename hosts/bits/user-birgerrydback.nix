@@ -1,7 +1,6 @@
 {
   pkgs,
   inputs,
-  lib,
   ...
 }:
 
@@ -15,9 +14,9 @@
   ];
 
   home.file.".ssh/bits.pub".text =
-    inputs.nix-vault.keys.hosts.bits.users.birgerrydback.bits + "\n";
+    inputs.self.lib.hosts.bits.ssh.users.birgerrydback.bits + "\n";
   home.file.".ssh/id_rsa.pub".text =
-    inputs.nix-vault.keys.hosts.bits.users.birgerrydback.id_rsa + "\n";
+    inputs.self.lib.hosts.bits.ssh.users.birgerrydback.id_rsa + "\n";
 
   general.enable = true;
   development = {
@@ -128,19 +127,12 @@
   programs.ssh = {
     enable = true;
     matchBlocks = {
-      "controller controller.ts.rydback.net" = {
-        hostname = builtins.head inputs.nix-vault.keys.hosts.controller.addresses;
+      "controller ${inputs.self.lib.tailnet.fqdn "controller"}" = {
+        hostname = inputs.self.lib.tailnet.fqdn "controller";
         user = "betongsuggan";
         identityFile = "/home/birgerrydback/.ssh/bits";
         identitiesOnly = true;
       };
-      "${lib.concatStringsSep " " inputs.nix-vault.keys.hosts.controller.addresses}" =
-        {
-          hostname = "%h";
-          user = "betongsuggan";
-          identityFile = "/home/birgerrydback/.ssh/bits";
-          identitiesOnly = true;
-        };
       "github.com-betongsuggan" = {
         hostname = "github.com";
         user = "git";

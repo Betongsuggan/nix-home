@@ -66,12 +66,15 @@
 
   outputs =
     {
+      nixpkgs,
       nixpkgs-unstable,
       awscli-local,
       nur,
       ...
     }@inputs:
     let
+      selfLib = import ./lib { inherit (nixpkgs) lib; };
+
       overlays = [
         nur.overlays.default
         (
@@ -139,6 +142,8 @@
         };
     in
     {
+      lib = selfLib;
+
       nixosConfigurations = {
         bits = import ./hosts/bits/default.nix { inherit inputs overlays; };
         private-laptop = import ./hosts/private-laptop/default.nix {
