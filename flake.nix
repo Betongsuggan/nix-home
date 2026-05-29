@@ -51,12 +51,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # nix-vault.git is served by controller's git-server module. Switch to
-    nix-vault.url = "git+ssh://git@rydback.net/var/lib/git/nix-vault.git?ref=main";
-    # once you want hosts/installers to fetch over SSH instead of relying on a
-    # local clone. Bootstrap an installer via `--override-input nix-vault path:...`
-    # if the host's SSH key isn't yet authorized on controller.
-    #nix-vault.url = "path:/home/betongsuggan/nix-vault";
+    # nix-vault.git is served by controller's git-server module, reached via
+    # the tailnet (no public SSH exposure). Each consuming host must be on the
+    # headscale tailnet (`tailscale-client` block) before it can fetch this.
+    # Bootstrap an installer via `--override-input nix-vault path:...` if the
+    # host hasn't joined the tailnet yet.
+    nix-vault.url = "git+ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git?ref=main";
   };
 
   outputs =

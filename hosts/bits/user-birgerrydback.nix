@@ -112,8 +112,8 @@
   programs.ssh = {
     enable = true;
     matchBlocks = {
-      "controller" = {
-        hostname = "192.168.50.50";
+      "controller controller.ts.rydback.net" = {
+        hostname = "controller.ts.rydback.net";
         user = "betongsuggan";
         identityFile = "/home/birgerrydback/.ssh/bits";
         identitiesOnly = true;

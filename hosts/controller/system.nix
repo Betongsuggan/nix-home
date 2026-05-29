@@ -121,11 +121,10 @@
     extraUpFlags = [ "--accept-routes" ];
   };
 
-  # Let the Nix daemon (root) fetch git+ssh://git@rydback.net/... — for
-  # controller, redirect to loopback so we don't hit NAT hairpinning.
+  # Let the Nix daemon (root) fetch nix-vault over the tailnet using the
+  # host's SSH key. Same Match pattern as other hosts.
   programs.ssh.extraConfig = ''
-    Match user root host rydback.net
-      HostName 127.0.0.1
+    Match user root host controller.ts.rydback.net
       IdentityFile /etc/ssh/ssh_host_ed25519_key
       IdentitiesOnly yes
   '';
@@ -185,7 +184,7 @@
 
   openssh = {
     enable = true;
-    openFirewall = true;
+    openFirewall = false;
   };
 
   firewall = {
@@ -193,6 +192,9 @@
     tcpPorts = [ ];
     udpPorts = [ ];
   };
+
+  # SSH only reachable over the tailnet — nothing on LAN or WAN.
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 ];
 
   git-server = {
     enable = true;

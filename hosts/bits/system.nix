@@ -147,11 +147,11 @@
     extraUpFlags = [ "--accept-routes" ];
   };
 
-  # Let the Nix daemon (running as root) fetch git+ssh://git@rydback.net/...
+  # Let the Nix daemon (running as root) fetch nix-vault over the tailnet
   # using the host's SSH key. Scoped to root so the user's own SSH config
   # (e.g. birgerrydback's `bits` key) is unaffected.
   programs.ssh.extraConfig = ''
-    Match user root host rydback.net
+    Match user root host controller.ts.rydback.net
       IdentityFile /etc/ssh/ssh_host_ed25519_key
       IdentitiesOnly yes
   '';
