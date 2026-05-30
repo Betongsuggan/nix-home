@@ -26,6 +26,7 @@
     ./secure-boot
     ./sops/system.nix
     ./file-manager/system.nix
+    ./tailnet
     ./tailscale-client
     ./touchpad
     ./undervolting

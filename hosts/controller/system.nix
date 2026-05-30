@@ -19,11 +19,10 @@
     openssh.authorizedKeys.keys = [
       # Operator's YubiKey (FIDO resident, touch-only). Used during new-host
       # enrollment to SSH in, edit nix-home / nix-vault, and rebuild controller.
+      # Kept inline because it's a bootstrap credential, not a tailnet peer.
       # See hosts/controller/SPEC.md for the full flow.
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
-
-      # Daily-driver identity: birgerrydback@bits.
-      inputs.self.lib.hosts.bits.ssh.users.birgerrydback.bits
+      # Tailnet peer keys (e.g. birgerrydback@bits) come from `tailnet.authorizeSshFor` below.
     ];
   };
 
@@ -106,28 +105,14 @@
       mode = "0600";
       path = "/home/betongsuggan/.ssh/id_ed25519";
     };
-
-    "headscale-preauthkey" = {
-      key = "services/headscale-preauthkey";
-      owner = "root";
-      mode = "0400";
-    };
   };
 
-  tailscale-client = {
+  tailnet = {
     enable = true;
-    loginServer = "https://vpn.rydback.net";
-    authKeyFile = config.sops.secrets."headscale-preauthkey".path;
-    extraUpFlags = [ "--accept-routes" ];
+    authorizeSshFor.betongsuggan = [
+      { host = "bits"; user = "birgerrydback"; }
+    ];
   };
-
-  # Let the Nix daemon (root) fetch nix-vault over the tailnet using the
-  # host's SSH key. Same Match pattern as other hosts.
-  programs.ssh.extraConfig = ''
-    Match user root host controller.ts.rydback.net
-      IdentityFile /etc/ssh/ssh_host_ed25519_key
-      IdentitiesOnly yes
-  '';
 
   emulation-server = {
     enable = true;
@@ -182,19 +167,11 @@
     };
   };
 
-  openssh = {
-    enable = true;
-    openFirewall = false;
-  };
-
   firewall = {
     enable = true;
     tcpPorts = [ ];
     udpPorts = [ ];
   };
-
-  # SSH only reachable over the tailnet — nothing on LAN or WAN.
-  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 ];
 
   git-server = {
     enable = true;

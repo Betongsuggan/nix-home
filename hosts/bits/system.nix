@@ -18,9 +18,7 @@
       "docker"
       "storage"
     ];
-    openssh.authorizedKeys.keys = [
-      inputs.self.lib.hosts.controller.ssh.users.betongsuggan.ssh_ed25519
-    ];
+    # Peer SSH keys supplied by `tailnet.authorizeSshFor` below.
   };
 
   system.stateVersion = "24.05";
@@ -123,29 +121,14 @@
       mode = "0600";
       path = "/home/birgerrydback/.ssh/id_rsa";
     };
-
-    "headscale-preauthkey" = {
-      key = "services/headscale-preauthkey";
-      owner = "root";
-      mode = "0400";
-    };
   };
 
-  tailscale-client = {
+  tailnet = {
     enable = true;
-    loginServer = "https://vpn.rydback.net";
-    authKeyFile = config.sops.secrets."headscale-preauthkey".path;
-    extraUpFlags = [ "--accept-routes" "--accept-dns" ];
+    authorizeSshFor.birgerrydback = [
+      { host = "controller"; user = "betongsuggan"; }
+    ];
   };
-
-  # Let the Nix daemon (running as root) fetch nix-vault over the tailnet
-  # using the host's SSH key. Scoped to root so the user's own SSH config
-  # (e.g. birgerrydback's `bits` key) is unaffected.
-  programs.ssh.extraConfig = ''
-    Match user root host controller.ts.rydback.net
-      IdentityFile /etc/ssh/ssh_host_ed25519_key
-      IdentitiesOnly yes
-  '';
 
   # Defer fwupd to start on-demand instead of at boot
   systemd.services.fwupd = {
