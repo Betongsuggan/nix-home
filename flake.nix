@@ -51,6 +51,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    terranix = {
+      url = "github:terranix/terranix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # nix-vault.git is served by controller's git-server module, reached via
     # the tailnet (no public SSH exposure). Each consuming host must be on the
     # headscale tailnet (`tailscale-client` block) before it can fetch this.
@@ -158,6 +168,15 @@
         controller = import ./hosts/controller/default.nix {
           inherit inputs overlays;
         };
+        mail = import ./hosts/mail/default.nix {
+          inherit inputs overlays;
+        };
+      };
+
+      packages.x86_64-linux.terraform-mail = inputs.terranix.lib.terranixConfiguration {
+        system = "x86_64-linux";
+        modules = [ ./hosts/mail/terraform.nix ];
+        extraArgs = { inherit inputs; };
       };
 
       homeConfigurations = {
