@@ -105,12 +105,27 @@
       mode = "0600";
       path = "/home/betongsuggan/.ssh/id_ed25519";
     };
+
+    "headscale-preauthkey" = {
+      key = "services/headscale-preauthkey";
+      owner = "root";
+      mode = "0400";
+    };
+
+    "vaultwarden-env" = {
+      key = "services/vaultwarden-env";
+      owner = "vaultwarden";
+      mode = "0400";
+    };
   };
 
   tailnet = {
     enable = true;
     authorizeSshFor.betongsuggan = [
-      { host = "bits"; user = "birgerrydback"; }
+      {
+        host = "bits";
+        user = "birgerrydback";
+      }
     ];
   };
 
@@ -176,9 +191,6 @@
   git-server = {
     enable = true;
     repositories = [ "nix-vault" ];
-    # Every SSH pubkey declared under `hosts.<host>.ssh` in lib/default.nix
-    # gets clone/push access. Adding a new user/host key there is enough — no
-    # separate enrollment step on controller.
     authorizedKeys = inputs.self.lib.allSshKeys ++ [
       # Operator's YubiKey (FIDO resident, touch-only). Kept inline because
       # it's the bootstrap credential used *before* a new host has its own
@@ -193,11 +205,37 @@
     domains = [
       "rydback.net"
       "vpn.rydback.net"
+      "vault.rydback.net"
     ];
     vhosts.headscale = {
       domain = "vpn.rydback.net";
       upstream = "http://127.0.0.1:8080";
     };
+    vhosts.vaultwarden = {
+      domain = "vault.rydback.net";
+      upstream = "http://127.0.0.1:8222";
+      # Tailnet-only at the nginx layer. Headscale's default prefixes are
+      # 100.64.0.0/10 (IPv4) and fd7a:115c:a1e0::/48 (IPv6). ACME HTTP-01
+      # challenges still work because NixOS places /.well-known/acme-challenge
+      # at a higher-precedence location than `/`.
+      extraConfig = ''
+        allow 100.64.0.0/10;
+        allow fd7a:115c:a1e0::/48;
+        deny all;
+      '';
+    };
+  };
+
+  vaultwarden = {
+    enable = true;
+    domain = "vault.rydback.net";
+    environmentFile = config.sops.secrets."vaultwarden-env".path;
+    # First-run bootstrap: flip to true, rebuild, register operator account at
+    # https://vault.rydback.net from a tailnet-connected device, then flip back
+    # to false and rebuild. Alternatively, leave false and use /admin (with
+    # ADMIN_TOKEN) to invite the first user — the invitation link will land in
+    # `journalctl -u vaultwarden` since SMTP isn't configured yet.
+    signupsAllowed = false;
   };
 
   headscale = {

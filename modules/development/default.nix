@@ -25,6 +25,7 @@ in
     home.packages =
       with pkgs;
       [
+        unstable.android-tools
         # Github
         gh
 

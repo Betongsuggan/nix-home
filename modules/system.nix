@@ -30,6 +30,7 @@
     ./tailscale-client
     ./touchpad
     ./undervolting
+    ./vaultwarden
     ./webcam
     ./waydroid
     ./wayland-security
