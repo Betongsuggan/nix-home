@@ -45,6 +45,36 @@ in {
       '';
     };
 
+    extraDnsRecords = mkOption {
+      type = types.listOf (types.submodule {
+        options = {
+          name = mkOption {
+            type = types.str;
+            example = "vault.example.com";
+            description = "FQDN to override on tailnet clients.";
+          };
+          type = mkOption {
+            type = types.str;
+            default = "A";
+            description = "DNS record type (A or AAAA).";
+          };
+          value = mkOption {
+            type = types.str;
+            example = "100.64.0.2";
+            description = "Address to return. Typically a tailnet IP.";
+          };
+        };
+      });
+      default = [ ];
+      description = ''
+        Extra DNS records pushed to tailnet clients. Use this to make a
+        public hostname resolve to a tailnet IP for member devices, so a
+        tailnet-only nginx vhost is reachable by its real (cert-bearing)
+        name. Requires clients to accept pushed DNS (tailscale's
+        `--accept-dns`, set by the `tailnet` module).
+      '';
+    };
+
     derp = {
       enable = mkOption {
         type = types.bool;
@@ -86,6 +116,7 @@ in {
           magic_dns = true;
           base_domain = cfg.baseDomain;
           nameservers.global = [ "1.1.1.1" "9.9.9.9" ];
+          extra_records = cfg.extraDnsRecords;
         };
 
         # `derp.urls` is left at the upstream default (Tailscale's public DERP

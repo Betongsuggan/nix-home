@@ -243,11 +243,19 @@
     domain = "vpn.rydback.net";
     baseDomain = "ts.rydback.net";
     users = [ "birger" ];
+    extraDnsRecords = [
+      # vault.rydback.net's public A record points at controller's WAN IP so
+      # ACME HTTP-01 works. For tailnet members this override resolves it to
+      # controller's tailnet IP instead, so requests reach nginx from a 100.x
+      # source and clear the deny-all rule on the vault vhost.
+      {
+        name = "vault.rydback.net";
+        type = "A";
+        value = "100.64.0.2";
+      }
+    ];
   };
 
-  # Controller is a server — never let it sleep, suspend, or hibernate.
-  # Masking the systemd targets is the hard guarantee; logind settings stop
-  # power/suspend keys and idle from triggering them in the first place.
   systemd.targets = {
     sleep.enable = false;
     suspend.enable = false;
