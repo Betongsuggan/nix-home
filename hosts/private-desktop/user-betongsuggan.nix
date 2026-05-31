@@ -12,6 +12,12 @@
   games.enable = true;
   communication.enable = true;
   localsend.enable = true;
+
+  emulation-client = {
+    enable = true;
+    server.address = "192.168.50.5";
+  };
+
   development = {
     enable = true;
     python.enable = true;

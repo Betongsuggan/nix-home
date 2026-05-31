@@ -74,15 +74,23 @@ The module does not touch the general firewall. It opens Syncthing (TCP 22000, U
 
 Samba additionally restricts access via `hosts allow` to the LAN subnet plus the Headscale default tailnet CIDR `100.64.0.0/10`.
 
-### Samba password
+### Samba access model
 
-Samba requires a separate password from the system account:
+The ROM and BIOS shares are configured **guest-OK, writable, delete-protected**. Concretely:
+
+- **No password.** Any client on the LAN or tailnet can mount the shares anonymously (`guestOk = true`, `guest only = yes`). No `smbpasswd` ceremony per user. Security comes entirely from the `hosts allow` network restriction.
+- **Writable.** Clients can upload new ROMs / BIOS files, overwrite existing ones, and rename. All operations run server-side as the configured `${user}` (default `betongsuggan`) via `force user`, so new files are owned consistently and existing files are modifiable.
+- **Delete-protected.** Every `unlink`/`rmdir` from a client is transparently redirected into a hidden `<share-path>/.recycle/` directory by Samba's `vfs_recycle` module. Writes, updates, and overwrites still flow through normally — only intentional deletes are softened. See `modules/file-sharing/SPEC.md` for the recycle semantics in full.
+
+Clients access shares at `smb://<host>/emulation-roms` (LAN/tailnet) with no authentication. On Linux: `mount -t cifs //<host>/emulation-roms /mnt -o guest`. On Android: pick "Anonymous" or leave username/password blank.
+
+**Operator hygiene:** periodically check the recycle dirs:
 
 ```bash
-sudo smbpasswd -a betongsuggan
+sudo du -sh /var/lib/emulation/roms/.recycle /var/lib/emulation/bios/.recycle
+sudo ls /var/lib/emulation/roms/.recycle    # inspect before purging
+sudo rm -rf /var/lib/emulation/roms/.recycle/*   # when ready
 ```
-
-Clients access shares at `smb://<host>/emulation-roms` (LAN/tailnet).
 
 ### Syncthing device setup
 
@@ -91,9 +99,15 @@ Each client's device ID is visible in its Syncthing web UI at `http://localhost:
 ### Verification
 
 ```bash
-systemctl status syncthing         # Syncthing (web UI at http://localhost:8384)
-smbclient -L localhost -U betongsuggan
-sudo ss -tlnp | grep -E ':(22000|445|139)'
+systemctl status syncthing                   # Syncthing (web UI at http://localhost:8384)
+smbclient -L localhost -N                    # -N = no password (guest); should list emulation-roms + emulation-bios
+sudo ss -tlnp | grep -E ':(22000|445|139)'   # confirm listeners
+```
+
+From a remote client on the LAN or tailnet, the same listing test:
+
+```bash
+smbclient -L controller -N
 ```
 
 ### Android client setup
@@ -118,7 +132,7 @@ Android devices don't run NixOS modules but can still join the save-sync mesh.
 
 #### ROM access via Samba
 
-Most Android file managers (Solid Explorer, CX File Explorer, etc.) support SMB. Connect to `<server>/emulation-roms` or `<server>/emulation-bios` using the Samba password.
+Most Android file managers (Material Files, X-plore, Solid Explorer, CX File Explorer, etc.) support SMB. Connect to `<server>/emulation-roms` or `<server>/emulation-bios` and select "Anonymous" / "Guest" — no username or password.
 
 #### Off-LAN access
 

@@ -25,7 +25,7 @@ emulation-client = {
 ### Prerequisites
 
 - A running emulation server (see `modules/emulation-server/`)
-- The server's Syncthing device ID and Samba password
+- The server's Syncthing device ID (for save sync pairing; Samba is anonymous, no credential needed)
 - For off-LAN access: Tailscale on both ends (server reachable via its tailnet hostname / IP)
 
 ### What enabling this module does
@@ -56,12 +56,9 @@ mount-emulation-roms
 
 # Override server address (e.g. tailnet hostname)
 mount-emulation-roms controller
-
-# Override both server and username
-mount-emulation-roms controller betongsuggan
 ```
 
-This mounts read-only Samba shares at `~/emulation/roms` and `~/emulation/bios`. You will be prompted for the Samba password (set on the server with `smbpasswd`).
+This mounts the Samba shares at `~/emulation/roms` and `~/emulation/bios`. The mount uses anonymous (guest) auth — no password prompt. The shares are **writable** (you can drop new ROMs / BIOS files in via the mount) but with server-side delete protection: any deletes through the mount are transparently moved to a hidden `.recycle/` directory on the server rather than actually unlinked. See `modules/emulation-server/SPEC.md` for the operator-side recycle hygiene.
 
 To unmount:
 

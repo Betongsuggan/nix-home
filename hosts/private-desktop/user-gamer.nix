@@ -26,7 +26,7 @@
   };
 
   emulation-client = {
-    enable = true;
+    enable = false; # TEMP: disabled while iterating on betongsuggan-side setup. Re-enable once port handling decided.
     server.address = "192.168.50.5";
   };
 

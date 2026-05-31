@@ -17,12 +17,54 @@ let
       validUsers = mkOption {
         type = types.listOf types.str;
         default = [ ];
-        description = "List of users allowed to access this share";
+        description = ''
+          List of users allowed to access this share. Ignored when `guestOk`
+          is true (the share runs in guest-only mode and per-user auth doesn't
+          apply).
+        '';
       };
       readOnly = mkOption {
         type = types.bool;
         default = false;
         description = "Whether the share is read-only";
+      };
+      guestOk = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Allow anonymous (passwordless) access. When true, the share is
+          served in guest-only mode: every connection is mapped to the guest
+          account regardless of any username the client supplies, and no
+          `smbpasswd` setup is needed. Intended for shares whose security
+          comes from the network layer (e.g. tailnet-only `allowedSubnets`)
+          rather than per-user credentials.
+        '';
+      };
+      forceUser = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        example = "betongsuggan";
+        description = ''
+          Force every operation on this share to run as the given system user
+          on the filesystem, regardless of which user the client authenticated
+          as (or, for guest shares, regardless that nobody authenticated).
+          Required for writable guest shares whose backing directory is owned
+          by a real user — otherwise the implicit `nobody` identity has no
+          permission to create or modify files.
+        '';
+      };
+      deleteProtection = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Protect against accidental or malicious deletion: every `unlink` /
+          `rmdir` operation through Samba is transparently redirected into a
+          hidden `.recycle/` directory inside the share via Samba's
+          `vfs_recycle` module. Writes, updates, renames, and overwrites all
+          flow through normally — only deletes are softened. The recycle
+          directory is hidden from clients via `veto files`; an operator can
+          inspect or purge it over SSH at `<share-path>/.recycle/`.
+        '';
       };
     };
   };
@@ -35,9 +77,27 @@ let
         path = share.path;
         browseable = "yes";
         "read only" = if share.readOnly then "yes" else "no";
-        "guest ok" = "no";
+        "guest ok" = if share.guestOk then "yes" else "no";
+      }
+      // (if share.guestOk then {
+        "guest only" = "yes";
+      } else {
         "valid users" = concatStringsSep " " share.validUsers;
-      };
+      })
+      // (lib.optionalAttrs (share.forceUser != null) {
+        "force user" = share.forceUser;
+      })
+      // (lib.optionalAttrs share.deleteProtection {
+        "vfs objects" = "recycle";
+        "recycle:repository" = ".recycle";
+        "recycle:keeptree" = "yes";
+        "recycle:versions" = "yes";
+        "recycle:maxsize" = "0";
+        "recycle:exclude" = "*.tmp *.temp *.bak ~$*";
+        "recycle:exclude_dir" = ".recycle";
+        "veto files" = "/.recycle/";
+        "hide files" = "/.recycle/";
+      });
     }) shares);
 
 in {

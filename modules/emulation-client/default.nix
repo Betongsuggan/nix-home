@@ -7,7 +7,6 @@ let
   mountScript = pkgs.writeShellScriptBin "mount-emulation-roms" ''
     SERVER="''${1:-${cfg.server.address}}"
     MOUNT_BASE="''${HOME}/emulation"
-    USER="''${2:-$(whoami)}"
 
     echo "Mounting emulation shares from $SERVER..."
 
@@ -15,11 +14,11 @@ let
 
     echo "Mounting ROMs..."
     sudo mount -t cifs "//$SERVER/emulation-roms" "$MOUNT_BASE/roms" \
-      -o "username=$USER,uid=$(id -u),gid=$(id -g),ro"
+      -o "guest,uid=$(id -u),gid=$(id -g)"
 
     echo "Mounting BIOS..."
     sudo mount -t cifs "//$SERVER/emulation-bios" "$MOUNT_BASE/bios" \
-      -o "username=$USER,uid=$(id -u),gid=$(id -g),ro"
+      -o "guest,uid=$(id -u),gid=$(id -g)"
 
     echo "Done. ROMs at $MOUNT_BASE/roms, BIOS at $MOUNT_BASE/bios"
   '';

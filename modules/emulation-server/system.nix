@@ -146,14 +146,18 @@ in
           {
             name = "emulation-roms";
             path = "${cfg.dataDir}/roms";
-            validUsers = [ cfg.user ];
             readOnly = false;
+            guestOk = true;
+            forceUser = cfg.user;
+            deleteProtection = true;
           }
           {
             name = "emulation-bios";
             path = "${cfg.dataDir}/bios";
-            validUsers = [ cfg.user ];
             readOnly = false;
+            guestOk = true;
+            forceUser = cfg.user;
+            deleteProtection = true;
           }
         ];
       };
