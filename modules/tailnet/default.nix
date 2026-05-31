@@ -38,39 +38,44 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
-    tailscale-client = {
-      enable = true;
-      loginServer = "https://vpn.rydback.net";
-      authKeyFile = config.sops.secrets."headscale-preauthkey".path;
-      extraUpFlags = [ "--accept-routes" "--accept-dns" ];
-    };
+  config = mkIf cfg.enable (mkMerge [
+    {
+      tailscale-client = {
+        enable = true;
+        loginServer = "https://vpn.rydback.net";
+        extraUpFlags = [ "--accept-routes" "--accept-dns" ];
+      };
 
-    sops.secrets."headscale-preauthkey" = {
-      key = "services/headscale-preauthkey";
-      owner = "root";
-      mode = "0400";
-    };
+      openssh = {
+        enable = true;
+        openFirewall = false;
+      };
 
-    openssh = {
-      enable = true;
-      openFirewall = false;
-    };
+      networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 ];
 
-    networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 ];
+      # nix-daemon (root) reaches nix-vault over the tailnet using the host SSH
+      # key. Scoped to root so the user's own SSH config is unaffected.
+      programs.ssh.extraConfig = ''
+        Match user root host ${selfLib.tailnet.fqdn "controller"}
+          IdentityFile /etc/ssh/ssh_host_ed25519_key
+          IdentitiesOnly yes
+      '';
 
-    # nix-daemon (root) reaches nix-vault over the tailnet using the host SSH
-    # key. Scoped to root so the user's own SSH config is unaffected.
-    programs.ssh.extraConfig = ''
-      Match user root host ${selfLib.tailnet.fqdn "controller"}
-        IdentityFile /etc/ssh/ssh_host_ed25519_key
-        IdentitiesOnly yes
-    '';
+      users.users = mapAttrs (_localUser: peers: {
+        openssh.authorizedKeys.keys = concatMap
+          (p: collect isString (selfLib.hosts.${p.host}.ssh.users.${p.user} or { }))
+          peers;
+      }) cfg.authorizeSshFor;
+    }
 
-    users.users = mapAttrs (_localUser: peers: {
-      openssh.authorizedKeys.keys = concatMap
-        (p: collect isString (selfLib.hosts.${p.host}.ssh.users.${p.user} or { }))
-        peers;
-    }) cfg.authorizeSshFor;
-  };
+    (mkIf config.sops-secrets.enable {
+      tailscale-client.authKeyFile = config.sops.secrets."headscale-preauthkey".path;
+
+      sops.secrets."headscale-preauthkey" = {
+        key = "services/headscale-preauthkey";
+        owner = "root";
+        mode = "0400";
+      };
+    })
+  ]);
 }

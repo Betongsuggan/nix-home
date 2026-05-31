@@ -135,7 +135,7 @@
     dataDir = "/var/lib/emulation";
     lanInterface = "enp1s0";
     lanSubnet = "192.168.50.0/24";
-    syncthing.devices = { };
+    syncthing.devices = inputs.self.lib.allSyncthingDevices;
   };
 
   services.xserver.desktopManager.runXdgAutostartIfNone = true;

@@ -9,11 +9,8 @@ emulation-server = {
   enable = true;
   user = "betongsuggan";
   dataDir = "/var/lib/emulation";
-  syncthing.devices = {
-    android-phone = {
-      id = "XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX";
-    };
-  };
+  # Sync with all devices registered in lib/default.nix
+  syncthing.devices = inputs.self.lib.allSyncthingDevices;
 };
 ```
 
@@ -107,13 +104,15 @@ Android devices don't run NixOS modules but can still join the save-sync mesh.
 
 1. Install **Syncthing** from F-Droid or Play Store.
 2. Open Syncthing and note your device ID.
-3. Add the device ID to the server config:
+3. Add the device to `lib/default.nix` under `devices`:
    ```nix
-   emulation-server.syncthing.devices = {
-     android-phone = { id = "YOUR-DEVICE-ID-HERE"; };
+   devices.my-phone = {
+     type = "android";
+     description = "My Android phone";
+     syncthing.id = "YOUR-DEVICE-ID-HERE";
    };
    ```
-4. Rebuild the server.
+4. Rebuild the server (the device is picked up automatically via `allSyncthingDevices`).
 5. On Android, add the server as a device using the server's device ID (find it at `http://server:8384` > Actions > Show ID).
 6. Accept the `emulation-saves` folder share. Point it at `/storage/emulated/0/emulation/saves`.
 

@@ -1,5 +1,4 @@
 { pkgs, inputs, ... }:
-
 {
   home.username = "betongsuggan";
   home.homeDirectory = "/home/betongsuggan";
@@ -102,6 +101,28 @@
         envVarName = "ANTHROPIC_API_KEY";
       }
     ];
+  };
+
+  sops-edit.enable = true;
+
+  services.ssh-agent = {
+    enable = true;
+  };
+
+  systemd.user.sessionVariables = {
+    SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
+  };
+
+  programs.ssh = {
+    enable = true;
+    matchBlocks = {
+      "controller ${inputs.self.lib.tailnet.fqdn "controller"}" = {
+        hostname = inputs.self.lib.tailnet.fqdn "controller";
+        user = "betongsuggan";
+        identityFile = "/home/betongsuggan/.ssh/id_rsa";
+        identitiesOnly = true;
+      };
+    };
   };
 
   programs.home-manager.enable = true;

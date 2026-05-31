@@ -1,14 +1,19 @@
 { lib }:
 
-# Per-host metadata: SSH public keys, addresses, tailnet short name.
-# Source of truth for cross-host references in this flake.
+# Per-host and per-device metadata. Source of truth for cross-host references.
 #
-# Structure:
+# hosts — NixOS machines:
 #   hosts.<host>.tailnetName  -- short name registered on the headscale tailnet
 #                                (matches networkmanager.hostName on that host)
 #   hosts.<host>.addresses    -- LAN/WAN/aliased addresses (optional)
 #   hosts.<host>.ssh.host     -- /etc/ssh/ssh_host_ed25519_key.pub
 #   hosts.<host>.ssh.users.<user>.<keyname>  -- per-user SSH pubkeys
+#
+# devices — non-NixOS devices (phones, handhelds):
+#   devices.<device>.type          -- "android", etc. (informational)
+#   devices.<device>.description   -- human-readable label
+#   devices.<device>.syncthing.id  -- Syncthing device ID (public key hash)
+#   devices.<device>.tailnetName   -- (optional) headscale tailnet short name
 #
 # SSH keys are nested under .ssh so `lib.collect lib.isString` on that subtree
 # yields a clean list of keys (no addresses or tailnet names mixed in).
@@ -33,7 +38,6 @@ let
       tailnetName = "controller";
       addresses = [
         "192.168.50.5"
-        "84.216.118.3"
         "rydback.net"
         "controller"
       ];
@@ -58,20 +62,46 @@ let
         };
       };
     };
+
+    desktop = {
+      tailnetName = "desktop";
+      addresses = [ "desktop" ];
+      ssh = {
+        users = {
+          betongsuggan = {
+            id_rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCvvJ1JmeY0gc1NgbsTgELa7on4xjtW3ZJfJ5MRMgrmQhg+yMWJyMpS6M0Z9b1aLRp1Fnvq7TDX40PiFlQZ+0rRHOty8JbwPoTchTSyg3ihxvtUP6slZsgJlsZuvEwDFZ42nB/U4oWD2i2o7smzB6T5fBIYmNgM2bzWLqAS+xHo+k8SsxOaimDmmxSuA+qhHkK9fdgfuu0phZAKfo/5dBXcHNyRWsT6o81KNUXhlNYMSagt9IZEx204dt7m9SKZG6SzHslrEPqf+RETP4sQyh+u5YfgpVgww8AHvJcveKsNkegjbwVSyekbANwJlU54lxnKR9Td6G7kYFf/z+QQt3whGKJJ89KvvqxPccCQfd/Es8IYSXJEMu1OFEL7yOFggSicnoYCUq6ZZAzTnabjB7uRflfTAjmJrT78jbWMIiyY/U30zgJ8ak6Ijho9i+3dqDk2zOWwatJ7CfV6/izDzcPI4tqne7L0MKy2Z7vExJ9rWCdP58dBR0LewuCQAb9E5MVTKcPRxmRjcrKuzkgrvGxtbDG4tbxsQ1KNtRmYAlTiiIFDVVmM1vckuAqV/aaPFaGN9qUppUajl/Dz0BLqEK0WJcQ3ZX6ChQeNOXZQrOQaofMwcQlGu+YSz+Xvus1a3Ygb1zoJvUukxYUU3KSomtx6Vvs1f3+sm4kJgFXOgL5Qmw== betongsuggan@home-desktop";
+          };
+        };
+      };
+    };
+  };
+
+  devices = {
+    ayn-thor = {
+      type = "android";
+      description = "Ayn Odin 2 Thor -- Android gaming handheld";
+      syncthing.id = "2VW22JQ-ARR4C4E-6DMSO7O-TW64TDQ-DYBJNXX-7HICKTH-EMEI2R5-QTAUTAH";
+    };
+    fairphone = {
+      type = "android";
+      description = "Fairphone -- daily driver";
+      syncthing.id = "REPLACE-WITH-REAL-DEVICE-ID";
+    };
   };
 in
 {
-  inherit hosts;
+  inherit hosts devices;
 
   tailnet = {
     baseDomain = "ts.rydback.net";
     fqdn = host: "${hosts.${host}.tailnetName}.ts.rydback.net";
   };
 
-  # Flat list of every SSH pubkey across all hosts, both host keys and per-user
-  # keys. Convenient for `git-server.authorizedKeys` etc. Excludes addresses
-  # and tailnetName because those live outside the `.ssh` subtree.
-  allSshKeys =
-    lib.concatLists
-      (map (h: lib.collect lib.isString (h.ssh or { })) (lib.attrValues hosts));
+  allSshKeys = lib.concatLists (
+    map (h: lib.collect lib.isString (h.ssh or { })) (lib.attrValues hosts)
+  );
+
+  allSyncthingDevices = lib.filterAttrs (
+    _: d: d ? syncthing && d.syncthing ? id
+  ) (lib.mapAttrs (_: d: { id = d.syncthing.id; }) devices);
 }

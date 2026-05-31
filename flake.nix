@@ -66,7 +66,7 @@
     # headscale tailnet (`tailscale-client` block) before it can fetch this.
     # Bootstrap an installer via `--override-input nix-vault path:...` if the
     # host hasn't joined the tailnet yet.
-    nix-vault.url = "git+ssh://git@controller/var/lib/git/nix-vault.git?ref=main";
+    #nix-vault.url = "git+ssh://git@controller/var/lib/git/nix-vault.git?ref=main";
     #nix-vault.url = "git+ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git?ref=main";
     # once you want hosts/installers to fetch over SSH instead of relying on a
     # local clone. Bootstrap an installer via `--override-input nix-vault path:...`
@@ -173,11 +173,13 @@
         };
       };
 
-      packages.x86_64-linux.terraform-mail = inputs.terranix.lib.terranixConfiguration {
-        system = "x86_64-linux";
-        modules = [ ./hosts/mail/terraform.nix ];
-        extraArgs = { inherit inputs; };
-      };
+      packages.x86_64-linux.terraform-mail =
+        inputs.terranix.lib.terranixConfiguration
+          {
+            system = "x86_64-linux";
+            modules = [ ./hosts/mail/terraform.nix ];
+            extraArgs = { inherit inputs; };
+          };
 
       homeConfigurations = {
         "betongsuggan@private-desktop" =
