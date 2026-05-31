@@ -41,7 +41,7 @@ in {
       description = ''
         Path to the private SSH key used to authenticate against every target's
         SFTP user. Typically a sops-nix decrypted file. Public half must be
-        registered under `hosts.<this-host>.ssh.users.restic.<name>` in
+        registered under `hosts.<this-host>.users.restic.ssh.<name>` in
         `lib/default.nix`, never as a literal in the host configuration.
       '';
     };

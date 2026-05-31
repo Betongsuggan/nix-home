@@ -22,7 +22,7 @@
       # Daily-driver identity: birgerrydback@bits. Used to SSH in from the
       # laptop for nixos-rebuild and inspection. Once tailscale is up on this
       # host, SSH should be restricted to the tailnet interface.
-      inputs.self.lib.hosts.bits.ssh.users.birgerrydback.bits
+      inputs.self.lib.hosts.bits.users.birgerrydback.ssh.bits
     ];
   };
 

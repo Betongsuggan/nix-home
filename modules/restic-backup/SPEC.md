@@ -64,7 +64,7 @@ The reason Vaultwarden exists is operator convenience for credentials a human ty
 
 Adding these to Vaultwarden would create a second copy of the same secret that the operator now has to keep in sync, with zero security benefit.
 
-The public half of the SSH key goes in `lib/default.nix` under `hosts.<source>.ssh.users.restic.<keyname>` — see the `restic-target` SPEC for how receivers consume it.
+The public half of the SSH key goes in `lib/default.nix` under `hosts.<source>.users.restic.ssh.<keyname>` — see the `restic-target` SPEC for how receivers consume it.
 
 ## Per-host vs shared password
 

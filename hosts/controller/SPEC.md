@@ -54,4 +54,4 @@ Quick summary of controller's role in the flow:
 - New hosts fetch the blob from their installer, decrypt with the YubiKey, and join the tailnet — no preexisting tailnet member required.
 - Once on the tailnet, the new host clones `nix-vault.git` from `controller` over SSH (YubiKey-authed), registers its age recipient in `nix-vault/.sops.yaml`, populates its own `secrets/<host>.yaml` (with the host-specific long-lived preauth key generated via `sudo headscale preauthkeys create -u birger --reusable -e 8760h`), and `nixos-install`s.
 
-To later allow a host to clone/pull `nix-vault` itself for unattended `nix flake update`, add that host's `/etc/ssh/ssh_host_ed25519_key.pub` under `hosts.<host>.ssh.users` in `lib/default.nix`, push, and rebuild controller.
+To later allow a host to clone/pull `nix-vault` itself for unattended `nix flake update`, add that host's `/etc/ssh/ssh_host_ed25519_key.pub` under `hosts.<host>.users.<user>.ssh` in `lib/default.nix`, push, and rebuild controller.

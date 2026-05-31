@@ -34,7 +34,7 @@ let
 
   # The SSH key that nixos-anywhere will use to ssh in for the initial install.
   # Same key used for ongoing nixos-rebuild --target-host afterwards.
-  operatorSshKey = inputs.self.lib.hosts.bits.ssh.users.birgerrydback.bits;
+  operatorSshKey = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.bits;
 
   # Inbound ports allowed by the Hetzner cloud firewall. Must stay in sync
   # with hosts/mail/system.nix `firewall.tcpPorts`.

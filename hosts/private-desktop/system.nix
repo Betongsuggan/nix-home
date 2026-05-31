@@ -200,7 +200,7 @@
   restic-target = {
     enable = true;
     sources.controller = {
-      sshKey = inputs.self.lib.hosts.controller.ssh.users.restic.id_ed25519;
+      sshKey = inputs.self.lib.hosts.controller.users.restic.ssh.id_ed25519;
     };
   };
 

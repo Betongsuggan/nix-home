@@ -8,7 +8,7 @@ Receive restic backups from one or more source hosts. Pairs with the `restic-bac
 restic-target = {
   enable = true;
   sources.controller = {
-    sshKey = inputs.self.lib.hosts.controller.ssh.users.restic.id_ed25519;
+    sshKey = inputs.self.lib.hosts.controller.users.restic.ssh.id_ed25519;
     # storagePath defaults to /var/lib/restic-repos/controller
     # userName defaults to restic-controller
   };
@@ -19,7 +19,7 @@ Adding a second source is one attribute:
 
 ```nix
 restic-target.sources.bits = {
-  sshKey = inputs.self.lib.hosts.bits.ssh.users.restic.id_ed25519;
+  sshKey = inputs.self.lib.hosts.bits.users.restic.ssh.id_ed25519;
 };
 ```
 
@@ -35,7 +35,7 @@ restic-target.sources.bits = {
 
 ## Public-key handling
 
-Source pubkeys are consumed from `inputs.self.lib.hosts.<source>.ssh.users.restic.<keyname>` in `lib/default.nix`. **Never paste a pubkey literal into a receiver's host config.**
+Source pubkeys are consumed from `inputs.self.lib.hosts.<source>.users.restic.ssh.<keyname>` in `lib/default.nix`. **Never paste a pubkey literal into a receiver's host config.**
 
 Why this matters:
 

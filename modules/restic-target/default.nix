@@ -17,10 +17,10 @@ in {
             options = {
               sshKey = mkOption {
                 type = types.str;
-                example = literalExpression "inputs.self.lib.hosts.controller.ssh.users.restic.id_ed25519";
+                example = literalExpression "inputs.self.lib.hosts.controller.users.restic.ssh.id_ed25519";
                 description = ''
                   The source host's restic public key. **Always** pull this from
-                  `inputs.self.lib.hosts.<source>.ssh.users.restic.<keyname>` —
+                  `inputs.self.lib.hosts.<source>.users.restic.ssh.<keyname>` —
                   never paste a literal here. Adding a new source then means
                   one edit to `lib/default.nix`, not edits in every receiver.
                 '';

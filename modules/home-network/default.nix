@@ -152,7 +152,7 @@ in
       default = { };
       description = ''
         Map of local user → list of `{host, user}` peer identities. All SSH
-        pubkeys under `lib.hosts.<host>.ssh.users.<user>.*` are added to that
+        pubkeys under `lib.hosts.<host>.users.<user>.ssh.*` are added to that
         local user's `authorized_keys`. Only honoured in `controller` and
         `onboarded` modes.
       '';

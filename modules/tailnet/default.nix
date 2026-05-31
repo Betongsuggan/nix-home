@@ -32,7 +32,7 @@ in
       };
       description = ''
         Map of local user → list of `{host, user}` peer identities. All SSH
-        pubkeys under `lib.hosts.<host>.ssh.users.<user>.*` are added to that
+        pubkeys under `lib.hosts.<host>.users.<user>.ssh.*` are added to that
         local user's `authorized_keys`.
       '';
     };
@@ -63,7 +63,7 @@ in
 
       users.users = mapAttrs (_localUser: peers: {
         openssh.authorizedKeys.keys = concatMap
-          (p: collect isString (selfLib.hosts.${p.host}.ssh.users.${p.user} or { }))
+          (p: collect isString (selfLib.hosts.${p.host}.users.${p.user}.ssh or { }))
           peers;
       }) cfg.authorizeSshFor;
     }
