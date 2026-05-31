@@ -22,7 +22,7 @@
       # Kept inline because it's a bootstrap credential, not a tailnet peer.
       # See hosts/controller/SPEC.md for the full flow.
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
-      # Tailnet peer keys (e.g. birgerrydback@bits) come from `tailnet.authorizeSshFor` below.
+      # Tailnet peer keys (e.g. birgerrydback@bits) come from `home-network.authorizeSshFor` below.
     ];
   };
 
@@ -106,12 +106,6 @@
       path = "/home/betongsuggan/.ssh/id_ed25519";
     };
 
-    "headscale-preauthkey" = {
-      key = "services/headscale-preauthkey";
-      owner = "root";
-      mode = "0400";
-    };
-
     "vaultwarden-env" = {
       key = "services/vaultwarden-env";
       owner = "vaultwarden";
@@ -119,14 +113,47 @@
     };
   };
 
-  tailnet = {
+  home-network = {
     enable = true;
+    mode = "controller";
+
     authorizeSshFor.betongsuggan = [
       {
         host = "bits";
         user = "birgerrydback";
       }
+      {
+        host = "island";
+        user = "betongsuggan";
+      }
     ];
+
+    controller = {
+      # Public age recipient string for the operator's master YubiKey. Same
+      # identity used elsewhere for sops. Fill in with the value from
+      # `nix-vault/.sops.yaml` (the `age1yubikey1...` admin recipient). Empty
+      # string is rejected by an assertion in modules/home-network.
+      yubikeyAgeRecipient = "age1yubikey1qtzynkrvd7yxa8zvnx2jd036uvklyvzmsfmq8zhpqppr3g6phfvlwc6lyd3";
+
+      headscaleUser = "birger";
+
+      headscale = {
+        domain = "vpn.rydback.net";
+        baseDomain = "ts.rydback.net";
+        users = [ "birger" ];
+        extraDnsRecords = [
+          # vault.rydback.net's public A record points at controller's WAN IP so
+          # ACME HTTP-01 works. For tailnet members this override resolves it to
+          # controller's tailnet IP instead, so requests reach nginx from a 100.x
+          # source and clear the deny-all rule on the vault vhost.
+          {
+            name = "vault.rydback.net";
+            type = "A";
+            value = "100.64.0.2";
+          }
+        ];
+      };
+    };
   };
 
   emulation-server = {
@@ -202,15 +229,12 @@
   reverse-proxy = {
     enable = true;
     acmeEmail = "rydback@gmail.com";
+    # `rydback.net` and `vpn.rydback.net` are contributed by `home-network` in
+    # controller mode (the bootstrap blob endpoint and the headscale upstream
+    # respectively); only domains not bundled there are listed here.
     domains = [
-      "rydback.net"
-      "vpn.rydback.net"
       "vault.rydback.net"
     ];
-    vhosts.headscale = {
-      domain = "vpn.rydback.net";
-      upstream = "http://127.0.0.1:8080";
-    };
     vhosts.vaultwarden = {
       domain = "vault.rydback.net";
       upstream = "http://127.0.0.1:8222";
@@ -236,24 +260,6 @@
     # ADMIN_TOKEN) to invite the first user — the invitation link will land in
     # `journalctl -u vaultwarden` since SMTP isn't configured yet.
     signupsAllowed = false;
-  };
-
-  headscale = {
-    enable = true;
-    domain = "vpn.rydback.net";
-    baseDomain = "ts.rydback.net";
-    users = [ "birger" ];
-    extraDnsRecords = [
-      # vault.rydback.net's public A record points at controller's WAN IP so
-      # ACME HTTP-01 works. For tailnet members this override resolves it to
-      # controller's tailnet IP instead, so requests reach nginx from a 100.x
-      # source and clear the deny-all rule on the vault vhost.
-      {
-        name = "vault.rydback.net";
-        type = "A";
-        value = "100.64.0.2";
-      }
-    ];
   };
 
   systemd.targets = {

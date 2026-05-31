@@ -9,11 +9,10 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 - Intel integrated graphics
 - Audio via PipeWire
 - NetworkManager with iwd backend
-- OpenSSH server (firewall port open)
+- OpenSSH server (port 22 reachable only on `tailscale0`)
 - Minimal SSH git server (git-shell, single bare repo)
-- Nginx reverse proxy with per-domain Let's Encrypt certs (HTTP-01), auto-renewing; currently `rydback.net` (404 stub) and `vpn.rydback.net` (proxies to headscale)
-- Headscale Tailscale coordination server at `vpn.rydback.net` with embedded DERP relay (declaratively provisioned users)
-- Tailscale client joined to the local headscale tailnet (`--accept-routes`)
+- Nginx reverse proxy with per-domain Let's Encrypt certs (HTTP-01), auto-renewing; currently `rydback.net` (404 stub + the tailnet bootstrap blob endpoint), `vpn.rydback.net` (proxies to headscale), `vault.rydback.net` (vaultwarden, tailnet-only)
+- `home-network` module in `controller` mode: bundles the headscale coordinator at `vpn.rydback.net` (embedded DERP relay, declaratively provisioned users), the rotated YubiKey-encrypted preauth-blob endpoint, and tailscale client membership. See `modules/home-network/SPEC.md` for the full onboarding doctrine.
 - Emulation server: Syncthing for save sync, Samba for read-only ROM/BIOS shares, data at `/var/lib/emulation`; Syncthing/Samba ports exposed only on `enp1s0` (LAN) and `tailscale0` (off-LAN)
 - Sleep/suspend/hibernate fully disabled (systemd targets masked + logind ignores lid/power keys and idle)
 - Colemak keyboard layout
@@ -31,34 +30,27 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 
 ## `nix-vault` enrollment role
 
-Controller is the single source of truth for the `nix-vault.git` bare repository (the `nix-vault` flake input). Access is gated by `git-server.authorizedKeys` — a flat SSH pubkey allowlist (see `modules/git-server/SPEC.md`). The allowlist is derived automatically from `nix-vault`'s `keys.nix` (`lib.collect lib.isString inputs.nix-vault.keys.hosts`), plus the operator's YubiKey appended in this host's `system.nix` for bootstrap.
+Controller is the single source of truth for the `nix-vault.git` bare repository (the `nix-vault` flake input). Access is gated by `git-server.authorizedKeys` — a flat SSH pubkey allowlist (see `modules/git-server/SPEC.md`). The allowlist is derived automatically from `lib/default.nix` (`inputs.self.lib.allSshKeys`), plus the operator's YubiKey appended in this host's `system.nix` for bootstrap.
+
+Port 22 is reachable only on `tailscale0` — `nix-vault.git` is cloned over the tailnet. New hosts that are not yet on the tailnet use the `home-network` bootstrap flow (see below) to join first, then proceed with the SSH-based clone.
 
 The operator's YubiKey SSH key (FIDO `ed25519-sk` resident, touch-only) is authorized in **two** places on controller:
 
-- `git-server.authorizedKeys` — to clone/push `nix-vault.git` from a fresh installer *before* the new host's key has been added to `keys.nix`.
-- `users.users.betongsuggan.openssh.authorizedKeys.keys` — to SSH in as `betongsuggan`, edit `nix-vault/keys.nix` and `nix-vault/.sops.yaml`, and `nixos-rebuild switch` controller.
+- `git-server.authorizedKeys` — to clone/push `nix-vault.git` from a fresh installer once it has joined the tailnet, *before* the new host's host SSH key has been added to `lib/default.nix`.
+- `users.users.betongsuggan.openssh.authorizedKeys.keys` — to SSH in as `betongsuggan`, edit `nix-vault`, and `nixos-rebuild switch` controller.
 
 One credential, all access. The YubiKey lives in the drawer until the next new-host enrollment.
 
-For everyday admin from the operator's `bits` laptop, `birgerrydback@bits`'s per-host SSH key (sourced from `inputs.nix-vault.keys.hosts.bits.users.birgerrydback.bits`) is also authorized on `betongsuggan` — no YubiKey touch required for routine work.
+For everyday admin from any tailnet peer, peers' SSH keys are pulled in via `home-network.authorizeSshFor.betongsuggan` (currently only `birgerrydback@bits`). No YubiKey touch required for routine work.
 
-### Per-new-host enrollment runbook
+## Onboarding new hosts
 
-With the YubiKey inserted in either the new host or the operator's workstation:
+The full doctrine — what each mode does, the exact installer-side commands, the post-install `mode = "onboarded"` flip, failure modes and recovery — lives in **`modules/home-network/SPEC.md`**. That is the single source of truth for fleet onboarding.
 
-1. Boot the new host's installer. Insert YubiKey. Materialize the resident FIDO keypair:
-   ```
-   ssh-keygen -K
-   eval "$(ssh-agent)"
-   ssh-add ~/.ssh/id_ed25519_sk_bootstrap
-   ssh-keyscan -t ed25519 192.168.50.50 >> ~/.ssh/known_hosts
-   ```
-2. Clone `nix-home` (public). Clone `nix-vault` (YubiKey-authed):
-   ```
-   git clone git@192.168.50.50:nix-vault.git
-   ```
-3. Make sure the new host has a `hosts/<new-host>/` entry in `flake.nix`.
-4. Generate the new host's `/etc/ssh/ssh_host_ed25519_key` (or boot, generate, then proceed — see sops two-pass note in `modules/sops/SPEC.md`). Convert pubkey to age recipient with `ssh-to-age`. Add the recipient to `nix-vault/.sops.yaml`; `sops updatekeys` affected files. Commit, push to controller's bare (YubiKey-authed).
-5. `nixos-install --flake .#<new-host> --override-input nix-vault path:/path/to/nix-vault` (or rely on the flake's locked input, if the URL has been migrated to git+ssh:// and the host's key is registered).
+Quick summary of controller's role in the flow:
 
-To later allow a host to clone/pull `nix-vault` itself (e.g. for unattended `nix flake update`), add that host's `/etc/ssh/ssh_host_ed25519_key.pub` under `hosts.<host>.users` (or a dedicated host slot) in `nix-vault/keys.nix`, push, and rebuild controller. SSH client config is then a per-invocation concern (`ssh -i /etc/ssh/ssh_host_ed25519_key git@controller …` or per-user `~/.ssh/config`); there's no system module enforcing it.
+- Controller runs the rotated, age-encrypted preauth-blob endpoint at `https://rydback.net/.well-known/tailnet-bootstrap.age`. The blob refreshes every 15 minutes and is decryptable only with the operator's YubiKey.
+- New hosts fetch the blob from their installer, decrypt with the YubiKey, and join the tailnet — no preexisting tailnet member required.
+- Once on the tailnet, the new host clones `nix-vault.git` from `controller` over SSH (YubiKey-authed), registers its age recipient in `nix-vault/.sops.yaml`, populates its own `secrets/<host>.yaml` (with the host-specific long-lived preauth key generated via `sudo headscale preauthkeys create -u birger --reusable -e 8760h`), and `nixos-install`s.
+
+To later allow a host to clone/pull `nix-vault` itself for unattended `nix flake update`, add that host's `/etc/ssh/ssh_host_ed25519_key.pub` under `hosts.<host>.ssh.users` in `lib/default.nix`, push, and rebuild controller.

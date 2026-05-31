@@ -123,8 +123,9 @@
     };
   };
 
-  tailnet = {
+  home-network = {
     enable = true;
+    mode = "onboarded";
     authorizeSshFor.birgerrydback = [
       { host = "controller"; user = "betongsuggan"; }
     ];

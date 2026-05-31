@@ -16,6 +16,7 @@
     ./graphics
     ./headscale
     ./input-remapper/system.nix
+    ./home-network
     ./kde
     ./keyboard
     ./logitech

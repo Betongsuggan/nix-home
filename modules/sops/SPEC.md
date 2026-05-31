@@ -68,7 +68,7 @@ When enabled, also flips on `openssh.enable = true;` (see `modules/openssh/SPEC.
 
 ## Bootstrap
 
-The new host needs to (a) get a copy of `nix-vault` (the flake input, served via SSH from `controller`) onto the installer and (b) be able to decrypt secrets targeted at it. The operator's YubiKey is the credential used to clone `nix-vault` during install (see `hosts/controller/SPEC.md`). The sops-specific steps:
+The new host needs to (a) get a copy of `nix-vault` (the flake input, served via SSH from `controller`) onto the installer and (b) be able to decrypt secrets targeted at it. `controller`'s SSH is only reachable on `tailscale0`, so the installer must first join the home tailnet — see **`modules/home-network/SPEC.md`** for the YubiKey-driven bootstrap flow. Once on the tailnet, the operator's YubiKey is the credential used to clone `nix-vault` during install (see `hosts/controller/SPEC.md`). The sops-specific steps:
 
 1. Run `sudo ssh-keygen -A` (or let the openssh activation generate keys) to ensure `/etc/ssh/ssh_host_ed25519_key` exists.
 2. Convert the public half to an age recipient: `cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age`.
