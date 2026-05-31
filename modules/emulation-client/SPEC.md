@@ -35,16 +35,15 @@ emulation-client = {
 - Adds the `mount-emulation-roms` helper script to your PATH
 - Creates `~/emulation/saves/` with subdirectories matching the server layout
 
-### Connecting Syncthing
+### Connecting Syncthing (declarative — no manual pairing)
 
-1. Open the Syncthing web UI: `xdg-open http://localhost:8384`
-2. Go to **Actions > Show ID** and copy your device ID
-3. Add this device ID to the server's `syncthing.devices` config and rebuild the server
-4. On the server's Syncthing web UI, share the `emulation-saves` folder with your device
-5. Accept the folder share on your client's Syncthing web UI
-6. Set the folder path to `~/emulation/saves`
+The module declares controller as a known peer with a pinned tailnet address and pre-configures the `emulation-saves` folder pointing at `cfg.savesDir`. On rebuild the daemon comes up already paired — there is no web-UI clicking step on the Linux side.
 
-Saves sync bidirectionally. Changes made offline sync automatically when devices reconnect.
+The other half of the handshake is on the server: controller's `emulation-server` reads `inputs.self.lib.allSyncthingDevices`, which collects every Syncthing ID declared under `lib/default.nix` (host-level via `hosts.<h>.syncthing.id`, per-user via `hosts.<h>.users.<u>.syncthing.id`, or non-NixOS via `devices.<d>.syncthing.id`). To onboard a new Linux client, add its Syncthing ID to lib in the appropriate slot and rebuild controller; the matching declaration in this module's config picks up controller's side automatically.
+
+Saves sync bidirectionally — `type = "sendreceive"`. Changes made offline sync automatically when devices reconnect.
+
+The local Syncthing web UI at `http://localhost:8384` is still useful for observability (sync status, recent activity), but it's not part of the pairing flow.
 
 ### Mounting ROM and BIOS shares
 

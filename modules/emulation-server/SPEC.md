@@ -31,11 +31,13 @@ emulation-server = {
 | enable | bool | false | Enable the emulation server |
 | user | string | "betongsuggan" | User account that owns the emulation data and runs Syncthing |
 | dataDir | path | /var/lib/emulation | Root directory for emulation data (roms, saves, bios) |
-| lanInterface | string | "enp1s0" | LAN network interface to open Syncthing/Samba ports on |
-| lanSubnet | string | "192.168.50.0/24" | LAN subnet allowed to reach Samba shares |
+| lanInterface | string | "enp1s0" | LAN network interface to open Syncthing/Samba ports on (ignored when `tailnetOnly = true`) |
+| lanSubnet | string | "192.168.50.0/24" | LAN subnet allowed to reach Samba shares (ignored when `tailnetOnly = true`) |
 | systems | list of string | 17 systems (see below) | ROM subdirectories to create |
 | standaloneEmulators | list of string | ["retroarch" "ppsspp" "duckstation" "dolphin"] | Save subdirectories to create |
-| syncthing.devices | attrset of { id: string } | {} | Syncthing devices to sync saves with |
+| tailnetOnly | bool | false | Restrict Syncthing + Samba to the tailnet — see notes below. |
+| syncthing.devices | attrset of `{ id; tailnetFqdn }` | {} | Syncthing peers. Feed `inputs.self.lib.allSyncthingDevices` to pick up the entire fleet declaratively. |
+| syncthing.selfSyncthingId | nullable string | null | This host's own Syncthing ID — used to filter the local entry out of the peer list. Required on hosts that include themselves in `allSyncthingDevices`. |
 
 ### Default systems
 
@@ -67,12 +69,25 @@ ${dataDir}/
 
 ### Network exposure
 
-The module does not touch the general firewall. It opens Syncthing (TCP 22000, UDP 21027) and Samba (TCP 445/139, UDP 137/138) on two interfaces only:
+The module does not touch the general firewall. By default it opens Syncthing (TCP 22000, UDP 21027) and Samba (TCP 445/139, UDP 137/138) on two interfaces:
 
 - `lanInterface` (default `enp1s0`) — LAN clients
 - `tailscale0` — off-LAN clients via the tailnet
 
 Samba additionally restricts access via `hosts allow` to the LAN subnet plus the Headscale default tailnet CIDR `100.64.0.0/10`.
+
+### Tailnet-only mode
+
+With `tailnetOnly = true` the network exposure collapses to the tailnet only:
+
+- **Firewall:** Syncthing and Samba ports are opened on `tailscale0` only — the `lanInterface` opening is dropped entirely.
+- **Samba `hosts allow`:** reduced to `100.64.0.0/10` only (no LAN subnet) — Samba rejects connections from any source IP outside the tailnet regardless of which interface they came in on.
+- **Syncthing:** `globalAnnounceEnabled`, `relaysEnabled`, `natEnabled`, and `localAnnounceEnabled` are all set to `false`. No public-internet chatter, no LAN multicast.
+- **Syncthing peer addresses:** each device gets `addresses = [ "tcp://<tailnetFqdn>:22000" ]` derived from `lib.allSyncthingDevices`. Peers without a known `tailnetFqdn` (Android devices not yet on the tailnet, fairphone's placeholder ID) fall back to `dynamic`, which won't work in tailnet-only mode — they'll be unreachable until their lib entries gain a `tailnetName`.
+
+The trade-off: stricter posture, no public-infra footprint, every peer must be on the tailnet. Recommended once the whole personal fleet is enrolled in Headscale.
+
+**Why `samba.interfaces` is *not* used here** even though `file-sharing` exposes the option: `bind interfaces only = yes` with `interfaces = tailscale0` makes Samba panic at boot because systemd starts smbd/nmbd before tailscaled has created the `tailscale0` interface. Firewall + `hosts allow` provide the tailnet restriction at two independent layers without that boot ordering fragility — Samba listens on all interfaces underneath, but every other layer above it rejects non-tailnet traffic. If you ever want the additional bind-only-to-tailscale0 layer, it requires a systemd ordering dependency (`samba-smbd.after = [ "tailscaled.service" ]` plus a wait-for-interface helper) that's not part of this module.
 
 ### Samba access model
 

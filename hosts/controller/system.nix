@@ -169,7 +169,14 @@
     dataDir = "/var/lib/emulation";
     lanInterface = "enp1s0";
     lanSubnet = "192.168.50.0/24";
-    syncthing.devices = inputs.self.lib.allSyncthingDevices;
+    tailnetOnly = true;
+    syncthing = {
+      devices = inputs.self.lib.allSyncthingDevices;
+      # Filter the local instance out of the peer list. This host's syncthing
+      # runs as `betongsuggan`, so its lib entry sits at
+      # `hosts.controller.users.betongsuggan.syncthing.id`.
+      selfSyncthingId = inputs.self.lib.hosts.controller.users.betongsuggan.syncthing.id;
+    };
   };
 
   services.xserver.desktopManager.runXdgAutostartIfNone = true;

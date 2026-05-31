@@ -1,8 +1,10 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 with lib;
 
 let
   cfg = config.emulation-client;
+  controllerSyncthingId = inputs.self.lib.hosts.controller.users.betongsuggan.syncthing.id;
+  controllerTailnetFqdn = inputs.self.lib.tailnet.fqdn "controller";
 
   mountScript = pkgs.writeShellScriptBin "mount-emulation-roms" ''
     SERVER="''${1:-${cfg.server.address}}"
@@ -49,8 +51,27 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Syncthing for save file synchronization
-    services.syncthing.enable = true;
+    # Syncthing for save file synchronization. Controller is declared as a
+    # known peer up-front and the shared folder is pre-configured, so the
+    # daemon comes up already paired — no web-UI clicking needed on rebuild.
+    services.syncthing = {
+      enable = true;
+      settings = {
+        devices.controller = {
+          id = controllerSyncthingId;
+          addresses = [ "tcp://${controllerTailnetFqdn}:22000" ];
+        };
+        folders.emulation-saves = {
+          path = cfg.savesDir;
+          devices = [ "controller" ];
+          type = "sendreceive";
+          versioning = {
+            type = "simple";
+            params.keep = "5";
+          };
+        };
+      };
+    };
 
     home.packages = [
       pkgs.cifs-utils

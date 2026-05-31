@@ -26,6 +26,8 @@
 # `allSyncthingDevices` collectors flatten both levels into a single map.
 
 let
+  baseDomain = "ts.rydback.net";
+
   hosts = {
     bits = {
       tailnetName = "bits-nixos";
@@ -49,6 +51,7 @@ let
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBGf64nW+ZcG2TfzvS4Ql2yJD2/gNpNsRcUQrK0jNKb9 root@controller";
       users = {
         betongsuggan = {
+          syncthing.id = "4AUKVSW-5SDSOZS-WLDB5LE-YJAVG3C-YMABN52-HEQTHJP-PCBEVCC-EEWM6AH";
           ssh.ssh_ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAR/t68PUZdYs0cECO0yPuywEBvFJQAGVMp4t6IkZIRz rydback@gmail.com";
         };
         # Service user: controller's restic push key. Public half; private half
@@ -83,12 +86,14 @@ let
     ayn-thor = {
       type = "android";
       description = "Ayn Odin 2 Thor -- Android gaming handheld";
+      tailnetName = "ayn-thor";
       syncthing.id = "2VW22JQ-ARR4C4E-6DMSO7O-TW64TDQ-DYBJNXX-7HICKTH-EMEI2R5-QTAUTAH";
     };
     fairphone = {
       type = "android";
       description = "Fairphone -- daily driver";
       syncthing.id = "NR2V5JP-3M7XOZ7-KRDE5KF-FHI7AT7-P4NJBYH-VAEDY63-5QEDLN5-UA7SIQ4";
+      tailnetName = "fairphone";
     };
   };
 in
@@ -96,8 +101,8 @@ in
   inherit hosts devices;
 
   tailnet = {
-    baseDomain = "ts.rydback.net";
-    fqdn = host: "${hosts.${host}.tailnetName}.ts.rydback.net";
+    inherit baseDomain;
+    fqdn = host: "${hosts.${host}.tailnetName}.${baseDomain}";
   };
 
   # Every SSH pubkey string across the fleet: host keys (hosts.<h>.ssh.host)
@@ -141,24 +146,30 @@ in
   );
 
   # Flatten every Syncthing instance we know about into a single
-  # `{ <name> = { id = "..."; }; ... }` map ready to feed into NixOS's
-  # `services.syncthing.settings.devices`. Names become the human-readable
-  # device labels in the Syncthing UI, so the keying scheme matters:
+  # `{ <name> = { id = "..."; tailnetFqdn = "..." or null; }; ... }` map ready
+  # to feed into NixOS's `services.syncthing.settings.devices`. Names become
+  # the human-readable device labels in the Syncthing UI, so the keying
+  # scheme matters:
   #
   #   devices.<d>.syncthing.id                 → "<d>"        (e.g. "ayn-thor")
   #   hosts.<h>.syncthing.id                   → "<h>"        (e.g. "controller")
   #   hosts.<h>.users.<u>.syncthing.id         → "<h>-<u>"    (e.g. "desktop-betongsuggan")
   #
-  # Adding a new Syncthing peer = one new entry in lib + rebuild. The
-  # `emulation-server` already feeds this into controller's Syncthing via
-  # `inputs.self.lib.allSyncthingDevices`.
+  # `tailnetFqdn` is the host's tailnet FQDN (e.g. `desktop.ts.rydback.net`)
+  # when the peer is reachable over the tailnet, or `null` for entries
+  # without a known `tailnetName` (typically Android devices not yet
+  # enrolled). The `emulation-server` tailnet-only mode uses this to pin
+  # peer addresses; peers with `tailnetFqdn = null` fall back to `dynamic`
+  # discovery (and won't be reachable when tailnet-only is on).
   allSyncthingDevices =
     let
       collectIds =
-        items:
-        lib.mapAttrs (_: x: { id = x.syncthing.id; }) (
-          lib.filterAttrs (_: x: x ? syncthing && x.syncthing ? id) items
-        );
+        src:
+        lib.mapAttrs (_: x: {
+          id = x.syncthing.id;
+          tailnetFqdn =
+            if x ? tailnetName then "${x.tailnetName}.${baseDomain}" else null;
+        }) (lib.filterAttrs (_: x: x ? syncthing && x.syncthing ? id) src);
       hostUserIds = lib.listToAttrs (
         lib.concatMap (
           hostName:
@@ -167,7 +178,10 @@ in
           in
           lib.mapAttrsToList (
             userName: u:
-            lib.nameValuePair "${hostName}-${userName}" { id = u.syncthing.id; }
+            lib.nameValuePair "${hostName}-${userName}" {
+              id = u.syncthing.id;
+              tailnetFqdn = "${h.tailnetName}.${baseDomain}";
+            }
           ) (lib.filterAttrs (_: u: u ? syncthing && u.syncthing ? id) (h.users or { }))
         ) (lib.attrNames hosts)
       );

@@ -30,7 +30,8 @@ file-sharing = {
 | samba.enable | bool | false | Enable Samba (SMB) file sharing |
 | samba.shares | list of share | [] | List of Samba share definitions |
 | samba.workgroup | string | "WORKGROUP" | Network workgroup name |
-| samba.allowedSubnets | list of string | ["192.168.0.0/16" "10.0.0.0/8" "172.16.0.0/12"] | Subnets allowed to access Samba shares |
+| samba.allowedSubnets | list of string | ["192.168.0.0/16" "10.0.0.0/8" "172.16.0.0/12"] | Subnets allowed to access Samba shares (`hosts allow` line) |
+| samba.interfaces | list of string | [] | Interfaces to bind to (empty = all). When set, `bind interfaces only = yes` is enabled — Samba won't even open sockets on other interfaces. Stronger than `allowedSubnets` alone. |
 | samba.openFirewall | bool | false | Automatically open firewall ports for Samba |
 
 Each share in `samba.shares` has the following attributes:

@@ -135,6 +135,19 @@ in {
         description = "Subnets allowed to access Samba shares";
       };
 
+      interfaces = mkOption {
+        type = types.listOf types.str;
+        default = [ ];
+        example = [ "tailscale0" ];
+        description = ''
+          Network interfaces Samba should bind to. Empty list = listen on all
+          interfaces (Samba default). Setting this restricts binding to the
+          listed interfaces only (`bind interfaces only = yes`), which is
+          stronger than `allowedSubnets` alone — Samba won't even open a
+          listening socket on other interfaces.
+        '';
+      };
+
       openFirewall = mkOption {
         type = types.bool;
         default = false;
@@ -173,7 +186,10 @@ in {
           printing = "bsd";
           "printcap name" = "/dev/null";
           "disable spoolss" = "yes";
-        };
+        } // (lib.optionalAttrs (cfg.samba.interfaces != [ ]) {
+          interfaces = concatStringsSep " " cfg.samba.interfaces;
+          "bind interfaces only" = "yes";
+        });
       } // mkSambaShares cfg.samba.shares;
     };
 
