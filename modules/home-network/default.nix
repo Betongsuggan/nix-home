@@ -12,6 +12,17 @@ let
 
   preauthBlobPath = "/var/lib/home-network/preauth.age";
 
+  # Hardcoded: matches the comment on the operator's FIDO resident SSH key
+  # authorized in hosts/controller/system.nix. Changing this only makes sense
+  # if you also re-create the YubiKey resident key with a new application string.
+  fidoBootstrapKeyName = "id_ed25519_sk_rk_nix-vault";
+  controllerFqdn = "controller.ts.rydback.net";
+  controllerAdminUser = "betongsuggan";
+
+  # Single operator-facing command for the bootstrap-mode workflow. Idempotent
+  # at each step so accidentally exiting the controller SSH session early just
+  # means re-running the same command — it'll skip the already-done work and
+  # re-open the SSH session.
   bootstrapHelper = pkgs.writeShellApplication {
     name = "home-network-bootstrap";
     runtimeInputs = with pkgs; [
@@ -21,53 +32,76 @@ let
       curl
       coreutils
       util-linux
-      gnused
+      openssh
     ];
     text = ''
       blob_url="''${BLOB_URL:-${cfg.bootstrap.blobUrl}}"
       login_server="''${LOGIN_SERVER:-${cfg.bootstrap.loginServer}}"
+      fido_key="$HOME/.ssh/${fidoBootstrapKeyName}"
 
       step() { printf '==> %s\n' "$1"; }
 
-      work=$(mktemp -d -t home-network-bootstrap.XXXXXX)
-      trap 'rm -rf "$work"' EXIT
+      # --- 1. Tailnet join (idempotent) -----------------------------------
 
-      step "Discovering YubiKey age identity (touch the YubiKey)..."
-      age-plugin-yubikey --identity > "$work/identity.age"
+      if sudo tailscale ip -4 >/dev/null 2>&1; then
+        step "Already on the tailnet — skipping join."
+      else
+        # No secrets touch disk: the YubiKey identity is just a recipient stub,
+        # and the decrypted preauth key lives only in a shell variable until
+        # tailscale up consumes it.
+        step "Discovering YubiKey age identity (touch the YubiKey)..."
+        identity=$(age-plugin-yubikey --identity)
 
-      step "Fetching encrypted preauth blob from $blob_url..."
-      curl -fsSL "$blob_url" -o "$work/preauth.age"
+        step "Fetching and decrypting preauth blob from $blob_url (touch the YubiKey)..."
+        preauth_key=$(curl -fsSL "$blob_url" | age -d -i <(printf '%s' "$identity"))
 
-      step "Decrypting blob (touch the YubiKey)..."
-      age -d -i "$work/identity.age" -o "$work/preauth.key" "$work/preauth.age"
+        step "Joining tailnet (login server $login_server)..."
+        hostname="installer-$(uuidgen | tr -d - | head -c8)"
+        sudo tailscale up \
+          --login-server "$login_server" \
+          --authkey "$preauth_key" \
+          --hostname "$hostname"
 
-      step "Starting tailscaled in userspace-networking mode..."
-      if ! pgrep -x tailscaled >/dev/null; then
-        sudo tailscaled \
-          --tun=userspace-networking \
-          --socket=/tmp/tailscaled.sock \
-          --statedir=/tmp/tailscaled-state \
-          >"$work/tailscaled.log" 2>&1 &
-        # Give the daemon a moment to bind its socket.
-        for _ in 1 2 3 4 5 6 7 8 9 10; do
-          [ -S /tmp/tailscaled.sock ] && break
-          sleep 0.5
-        done
+        unset identity preauth_key
       fi
 
-      step "Joining tailnet (login server $login_server)..."
-      hostname="installer-$(uuidgen | tr -d - | head -c8)"
-      sudo tailscale --socket=/tmp/tailscaled.sock up \
-        --login-server "$login_server" \
-        --authkey "$(cat "$work/preauth.key")" \
-        --hostname "$hostname"
+      # --- 2. FIDO bootstrap SSH key materialization (idempotent) ---------
 
-      step "Tailnet status:"
-      sudo tailscale --socket=/tmp/tailscaled.sock status
+      mkdir -p "$HOME/.ssh"
+      chmod 700 "$HOME/.ssh"
 
+      if [ -f "$fido_key" ]; then
+        step "FIDO bootstrap SSH key already at $fido_key — skipping."
+      else
+        step "Materializing YubiKey resident SSH keys (touch the YubiKey)..."
+        ( cd "$HOME/.ssh" && ssh-keygen -K )
+        if [ ! -f "$fido_key" ]; then
+          echo "Expected $fido_key after ssh-keygen -K but it's not there." >&2
+          echo "Resident keys found in ~/.ssh:" >&2
+          ls "$HOME/.ssh"/id_*_sk_rk_* 2>/dev/null >&2 || echo "  (none)" >&2
+          echo "The YubiKey may not have a resident key with application 'ssh:nix-vault'." >&2
+          exit 1
+        fi
+      fi
+
+      # --- 3. SSH into controller (always) --------------------------------
+
+      step "Opening SSH session on ${controllerFqdn} (touch the YubiKey)..."
+      echo "    Inside the session, the typical onboarding flow is:"
+      echo "      cd ~/nix-home && git pull && sudo nixos-rebuild switch --flake .#controller"
+      echo "      sudo headscale preauthkeys create --user birger --reusable --expiration 8760h"
+      echo "    Exit the session when done (or re-run this command if you exit too early)."
       echo
-      echo "Done. The installer is now a tailnet member as '$hostname'."
-      echo "Continue with the enrollment runbook in modules/home-network/SPEC.md."
+
+      # `-F /dev/null` bypasses the user's ~/.ssh/config which pins
+      # identitiesOnly+id_rsa for `controller` (would otherwise block the
+      # FIDO key). `exec` replaces this shell with ssh so the script's exit
+      # code is ssh's.
+      exec ssh -F /dev/null \
+               -i "$fido_key" \
+               -o IdentitiesOnly=yes \
+               -o StrictHostKeyChecking=accept-new \
+               ${controllerAdminUser}@${controllerFqdn}
     '';
   };
 in
@@ -87,11 +121,12 @@ in
         - `controller`: runs the headscale coordinator + the rotated, age-encrypted
           preauth-key endpoint that new hosts pull from during onboarding. Also
           a regular tailnet member itself.
-        - `bootstrap`: not on the tailnet yet. Provides the tools and the
-          `home-network-bootstrap` helper script so the operator can fetch the
-          encrypted blob, decrypt it with the YubiKey, and join. Used during
-          first-pass install of a new host; flipped to `onboarded` once
-          enrollment in `nix-vault` is complete.
+        - `bootstrap`: not on the tailnet yet. Provides the single
+          `home-network-bootstrap` helper which idempotently joins the tailnet
+          (via the YubiKey-decrypted public blob), materializes the FIDO
+          resident SSH key, and drops the operator into an interactive SSH
+          session on controller for the manual enrollment steps. Flipped to
+          `onboarded` once `nix-vault` registration is complete.
         - `onboarded`: steady-state tailnet member. Tailscale client auto-joins
           via a sops-decrypted per-host preauth key, sshd listens only on
           `tailscale0`.
@@ -294,8 +329,14 @@ in
             exit 1
           fi
 
+          # `--ephemeral` makes headscale auto-remove the joining node a few
+          # minutes after it goes offline. The temporary `installer-XXXXXXXX`
+          # node a new host registers as is purged once that host rebuilds
+          # into `onboarded` mode and tailscaled re-registers under its real
+          # hostname. No accumulation in `headscale nodes list`.
           key=$(headscale preauthkeys create \
                   --user "$uid" \
+                  --ephemeral \
                   --expiration ${escapeShellArg cfg.controller.bootstrap.keyTtl} \
                   --output json \
                 | jq -r .key)
@@ -363,6 +404,21 @@ in
       # PC/SC daemon for smartcard access — needed for age-plugin-yubikey to
       # talk to the inserted YubiKey during the bootstrap helper run.
       services.pcscd.enable = true;
+
+      # Generate `/etc/ssh/ssh_host_ed25519_key{,.pub}` at activation so the
+      # operator can immediately derive the host's age recipient via
+      # `cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age` during the
+      # nix-vault enrollment step. Firewall stays closed (sshd is effectively
+      # unreachable) — we just need the key on disk.
+      openssh.enable = true;
+
+      # Kernel-mode tailscaled with no auto-join key. The bootstrap helper
+      # drives the join manually via `tailscale up` with the YubiKey-decrypted
+      # preauth key. Running the system daemon (rather than a userspace one)
+      # gives us a real `tailscale0` interface and MagicDNS via the system
+      # resolver, so `ssh controller` / `git clone git@controller:...` work
+      # without per-app proxy plumbing.
+      services.tailscale.enable = true;
     })
   ];
 }

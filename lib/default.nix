@@ -67,6 +67,7 @@ let
       tailnetName = "desktop";
       addresses = [ "desktop" ];
       ssh = {
+        host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgyXzp0dQ+uwIHBV6RGsNASeKgMMQb9NFX5Dv/xPrvE root@home-desktop";
         users = {
           betongsuggan = {
             id_rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCvvJ1JmeY0gc1NgbsTgELa7on4xjtW3ZJfJ5MRMgrmQhg+yMWJyMpS6M0Z9b1aLRp1Fnvq7TDX40PiFlQZ+0rRHOty8JbwPoTchTSyg3ihxvtUP6slZsgJlsZuvEwDFZ42nB/U4oWD2i2o7smzB6T5fBIYmNgM2bzWLqAS+xHo+k8SsxOaimDmmxSuA+qhHkK9fdgfuu0phZAKfo/5dBXcHNyRWsT6o81KNUXhlNYMSagt9IZEx204dt7m9SKZG6SzHslrEPqf+RETP4sQyh+u5YfgpVgww8AHvJcveKsNkegjbwVSyekbANwJlU54lxnKR9Td6G7kYFf/z+QQt3whGKJJ89KvvqxPccCQfd/Es8IYSXJEMu1OFEL7yOFggSicnoYCUq6ZZAzTnabjB7uRflfTAjmJrT78jbWMIiyY/U30zgJ8ak6Ijho9i+3dqDk2zOWwatJ7CfV6/izDzcPI4tqne7L0MKy2Z7vExJ9rWCdP58dBR0LewuCQAb9E5MVTKcPRxmRjcrKuzkgrvGxtbDG4tbxsQ1KNtRmYAlTiiIFDVVmM1vckuAqV/aaPFaGN9qUppUajl/Dz0BLqEK0WJcQ3ZX6ChQeNOXZQrOQaofMwcQlGu+YSz+Xvus1a3Ygb1zoJvUukxYUU3KSomtx6Vvs1f3+sm4kJgFXOgL5Qmw== betongsuggan@home-desktop";
@@ -99,6 +100,25 @@ in
 
   allSshKeys = lib.concatLists (
     map (h: lib.collect lib.isString (h.ssh or { })) (lib.attrValues hosts)
+  );
+
+  # Every { host, user } pair in `hosts` that has at least one SSH key under
+  # `ssh.users.<user>`. Lets a host authorize "everyone in lib who's <user>"
+  # without enumerating peers by hand.
+  allPeersFor =
+    user:
+    lib.mapAttrsToList (host: _: { inherit host user; }) (
+      lib.filterAttrs (_: h: (h.ssh.users.${user} or null) != null) hosts
+    );
+
+  # Every { host, user } combination defined under `ssh.users.*` across the
+  # whole fleet — i.e. "every user-pubkey we know about, by origin". Used by
+  # controller to grant all those keys SSH access as its local admin user,
+  # so adding a new host to lib automatically grants login after rebuild.
+  allUserPeers = lib.concatLists (
+    lib.mapAttrsToList (
+      host: h: map (user: { inherit host user; }) (lib.attrNames (h.ssh.users or { }))
+    ) hosts
   );
 
   allSyncthingDevices = lib.filterAttrs (

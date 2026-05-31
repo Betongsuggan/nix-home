@@ -8,7 +8,7 @@ This is **the primary onboarding document** for the fleet. The bootstrapping doc
 
 `controller` exposes port 22 only on `tailscale0`. That creates a chicken-and-egg for new hosts: they cannot reach `controller` to clone `nix-vault` until they are on the tailnet, but the preauth key that gets them onto the tailnet lives in `nix-vault` (encrypted to the new host's age identity, which is itself derived from a key that does not exist yet).
 
-The module breaks the cycle by having controller publish a continuously rotated, single-use, short-TTL preauth key — age-encrypted to the operator's YubiKey — at a public HTTPS path. A new host's installer fetches the blob, decrypts it locally with the inserted YubiKey, and joins the tailnet on its own. Port 22 stays tailnet-only. No preexisting tailnet member is required to onboard a new one — only the YubiKey and `controller` being up.
+The module breaks the cycle by having controller publish a continuously rotated, single-use, ephemeral, short-TTL preauth key — age-encrypted to the operator's YubiKey — at a public HTTPS path. A new host fetches the blob, decrypts it locally with the inserted YubiKey, and joins the tailnet on its own as a temporary `installer-XXXXXXXX` node. Port 22 stays tailnet-only. No preexisting tailnet member is required to onboard a new one — only the YubiKey and `controller` being up.
 
 The trust model mirrors the sops material already checked into `nix-vault`: ciphertext is publicly readable; security comes from the YubiKey, not from access control.
 
@@ -18,8 +18,8 @@ Exactly one mode applies per host. Set `home-network.mode` explicitly — there 
 
 | Mode | What it wires up | When it applies |
 |------|------------------|-----------------|
-| `controller` | headscale + DERP + preauth-key rotator + tailscale client + SSH-on-`tailscale0` + reverse-proxy contributions | The single coordinator host (`controller`) |
-| `bootstrap` | Bootstrap tooling (`age`, `age-plugin-yubikey`, `tailscale`, `curl`, `git`, `ssh-to-age`, `sops`) + the `home-network-bootstrap` helper script + pcscd | A new host on its first install pass, before it has been registered in `nix-vault` |
+| `controller` | headscale + DERP + preauth-key rotator (mints `--ephemeral` keys) + tailscale client + SSH-on-`tailscale0` + reverse-proxy contributions | The single coordinator host (`controller`) |
+| `bootstrap` | The `home-network-bootstrap` helper + its runtime tooling (`age`, `age-plugin-yubikey`, `tailscale`, `curl`, `git`, `ssh-to-age`, `sops`) + pcscd + kernel-mode `tailscaled` (not yet joined) + `openssh.enable` so `/etc/ssh/ssh_host_ed25519_key` exists for the upcoming sops enrollment (firewall closed) | A new host on its first install pass, before it has been registered in `nix-vault` |
 | `onboarded` | tailscale client (sops-decrypted authkey) + SSH-on-`tailscale0` + `authorizeSshFor` peer keys | Steady state for every member after enrollment |
 
 ## Options
@@ -28,7 +28,7 @@ Exactly one mode applies per host. Set `home-network.mode` explicitly — there 
 |--------|------|---------|-------------|
 | `enable` | bool | false | Master switch |
 | `mode` | enum | (required) | `controller` \| `bootstrap` \| `onboarded` |
-| `authorizeSshFor` | attrs | `{ }` | Map `local-user → [{host, user}]`; pulls peer SSH keys from `lib.hosts` into `authorized_keys`. Honoured in `controller`/`onboarded` only. |
+| `authorizeSshFor` | attrs | `{ }` | Map `local-user → [{host, user}]`; pulls peer SSH keys from `lib.hosts` into `authorized_keys`. Honoured in `controller`/`onboarded` only. Pass `inputs.self.lib.allUserPeers` to authorize every user key in the fleet (used by controller). |
 | `bootstrap.blobUrl` | string | `https://rydback.net/.well-known/tailnet-bootstrap.age` | URL the helper fetches |
 | `bootstrap.loginServer` | string | `https://vpn.rydback.net` | Headscale URL passed to `tailscale up` |
 | `controller.yubikeyAgeRecipient` | string | `""` | Public age recipient for operator's YubiKey (required in `controller` mode) |
@@ -44,11 +44,13 @@ Exactly one mode applies per host. Set `home-network.mode` explicitly — there 
 
 ## Onboarding a new host
 
-These are the steps from "I just unboxed a new machine" to "the host is a steady-state tailnet member". Works for both **same-site** (new machine on the home LAN) and **remote** (new machine at a different physical site, operator physically present with the YubiKey) onboardings. The only inputs are the YubiKey and the new host's installer.
+The procedure assumes the new host has already been built once (in `mode = "bootstrap"`) and is running NixOS. The live-installer path is not supported — `nixos-install` first, then bootstrap.
 
-### Step 1 — Declare the host in `nix-home` (bootstrap mode)
+The whole flow is **seven steps**, and steps 3 and 4 are the only ones that need fresh state on the new host or controller. Everything else is local file edits.
 
-Add a `hosts/<new-host>/` skeleton and set:
+### 1. Build the host once
+
+In `nix-home`, declare the host with:
 
 ```nix
 home-network = {
@@ -57,82 +59,95 @@ home-network = {
 };
 ```
 
-Do not enable `sops-secrets` yet — the host has no age identity to decrypt against. Commit. (You can do this on any machine; you do not need to push.)
+Boot it. Insert the YubiKey.
 
-### Step 2 — Boot the standard NixOS installer
+### 2. Publish the host's SSH keys
 
-Boot the new host from a vanilla NixOS installer USB. Bring up networking (DHCP is fine). Insert the YubiKey.
+On the new host, grab `/etc/ssh/ssh_host_ed25519_key.pub` (the `openssh.enable` flipped on by bootstrap mode created it at activation). Add the host to `lib/default.nix`:
 
-### Step 3 — Get the installer onto the tailnet
-
-The `home-network-bootstrap` helper is what the installed system *will* have under `mode = "bootstrap"`, but the live installer doesn't have it yet. Run the equivalent steps directly:
-
-```bash
-nix-shell -p age age-plugin-yubikey tailscale curl util-linux
-
-# Discover YubiKey age identity (touch the YubiKey).
-age-plugin-yubikey --identity > /tmp/yk-identity.txt
-
-# Fetch and decrypt the rotated preauth blob (touch the YubiKey again on decrypt).
-curl -fsSL https://rydback.net/.well-known/tailnet-bootstrap.age -o /tmp/bs.age
-age -d -i /tmp/yk-identity.txt /tmp/bs.age > /tmp/authkey
-
-# Start tailscaled in userspace-networking mode (no /dev/net/tun on the installer).
-sudo tailscaled --tun=userspace-networking --socket=/tmp/tailscaled.sock --statedir=/tmp/ts-state &
-sleep 2
-
-# Join the tailnet.
-sudo tailscale --socket=/tmp/tailscaled.sock up \
-  --login-server https://vpn.rydback.net \
-  --authkey "$(cat /tmp/authkey)" \
-  --hostname "installer-$(uuidgen | tr -d - | head -c8)"
+```nix
+<host> = {
+  tailnetName = "<host>";      # MUST match the system hostname tailscaled will register as
+  addresses = [ "<host>" ];
+  ssh = {
+    host = "ssh-ed25519 AAAA… root@<host>";   # from /etc/ssh/ssh_host_ed25519_key.pub
+    users = {
+      betongsuggan = {
+        id_rsa = "ssh-rsa AAAA… betongsuggan@<host>";  # your personal user pubkey
+      };
+    };
+  };
+};
 ```
 
-Verify:
+Commit and push `nix-home`. (Controller hasn't been rebuilt yet, so these keys aren't trusted yet — that happens in step 4.)
+
+### 3. Run `home-network-bootstrap` on the new host
 
 ```bash
-sudo tailscale --socket=/tmp/tailscaled.sock status
-ssh -o StrictHostKeyChecking=accept-new betongsuggan@controller   # should succeed (YubiKey touch)
+home-network-bootstrap
 ```
 
-### Step 4 — Run the existing enrollment dance over the tailnet
+Idempotently:
+- joins the tailnet via the YubiKey-decrypted rotated blob (as a temporary `installer-XXXXXXXX` node),
+- materializes the FIDO resident SSH key with `ssh-keygen -K`,
+- `exec`s into an interactive SSH session on `controller` using that FIDO key.
 
-You are now a tailnet peer. From here, the enrollment is the existing `nix-vault` workflow:
+Re-running the command after an early exit is safe — it skips the already-done steps and re-opens the SSH session. The FIDO key is hard-coded to be authorized in controller's `users.users.betongsuggan.openssh.authorizedKeys.keys`, so this always works.
+
+### 4. On controller — rebuild, mint preauth key, prune
+
+Inside the SSH session opened by step 3:
 
 ```bash
-# Materialize the YubiKey FIDO resident key for SSH.
-ssh-keygen -K
-eval "$(ssh-agent)"
-ssh-add ~/.ssh/id_ed25519_sk_bootstrap
+cd ~/nix-home && git pull && sudo nixos-rebuild switch --flake .#controller
+sudo headscale preauthkeys create --user birger --reusable --expiration 8760h
+```
 
-# Clone repos. Both reachable via MagicDNS.
-git clone https://github.com/<you>/nix-home   # public, no auth
-git clone git@controller:nix-vault.git        # YubiKey-authed over tailnet
+The rebuild pulls in the lib changes from step 2 — controller now trusts the new host's user keys for SSH (via `authorizeSshFor.betongsuggan = lib.allUserPeers`) and for git access to `nix-vault.git` (via `git-server.authorizedKeys = lib.allSshKeys`). Copy the printed preauth key string. **One-time cleanup** of any zombie installer nodes left over from before the rotator was switched to ephemeral keys:
 
-# Generate the host's permanent SSH host key.
-sudo ssh-keygen -A
+```bash
+sudo headscale nodes list --output json \
+  | jq -r '.[] | select(.name | startswith("installer-")) | .id' \
+  | xargs -r -n1 sudo headscale nodes expire -i
+```
 
-# Register the host's age recipient in nix-vault.
+Exit the SSH session.
+
+### 5. Clone `nix-vault`
+
+Controller now trusts your user key, so:
+
+```bash
+cd ~ && git clone git@controller:nix-vault.git
+```
+
+### 6. Register the host in `nix-vault`
+
+```bash
+# Age recipient derived from the host SSH key (the same one in lib).
 cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age
-# Edit nix-vault/.sops.yaml to add the new recipient under creation_rules
-# for secrets/<new-host>.yaml. Then:
-cd nix-vault
-sops updatekeys secrets/<new-host>.yaml   # if file exists
-sops secrets/<new-host>.yaml              # create or edit; add `services/headscale-preauthkey`
-git commit -am "add <new-host>"
-git push
-
-# Install with the local nix-vault checkout, since the host's key isn't yet
-# authorized on controller's git-server.
-sudo nixos-install --flake /path/to/nix-home#<new-host> \
-                   --override-input nix-vault path:/path/to/nix-vault
 ```
 
-The preauth key inside `secrets/<new-host>.yaml` is generated once via `sudo headscale preauthkeys create -u <user> --reusable -e 8760h` on controller and pasted into the encrypted YAML. This is the *steady-state* preauth key, distinct from the rotated bootstrap blob.
+- Add the resulting `age1…` recipient under the appropriate `creation_rules` block in `~/nix-vault/.sops.yaml`.
+- Create `~/nix-vault/secrets/<host>.yaml` with the preauth key from step 4:
 
-### Step 5 — Flip the host to `onboarded` and rebuild
+  ```yaml
+  services:
+    headscale-preauthkey: <preauth-key-from-step-4>
+  ```
 
-Back in `nix-home`:
+  Use `sops secrets/<host>.yaml` to edit (encrypts with the recipients listed in `.sops.yaml`).
+
+- Commit and push:
+
+  ```bash
+  cd ~/nix-vault && git add .sops.yaml secrets/<host>.yaml && git commit -m "add <host>" && git push
+  ```
+
+### 7. Flip to `onboarded` and rebuild
+
+In `nix-home`, update the host's `system.nix`:
 
 ```nix
 home-network = {
@@ -142,51 +157,48 @@ home-network = {
 
 sops-secrets = {
   enable = true;
-  secretsFile = "${inputs.nix-vault}/secrets/<new-host>.yaml";
+  secretsFile = "${inputs.nix-vault}/secrets/<host>.yaml";
 };
 ```
 
-Commit, push, and on the new host:
+Commit, push, then on the new host:
 
 ```bash
-sudo nixos-rebuild switch --flake .#<new-host>
+sudo nixos-rebuild switch --flake .#<host>
 ```
 
-The new host now joins the tailnet under its own identity using the sops-decrypted preauth key. The installer's ephemeral `installer-XXXXXXXX` node expires after the bootstrap blob's 1h TTL, or force-expire it from controller:
-
-```bash
-sudo headscale nodes list
-sudo headscale nodes expire -i <node-id>
-```
+The host now joins the tailnet permanently under its real hostname using the sops-decrypted preauth key. The ephemeral `installer-XXXXXXXX` node from step 3 disappears from headscale within a few minutes of the old tailscaled session ending.
 
 ## Server-side rotator (controller mode)
 
-What `controller` mode wires up in addition to regular tailnet membership:
+What `controller` mode wires up beyond regular tailnet membership:
 
-- `systemd.services.home-network-rotate-preauth` (oneshot): runs `headscale preauthkeys create --user <headscaleUser> --expiration <keyTtl> --output json`, pipes the result through `jq -r .key`, then through `age -r <yubikeyAgeRecipient>`, and atomically renames the output to `/var/lib/home-network/preauth.age` (0644, root).
+- `systemd.services.home-network-rotate-preauth` (oneshot): runs `headscale preauthkeys create --user <headscaleUser> --ephemeral --expiration <keyTtl> --output json`, pipes the result through `jq -r .key`, then through `age -r <yubikeyAgeRecipient>`, and atomically renames the output to `/var/lib/home-network/preauth.age` (0644, root).
 - `systemd.timers.home-network-rotate-preauth`: triggers the rotator every `controller.bootstrap.rotateInterval` (default 15 min), plus 30s after boot.
 - Adds a `location` block to the existing nginx virtual host named by `controller.bootstrap.publicDomain` (default `rydback.net`) that serves the blob over HTTPS as `application/octet-stream` with `Cache-Control: no-store` and `GET`-only access.
+
+The `--ephemeral` flag is what makes the `installer-XXXXXXXX` nodes auto-clean: headscale removes ephemeral nodes a few minutes after they go offline, so when the new host rebuilds into `onboarded` mode (step 7) and tailscaled re-registers under its real hostname, the installer node disappears on its own.
 
 ### Threat model
 
 **Public ciphertext is the design.** The encrypted blob is meant to be fetchable by anyone on the internet. Security comes from the cryptographic key (the YubiKey), not from access control on the URL. This mirrors the sops trust model already used elsewhere in this fleet.
 
-- **Compromised YubiKey + captured blobs.** Anyone with the physical YubiKey and any previously captured blob can decrypt it — but the preauth key inside is single-use and expires after `keyTtl`. The window where a captured blob is useful equals the TTL. By the time a YubiKey is reported lost, every captured blob's plaintext is already expired or burned.
-- **Replay of a captured blob.** The preauth key inside is `--reusable=false`. Once consumed by a single `tailscale up`, headscale rejects further attempts.
+- **Compromised YubiKey + captured blobs.** Anyone with the physical YubiKey and any previously captured blob can decrypt it — but the preauth key inside is single-use, ephemeral, and expires after `keyTtl`. The window where a captured blob is useful equals the TTL.
+- **Replay of a captured blob.** The preauth key inside is `--reusable=false`. Once consumed by a single `tailscale up`, headscale rejects further attempts. And the resulting node is ephemeral, so even a successful unauthorized join gets evicted automatically once the attacker stops actively presenting it.
 - **DoS via blob GETs.** No per-IP rate limiting at this layer. Acceptable: the file is ~1 KB and serving a few thousand GETs/sec is well within nginx's defaults.
 - **Atomic rename.** The rotator writes to a sibling tempfile in the same directory and `mv -f`s into place. A concurrent `curl` either reads the old blob fully or the new one — never a partial.
 - The rotator does **not** revoke previously issued keys. Headscale auto-expires them at TTL.
 
 ## Failure modes
 
-- **Rotator dies, blob goes stale.** Every blob on disk eventually references an expired key. Onboarding is blocked until the rotator runs again. There is no remote recovery path by design — fix it from controller's physical console. `sudo systemctl status home-network-rotate-preauth.{timer,service}` to investigate; `sudo systemctl start home-network-rotate-preauth.service` writes a fresh blob immediately. Mitigations baked in: 15-min rotation interval keeps freshness loud; the 1h TTL is intentionally longer than the rotation interval so a brief outage does not lock onboarding out.
+- **Rotator dies, blob goes stale.** Every blob on disk eventually references an expired key. Onboarding is blocked until the rotator runs again. There is no remote recovery path by design — fix it from controller's physical console. `sudo systemctl status home-network-rotate-preauth.{timer,service}` to investigate; `sudo systemctl start home-network-rotate-preauth.service` writes a fresh blob immediately. Mitigations baked in: 15-min rotation interval keeps freshness loud; the 1h TTL is longer than the rotation interval so a brief outage does not lock onboarding out.
 - **YubiKey lost.** All rotated blobs become undecryptable. Stand up a replacement YubiKey, register its age public key in `nix-vault`, set `home-network.controller.yubikeyAgeRecipient` to the new value, and rebuild controller.
-- **`nixos-rebuild switch` to `onboarded` fails before completing.** The new host is stuck without tailnet membership. Recovery: re-run Step 3 from the installer (or from a rescue shell) to rejoin the tailnet temporarily, fix the underlying issue, retry the flip.
-- **Installer node clutters headscale.** Bounded by the 1h TTL. Run `sudo headscale nodes expire …` from any tailnet member to clean up sooner.
+- **SSH session in step 3 exits early.** Just re-run `home-network-bootstrap` — it's idempotent. Steps 1 and 2 of the script (join, materialize) short-circuit; step 3 re-opens the SSH session.
+- **`nixos-rebuild switch` to `onboarded` fails before completing.** The host is stuck without permanent tailnet membership. Recovery: re-run `home-network-bootstrap` to rejoin the tailnet as a new ephemeral installer node, fix the underlying issue, retry the flip.
 
 ## Notes
 
 - `controller` mode appends to `reverse-proxy.domains` and contributes `reverse-proxy.vhosts.headscale`. The host's own `reverse-proxy` block does not need to declare these.
-- `bootstrap` mode does **not** join the tailnet automatically. It only installs tools. The operator drives the join via the helper script.
-- The `home-network-bootstrap` helper is generated by `pkgs.writeShellApplication`, so it is available as a normal executable on hosts built in `bootstrap` mode. The live-installer flow shown above runs the same commands directly because the installer doesn't have the helper.
+- `bootstrap` mode does **not** join the tailnet automatically. It runs `tailscaled` in kernel mode (so MagicDNS and `tailscale0` are wired into the system resolver) but does not configure an auth key. The operator drives the join via `home-network-bootstrap`.
+- The FIDO resident SSH key stub (`~/.ssh/id_ed25519_sk_rk_nix-vault{,.pub}`) is left on disk after onboarding — it's harmless (the actual private material lives on the YubiKey, the file is a slot reference). Remove it manually if you want to, or just leave it.
 - Cross-references: `modules/tailscale-client/SPEC.md`, `modules/headscale/SPEC.md`, `modules/sops/SPEC.md`.

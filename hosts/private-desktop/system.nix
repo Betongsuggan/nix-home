@@ -168,6 +168,17 @@
     workspace = 10;
   };
 
+  home-network = {
+    enable = true;
+    mode = "bootstrap";
+    authorizeSshFor.betongsuggan = [
+      {
+        host = "controller";
+        user = "betongsuggan";
+      }
+    ];
+  };
+
   environment.systemPackages = with pkgs; [
     iio-sensor-proxy
     home-manager
@@ -239,37 +250,265 @@
       preset = "g13";
       mappings = [
         # Thumbstick -> WASD
-        { input = [{ type = 3; code = 1; analog_threshold = -40; }]; output = "KEY_W"; }  # Up
-        { input = [{ type = 3; code = 1; analog_threshold = 40; }]; output = "KEY_S"; }   # Down
-        { input = [{ type = 3; code = 0; analog_threshold = -40; }]; output = "KEY_A"; }  # Left
-        { input = [{ type = 3; code = 0; analog_threshold = 40; }]; output = "KEY_D"; }   # Right
+        {
+          input = [
+            {
+              type = 3;
+              code = 1;
+              analog_threshold = -40;
+            }
+          ];
+          output = "KEY_W";
+        } # Up
+        {
+          input = [
+            {
+              type = 3;
+              code = 1;
+              analog_threshold = 40;
+            }
+          ];
+          output = "KEY_S";
+        } # Down
+        {
+          input = [
+            {
+              type = 3;
+              code = 0;
+              analog_threshold = -40;
+            }
+          ];
+          output = "KEY_A";
+        } # Left
+        {
+          input = [
+            {
+              type = 3;
+              code = 0;
+              analog_threshold = 40;
+            }
+          ];
+          output = "KEY_D";
+        } # Right
         # G1-G10 -> 1-0
-        { input = [{ type = 1; code = 656; }]; output = "KEY_1"; }   # G1
-        { input = [{ type = 1; code = 657; }]; output = "KEY_2"; }   # G2
-        { input = [{ type = 1; code = 658; }]; output = "KEY_3"; }   # G3
-        { input = [{ type = 1; code = 659; }]; output = "KEY_4"; }   # G4
-        { input = [{ type = 1; code = 660; }]; output = "KEY_5"; }   # G5
-        { input = [{ type = 1; code = 661; }]; output = "KEY_6"; }   # G6
-        { input = [{ type = 1; code = 662; }]; output = "KEY_7"; }   # G7
-        { input = [{ type = 1; code = 663; }]; output = "KEY_TAB"; }   # G8
-        { input = [{ type = 1; code = 664; }]; output = "KEY_9"; }   # G9
-        { input = [{ type = 1; code = 665; }]; output = "KEY_0"; }   # G10
+        {
+          input = [
+            {
+              type = 1;
+              code = 656;
+            }
+          ];
+          output = "KEY_1";
+        } # G1
+        {
+          input = [
+            {
+              type = 1;
+              code = 657;
+            }
+          ];
+          output = "KEY_2";
+        } # G2
+        {
+          input = [
+            {
+              type = 1;
+              code = 658;
+            }
+          ];
+          output = "KEY_3";
+        } # G3
+        {
+          input = [
+            {
+              type = 1;
+              code = 659;
+            }
+          ];
+          output = "KEY_4";
+        } # G4
+        {
+          input = [
+            {
+              type = 1;
+              code = 660;
+            }
+          ];
+          output = "KEY_5";
+        } # G5
+        {
+          input = [
+            {
+              type = 1;
+              code = 661;
+            }
+          ];
+          output = "KEY_6";
+        } # G6
+        {
+          input = [
+            {
+              type = 1;
+              code = 662;
+            }
+          ];
+          output = "KEY_7";
+        } # G7
+        {
+          input = [
+            {
+              type = 1;
+              code = 663;
+            }
+          ];
+          output = "KEY_TAB";
+        } # G8
+        {
+          input = [
+            {
+              type = 1;
+              code = 664;
+            }
+          ];
+          output = "KEY_9";
+        } # G9
+        {
+          input = [
+            {
+              type = 1;
+              code = 665;
+            }
+          ];
+          output = "KEY_0";
+        } # G10
         # G11-G22 -> F1-F12
-        { input = [{ type = 1; code = 666; }]; output = "KEY_F1"; }    # G11
-        { input = [{ type = 1; code = 667; }]; output = "KEY_F2"; }    # G12
-        { input = [{ type = 1; code = 668; }]; output = "KEY_F3"; }    # G13
-        { input = [{ type = 1; code = 669; }]; output = "KEY_F4"; }    # G14
-        { input = [{ type = 1; code = 670; }]; output = "KEY_LEFTSHIFT"; }  # G15
-        { input = [{ type = 1; code = 671; }]; output = "KEY_F6"; }    # G16
-        { input = [{ type = 1; code = 672; }]; output = "KEY_F7"; }    # G17
-        { input = [{ type = 1; code = 673; }]; output = "KEY_F8"; }    # G18
-        { input = [{ type = 1; code = 674; }]; output = "KEY_F9"; }    # G19
-        { input = [{ type = 1; code = 675; }]; output = "KEY_F10"; }   # G20
-        { input = [{ type = 1; code = 676; }]; output = "KEY_F11"; }   # G21
-        { input = [{ type = 1; code = 677; }]; output = "KEY_F12"; }   # G22
+        {
+          input = [
+            {
+              type = 1;
+              code = 666;
+            }
+          ];
+          output = "KEY_F1";
+        } # G11
+        {
+          input = [
+            {
+              type = 1;
+              code = 667;
+            }
+          ];
+          output = "KEY_F2";
+        } # G12
+        {
+          input = [
+            {
+              type = 1;
+              code = 668;
+            }
+          ];
+          output = "KEY_F3";
+        } # G13
+        {
+          input = [
+            {
+              type = 1;
+              code = 669;
+            }
+          ];
+          output = "KEY_F4";
+        } # G14
+        {
+          input = [
+            {
+              type = 1;
+              code = 670;
+            }
+          ];
+          output = "KEY_LEFTSHIFT";
+        } # G15
+        {
+          input = [
+            {
+              type = 1;
+              code = 671;
+            }
+          ];
+          output = "KEY_F6";
+        } # G16
+        {
+          input = [
+            {
+              type = 1;
+              code = 672;
+            }
+          ];
+          output = "KEY_F7";
+        } # G17
+        {
+          input = [
+            {
+              type = 1;
+              code = 673;
+            }
+          ];
+          output = "KEY_F8";
+        } # G18
+        {
+          input = [
+            {
+              type = 1;
+              code = 674;
+            }
+          ];
+          output = "KEY_F9";
+        } # G19
+        {
+          input = [
+            {
+              type = 1;
+              code = 675;
+            }
+          ];
+          output = "KEY_F10";
+        } # G20
+        {
+          input = [
+            {
+              type = 1;
+              code = 676;
+            }
+          ];
+          output = "KEY_F11";
+        } # G21
+        {
+          input = [
+            {
+              type = 1;
+              code = 677;
+            }
+          ];
+          output = "KEY_F12";
+        } # G22
         # Thumbstick buttons -> modifiers
-        { input = [{ type = 1; code = 294; }]; output = "KEY_LEFTCTRL"; }   # Left button
-        { input = [{ type = 1; code = 295; }]; output = "KEY_ESC"; }        # Right button
+        {
+          input = [
+            {
+              type = 1;
+              code = 294;
+            }
+          ];
+          output = "KEY_LEFTCTRL";
+        } # Left button
+        {
+          input = [
+            {
+              type = 1;
+              code = 295;
+            }
+          ];
+          output = "KEY_ESC";
+        } # Right button
       ];
     };
   };

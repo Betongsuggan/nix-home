@@ -117,16 +117,11 @@
     enable = true;
     mode = "controller";
 
-    authorizeSshFor.betongsuggan = [
-      {
-        host = "bits";
-        user = "birgerrydback";
-      }
-      {
-        host = "island";
-        user = "betongsuggan";
-      }
-    ];
+    # Every user pubkey defined in `lib/default.nix` is authorized to SSH
+    # into controller as `betongsuggan`. New hosts get login access by simply
+    # being added to lib and re-running controller's `nixos-rebuild switch` —
+    # no per-onboarding edit of this file.
+    authorizeSshFor.betongsuggan = inputs.self.lib.allUserPeers;
 
     controller = {
       # Public age recipient string for the operator's master YubiKey. Same
