@@ -88,7 +88,7 @@ let
     fairphone = {
       type = "android";
       description = "Fairphone -- daily driver";
-      syncthing.id = "REPLACE-WITH-REAL-DEVICE-ID";
+      syncthing.id = "NR2V5JP-3M7XOZ7-KRDE5KF-FHI7AT7-P4NJBYH-VAEDY63-5QEDLN5-UA7SIQ4";
     };
   };
 in
@@ -105,13 +105,17 @@ in
   allSshKeys =
     let
       hostSshKeys = h: lib.collect lib.isString (h.ssh or { });
-      userSshKeys = h: lib.concatLists (
-        lib.mapAttrsToList
-          (_: u: lib.collect lib.isString (u.ssh or { }))
-          (h.users or { })
-      );
+      userSshKeys =
+        h:
+        lib.concatLists (
+          lib.mapAttrsToList (_: u: lib.collect lib.isString (u.ssh or { })) (
+            h.users or { }
+          )
+        );
     in
-    lib.concatLists (map (h: hostSshKeys h ++ userSshKeys h) (lib.attrValues hosts));
+    lib.concatLists (
+      map (h: hostSshKeys h ++ userSshKeys h) (lib.attrValues hosts)
+    );
 
   # Every { host, user } pair in `hosts` that has at least one SSH key under
   # `users.<user>.ssh`. Lets a host authorize "everyone in lib who's <user>"
@@ -129,7 +133,8 @@ in
   # after rebuild. Users that only have syncthing (no ssh) are skipped.
   allUserPeers = lib.concatLists (
     lib.mapAttrsToList (
-      host: h: map (user: { inherit host user; }) (
+      host: h:
+      map (user: { inherit host user; }) (
         lib.attrNames (lib.filterAttrs (_: u: u ? ssh) (h.users or { }))
       )
     ) hosts
@@ -149,16 +154,23 @@ in
   # `inputs.self.lib.allSyncthingDevices`.
   allSyncthingDevices =
     let
-      collectIds = items: lib.mapAttrs (_: x: { id = x.syncthing.id; }) (
-        lib.filterAttrs (_: x: x ? syncthing && x.syncthing ? id) items
+      collectIds =
+        items:
+        lib.mapAttrs (_: x: { id = x.syncthing.id; }) (
+          lib.filterAttrs (_: x: x ? syncthing && x.syncthing ? id) items
+        );
+      hostUserIds = lib.listToAttrs (
+        lib.concatMap (
+          hostName:
+          let
+            h = hosts.${hostName};
+          in
+          lib.mapAttrsToList (
+            userName: u:
+            lib.nameValuePair "${hostName}-${userName}" { id = u.syncthing.id; }
+          ) (lib.filterAttrs (_: u: u ? syncthing && u.syncthing ? id) (h.users or { }))
+        ) (lib.attrNames hosts)
       );
-      hostUserIds = lib.listToAttrs (lib.concatMap (
-        hostName:
-        let h = hosts.${hostName}; in
-        lib.mapAttrsToList (
-          userName: u: lib.nameValuePair "${hostName}-${userName}" { id = u.syncthing.id; }
-        ) (lib.filterAttrs (_: u: u ? syncthing && u.syncthing ? id) (h.users or { }))
-      ) (lib.attrNames hosts));
     in
     collectIds devices // collectIds hosts // hostUserIds;
 }
