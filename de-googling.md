@@ -34,6 +34,7 @@ These three forks determine everything downstream. Decide them before building.
 **Blockers:** none.
 
 - [ ] **Stand up backups first** (see Backup workstream). Don't host anything critical on a box with no restore path — you've already lost disks once.
+  - [ ] **Write the disaster-recovery runbook alongside backup setup.** "Backups exist" ≠ "I can recover" — the runbook *is* the restore path. Detailed scope in the Backup workstream. Write it now, exercise it once, *then* treat Phase 0 as done.
 - [x] **Deploy a password manager: Vaultwarden** (Bitwarden‑compatible, `services.vaultwarden` on NixOS, behind Headscale).
   - [x] Bitwarden clients cache an encrypted local copy and work offline, so tailnet‑only is fine day‑to‑day — you only need the server to *sync*. This removes the usual "what if home is down" worry.
   - [ ] Keep an **encrypted emergency export** somewhere offline (e.g. on a USB key in a drawer) as break‑glass recovery.
@@ -138,16 +139,26 @@ Your current state: ASUS NUC 14 Essential, 1 TB NVMe (main host); two gaming PCs
 
 Target: **3‑2‑1** — 3 copies, 2 media types, 1 off‑site.
 
-- [ ] **Engine:** restic or Borg (`services.restic` on NixOS), encrypted, deduplicated, scheduled. Restic plays nicely with multiple destinations.
-- [ ] **Copy 1 (primary):** the NUC's working data.
+- [x] **Engine:** restic or Borg (`services.restic` on NixOS), encrypted, deduplicated, scheduled. Restic plays nicely with multiple destinations. — **restic chosen**; declarative module at `modules/restic-backup/`, daily systemd timer, `keep-daily 7 / keep-weekly 4 / keep-monthly 12` retention.
+- [x] **Copy 1 (primary):** the NUC's working data. — Live on controller; paths captured: `/var/lib/{vaultwarden,headscale,emulation}`, `/var/lib/git/nix-vault.git`.
 - [ ] **Copy 2 (local, redundant media):** a dedicated box at home with **redundancy** — a small 2‑bay NAS with mirrored disks, or DIY with **ZFS mirror**. Remember: RAID/ZFS is *not* a backup, it's availability; you still need the off‑site copy. (Your last failure is exactly why mirroring matters.)
+  - **Interim partial:** snapshots are landing on `private-desktop` (verified 2026-05-31). It's an on-site second copy, but on a single non-NAS disk — the redundant-media requirement isn't met and this bullet stays unticked until dedicated hardware lands.
 - [ ] **Copy 3 (off‑site):** restic/Borg repo on the **summer‑house PC** over Headscale. Truly owned, no third party.
+  - **Blocker:** `island-stationary` is not yet onboarded to the tailnet (no `home-network` enabled, sops not configured). The receiver module is wired and ready — flip `island.mode = "onboarded"` + add sops, and the first push will land there.
 - [ ] **Optional cloud off‑site (encrypted):** Hetzner Storage Box or Backblaze B2 if you want a second off‑site without relying on the summer house being powered/online. Client‑side encrypted, so the provider sees ciphertext only.
 - [ ] **Dedicated hardware suggestions (resilience):**
   - Small low‑power NAS (2‑bay, mirrored) as the always‑on local redundant target.
   - Or DIY mini‑PC/NAS running NixOS + ZFS mirror — fits your stack, declarative, scrub on schedule.
   - Use **CMR (not SMR)** NAS‑rated drives; buy two from different batches to avoid simultaneous failure.
-- [ ] **Test restores quarterly.** An untested backup is a hope, not a backup.
+- [ ] **Disaster recovery runbook for controller** (e.g. `docs/disaster-recovery.md`). What to actually do if controller's disk dies, the box is stolen, or the building burns. Must cover, end-to-end:
+  - NixOS install on replacement hardware (which flake host config to reuse, what to rename if hardware differs).
+  - **sops bootstrap on the replacement.** Operator's YubiKey decrypts a fresh `nix-vault` clone (every onboarded host has a working copy — clone from desktop, not from a dead controller). This step yields the restic repo password without it needing to live anywhere else.
+  - **Restic restore** of `/var/lib/{vaultwarden,headscale,emulation}` and `/var/lib/git/nix-vault.git` from whichever target is reachable (desktop on-site, island off-site). Spell out the exact `restic` invocation since the source-side `restic-<target>` wrappers don't exist on a fresh box.
+  - **Headscale recovery.** `/var/lib/headscale` is in the backup set, so most state restores cleanly; document the gotchas (DERP server identity, any ephemeral keys, fleet re-registration if state restore fails).
+  - **Vaultwarden recovery.** `ADMIN_TOKEN` comes back via the restored sops env file; data is just the restored `/var/lib/vaultwarden` dir. Clients keep working from local cache during the outage.
+  - **TLS certs.** Don't restore — let nginx re-acquire via HTTP-01 on first start once DNS resolves to the new box.
+  - **The real disaster scenario:** what to do if the YubiKey *and* controller are lost simultaneously. Be honest about whether a backstop exists (e.g. a second YubiKey in a fireproof safe, or printed BIP39 of the operator's age identity) or whether that loss is acceptable.
+- [ ] **Test restores quarterly.** An untested backup is hope, not a backup — and an untested runbook is fiction. The runbook above is what you exercise; a step that fails on the dry run is a real problem to fix before you need it for real.
 
 ---
 
@@ -158,6 +169,13 @@ Target: **3‑2‑1** — 3 copies, 2 media types, 1 off‑site.
 - Re‑evaluate the email backend after a month: if VPS Stalwart is more babysitting than it's worth, switch DNS to Proton — your `@rydback.net` address doesn't change.
 
 ## Progress log
+
+### 2026-05-31 (later) — first restic snapshot landed on desktop
+
+- Verified end-to-end: controller's daily restic timer is active, first push to `desktop.ts.rydback.net` ran cleanly, `sudo restic-desktop snapshots` from controller shows a snapshot containing all four expected paths. The receiver side (chrooted SFTP user `restic-controller`, repo at `/var/lib/restic-repos/controller/repo`) is functioning as designed — desktop sees only encrypted pack files, which is the point.
+- Backup workstream: **Engine** and **Copy 1** ticked. **Copy 2** stays unticked (single-disk desktop ≠ redundant media). **Copy 3** stays unticked (island not yet on the tailnet).
+- Phase 0's "Stand up backups first" overall remains unticked: Copy 3 missing, DR runbook missing, no quarterly restore drill yet. The point is to not host critical data on controller until those are *also* true — not just until "a backup ran once".
+- Next: write the disaster-recovery runbook (new Backup-workstream bullet, prioritised in Phase 0), then onboard `island-stationary` to home-network so Copy 3 lights up.
 
 ### 2026-05-31 — Vaultwarden live; pivoting to backup workstream
 

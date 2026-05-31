@@ -92,15 +92,24 @@ The repo password never needs to live outside sops because nix-vault is itself t
 ## Restore recipe
 
 ```bash
-# As root, on a host with this module enabled (or any restic-capable system):
-restic \
-  -r sftp:restic-controller@desktop.ts.rydback.net:/var/lib/restic-repos/controller \
-  --password-file /run/secrets/restic-repo-password \
-  -o sftp.args='-i /run/secrets/restic-ssh-key -o StrictHostKeyChecking=accept-new' \
-  snapshots
+# On the source host (controller). services.restic.backups.<target> generates
+# a wrapper named `restic-<target>` that pre-injects --repo, --password-file
+# and sftp.args from this module's config — no need to repeat them.
+restic-desktop snapshots
+restic-island  snapshots
 
 # Restore the most recent snapshot of /var/lib/vaultwarden into a sandbox:
-restic ... restore latest --target /tmp/restore --path /var/lib/vaultwarden
+restic-desktop restore latest --target /tmp/restore --path /var/lib/vaultwarden
+```
+
+Off-host / disaster recovery (a clean machine without this module) needs raw restic with the flags spelled out:
+
+```bash
+restic \
+  -r sftp:restic-controller@desktop.ts.rydback.net:/repo \
+  --password-file /path/to/decrypted-restic-repo-password \
+  -o sftp.args='-i /path/to/decrypted-restic-ssh-key -o StrictHostKeyChecking=accept-new' \
+  snapshots
 ```
 
 ## Notes
