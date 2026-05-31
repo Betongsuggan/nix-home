@@ -1,30 +1,5 @@
 { lib }:
 
-# Per-host and per-device metadata. Source of truth for cross-host references.
-#
-# hosts — NixOS machines:
-#   hosts.<host>.tailnetName                       -- short name registered on the headscale tailnet
-#                                                      (matches networkmanager.hostName on that host)
-#   hosts.<host>.addresses                         -- LAN/WAN/aliased addresses (optional)
-#   hosts.<host>.ssh.host                          -- /etc/ssh/ssh_host_ed25519_key.pub
-#   hosts.<host>.syncthing.id                      -- (optional) host-level Syncthing instance ID
-#                                                      (e.g. a system service running as one user)
-#   hosts.<host>.users.<user>.ssh.<keyname>        -- per-user SSH pubkeys
-#   hosts.<host>.users.<user>.syncthing.id         -- (optional) per-user Syncthing instance ID
-#                                                      (e.g. a home-manager daemon for that user)
-#
-# devices — non-NixOS devices (phones, handhelds):
-#   devices.<device>.type          -- "android", etc. (informational)
-#   devices.<device>.description   -- human-readable label
-#   devices.<device>.syncthing.id  -- Syncthing device ID (public key hash)
-#   devices.<device>.tailnetName   -- (optional) headscale tailnet short name
-#
-# Per-user identity bits (SSH pubkeys, Syncthing IDs, anything future) live
-# under `hosts.<h>.users.<u>.<protocol>.*` so that "everything we know about
-# this user's presence on this host" is in one place — symmetric with how
-# host-level identity sits at `hosts.<h>.<protocol>.*`. The `allSshKeys` and
-# `allSyncthingDevices` collectors flatten both levels into a single map.
-
 let
   baseDomain = "ts.rydback.net";
 
@@ -34,6 +9,7 @@ let
       addresses = [ "bits" ];
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILcnHOXC9oIhImCClI4g+TpRtEUTf3l2V7U3JQOtId/i root@bits-nixos";
       users.birgerrydback = {
+        syncthing.id = "O6CQT6T-QUDEZ3C-LPG6NY5-E6VLNWN-SBAQISQ-GPE4HXK-PHJQL33-RMOQZQ6";
         ssh = {
           bits = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC67mvs+2WPmMHch87LUxKBhJkc71RK5ErZYmB536OeMoiu1zi+p+XkoVrynW8BwZeGP5plbc0opgh10NqAWXGNaKWQOddDJ2e1DwkX1McbexkRqs3Q7ycUbR1VDbiXn9o9Qd8ve/YbT6gG+9eAL92BBPRPkFpeXd9J5Rf6DxJxrMFtx9g6rXK0ehF+Rte+xOwWuT7dcazZwEZ563LJuNvAVoodd8kzPnikTNNw6z9iUfULC+WN5TjuxTsME+HrAuClqvWtSLkzhF1lmzgZbHEyPwL16nhZ/dkPAUbxON0YvFLjF5VTDfzrpk8hjAIWX0CiIw4gwo9M5LJInQlabmM+yecs8dDjjzEGuJAH9l5znoz026nPdxPgS0jp6QNtY4e5Mr8d64B72vDHotBRsyMDnQpIb36KIE52LroHnt7tjgRUo/YDoDmpUB8KuVLSibAoBfGW3CqP5Vv35VXnb/275xirAkjyzWTpUxc6pGkltZ+zv5vFFXno2L0HNTDxy08= birgerrydback@bits-nixos";
           id_rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCrFmjA+/q8wFK4Y/LqAH3y5Zl5uEr8jpgZqV5nTwhkc9qPVQPyTAHyFRdgmhe5IFPu2phuDoAJiHBAGiWfMJrDtDF5/g7Fa7Y6bvx69OmB8Hs+GpCiPXvjl+T8QoHmLuUzW2chIsefRqQc5K3B0YrBqlbA/uB2fkqFHqi8Fnj9Lg809IpaqwngXSWGHZczPF3JMGIIa2sjkHCVk3jvECtURdcj+omFeh9Skm/zqTIYyM160YmFwkpxS8cDfgu2A1WMrVzFmP0jRZ6eidWGduDmsVl6er7Rrx0sI0HrzAV6xOIphRQkeNwkHsrVsPSyYRdByTyjmiRWS7n1KRf4tl5xiJaidqwoQjGBbYW4Nxek9CUhE+UyQv6Za6yS0Tlw4vnanPcyEtusMPfjxEIBZN8Xg6FuXJpkfD4Tbb8ioQ/JLVnbrkYf6pcs//ZbCDR7wD6NX70I6DVMAsSd2IqaLDnkCSqPNpcSxFbzqQxgfE8ZbwgFYU3lLoIdMzpu5kp1sP0= birgerrydback@nixos";
@@ -54,9 +30,6 @@ let
           syncthing.id = "4AUKVSW-5SDSOZS-WLDB5LE-YJAVG3C-YMABN52-HEQTHJP-PCBEVCC-EEWM6AH";
           ssh.ssh_ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAR/t68PUZdYs0cECO0yPuywEBvFJQAGVMp4t6IkZIRz rydback@gmail.com";
         };
-        # Service user: controller's restic push key. Public half; private half
-        # lives in nix-vault/secrets/controller.yaml encrypted to controller's
-        # host age recipient.
         restic = {
           ssh.id_ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEpk7NPFSW1LjC9gB89bQuS3QwpoKYotzb3RJGd3cvgE restic@controller";
         };
@@ -105,8 +78,6 @@ in
     fqdn = host: "${hosts.${host}.tailnetName}.${baseDomain}";
   };
 
-  # Every SSH pubkey string across the fleet: host keys (hosts.<h>.ssh.host)
-  # plus every per-user key under hosts.<h>.users.<u>.ssh.*.
   allSshKeys =
     let
       hostSshKeys = h: lib.collect lib.isString (h.ssh or { });
@@ -122,20 +93,12 @@ in
       map (h: hostSshKeys h ++ userSshKeys h) (lib.attrValues hosts)
     );
 
-  # Every { host, user } pair in `hosts` that has at least one SSH key under
-  # `users.<user>.ssh`. Lets a host authorize "everyone in lib who's <user>"
-  # without enumerating peers by hand.
   allPeersFor =
     user:
     lib.mapAttrsToList (host: _: { inherit host user; }) (
       lib.filterAttrs (_: h: (h.users.${user}.ssh or null) != null) hosts
     );
 
-  # Every { host, user } combination under `hosts.<h>.users.*` that has an
-  # `ssh` field — i.e. "every user we know about who has SSH keys, by
-  # origin". Used by controller to grant all those keys SSH access as its
-  # local admin user, so adding a new host to lib automatically grants login
-  # after rebuild. Users that only have syncthing (no ssh) are skipped.
   allUserPeers = lib.concatLists (
     lib.mapAttrsToList (
       host: h:
@@ -145,22 +108,6 @@ in
     ) hosts
   );
 
-  # Flatten every Syncthing instance we know about into a single
-  # `{ <name> = { id = "..."; tailnetFqdn = "..." or null; }; ... }` map ready
-  # to feed into NixOS's `services.syncthing.settings.devices`. Names become
-  # the human-readable device labels in the Syncthing UI, so the keying
-  # scheme matters:
-  #
-  #   devices.<d>.syncthing.id                 → "<d>"        (e.g. "ayn-thor")
-  #   hosts.<h>.syncthing.id                   → "<h>"        (e.g. "controller")
-  #   hosts.<h>.users.<u>.syncthing.id         → "<h>-<u>"    (e.g. "desktop-betongsuggan")
-  #
-  # `tailnetFqdn` is the host's tailnet FQDN (e.g. `desktop.ts.rydback.net`)
-  # when the peer is reachable over the tailnet, or `null` for entries
-  # without a known `tailnetName` (typically Android devices not yet
-  # enrolled). The `emulation-server` tailnet-only mode uses this to pin
-  # peer addresses; peers with `tailnetFqdn = null` fall back to `dynamic`
-  # discovery (and won't be reachable when tailnet-only is on).
   allSyncthingDevices =
     let
       collectIds =

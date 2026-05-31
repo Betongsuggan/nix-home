@@ -124,6 +124,11 @@
     enable = true;
   };
 
+  emulation-client = {
+    enable = true;
+    server.address = inputs.self.lib.tailnet.fqdn "controller";
+  };
+
   programs.ssh = {
     enable = true;
     matchBlocks = {
