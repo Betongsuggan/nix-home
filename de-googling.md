@@ -59,11 +59,11 @@ These three forks determine everything downstream. Decide them before building.
 
 Pros: services never exposed publicly, tiny attack surface, MagicDNS gives you nice hostnames. Watch these:
 
-- [ ] **Android client works, but mind the details.** Use the official Tailscale app from **F‑Droid** (no Play Store needed on /e/OS); in settings set your custom server URL (`https://headscale.rydback.net`). The login‑to‑custom‑server UX has been rough historically and was improved in recent releases — if a login window misbehaves, close it and use the main‑screen Log in, per Headscale's Android docs.
+- [x] **Android client works, but mind the details.** Use the official Tailscale app from **F‑Droid** (no Play Store needed on /e/OS); in settings set your custom server URL (`https://headscale.rydback.net`). The login‑to‑custom‑server UX has been rough historically and was improved in recent releases — if a login window misbehaves, close it and use the main‑screen Log in, per Headscale's Android docs.
 - [ ] **VPN‑slot conflict (important).** Android allows only **one** active VPN. Tailscale uses it; /e/OS **Advanced Privacy "hide my IP"** also uses it. You can't run both at once. Decide: keep Tailscale always‑on for service access and leave Advanced Privacy's IP‑hiding off (tracker blocking via other means), or toggle. Test this early on the phone — it's the most likely day‑to‑day annoyance.
-- [ ] **Battery / always‑on.** WireGuard is efficient; always‑on Tailscale is fine, but set it deliberately.
+- [x] **Battery / always‑on.** WireGuard is efficient; always‑on Tailscale is fine, but set it deliberately. — Tailscale runs always-on on both ayn-thor and fairphone; deliberate choice made (the tailnet-only emulation stack assumes it).
 - [ ] **Single point of coordination.** If the box running Headscale is down, *new* connections can't be coordinated (existing peer links may persist). Consider running **Headscale itself on the cheap mail VPS** — it's tiny (~60 MB RAM), gets you a reliable public control plane and clean reachability, and keeps coordination up when home is offline.
-- [ ] **MagicDNS** so you reach services by name on all platforms; enable subnet routes for any LAN‑only boxes you want reachable.
+- [x] **MagicDNS** so you reach services by name on all platforms; enable subnet routes for any LAN‑only boxes you want reachable. — `<host>.ts.rydback.net` resolves from every Linux host and both Android phones; the tailnet-only emulation stack uses it exclusively (no LAN IP fallbacks).
 - [ ] **Sharing with your wife (and future shared things).** A tailnet‑only service means she must be enrolled on the tailnet to reach it — friction for a non‑technical partner. For the shared calendar specifically, either enroll her device in the tailnet, or expose *just* that one service via an authenticated public endpoint on the VPS. Flagged again in the calendar step.
 
 ---
@@ -169,6 +169,17 @@ Target: **3‑2‑1** — 3 copies, 2 media types, 1 off‑site.
 - Re‑evaluate the email backend after a month: if VPS Stalwart is more babysitting than it's worth, switch DNS to Proton — your `@rydback.net` address doesn't change.
 
 ## Progress log
+
+### 2026-05-31 (even later) — tailnet-only emulation stack + Android proven end-to-end
+
+- Migrated 36 GB of emulation data (ROMs/BIOS/saves) from `home-desktop` to controller's `/var/lib/emulation`. Controller is now the canonical source.
+- Made the emulation stack fully tailnet-only:
+  - Samba shares (`emulation-roms`, `emulation-bios`) are guest-readable, writable, delete-protected via `vfs_recycle`, exposed only on `tailscale0` + `hosts allow = 100.64.0.0/10`.
+  - Syncthing has `globalAnnounceEnabled`, `relaysEnabled`, `natEnabled`, `localAnnounceEnabled` all off; peer addresses pinned to `<peer>.ts.rydback.net:22000`. Zero public-internet chatter.
+- Declarative client wiring: betongsuggan@desktop's Syncthing comes up paired with controller and the `emulation-saves` folder pre-configured on rebuild (no web-UI clicking). System-level `emulation-mounts` module gives `x-systemd.automount` for `~/emulation/{roms,bios}` — Samba shares lazy-mount on access.
+- Lib schema refactored: per-user identity bits (SSH + Syncthing) now live under `hosts.<h>.users.<u>.{ssh,syncthing}.*`. Source of truth for cross-host references is consistent and extensible.
+- Android Syncthing proven end-to-end: both ayn-thor and fairphone connect to controller over the tailnet via MagicDNS, exchange the `emulation-saves` folder, bidirectional sync confirmed by adding files on each side.
+- This is what unlocked the three Headscale-analysis ticks above (Android client, battery/always-on, MagicDNS) — they weren't checkboxes I was aiming for, but the whole tailnet-first architecture now stands on them, so they're proven.
 
 ### 2026-05-31 (later) — first restic snapshot landed on desktop
 
