@@ -47,19 +47,30 @@ The local Syncthing web UI at `http://localhost:8384` is still useful for observ
 
 ### Mounting ROM and BIOS shares
 
-Use the included helper script:
+There are two ways: declarative automount (recommended) or the manual helper script.
 
-```bash
-# Uses the configured server address
-mount-emulation-roms
+**Automount via the `emulation-mounts` system module** (see `modules/emulation-client/system.nix`). Enable it in the host's `system.nix` listing each user that should get the shares under their home:
 
-# Override server address (e.g. tailnet hostname)
-mount-emulation-roms controller
+```nix
+emulation-mounts = {
+  enable = true;
+  server = inputs.self.lib.tailnet.fqdn "controller";
+  users = [ "betongsuggan" "gamer" ];
+};
 ```
 
-This mounts the Samba shares at `~/emulation/roms` and `~/emulation/bios`. The mount uses anonymous (guest) auth — no password prompt. The shares are **writable** (you can drop new ROMs / BIOS files in via the mount) but with server-side delete protection: any deletes through the mount are transparently moved to a hidden `.recycle/` directory on the server rather than actually unlinked. See `modules/emulation-server/SPEC.md` for the operator-side recycle hygiene.
+This generates `x-systemd.automount` mounts at `/home/<user>/emulation/{roms,bios}`. They don't actually mount until the path is first accessed, so there's no boot delay and no failure if controller is offline (the dir is just empty). After 60s of inactivity the mount is dropped automatically.
 
-To unmount:
+**Manual helper script** (still installed by the user-side module — useful for ad-hoc mounts to alternate locations or debugging):
+
+```bash
+mount-emulation-roms                # default: configured server.address
+mount-emulation-roms controller     # override server
+```
+
+Either way, the mount uses anonymous (guest) auth — no password prompt. Shares are **writable** (you can drop new ROMs / BIOS files in) but with server-side delete protection: any deletes through the mount are transparently moved to a hidden `.recycle/` directory on the server rather than actually unlinked. See `modules/emulation-server/SPEC.md` for the operator-side recycle hygiene.
+
+To unmount a manually-mounted share:
 
 ```bash
 sudo umount ~/emulation/roms ~/emulation/bios

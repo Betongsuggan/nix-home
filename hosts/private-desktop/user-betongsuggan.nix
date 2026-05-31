@@ -15,7 +15,7 @@
 
   emulation-client = {
     enable = true;
-    server.address = "192.168.50.5";
+    server.address = inputs.self.lib.tailnet.fqdn "controller";
   };
 
   development = {

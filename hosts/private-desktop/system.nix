@@ -193,6 +193,15 @@
     ];
   };
 
+  # Auto-mount controller's ROM/BIOS shares for each user that uses the
+  # emulation client. Lazy mounts via x-systemd.automount, so unreachable
+  # controller is harmless (just an empty dir until access).
+  emulation-mounts = {
+    enable = true;
+    server = inputs.self.lib.tailnet.fqdn "controller";
+    users = [ "betongsuggan" ];
+  };
+
   # Receive restic snapshots from controller as the on-site copy in the interim
   # 3-2-1-ish topology. Pubkey sourced from lib (never as a literal); the
   # `restic-controller` system user is chrooted to /var/lib/restic-repos/controller

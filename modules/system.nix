@@ -7,6 +7,7 @@
     ./colemak
     ./disk-encryption
     ./docker
+    ./emulation-client/system.nix
     ./emulation-server/system.nix
     ./file-sharing
     ./fingerprint
