@@ -24,6 +24,8 @@
     ./printers
     ./networking
     ./openssh
+    ./restic-backup
+    ./restic-target
     ./reverse-proxy
     ./secure-boot
     ./sops/system.nix

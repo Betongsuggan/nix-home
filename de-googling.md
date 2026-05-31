@@ -34,8 +34,8 @@ These three forks determine everything downstream. Decide them before building.
 **Blockers:** none.
 
 - [ ] **Stand up backups first** (see Backup workstream). Don't host anything critical on a box with no restore path — you've already lost disks once.
-- [ ] **Deploy a password manager: Vaultwarden** (Bitwarden‑compatible, `services.vaultwarden` on NixOS, behind Headscale).
-  - [ ] Bitwarden clients cache an encrypted local copy and work offline, so tailnet‑only is fine day‑to‑day — you only need the server to *sync*. This removes the usual "what if home is down" worry.
+- [x] **Deploy a password manager: Vaultwarden** (Bitwarden‑compatible, `services.vaultwarden` on NixOS, behind Headscale).
+  - [x] Bitwarden clients cache an encrypted local copy and work offline, so tailnet‑only is fine day‑to‑day — you only need the server to *sync*. This removes the usual "what if home is down" worry.
   - [ ] Keep an **encrypted emergency export** somewhere offline (e.g. on a USB key in a drawer) as break‑glass recovery.
   - [ ] Install clients on all devices; on /e/OS get the Bitwarden app from F‑Droid/Aurora.
 - [ ] **Inventory every account** and flag which use "Sign in with Google."
@@ -158,6 +158,13 @@ Target: **3‑2‑1** — 3 copies, 2 media types, 1 off‑site.
 - Re‑evaluate the email backend after a month: if VPS Stalwart is more babysitting than it's worth, switch DNS to Proton — your `@rydback.net` address doesn't change.
 
 ## Progress log
+
+### 2026-05-31 — Vaultwarden live; pivoting to backup workstream
+
+- Vaultwarden deployed declaratively on `controller` (`modules/vaultwarden/`). Tailnet-only at the nginx vhost layer (allow `100.64.0.0/10` + `fd7a:115c:a1e0::/48`, deny all), sops-encrypted `ADMIN_TOKEN`, data at `/var/lib/vaultwarden`. Phase 0 password-manager checklist closed at the infra level.
+- Two sub-bullets remain *intentionally* unticked as operator habits, not infra work: encrypted emergency export to USB (manual weekly cadence — see `modules/vaultwarden/SPEC.md`), and "clients on all devices" (per-device install, out of repo scope).
+- Pivoting next to the **backup workstream**, since the de-Google plan blocks Nextcloud/Immich/etc. on having a working restore path. Interim topology, picked deliberately to avoid stalling on hardware procurement: `restic` pushing from `controller` → `private-desktop` (on-site copy) and `island-stationary` (off-site, summer house) over SFTP-on-tailnet. Receiving side is a chrooted SFTP user per source. Initial path set: `/var/lib/vaultwarden`, `/var/lib/headscale`, `/var/lib/git/nix-vault.git`, `/var/lib/emulation`.
+- This does not yet satisfy the 3-2-1 "redundant media" requirement (no mirror at either end). Deferred until dedicated NAS hardware lands; tracked in the Backup workstream section.
 
 ### 2026-05-30 — mail trial scaffolded, paused awaiting passport verification
 

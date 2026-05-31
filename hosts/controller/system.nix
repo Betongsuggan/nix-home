@@ -111,6 +111,18 @@
       owner = "vaultwarden";
       mode = "0400";
     };
+
+    "restic-repo-password" = {
+      key = "services/restic-repo-password";
+      owner = "root";
+      mode = "0400";
+    };
+
+    "restic-ssh-key" = {
+      key = "services/restic-ssh-key";
+      owner = "root";
+      mode = "0400";
+    };
   };
 
   home-network = {
@@ -255,6 +267,36 @@
     # ADMIN_TOKEN) to invite the first user — the invitation link will land in
     # `journalctl -u vaultwarden` since SMTP isn't configured yet.
     signupsAllowed = false;
+  };
+
+  # Interim backup topology until dedicated NAS hardware lands: push restic
+  # snapshots over SFTP-on-tailnet to private-desktop (on-site copy) and
+  # island-stationary (off-site, summer house). Each target is an independent
+  # repo. See modules/restic-backup/SPEC.md for the secrets model and DR plan.
+  restic-backup = {
+    enable = true;
+    paths = [
+      "/var/lib/vaultwarden"
+      "/var/lib/headscale"
+      "/var/lib/git/nix-vault.git"
+      "/var/lib/emulation"
+    ];
+    excludes = [
+      "**/.cache/**"
+      "**/.thumbnails/**"
+    ];
+    passwordFile = config.sops.secrets."restic-repo-password".path;
+    sshKeyFile = config.sops.secrets."restic-ssh-key".path;
+    targets = {
+      desktop = {
+        sftpHost = "desktop.ts.rydback.net";
+        sftpUser = "restic-controller";
+      };
+      island = {
+        sftpHost = "island.ts.rydback.net";
+        sftpUser = "restic-controller";
+      };
+    };
   };
 
   systemd.targets = {

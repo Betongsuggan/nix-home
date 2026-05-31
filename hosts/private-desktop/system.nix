@@ -193,6 +193,17 @@
     ];
   };
 
+  # Receive restic snapshots from controller as the on-site copy in the interim
+  # 3-2-1-ish topology. Pubkey sourced from lib (never as a literal); the
+  # `restic-controller` system user is chrooted to /var/lib/restic-repos/controller
+  # via internal-sftp. See modules/restic-target/SPEC.md.
+  restic-target = {
+    enable = true;
+    sources.controller = {
+      sshKey = inputs.self.lib.hosts.controller.ssh.users.restic.id_ed25519;
+    };
+  };
+
   environment.systemPackages = with pkgs; [
     iio-sensor-proxy
     home-manager

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   users.users.gamer = {
@@ -180,6 +180,17 @@
       pkgs.xdg-desktop-portal-gtk
     ];
     config.common.default = "*";
+  };
+
+  # Receive restic snapshots from controller as the off-site copy. Prerequisite:
+  # island must be onboarded to the tailnet (`home-network.mode = "onboarded"`)
+  # before controller can actually reach `island.ts.rydback.net`. The pubkey is
+  # pulled from lib so onboarding can happen independently — no edits here.
+  restic-target = {
+    enable = true;
+    sources.controller = {
+      sshKey = inputs.self.lib.hosts.controller.ssh.users.restic.id_ed25519;
+    };
   };
 
   wayland-security.enable = true;

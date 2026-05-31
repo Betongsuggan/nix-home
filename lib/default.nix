@@ -47,6 +47,13 @@ let
           betongsuggan = {
             ssh_ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAR/t68PUZdYs0cECO0yPuywEBvFJQAGVMp4t6IkZIRz rydback@gmail.com";
           };
+          # Service user: controller's restic push key. Public half; private half
+          # lives in nix-vault/secrets/controller.yaml encrypted to controller's
+          # host age recipient. Replace the PLACEHOLDER below with the value of
+          # /var/lib/restic/id_ed25519.pub after running ssh-keygen on controller.
+          restic = {
+            id_ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEpk7NPFSW1LjC9gB89bQuS3QwpoKYotzb3RJGd3cvgE restic@controller";
+          };
         };
       };
     };

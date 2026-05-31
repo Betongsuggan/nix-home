@@ -31,6 +31,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - Secure boot via Lanzaboote
 - FreeSync enabled on all displays via kernel parameter
 - Firewall with ports for Syncthing, Steam streaming, and LocalSend
+- Restic backup target: receives snapshots from controller into `/var/lib/restic-repos/controller/repo` via chrooted SFTP user `restic-controller` (key sourced from `lib/default.nix`). See `modules/restic-target/SPEC.md`.
 
 ## Notes
 
