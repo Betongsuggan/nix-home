@@ -127,10 +127,17 @@ in
       enableUdevRules = true;
     };
 
+    # Deploy config to /root so the root-level daemon can read it
     system.activationScripts.input-remapper-config = ''
       mkdir -p /root/.config/input-remapper-2/presets
       ln -sf "${configFile}" /root/.config/input-remapper-2/config.json
       ${presetLinks}
+    '';
+
+    # Autoload presets for already-connected devices after service restart
+    systemd.services.input-remapper.postStart = ''
+      sleep 1
+      ${pkgs.input-remapper}/bin/input-remapper-control --command autoload || true
     '';
   };
 }
