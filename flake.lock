@@ -580,6 +580,22 @@
         "type": "github"
       }
     },
+    "nix-vault": {
+      "locked": {
+        "lastModified": 1780173179,
+        "narHash": "sha256-O9DOirPSpCsGMvjyZqvTu7EQq1w5Z5LUgMiUsUEC5dU=",
+        "ref": "main",
+        "rev": "b85d019e369912eed64f782dce0a16de3454c095",
+        "revCount": 13,
+        "type": "git",
+        "url": "ssh://git@controller/var/lib/git/nix-vault.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "ssh://git@controller/var/lib/git/nix-vault.git"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1760284886,
@@ -775,11 +791,11 @@
         "nixpkgs": "nixpkgs_9"
       },
       "locked": {
-        "lastModified": 1780216427,
-        "narHash": "sha256-ayHb+7DzQHUEnu8kZTJOHUmsTPUIB+WDsCzwiVAqeTU=",
+        "lastModified": 1780228239,
+        "narHash": "sha256-bqqeZdu/XCBvzXJgeJlVibHW5WVYezC7QP2pUt9sFtk=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "2834672172c7c04eeee797c28bb68bf67ee23596",
+        "rev": "644ec76c68b84fd16a5d746197345997bcc8a9c1",
         "type": "github"
       },
       "original": {
@@ -848,6 +864,7 @@
         "lanzaboote": "lanzaboote",
         "monitormenu": "monitormenu",
         "niri": "niri",
+        "nix-vault": "nix-vault",
         "nixpkgs": "nixpkgs_8",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nur": "nur",

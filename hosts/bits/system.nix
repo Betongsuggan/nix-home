@@ -78,7 +78,6 @@
 
   time.timeZone = "Europe/Stockholm";
 
-  # File systems must be declared in order to boot
   fileSystems = {
     "/" = {
       device = "/dev/disk/by-uuid/75ba9480-26dc-4602-8797-b1896f829acd";
@@ -127,11 +126,13 @@
     enable = true;
     mode = "onboarded";
     authorizeSshFor.birgerrydback = [
-      { host = "controller"; user = "betongsuggan"; }
+      {
+        host = "controller";
+        user = "betongsuggan";
+      }
     ];
   };
 
-  # Defer fwupd to start on-demand instead of at boot
   systemd.services.fwupd = {
     wantedBy = lib.mkForce [ ];
   };
