@@ -582,11 +582,11 @@
     },
     "nix-vault": {
       "locked": {
-        "lastModified": 1780173179,
-        "narHash": "sha256-O9DOirPSpCsGMvjyZqvTu7EQq1w5Z5LUgMiUsUEC5dU=",
+        "lastModified": 1780237591,
+        "narHash": "sha256-DihpBLcxIKshrXj5sVXC8s1Bhm6gTtA5qYl0KiKCSpA=",
         "ref": "main",
-        "rev": "b85d019e369912eed64f782dce0a16de3454c095",
-        "revCount": 13,
+        "rev": "5bd7480b8801331e20abca3c4a0d55966793276c",
+        "revCount": 14,
         "type": "git",
         "url": "ssh://git@controller/var/lib/git/nix-vault.git"
       },

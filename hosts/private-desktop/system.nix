@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   nixpkgs.overlays = [
@@ -168,9 +168,23 @@
     workspace = 10;
   };
 
+  sops-secrets = {
+    enable = true;
+    secretsFile = "${inputs.nix-vault}/secrets/desktop.yaml";
+  };
+
+  sops.secrets = {
+    "ssh-id-rsa" = {
+      key = "users/betongsuggan/ssh/id_rsa";
+      owner = "betongsuggan";
+      mode = "0600";
+      path = "/home/betongsuggan/.ssh/id_rsa";
+    };
+  };
+
   home-network = {
     enable = true;
-    mode = "bootstrap";
+    mode = "onboarded";
     authorizeSshFor.betongsuggan = [
       {
         host = "controller";
