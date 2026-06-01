@@ -257,13 +257,11 @@
     enable = true;
     tcpPorts = [
       8080
-      22000 # Syncthing
       27036
       27037
       53317
     ];
     udpPorts = [
-      21027 # Syncthing discovery
       27031
       27032
       27033
