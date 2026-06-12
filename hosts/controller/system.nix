@@ -175,19 +175,20 @@
       # Filter the local instance out of the peer list. This host's syncthing
       # runs as `betongsuggan`, so its lib entry sits at
       # `hosts.controller.users.betongsuggan.syncthing.id`.
-      selfSyncthingId = inputs.self.lib.hosts.controller.users.betongsuggan.syncthing.id;
+      selfSyncthingId =
+        inputs.self.lib.hosts.controller.users.betongsuggan.syncthing.id;
     };
   };
 
   services.xserver.desktopManager.runXdgAutostartIfNone = true;
-  xdg.portal = {
-    enable = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-gnome
-      xdg-desktop-portal-gtk
-    ];
-    configPackages = [ pkgs.niri-stable ];
-  };
+  #xdg.portal = {
+  #  enable = true;
+  #  extraPortals = with pkgs; [
+  #    xdg-desktop-portal-gnome
+  #    xdg-desktop-portal-gtk
+  #  ];
+  #  configPackages = [ pkgs.niri-stable ];
+  #};
 
   wayland-security.enable = true;
 
