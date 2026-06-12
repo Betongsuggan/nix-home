@@ -85,11 +85,20 @@ in {
     systemd.tmpfiles.rules = [
       "L+ /opt/rocm/hip - - - - ${pkgs.rocmPackages.clr}"
     ] ++ lib.optionals cfg.comfyui.enable [
-      "d ${cfg.comfyui.dataDir} 0750 root root -"
-      "d ${cfg.comfyui.dataDir}/models 0750 root root -"
-      "d ${cfg.comfyui.dataDir}/output 0750 root root -"
-      "d ${cfg.comfyui.dataDir}/input 0750 root root -"
-      "d ${cfg.comfyui.dataDir}/user 0750 root root -"
+      # 0775 root:wheel so admins can drop models in without sudo. The
+      # container runs as root inside, so write access is unaffected.
+      "d ${cfg.comfyui.dataDir} 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/models 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/models/checkpoints 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/models/vae 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/models/loras 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/models/clip 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/models/controlnet 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/models/upscale_models 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/models/embeddings 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/output 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/input 0775 root wheel -"
+      "d ${cfg.comfyui.dataDir}/user 0775 root wheel -"
     ];
 
     systemd.services.comfyui = mkIf cfg.comfyui.enable {
