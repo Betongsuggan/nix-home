@@ -1,5 +1,6 @@
 {
   imports = [
+    ./ai-server
     ./audio
     ./autologin
     ./backlight

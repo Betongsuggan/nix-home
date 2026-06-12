@@ -255,6 +255,7 @@
   };
   networking.interfaces.enp12s0f3u3u2.wakeOnLan.enable = true;
   networking.interfaces.enp4s0.wakeOnLan.enable = true;
+  ai-server.enable = true;
   firewall = {
     enable = true;
     tcpPorts = [
