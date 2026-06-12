@@ -25,7 +25,7 @@ shell = {
 | aliases | attrsOf str | (see default.nix) | Shell aliases shared across all shells |
 | editor | str | "nix run github:/Betongsuggan/nvim" | Default editor |
 | viMode | bool | true | Enable vi mode in shells |
-| extraPaths | listOf str | ["~/.cargo/bin/"] | Extra paths to add to PATH |
+| extraPaths | listOf str | ["${config.home.homeDirectory}/.cargo/bin"] | Extra paths to add to PATH via `home.sessionPath` (use absolute paths) |
 | bash.enable | bool | (true if backend == "bash") | Enable bash shell |
 | bash.extraInit | lines | "" | Extra bash initialization commands |
 | fish.enable | bool | (true if backend == "fish") | Enable fish shell |

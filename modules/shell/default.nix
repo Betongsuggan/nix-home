@@ -44,7 +44,7 @@ with lib;
     extraPaths = mkOption {
       description = "Extra paths to add to PATH";
       type = types.listOf types.str;
-      default = [ "~/.cargo/bin/" ];
+      default = [ "${config.home.homeDirectory}/.cargo/bin" ];
     };
 
     bash = {
@@ -103,7 +103,6 @@ with lib;
   };
 
   config = mkIf config.shell.enable {
-    # The individual shell modules are enabled based on the shell.{bash,fish,nushell}.enable options
-    # which are automatically set based on the backend selection
+    home.sessionPath = config.shell.extraPaths;
   };
 }

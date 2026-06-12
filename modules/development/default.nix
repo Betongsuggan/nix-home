@@ -15,7 +15,7 @@ in
     python.enable = mkEnableOption "Python toolchain";
     node.enable = mkEnableOption "Node.js toolchain";
     go.enable = mkEnableOption "Go toolchain";
-    kotlin.enable = mkEnableOption "Kotlin toolchain (installs JDK 21, sets JAVA_HOME)";
+    kotlin.enable = mkEnableOption "Kotlin toolchain (installs JDK 25, Gradle 9, ktfmt, sets JAVA_HOME)";
     rust.enable = mkEnableOption "Rust toolchain";
     haskell.enable = mkEnableOption "Haskell toolchain";
   };
@@ -59,7 +59,9 @@ in
       ]
       ++ optionals cfg.kotlin.enable [
         kotlin
-        jdk21
+        jdk25
+        gradle_9
+        ktfmt
       ]
       ++ optionals cfg.rust.enable [
         cargo
@@ -80,7 +82,7 @@ in
         PATH = "$HOME/node_modules/bin:$PATH";
       }
       // optionalAttrs cfg.kotlin.enable {
-        JAVA_HOME = "${pkgs.jdk21.home}";
+        JAVA_HOME = "${pkgs.jdk25.home}";
       };
   };
 }

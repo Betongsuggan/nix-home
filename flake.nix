@@ -44,7 +44,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    niri.url = "github:sodiboo/niri-flake";
+    niri = {
+      url = "github:sodiboo/niri-flake";
+      inputs.niri-stable.url = "github:YaLTeR/niri/v26.04";
+    };
 
     sops-nix = {
       url = "github:Mic92/sops-nix";
