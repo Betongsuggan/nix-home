@@ -138,6 +138,12 @@
         identityFile = "/home/birgerrydback/.ssh/bits";
         identitiesOnly = true;
       };
+      "home-desktop desktop ${inputs.self.lib.tailnet.fqdn "desktop"}" = {
+        hostname = inputs.self.lib.tailnet.fqdn "desktop";
+        user = "betongsuggan";
+        identityFile = "/home/birgerrydback/.ssh/bits";
+        identitiesOnly = true;
+      };
       "github.com-betongsuggan" = {
         hostname = "github.com";
         user = "git";

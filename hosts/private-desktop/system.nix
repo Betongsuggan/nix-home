@@ -191,6 +191,10 @@
         host = "controller";
         user = "betongsuggan";
       }
+      {
+        host = "bits";
+        user = "birgerrydback";
+      }
     ];
   };
 

@@ -32,6 +32,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - FreeSync enabled on all displays via kernel parameter
 - Firewall with ports for Steam streaming and LocalSend
 - Restic backup target: receives snapshots from controller into `/var/lib/restic-repos/controller/repo` via chrooted SFTP user `restic-controller` (key sourced from `lib/default.nix`). See `modules/restic-target/SPEC.md`.
+- SSH into `betongsuggan` over `tailscale0` is authorized for the user's own keys on `controller`, and for `birgerrydback@bits` (cross-user access from the bits host).
 
 ## Notes
 
