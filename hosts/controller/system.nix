@@ -229,6 +229,13 @@
     udpPorts = [ ];
   };
 
+  wake-proxy = {
+    enable = true;
+    targetMac = inputs.self.lib.hosts.desktop.wol.mac;
+    targetHost = inputs.self.lib.hosts.desktop.tailnetIp;
+    ports = [ 11434 ];
+  };
+
   git-server = {
     enable = true;
     repositories = [ "nix-vault" ];

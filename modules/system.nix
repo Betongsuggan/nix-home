@@ -37,6 +37,7 @@
     ./touchpad
     ./undervolting
     ./vaultwarden
+    ./wake-proxy
     ./webcam
     ./waydroid
     ./wayland-security
