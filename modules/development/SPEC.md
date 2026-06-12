@@ -28,7 +28,8 @@ development = {
 
 ## Notes
 
-- Baseline (installed whenever `enable = true`): `gh`, `localstack`, `awscli-local`, `aws-cdk-local`, `aws-cdk`, `awscli2`, `terraform`, `d2`, `claude-code`.
+- Baseline (installed whenever `enable = true`): `gh`, `localstack`, `awscli-local`, `aws-cdk-local`, `aws-cdk`, `awscli2`, `terraform`, `d2`, `claude-code`, `aider-chat`.
+- `OLLAMA_API_BASE` is set to the tailnet URL of controller's wake-proxy (`http://controller.<tailnet>:11434`). Aider routes through the wake-proxy, which transparently wakes the AI host when asleep. The `ollama` CLI is intentionally not installed — its `engine` binary collides with `mesa-demos` pulled in by the `games` module.
 - Per language:
   - **python**: `python3`.
   - **node**: `nodejs_20`, `yarn`, `pnpm`. Adds `$HOME/node_modules/bin` to `PATH`.

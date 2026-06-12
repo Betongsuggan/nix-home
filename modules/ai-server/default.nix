@@ -18,6 +18,17 @@ in {
       default = 8081;
       description = "Open WebUI port; opened on the tailnet only.";
     };
+
+    models = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
+      example = [ "qwen3:8b" "qwen2.5-coder:14b" ];
+      description = ''
+        Models to keep present on the host. Pulled in the background after
+        Ollama starts; existing models are left in place. Not destructive —
+        removing a model from this list does not delete it.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -26,6 +37,7 @@ in {
       package = pkgs.ollama-rocm;
       host = "0.0.0.0";
       port = cfg.ollamaPort;
+      loadModels = cfg.models;
       environmentVariables = {
         OLLAMA_KEEP_ALIVE = "24h";
         OLLAMA_MAX_LOADED_MODELS = "1";

@@ -15,6 +15,7 @@ ai-server.enable = true;
 | enable     | bool | false  | Enable Ollama + Open WebUI |
 | ollamaPort | port | 11434  | Ollama HTTP API port; opened on `tailscale0` only |
 | webuiPort  | port | 8081   | Open WebUI port; opened on `tailscale0` only (8080 is already used elsewhere) |
+| models     | list of string | `[ ]` | Models to keep present on the host; pulled in the background after Ollama starts. Not destructive — removing an entry doesn't delete the model. |
 
 ## Notes
 

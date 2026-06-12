@@ -27,6 +27,7 @@
       "networkmanager"
       "network"
       "video"
+      "render"
       "docker"
       "uinput"
       "input"
@@ -255,7 +256,15 @@
   };
   networking.interfaces.enp12s0f3u3u2.wakeOnLan.enable = true;
   networking.interfaces.enp4s0.wakeOnLan.enable = true;
-  ai-server.enable = true;
+  ai-server = {
+    enable = true;
+    models = [
+      "qwen3:8b"
+      "qwen2.5-coder:14b"
+      "qwen2.5-coder:1.5b"
+    ];
+  };
+  docker.enable = true;
   firewall = {
     enable = true;
     tcpPorts = [

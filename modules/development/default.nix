@@ -2,11 +2,14 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }:
 with lib;
 let
   cfg = config.development;
+  aiProxyHost = inputs.self.lib.tailnet.fqdn "controller";
+  ollamaBase = "http://${aiProxyHost}:11434";
 in
 {
   options.development = {
@@ -40,6 +43,7 @@ in
 
         # AI tools
         unstable.claude-code
+        aider-chat
       ]
       ++ optionals cfg.python.enable [
         python3
@@ -78,7 +82,13 @@ in
     programs.go.enable = cfg.go.enable;
 
     home.sessionVariables =
-      optionalAttrs cfg.node.enable {
+      {
+        # Aider routes through controller's wake-proxy, which wakes the AI
+        # host on demand. The ollama CLI isn't installed here — its `engine`
+        # binary collides with mesa-demos pulled in by the games module.
+        OLLAMA_API_BASE = ollamaBase;
+      }
+      // optionalAttrs cfg.node.enable {
         PATH = "$HOME/node_modules/bin:$PATH";
       }
       // optionalAttrs cfg.kotlin.enable {
