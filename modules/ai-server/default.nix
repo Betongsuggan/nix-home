@@ -49,6 +49,32 @@ in {
         '';
       };
     };
+
+    voice = {
+      enable = mkEnableOption "Speaches voice server (STT + TTS, OpenAI-API compatible)";
+
+      port = mkOption {
+        type = types.port;
+        default = 8000;
+        description = "Speaches HTTP API port; opened on the tailnet only.";
+      };
+
+      dataDir = mkOption {
+        type = types.path;
+        default = "/var/lib/speaches";
+        description = "Persistent model cache (Hugging Face downloads).";
+      };
+
+      image = mkOption {
+        type = types.str;
+        default = "ghcr.io/speaches-ai/speaches:latest-cpu";
+        description = ''
+          Container image. The default is CPU-only — Whisper-large-v3-turbo
+          and Piper/Kokoro voices run comfortably on CPU and avoid fighting
+          Ollama/ComfyUI for VRAM.
+        '';
+      };
+    };
   };
 
   config = mkIf cfg.enable {
@@ -77,7 +103,8 @@ in {
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [
       cfg.ollamaPort
       cfg.webuiPort
-    ] ++ lib.optional cfg.comfyui.enable cfg.comfyui.port;
+    ] ++ lib.optional cfg.comfyui.enable cfg.comfyui.port
+      ++ lib.optional cfg.voice.enable cfg.voice.port;
 
     environment.systemPackages = [ pkgs.rocmPackages.rocminfo ];
 
@@ -99,6 +126,8 @@ in {
       "d ${cfg.comfyui.dataDir}/output 0775 root wheel -"
       "d ${cfg.comfyui.dataDir}/input 0775 root wheel -"
       "d ${cfg.comfyui.dataDir}/user 0775 root wheel -"
+    ] ++ lib.optionals cfg.voice.enable [
+      "d ${cfg.voice.dataDir} 0775 root wheel -"
     ];
 
     systemd.services.comfyui = mkIf cfg.comfyui.enable {
@@ -128,6 +157,32 @@ in {
           "comfyui-rocm:local"
         ];
         ExecStop = "${pkgs.docker}/bin/docker stop comfyui";
+        Restart = "on-failure";
+        RestartSec = "10s";
+      };
+    };
+
+    systemd.services.speaches = mkIf cfg.voice.enable {
+      description = "Speaches voice server (STT + TTS, OpenAI-API compatible)";
+      after = [ "docker.service" "network-online.target" ];
+      requires = [ "docker.service" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+
+      serviceConfig = {
+        Type = "exec";
+        TimeoutStartSec = "30min";
+        ExecStartPre = [
+          "${pkgs.docker}/bin/docker pull ${cfg.voice.image}"
+          "-${pkgs.docker}/bin/docker rm -f speaches"
+        ];
+        ExecStart = lib.concatStringsSep " " [
+          "${pkgs.docker}/bin/docker run --rm --name=speaches"
+          "-p ${toString cfg.voice.port}:8000"
+          "-v ${cfg.voice.dataDir}:/home/ubuntu/.cache/huggingface"
+          cfg.voice.image
+        ];
+        ExecStop = "${pkgs.docker}/bin/docker stop speaches";
         Restart = "on-failure";
         RestartSec = "10s";
       };

@@ -238,6 +238,7 @@
       11434  # Ollama API
       8081   # Open WebUI
       8188   # ComfyUI
+      8000   # Speaches (voice STT + TTS)
     ];
   };
 
