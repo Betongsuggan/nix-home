@@ -2,7 +2,7 @@
   imports = [
     ./autorandr
     ./battery-monitor
-    ./chromium
+    ./chromium/user.nix
     ./communication
     ./controller
     ./controls

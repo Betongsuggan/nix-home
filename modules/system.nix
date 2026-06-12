@@ -2,6 +2,7 @@
   imports = [
     ./ai-server
     ./audio
+    ./chromium/system.nix
     ./autologin
     ./backlight
     ./bluetooth

@@ -1,5 +1,7 @@
 # Chromium (Ungoogled)
 
+Unified module with a user half (`user.nix`) that configures the browser and a system half (`system.nix`) that auto-enables a portal workaround when any user has chromium enabled.
+
 Configures Ungoogled Chromium, a privacy-focused Chromium fork with all Google telemetry and service dependencies removed. Includes Wayland support, hardware acceleration flags, and pre-installed extensions via the home-manager `programs.chromium` module.
 
 ## Usage
@@ -24,3 +26,4 @@ chromium.enable = true;
 - PipeWire screen capture support via `WebRTCPipeWireCapturer` for Wayland screen sharing.
 - Privacy: MediaRouter (Google Cast), Breakpad crash reporting, domain reliability monitoring, and client-side phishing detection all disabled.
 - Extensions are managed via Chrome Web Store IDs through the home-manager chromium module.
+- System half installs `xdg-desktop-portal-gtk` and pins the `FileChooser` portal interface to the gtk backend. Without this, when `XDG_CURRENT_DESKTOP=gnome` (set by niri for screen sharing), the gnome portal delegates FileChooser to Nautilus and silently fails every download because Nautilus is not installed.
