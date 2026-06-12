@@ -162,7 +162,7 @@
         private-laptop = import ./hosts/private-laptop/default.nix {
           inherit inputs overlays;
         };
-        private-desktop = import ./hosts/private-desktop/default.nix {
+        desktop = import ./hosts/desktop/default.nix {
           inherit inputs overlays;
         };
         island-stationary = import ./hosts/island-stationary/default.nix {
@@ -185,10 +185,10 @@
           };
 
       homeConfigurations = {
-        "betongsuggan@private-desktop" =
-          mkHomeConfiguration ./hosts/private-desktop/user-betongsuggan.nix;
-        "gamer@private-desktop" =
-          mkHomeConfiguration ./hosts/private-desktop/user-gamer.nix;
+        "betongsuggan@desktop" =
+          mkHomeConfiguration ./hosts/desktop/user-betongsuggan.nix;
+        "gamer@desktop" =
+          mkHomeConfiguration ./hosts/desktop/user-gamer.nix;
         "betongsuggan@private-laptop" =
           mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
         "birgerrydback@bits" = mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;

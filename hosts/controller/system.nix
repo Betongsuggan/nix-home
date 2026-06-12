@@ -290,7 +290,7 @@
   };
 
   # Interim backup topology until dedicated NAS hardware lands: push restic
-  # snapshots over SFTP-on-tailnet to private-desktop (on-site copy) and
+  # snapshots over SFTP-on-tailnet to desktop (on-site copy) and
   # island-stationary (off-site, summer house). Each target is an independent
   # repo. See modules/restic-backup/SPEC.md for the secrets model and DR plan.
   restic-backup = {

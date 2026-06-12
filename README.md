@@ -6,7 +6,7 @@ Personal NixOS configuration flake managing multiple hosts and users.
 
 - **bits** - NixOS laptop with disk encryption
 - **private-laptop** - Private laptop configuration
-- **private-desktop** - Gaming desktop with AMD GPU
+- **desktop** - Gaming desktop with AMD GPU
 
 ## Features
 
@@ -133,7 +133,7 @@ home-manager switch --flake .#<user>@<hostname>
 ├── hosts/                 # Host-specific configurations
 │   ├── bits/
 │   ├── private-laptop/
-│   └── private-desktop/
+│   └── desktop/
 ├── modules/
 │   ├── common/           # Shared between system and user
 │   ├── system/           # System-level modules

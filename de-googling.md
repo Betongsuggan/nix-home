@@ -142,7 +142,7 @@ Target: **3‑2‑1** — 3 copies, 2 media types, 1 off‑site.
 - [x] **Engine:** restic or Borg (`services.restic` on NixOS), encrypted, deduplicated, scheduled. Restic plays nicely with multiple destinations. — **restic chosen**; declarative module at `modules/restic-backup/`, daily systemd timer, `keep-daily 7 / keep-weekly 4 / keep-monthly 12` retention.
 - [x] **Copy 1 (primary):** the NUC's working data. — Live on controller; paths captured: `/var/lib/{vaultwarden,headscale,emulation}`, `/var/lib/git/nix-vault.git`.
 - [ ] **Copy 2 (local, redundant media):** a dedicated box at home with **redundancy** — a small 2‑bay NAS with mirrored disks, or DIY with **ZFS mirror**. Remember: RAID/ZFS is *not* a backup, it's availability; you still need the off‑site copy. (Your last failure is exactly why mirroring matters.)
-  - **Interim partial:** snapshots are landing on `private-desktop` (verified 2026-05-31). It's an on-site second copy, but on a single non-NAS disk — the redundant-media requirement isn't met and this bullet stays unticked until dedicated hardware lands.
+  - **Interim partial:** snapshots are landing on `desktop` (verified 2026-05-31). It's an on-site second copy, but on a single non-NAS disk — the redundant-media requirement isn't met and this bullet stays unticked until dedicated hardware lands.
 - [ ] **Copy 3 (off‑site):** restic/Borg repo on the **summer‑house PC** over Headscale. Truly owned, no third party.
   - **Blocker:** `island-stationary` is not yet onboarded to the tailnet (no `home-network` enabled, sops not configured). The receiver module is wired and ready — flip `island.mode = "onboarded"` + add sops, and the first push will land there.
 - [ ] **Optional cloud off‑site (encrypted):** Hetzner Storage Box or Backblaze B2 if you want a second off‑site without relying on the summer house being powered/online. Client‑side encrypted, so the provider sees ciphertext only.
@@ -172,7 +172,7 @@ Target: **3‑2‑1** — 3 copies, 2 media types, 1 off‑site.
 
 ### 2026-05-31 (even later) — tailnet-only emulation stack + Android proven end-to-end
 
-- Migrated 36 GB of emulation data (ROMs/BIOS/saves) from `home-desktop` to controller's `/var/lib/emulation`. Controller is now the canonical source.
+- Migrated 36 GB of emulation data (ROMs/BIOS/saves) from `desktop` to controller's `/var/lib/emulation`. Controller is now the canonical source.
 - Made the emulation stack fully tailnet-only:
   - Samba shares (`emulation-roms`, `emulation-bios`) are guest-readable, writable, delete-protected via `vfs_recycle`, exposed only on `tailscale0` + `hosts allow = 100.64.0.0/10`.
   - Syncthing has `globalAnnounceEnabled`, `relaysEnabled`, `natEnabled`, `localAnnounceEnabled` all off; peer addresses pinned to `<peer>.ts.rydback.net:22000`. Zero public-internet chatter.
@@ -192,7 +192,7 @@ Target: **3‑2‑1** — 3 copies, 2 media types, 1 off‑site.
 
 - Vaultwarden deployed declaratively on `controller` (`modules/vaultwarden/`). Tailnet-only at the nginx vhost layer (allow `100.64.0.0/10` + `fd7a:115c:a1e0::/48`, deny all), sops-encrypted `ADMIN_TOKEN`, data at `/var/lib/vaultwarden`. Phase 0 password-manager checklist closed at the infra level.
 - Two sub-bullets remain *intentionally* unticked as operator habits, not infra work: encrypted emergency export to USB (manual weekly cadence — see `modules/vaultwarden/SPEC.md`), and "clients on all devices" (per-device install, out of repo scope).
-- Pivoting next to the **backup workstream**, since the de-Google plan blocks Nextcloud/Immich/etc. on having a working restore path. Interim topology, picked deliberately to avoid stalling on hardware procurement: `restic` pushing from `controller` → `private-desktop` (on-site copy) and `island-stationary` (off-site, summer house) over SFTP-on-tailnet. Receiving side is a chrooted SFTP user per source. Initial path set: `/var/lib/vaultwarden`, `/var/lib/headscale`, `/var/lib/git/nix-vault.git`, `/var/lib/emulation`.
+- Pivoting next to the **backup workstream**, since the de-Google plan blocks Nextcloud/Immich/etc. on having a working restore path. Interim topology, picked deliberately to avoid stalling on hardware procurement: `restic` pushing from `controller` → `desktop` (on-site copy) and `island-stationary` (off-site, summer house) over SFTP-on-tailnet. Receiving side is a chrooted SFTP user per source. Initial path set: `/var/lib/vaultwarden`, `/var/lib/headscale`, `/var/lib/git/nix-vault.git`, `/var/lib/emulation`.
 - This does not yet satisfy the 3-2-1 "redundant media" requirement (no mirror at either end). Deferred until dedicated NAS hardware lands; tracked in the Backup workstream section.
 
 ### 2026-05-30 — mail trial scaffolded, paused awaiting passport verification

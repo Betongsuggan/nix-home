@@ -127,7 +127,11 @@ in {
       "d ${cfg.comfyui.dataDir}/input 0775 root wheel -"
       "d ${cfg.comfyui.dataDir}/user 0775 root wheel -"
     ] ++ lib.optionals cfg.voice.enable [
-      "d ${cfg.voice.dataDir} 0775 root wheel -"
+      # 1000:1000 matches the container's `ubuntu` user so Speaches can write
+      # the model cache. On home-desktop UID 1000 is also the admin user, so
+      # files can still be dropped here manually without sudo.
+      "d ${cfg.voice.dataDir} 0775 1000 1000 -"
+      "d ${cfg.voice.dataDir}/hub 0775 1000 1000 -"
     ];
 
     systemd.services.comfyui = mkIf cfg.comfyui.enable {

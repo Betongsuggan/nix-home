@@ -38,7 +38,7 @@ in {
     server = {
       address = mkOption {
         type = types.str;
-        default = "home-desktop";
+        default = "desktop";
         description = "Address of the emulation server (hostname or IP)";
       };
     };

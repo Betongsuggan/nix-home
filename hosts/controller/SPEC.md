@@ -14,7 +14,7 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 - Nginx reverse proxy with per-domain Let's Encrypt certs (HTTP-01), auto-renewing; currently `rydback.net` (404 stub + the tailnet bootstrap blob endpoint), `vpn.rydback.net` (proxies to headscale), `vault.rydback.net` (vaultwarden, tailnet-only)
 - `home-network` module in `controller` mode: bundles the headscale coordinator at `vpn.rydback.net` (embedded DERP relay, declaratively provisioned users), the rotated YubiKey-encrypted preauth-blob endpoint, and tailscale client membership. See `modules/home-network/SPEC.md` for the full onboarding doctrine.
 - Emulation server: Syncthing for save sync, Samba for read-only ROM/BIOS shares, data at `/var/lib/emulation`; Syncthing/Samba ports exposed only on `enp1s0` (LAN) and `tailscale0` (off-LAN)
-- Restic backup source: pushes encrypted snapshots over SFTP-on-tailnet to `private-desktop` (on-site) and `island-stationary` (off-site, when onboarded). Paths: `/var/lib/{vaultwarden,headscale,emulation}` and `/var/lib/git/nix-vault.git`. Daily timer, `keep-daily 7 / keep-weekly 4 / keep-monthly 12` retention. See `modules/restic-backup/SPEC.md`.
+- Restic backup source: pushes encrypted snapshots over SFTP-on-tailnet to `desktop` (on-site) and `island-stationary` (off-site, when onboarded). Paths: `/var/lib/{vaultwarden,headscale,emulation}` and `/var/lib/git/nix-vault.git`. Daily timer, `keep-daily 7 / keep-weekly 4 / keep-monthly 12` retention. See `modules/restic-backup/SPEC.md`.
 - Sleep/suspend/hibernate fully disabled (systemd targets masked + logind ignores lid/power keys and idle)
 - Colemak keyboard layout
 - Stylix theming with Banana cursor

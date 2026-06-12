@@ -17,7 +17,7 @@ emulation-client = {
 |--------|------|---------|-------------|
 | enable | bool | false | Enable emulation client (save sync + ROM access) |
 | savesDir | path | ~/emulation/saves | Local directory for synced save files |
-| server.address | string | "home-desktop" | Address of the emulation server (hostname or IP) |
+| server.address | string | "desktop" | Address of the emulation server (hostname or IP) |
 | standaloneEmulators | list of string | ["retroarch" "ppsspp" "duckstation" "dolphin"] | Standalone emulators to create save subdirectories for |
 
 ## Notes

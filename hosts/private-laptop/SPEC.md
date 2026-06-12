@@ -10,7 +10,7 @@ Personal Intel-based laptop for daily use, development, light gaming, and game s
 - Vicinae launcher with wifi and bluetooth extensions
 - Development tooling with Docker, git, and direnv
 - Firefox browser and communication apps
-- Game streaming client for streaming from private-desktop
+- Game streaming client for streaming from desktop
 - Light gaming support via games module
 - Battery monitoring and power management
 - Bluetooth, touchpad, and printer support

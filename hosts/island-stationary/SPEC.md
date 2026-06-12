@@ -1,6 +1,6 @@
 # Island Stationary
 
-Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 GPU. Mirrors the private-desktop setup with two user sessions: `betongsuggan` for general desktop use and development, and `gamer` as a dedicated auto-login gaming session.
+Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 GPU. Mirrors the desktop setup with two user sessions: `betongsuggan` for general desktop use and development, and `gamer` as a dedicated auto-login gaming session.
 
 ## Key Features
 
@@ -27,7 +27,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 - Firewall with ports for LocalSend
 - Restic backup target: receives snapshots from controller into `/var/lib/restic-repos/controller/repo` via chrooted SFTP user `restic-controller` (key sourced from `lib/default.nix`). Off-site copy in the interim backup topology — requires island to be onboarded to the tailnet for controller to reach it. See `modules/restic-target/SPEC.md`.
 
-## Differences from private-desktop
+## Differences from desktop
 
 - NVIDIA RTX 2070 GPU instead of AMD RDNA4 (no AMD GPU env vars, no undervolting, no mesa unstable overlay)
 - No game streaming server (Sunshine)

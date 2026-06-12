@@ -2,7 +2,7 @@
 
 A wake-on-LAN-aware TCP proxy. The proxy host listens on a set of ports on its tailnet interface; each incoming connection probes the upstream and, if it isn't responding, sends a WoL magic packet to a configured MAC, waits up to `wakeTimeoutSec` for the upstream port to open, then bridges the connection with `socat`.
 
-Designed to front a sleepable host that runs heavy services (in this repo: the `ai-server` module on home-desktop). Clients always address the always-on proxy host; they never need to know whether the upstream is awake.
+Designed to front a sleepable host that runs heavy services (in this repo: the `ai-server` module on desktop). Clients always address the always-on proxy host; they never need to know whether the upstream is awake.
 
 ## Usage
 
