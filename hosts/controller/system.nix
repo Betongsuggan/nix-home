@@ -237,6 +237,7 @@
     ports = [
       11434  # Ollama API
       8081   # Open WebUI
+      8188   # ComfyUI
     ];
   };
 

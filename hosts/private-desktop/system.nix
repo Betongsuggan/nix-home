@@ -263,6 +263,7 @@
       "qwen2.5-coder:14b"
       "qwen2.5-coder:1.5b"
     ];
+    comfyui.enable = true;
   };
   docker.enable = true;
   firewall = {
