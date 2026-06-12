@@ -233,7 +233,10 @@
     enable = true;
     targetMac = inputs.self.lib.hosts.desktop.wol.mac;
     targetHost = inputs.self.lib.hosts.desktop.tailnetIp;
-    ports = [ 11434 ];
+    ports = [
+      11434  # Ollama API
+      8081   # Open WebUI
+    ];
   };
 
   git-server = {

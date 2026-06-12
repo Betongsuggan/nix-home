@@ -1,6 +1,6 @@
 # AI Server
 
-Local AI inference for the tailnet. Hosts Ollama on AMD ROCm and exposes the OpenAI-compatible API on `tailscale0` only. Clients reach it through controller's wake-proxy (see `modules/wake-proxy/SPEC.md` once that lands), so the host is free to sleep when idle.
+Local AI inference for the tailnet. Runs Ollama (OpenAI-compatible API on AMD ROCm) and Open WebUI (browser-based chat front-end wired to local Ollama). Both services are bound on `tailscale0` only; clients reach them through controller's wake-proxy (`modules/wake-proxy/SPEC.md`), so the host can sleep when idle.
 
 ## Usage
 
@@ -10,10 +10,11 @@ ai-server.enable = true;
 
 ## Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| enable | bool | false | Enable the AI server (Ollama only, for now) |
-| port   | port | 11434  | Ollama HTTP API port; opened on `tailscale0` only |
+| Option     | Type | Default | Description |
+|------------|------|---------|-------------|
+| enable     | bool | false  | Enable Ollama + Open WebUI |
+| ollamaPort | port | 11434  | Ollama HTTP API port; opened on `tailscale0` only |
+| webuiPort  | port | 8081   | Open WebUI port; opened on `tailscale0` only (8080 is already used elsewhere) |
 
 ## Notes
 
@@ -26,13 +27,14 @@ ai-server.enable = true;
 
 ```bash
 # On the host
-systemctl status ollama
+systemctl status ollama open-webui
 rocminfo | grep gfx                                     # → gfx1201
 ollama pull qwen3:8b
 ollama run qwen3:8b --verbose "Say hi" 2>&1 | tail -10  # eval rate 60-80 tok/s on RX 9070 XT
 
 # From another tailnet host
-curl http://desktop:11434/api/tags
+curl http://desktop:11434/api/tags                      # API
+# In a browser: http://desktop:8081  (or via controller's wake-proxy)
 ```
 
-Eval rate under ~10 tok/s means the model is on CPU — check `journalctl -u ollama` for ROCm init errors.
+Eval rate under ~10 tok/s means the model is on CPU — check `journalctl -u ollama` for ROCm init errors. First time Open WebUI is opened, register an admin account; subsequent users can register but admin approves them.

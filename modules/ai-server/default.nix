@@ -7,10 +7,16 @@ in {
   options.ai-server = {
     enable = mkEnableOption "Local AI inference server (Ollama on AMD ROCm)";
 
-    port = mkOption {
+    ollamaPort = mkOption {
       type = types.port;
       default = 11434;
       description = "Ollama HTTP API port; opened on the tailnet only.";
+    };
+
+    webuiPort = mkOption {
+      type = types.port;
+      default = 8081;
+      description = "Open WebUI port; opened on the tailnet only.";
     };
   };
 
@@ -19,14 +25,27 @@ in {
       enable = true;
       package = pkgs.ollama-rocm;
       host = "0.0.0.0";
-      port = cfg.port;
+      port = cfg.ollamaPort;
       environmentVariables = {
         OLLAMA_KEEP_ALIVE = "24h";
         OLLAMA_MAX_LOADED_MODELS = "1";
       };
     };
 
-    networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ cfg.port ];
+    services.open-webui = {
+      enable = true;
+      host = "0.0.0.0";
+      port = cfg.webuiPort;
+      environment = {
+        OLLAMA_BASE_URL = "http://127.0.0.1:${toString cfg.ollamaPort}";
+        WEBUI_AUTH = "True";
+      };
+    };
+
+    networking.firewall.interfaces.tailscale0.allowedTCPPorts = [
+      cfg.ollamaPort
+      cfg.webuiPort
+    ];
 
     environment.systemPackages = [ pkgs.rocmPackages.rocminfo ];
 
