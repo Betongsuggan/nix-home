@@ -128,7 +128,7 @@ Goal: talk to the assistant from any device via Open WebUI's voice mode.
 
 The stack is fully assembled. Remaining work is exploration, measurement, and longevity. There is no acceptance gate here — pick what matters for your day-to-day.
 
-- [ ] **Scorecard** — a markdown table somewhere in this repo (suggested: `assets/ai-scorecard.md`) listing each model you actually try: speed (tok/s from `ollama run … --verbose`), quality on *your* real tasks, VRAM footprint, verdict (keep/drop). Use it to decide which chat/coder model becomes the default.
+- [x] **Scorecard** — `assets/ai-scorecard.md` exists with all currently-running models pre-listed and rows for the AI plan's candidate models. Speed/VRAM/quality numbers and verdicts get filled in as models are actually tried.
 - [ ] **Chat-model roster expansion** — try a few of `qwen3:14b`, `gpt-oss:20b`, `gemma3:12b` alongside `qwen3:8b`. Add the winner(s) to `ai-server.models` in `hosts/desktop/system.nix` and `ollama rm` the rest. Don't keep them all — disk fills fast.
 - [ ] **Image-model expansion** — drop **SD 3.5 Medium** and a quantized **Flux** (GGUF Q4) into `/var/lib/comfyui/models/checkpoints/` and compare on actual prompts. SDXL stays around as the reliable baseline.
 - [ ] **Open WebUI ↔ ComfyUI wiring** — Open WebUI can generate images inside chat by calling ComfyUI for you. Admin → Settings → Images, point at `http://localhost:8188`. Useful from the phone.

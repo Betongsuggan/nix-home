@@ -156,6 +156,14 @@ in {
       environment = {
         OLLAMA_BASE_URL = "http://127.0.0.1:${toString cfg.ollamaPort}";
         WEBUI_AUTH = "True";
+        # Without this, Open WebUI seeds env-var values into its DB on
+        # first start and then the DB wins on every subsequent start —
+        # which means UI edits override anything we declare here. Setting
+        # this to False makes env vars authoritative every boot, so this
+        # module is the single source of truth. Per-user preferences
+        # (like a user's chosen STT engine in their personal Settings)
+        # still persist; only admin/system config is overridden.
+        ENABLE_PERSISTENT_CONFIG = "False";
       } // lib.optionalAttrs cfg.comfyui.enable {
         # Image generation via the local ComfyUI container. Server-to-server
         # over loopback, so no HTTPS hop. Switching the default model is a
