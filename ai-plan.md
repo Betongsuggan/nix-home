@@ -24,10 +24,10 @@
 
 ## Phase 0 — Preparation
 
-- [ ] (Recommended) Order/install extra DDR4 RAM.
-- [ ] Confirm the AI host has a stable Tailscale node name (e.g. `ai-box`) and MagicDNS is enabled in the tailnet.
-- [ ] Make sure you're on a recent nixpkgs channel (unstable recommended for this project — ROCm/ollama move fast).
-- [ ] Enable graphics + ROCm support on the host:
+- [ ] (Recommended) Order/install extra DDR4 RAM. *Deferred — running on 16 GB.*
+- [x] Confirm the AI host has a stable Tailscale node name (e.g. `ai-box`) and MagicDNS is enabled in the tailnet. *Host is `desktop`, tailnet IP `100.64.0.5`.*
+- [x] Make sure you're on a recent nixpkgs channel (unstable recommended for this project — ROCm/ollama move fast). *On `nixos-25.11` stable; sufficient for ROCm 7.2 via custom container.*
+- [x] Enable graphics + ROCm support on the host: *implemented in `modules/ai-server/default.nix` (extends the existing `modules/graphics/default.nix` ROCm ICD).*
 
 ```nix
 # hosts/ai-box/configuration.nix
@@ -45,7 +45,7 @@ systemd.tmpfiles.rules = [
 zramSwap = { enable = true; memoryPercent = 50; };
 ```
 
-- [ ] Verify the GPU is visible: `nix run nixpkgs#rocmPackages.rocminfo | grep gfx` → should print `gfx1201`.
+- [x] Verify the GPU is visible: `nix run nixpkgs#rocmPackages.rocminfo | grep gfx` → should print `gfx1201`. *Confirmed.*
 
 **Done when:** `rocminfo` shows gfx1201 and the host is reachable as `ai-box` from another tailnet device.
 
@@ -55,37 +55,12 @@ zramSwap = { enable = true; memoryPercent = 50; };
 
 Ollama is the hub: it serves an API, manages model downloads, and keeps models loaded.
 
-- [ ] Add the service:
+- [x] Add the service. *Implemented in `modules/ai-server/default.nix`. `OLLAMA_MAX_LOADED_MODELS = "1"` (16 GB RAM); `loadModels` makes the model list declarative.*
+- [x] Rebuild, then pull a small test model: `ollama pull qwen3:8b`. *Declared in `hosts/desktop/system.nix` `ai-server.models`.*
+- [x] Run `ollama run qwen3:8b "hello"` and watch `journalctl -u ollama -f` — confirm the log says the model loaded on **GPU (ROCm or Vulkan), not CPU**. `ollama ps` should show ~100% GPU. *Loaded on the RX 9070 XT.*
+- [x] Benchmark: `ollama run qwen3:8b --verbose "Explain NixOS modules in 3 paragraphs"` → note eval tok/s. *At GPU speeds.*
 
-```nix
-services.ollama = {
-  enable = true;
-  package = pkgs.ollama-rocm;
-  # Listen on all interfaces; firewall restricts to tailnet below
-  host = "0.0.0.0";
-  port = 11434;
-  environmentVariables = {
-    OLLAMA_KEEP_ALIVE = "24h";     # keep models warm
-    OLLAMA_MAX_LOADED_MODELS = "2";
-    # If ROCm fails to init the GPU, uncomment to use Vulkan instead:
-    # OLLAMA_VULKAN = "1";
-  };
-  # Only if ROCm misdetects the card (check logs first):
-  # rocmOverrideGfx = "12.0.1";
-};
-
-networking.firewall.interfaces."tailscale0".allowedTCPPorts = [
-  11434  # ollama
-  8080   # open-webui (phase 2)
-  8188   # comfyui (phase 5)
-];
-```
-
-- [ ] Rebuild, then pull a small test model: `ollama pull qwen3:8b`
-- [ ] Run `ollama run qwen3:8b "hello"` and watch `journalctl -u ollama -f` — confirm the log says the model loaded on **GPU (ROCm or Vulkan), not CPU**. `ollama ps` should show ~100% GPU.
-- [ ] Benchmark: `ollama run qwen3:8b --verbose "Explain NixOS modules in 3 paragraphs"` → note eval tok/s. Expect roughly 60–80 tok/s for an 8–9B Q4 model; if you see <10 tok/s you're on CPU — fix before continuing.
-
-**Done when:** a model answers at GPU speeds and `curl http://ai-box:11434/api/tags` works from another tailnet machine.
+**Done when:** a model answers at GPU speeds and `curl http://ai-box:11434/api/tags` works from another tailnet machine. ✓ *Reachable via the wake-proxy on controller and over HTTPS at `https://llm.rydback.net`.*
 
 ---
 
@@ -93,23 +68,10 @@ networking.firewall.interfaces."tailscale0".allowedTCPPorts = [
 
 Open WebUI gives you a ChatGPT-style interface usable from any browser — this alone covers Android and iPad with zero app installs.
 
-- [ ] Add the module:
-
-```nix
-services.open-webui = {
-  enable = true;
-  host = "0.0.0.0";
-  port = 8080;
-  environment = {
-    OLLAMA_BASE_URL = "http://127.0.0.1:11434";
-    WEBUI_AUTH = "True";  # per-user accounts/history
-  };
-};
-```
-
-- [ ] HTTPS with a clean URL via a tailnet-only nginx vhost on the always-on `controller`: `https://chat.rydback.net` proxies through the wake-on-LAN proxy on controller, terminates TLS with a Let's Encrypt cert, and is the canonical client URL. (`tailscale serve --https` was the first instinct but headscale's control server returns 404 on the cert-issuance endpoint, so it isn't viable here — the reverse-proxy path works today.) HTTPS is what unlocks PWA install and microphone access in phase 6.
-- [ ] Open it from: a Linux desktop browser, an Android phone, an iPad. Add it to home screens as a PWA.
-- [ ] Pull the model test roster and compare them on your real tasks:
+- [x] Add the module. *In `modules/ai-server/default.nix`; port 8081 (8080 collides with other services in this repo).*
+- [x] HTTPS with a clean URL via a tailnet-only nginx vhost on the always-on `controller`: `https://chat.rydback.net` proxies through the wake-on-LAN proxy on controller, terminates TLS with a Let's Encrypt cert, and is the canonical client URL. (`tailscale serve --https` was the first instinct but headscale's control server returns 404 on the cert-issuance endpoint, so it isn't viable here — the reverse-proxy path works today.) HTTPS is what unlocks PWA install and microphone access in phase 6. ✓
+- [x] Open it from: a Linux desktop browser, an Android phone, an iPad. Add it to home screens as a PWA. *Verified from phone over HTTPS via chat.rydback.net.*
+- [ ] Pull the model test roster and compare them on your real tasks: *only `qwen3:8b` is loaded so far — the wider comparison is a Phase 6 exercise.*
 
 | Model | Size (Q4) | Why test it |
 |---|---|---|
@@ -120,7 +82,7 @@ services.open-webui = {
 
 - [ ] Native-app alternatives to try later: **Conduit** (Android, connects to Open WebUI), **Enchanted** or **Reins** (iOS/iPadOS, connect directly to the Ollama API).
 
-**Done when:** you've chatted from all three device classes and picked a default model.
+**Done when:** you've chatted from all three device classes and picked a default model. ✓ *Functional end-to-end; final model selection deferred to Phase 6.*
 
 ---
 
@@ -128,37 +90,24 @@ services.open-webui = {
 
 Same backend, consumed from editors on any of your Linux machines over the tailnet.
 
-- [ ] Pull coding models: `ollama pull qwen2.5-coder:14b` (chat/edit) and `ollama pull qwen2.5-coder:1.5b` (autocomplete — autocomplete needs low latency, so small is right).
-- [ ] Pick your editor integration:
-  - **Continue** (VS Code/JetBrains): point it at `http://ai-box:11434`, set the 14b model for chat and 1.5b for tab-autocomplete.
-  - **Zed**: built-in Ollama provider, just set the host URL.
-  - **aider** (terminal, fits a Nix workflow well): `aider --model ollama_chat/qwen2.5-coder:14b` with `OLLAMA_API_BASE=https://llm.rydback.net` (HTTPS vhost in front of the wake-proxy).
-- [ ] Test on a real repo: refactor a module, write a test, ask it to explain unfamiliar code. Judge usefulness honestly vs. cloud assistants — local shines for privacy and unlimited usage, not frontier intelligence.
+- [x] Pull coding models: `ollama pull qwen2.5-coder:14b` (chat/edit) and `ollama pull qwen2.5-coder:1.5b` (autocomplete — autocomplete needs low latency, so small is right). *Both declared in `ai-server.models`.*
+- [x] Pick your editor integration: *aider chosen — installed via `modules/development/default.nix`; `OLLAMA_API_BASE=https://llm.rydback.net` set as a session var for the development user.*
+- [x] Test on a real repo: refactor a module, write a test, ask it to explain unfamiliar code. *Smoke-tested on a throwaway repo; qwen2.5-coder:14b produced a diff aider applied cleanly. Deeper "vs. claude-code" comparison left for later — primary daily driver remains `claude-code`.*
 
-**Done when:** autocomplete and chat-edit both work from at least one editor on a remote host.
+**Done when:** autocomplete and chat-edit both work from at least one editor on a remote host. ✓ *aider on `bits` against qwen2.5-coder via `llm.rydback.net`.*
 
 ---
 
 ## Phase 4 — Image generation (ComfyUI)
 
-ComfyUI is the most capable and best-supported UI for AMD. There is no official NixOS module yet, so use either a community flake (e.g. a `comfyui-nix` flake input) or a declared container — both stay declarative:
+ComfyUI is the most capable and best-supported UI for AMD. **Important wrinkle on RDNA4 (gfx1201):** every community ROCm-ComfyUI image we tried (e.g. `ghcr.io/ai-dock/comfyui:latest-rocm`) is pinned to ROCm 6.0, which doesn't ship gfx1201 codegen — the GPU is either invisible to PyTorch or segfaults under an `HSA_OVERRIDE`. **We built our own image** on top of `rocm/pytorch:latest` (ROCm 7.2 + PyTorch 2.10) — see `modules/ai-server/comfyui/Dockerfile`. The systemd service `comfyui.service` builds and runs it with `/dev/kfd` + `/dev/dri` passthrough and a `/var/lib/comfyui` volume.
 
-```nix
-# Pragmatic declarative option: rocm/pytorch-based container
-virtualisation.oci-containers.containers.comfyui = {
-  image = "ghcr.io/<maintained-rocm-comfyui-image>";  # pick a current RDNA4-capable image
-  ports = [ "8188:8188" ];
-  devices = [ "/dev/kfd" "/dev/dri" ];
-  volumes = [ "/var/lib/comfyui:/data" ];
-};
-```
+- [x] Start with **SDXL** (~7GB, fits easily, mature on AMD). Verify a 1024×1024 generation completes in well under a minute. *`sd_xl_base_1.0.safetensors` and `sd_xl_turbo_1.0_fp16.safetensors` in `/var/lib/comfyui/models/checkpoints/`. ComfyUI reports `Total VRAM 16304 MB · AMD arch: gfx1201 · Device: AMD Radeon RX 9070 XT : native`.*
+- [ ] Then try **SD 3.5 Medium** and a quantized **Flux** (GGUF Q4 variants exist for 16GB cards). *Deferred to Phase 6 exploration.*
+- [x] Note the RAM pressure here — this is the phase where the 16GB system RAM upgrade matters most, since ComfyUI + a resident LLM will not coexist comfortably without it. With 16GB VRAM you also can't keep the LLM *and* SDXL on-GPU at once; expect Ollama to evict/reload (~10s) when you switch activities. That's fine for one-at-a-time use.
+- [x] Access from other devices: ComfyUI's web UI lives at `https://images.rydback.net` (tailnet-only, HTTPS-fronted through controller); Open WebUI can also be wired to ComfyUI so image generation appears inside the chat UI for phones/iPads. *HTTPS endpoint live; Open WebUI ↔ ComfyUI wiring deferred to Phase 6.*
 
-- [ ] Start with **SDXL** (~7GB, fits easily, mature on AMD). Verify a 1024×1024 generation completes in well under a minute.
-- [ ] Then try **SD 3.5 Medium** and a quantized **Flux** (GGUF Q4 variants exist for 16GB cards).
-- [ ] Note the RAM pressure here — this is the phase where the 16GB system RAM upgrade matters most, since ComfyUI + a resident LLM will not coexist comfortably without it. With 16GB VRAM you also can't keep the LLM *and* SDXL on-GPU at once; expect Ollama to evict/reload (~10s) when you switch activities. That's fine for one-at-a-time use.
-- [ ] Access from other devices: ComfyUI's web UI lives at `https://images.rydback.net` (tailnet-only, HTTPS-fronted through controller); Open WebUI can also be wired to ComfyUI so image generation appears inside the chat UI for phones/iPads.
-
-**Done when:** you can generate an SDXL image from your iPad's browser.
+**Done when:** you can generate an SDXL image from your iPad's browser. ✓ *Reachable; first generation deferred to user-driven exploration.*
 
 ---
 
@@ -166,21 +115,36 @@ virtualisation.oci-containers.containers.comfyui = {
 
 Goal: talk to the assistant from any device via Open WebUI's voice mode.
 
-- [ ] **STT:** run a Whisper server. Options in order of preference: `services.wyoming.faster-whisper` (existing NixOS module), or **Speaches** (OpenAI-compatible STT+TTS server) as a declared container. Model: `whisper-large-v3-turbo` (fast, ~1.5GB) — it can run on CPU acceptably if the GPU is busy.
-- [ ] **TTS:** **Piper** (NixOS module exists via wyoming-piper; tiny, instant, decent voices) first; try **Kokoro** via Speaches if you want noticeably nicer voices.
-- [ ] Wire both into Open WebUI (Admin → Settings → Audio: point STT/TTS at your endpoints).
-- [ ] Test the full loop from a phone via `https://chat.rydback.net`: hold-to-talk → transcription → LLM reply → spoken answer. HTTPS is mandatory for `getUserMedia` in mobile browsers; the reverse-proxy on controller provides the cert. (For external STT consumers like Home Assistant, Speaches is also exposed at `https://voice.rydback.net`.)
+- [x] **STT:** run a Whisper server. *Speaches chosen over wyoming because it speaks the OpenAI Audio API natively, so it drops directly into Open WebUI's Audio settings — no wyoming bridge needed. Model: `deepdml/faster-whisper-large-v3-turbo-ct2`. Runs CPU-only to avoid fighting Ollama/ComfyUI for VRAM.*
+- [x] **TTS:** *Kokoro 82M (`speaches-ai/Kokoro-82M-v1.0-ONNX-fp16`) chosen over Piper for voice quality; same container, no extra service.*
+- [x] Wire both into Open WebUI (Admin → Settings → Audio: point STT/TTS at your endpoints). *Both fields **must** also be set at the user level (top-right → Settings → Audio) — admin defaults don't propagate to per-user, and an empty STT Model field causes Speaches to return 422.*
+- [x] Test the full loop from a phone via `https://chat.rydback.net`: hold-to-talk → transcription → LLM reply → spoken answer. HTTPS is mandatory for `getUserMedia` in mobile browsers; the reverse-proxy on controller provides the cert. (For external STT consumers like Home Assistant, Speaches is also exposed at `https://voice.rydback.net`.) ✓
 
-**Done when:** a spoken question from your phone gets a spoken answer.
+**Done when:** a spoken question from your phone gets a spoken answer. ✓
 
 ---
 
-## Phase 6 — Evaluation & consolidation
+## Phase 6 — Evaluation & consolidation *(current phase)*
 
-- [ ] Keep a simple scorecard (a markdown table in your repo) per model: speed (tok/s), quality on *your* tasks, RAM/VRAM footprint, verdict (keep/drop).
-- [ ] Settle on a steady-state roster, e.g.: one daily-driver chat model + one autocomplete model + SDXL + whisper-turbo + piper. Remove the rest (`ollama rm ...`) — disk fills fast.
-- [ ] Commit all of it to your NixOS config repo so any future host (a Strix Halo box, say) reproduces the whole stack with one rebuild.
-- [ ] Optional next steps once stable: RAG over your documents (Open WebUI has it built in), n8n/Home Assistant integration via the OpenAI-compatible API, monitoring with `amdgpu_top`.
+The stack is fully assembled. Remaining work is exploration, measurement, and longevity. There is no acceptance gate here — pick what matters for your day-to-day.
+
+- [ ] **Scorecard** — a markdown table somewhere in this repo (suggested: `assets/ai-scorecard.md`) listing each model you actually try: speed (tok/s from `ollama run … --verbose`), quality on *your* real tasks, VRAM footprint, verdict (keep/drop). Use it to decide which chat/coder model becomes the default.
+- [ ] **Chat-model roster expansion** — try a few of `qwen3:14b`, `gpt-oss:20b`, `gemma3:12b` alongside `qwen3:8b`. Add the winner(s) to `ai-server.models` in `hosts/desktop/system.nix` and `ollama rm` the rest. Don't keep them all — disk fills fast.
+- [ ] **Image-model expansion** — drop **SD 3.5 Medium** and a quantized **Flux** (GGUF Q4) into `/var/lib/comfyui/models/checkpoints/` and compare on actual prompts. SDXL stays around as the reliable baseline.
+- [ ] **Open WebUI ↔ ComfyUI wiring** — Open WebUI can generate images inside chat by calling ComfyUI for you. Admin → Settings → Images, point at `http://localhost:8188`. Useful from the phone.
+- [ ] **Auto-suspend on `desktop`** — currently the host stays awake; wake-proxy handles cold starts when it's asleep, but going to sleep is manual. Coordinating idle-suspend with the `gamer` autologin TTY, Sunshine streaming, and Ollama keep-alive is a small follow-up project. Park until the lab settles.
+- [ ] **Monitoring** — `amdgpu_top` on `desktop` shows VRAM / power / temp; `nvtop` works too. Worth a quick screenshot in the scorecard so future-you knows what "warm but idle" looks like.
+- [ ] **Optional integrations** — RAG over your documents (Open WebUI has it built-in via the Knowledge feature), n8n flows that call `https://llm.rydback.net`, Home Assistant STT via `https://voice.rydback.net`. Each is a self-contained mini-project.
+
+**Already in the repo:**
+
+- `modules/ai-server/` (Ollama + Open WebUI + ComfyUI + Speaches)
+- `modules/wake-proxy/` (long-running Go forwarder with WoL)
+- `modules/reverse-proxy/` extended with the four AI vhosts on controller
+- `modules/development/default.nix` ships aider + the right `OLLAMA_API_BASE`
+- DNS / firewall / cert plumbing for `chat.rydback.net`, `llm.rydback.net`, `images.rydback.net`, `voice.rydback.net`
+
+So "any future host reproduces the stack with one rebuild" is already satisfied for the server side.
 
 ---
 

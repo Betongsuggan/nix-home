@@ -267,7 +267,19 @@
       "qwen2.5-coder:14b"
       "qwen2.5-coder:1.5b"
     ];
-    comfyui.enable = true;
+    comfyui = {
+      enable = true;
+      workflow = ../../modules/ai-server/comfyui/workflows/sdxl-base.json;
+      workflowNodes = [
+        { type = "prompt";          node_ids = [ "6" ]; key = "text"; }
+        { type = "negative_prompt"; node_ids = [ "7" ]; key = "text"; }
+        { type = "model";           node_ids = [ "4" ]; key = "ckpt_name"; }
+        { type = "width";           node_ids = [ "5" ]; }
+        { type = "height";          node_ids = [ "5" ]; }
+        { type = "steps";           node_ids = [ "3" ]; }
+        { type = "seed";            node_ids = [ "3" ]; }
+      ];
+    };
     voice.enable = true;
   };
   docker.enable = true;
