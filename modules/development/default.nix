@@ -2,14 +2,14 @@
   config,
   pkgs,
   lib,
-  inputs,
   ...
 }:
 with lib;
 let
   cfg = config.development;
-  aiProxyHost = inputs.self.lib.tailnet.fqdn "controller";
-  ollamaBase = "http://${aiProxyHost}:11434";
+  # Tailnet-only HTTPS vhost on controller fronting the wake-proxy → Ollama
+  # on home-desktop. See modules/ai-server/SPEC.md.
+  ollamaBase = "https://llm.rydback.net";
 in
 {
   options.development = {
@@ -83,9 +83,10 @@ in
 
     home.sessionVariables =
       {
-        # Aider routes through controller's wake-proxy, which wakes the AI
-        # host on demand. The ollama CLI isn't installed here — its `engine`
-        # binary collides with mesa-demos pulled in by the games module.
+        # Aider routes to llm.rydback.net (HTTPS, tailnet-only) which lands on
+        # controller's wake-proxy and wakes the AI host on demand. The ollama
+        # CLI isn't installed here — its `engine` binary collides with
+        # mesa-demos pulled in by the games module.
         OLLAMA_API_BASE = ollamaBase;
       }
       // optionalAttrs cfg.node.enable {

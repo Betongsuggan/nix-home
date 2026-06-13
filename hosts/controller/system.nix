@@ -149,12 +149,32 @@
         baseDomain = "ts.rydback.net";
         users = [ "birger" ];
         extraDnsRecords = [
-          # vault.rydback.net's public A record points at controller's WAN IP so
-          # ACME HTTP-01 works. For tailnet members this override resolves it to
-          # controller's tailnet IP instead, so requests reach nginx from a 100.x
-          # source and clear the deny-all rule on the vault vhost.
+          # Public A records point at controller's WAN IP so ACME HTTP-01 works.
+          # For tailnet members these overrides resolve to controller's tailnet IP
+          # instead, so requests reach nginx from a 100.x source and clear the
+          # deny-all rule on each vhost.
           {
             name = "vault.rydback.net";
+            type = "A";
+            value = "100.64.0.2";
+          }
+          {
+            name = "chat.rydback.net";
+            type = "A";
+            value = "100.64.0.2";
+          }
+          {
+            name = "llm.rydback.net";
+            type = "A";
+            value = "100.64.0.2";
+          }
+          {
+            name = "images.rydback.net";
+            type = "A";
+            value = "100.64.0.2";
+          }
+          {
+            name = "voice.rydback.net";
             type = "A";
             value = "100.64.0.2";
           }
@@ -253,29 +273,60 @@
     ];
   };
 
-  reverse-proxy = {
-    enable = true;
-    acmeEmail = "rydback@gmail.com";
-    # `rydback.net` and `vpn.rydback.net` are contributed by `home-network` in
-    # controller mode (the bootstrap blob endpoint and the headscale upstream
-    # respectively); only domains not bundled there are listed here.
-    domains = [
-      "vault.rydback.net"
-    ];
-    vhosts.vaultwarden = {
-      domain = "vault.rydback.net";
-      upstream = "http://127.0.0.1:8222";
+  reverse-proxy =
+    let
       # Tailnet-only at the nginx layer. Headscale's default prefixes are
       # 100.64.0.0/10 (IPv4) and fd7a:115c:a1e0::/48 (IPv6). ACME HTTP-01
       # challenges still work because NixOS places /.well-known/acme-challenge
       # at a higher-precedence location than `/`.
-      extraConfig = ''
+      tailnetOnly = ''
         allow 100.64.0.0/10;
         allow fd7a:115c:a1e0::/48;
         deny all;
       '';
+    in
+    {
+      enable = true;
+      acmeEmail = "rydback@gmail.com";
+      # `rydback.net` and `vpn.rydback.net` are contributed by `home-network` in
+      # controller mode (the bootstrap blob endpoint and the headscale upstream
+      # respectively); only domains not bundled there are listed here.
+      domains = [
+        "vault.rydback.net"
+        # AI lab front doors. Function-named so backend swaps (e.g. Ollama →
+        # vLLM) don't force URL churn for clients. Each upstream is the local
+        # wake-proxy port; wake-proxy then transparently WoLs home-desktop.
+        "chat.rydback.net"
+        "llm.rydback.net"
+        "images.rydback.net"
+        "voice.rydback.net"
+      ];
+      vhosts.vaultwarden = {
+        domain = "vault.rydback.net";
+        upstream = "http://127.0.0.1:8222";
+        extraConfig = tailnetOnly;
+      };
+      vhosts.chat = {
+        domain = "chat.rydback.net";
+        upstream = "http://127.0.0.1:8081";
+        extraConfig = tailnetOnly;
+      };
+      vhosts.llm = {
+        domain = "llm.rydback.net";
+        upstream = "http://127.0.0.1:11434";
+        extraConfig = tailnetOnly;
+      };
+      vhosts.images = {
+        domain = "images.rydback.net";
+        upstream = "http://127.0.0.1:8188";
+        extraConfig = tailnetOnly;
+      };
+      vhosts.voice = {
+        domain = "voice.rydback.net";
+        upstream = "http://127.0.0.1:8000";
+        extraConfig = tailnetOnly;
+      };
     };
-  };
 
   vaultwarden = {
     enable = true;

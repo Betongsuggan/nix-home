@@ -32,6 +32,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - FreeSync enabled on all displays via kernel parameter
 - Firewall with ports for Steam streaming and LocalSend
 - Restic backup target: receives snapshots from controller into `/var/lib/restic-repos/controller/repo` via chrooted SFTP user `restic-controller` (key sourced from `lib/default.nix`). See `modules/restic-target/SPEC.md`.
+- AI lab: Ollama (ROCm), Open WebUI, ComfyUI (custom `rocm/pytorch:latest`-based container), and Speaches (STT + TTS) per `modules/ai-server/SPEC.md`. Wake-on-LAN enabled so the host can sleep; controller fronts the services over HTTPS at `chat.rydback.net` / `llm.rydback.net` / `images.rydback.net` / `voice.rydback.net` (tailnet-only).
 - SSH into `betongsuggan` over `tailscale0` is authorized for the user's own keys on `controller`, and for `birgerrydback@bits` (cross-user access from the bits host).
 
 ## Notes

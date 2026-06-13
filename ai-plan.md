@@ -107,7 +107,7 @@ services.open-webui = {
 };
 ```
 
-- [ ] (Nice-to-have) HTTPS with a clean URL via `tailscale serve --bg --https=443 http://localhost:8080` → `https://ai-box.<tailnet>.ts.net`. iPads in particular are happier with HTTPS (enables PWA install, mic access for phase 6).
+- [ ] HTTPS with a clean URL via a tailnet-only nginx vhost on the always-on `controller`: `https://chat.rydback.net` proxies through the wake-on-LAN proxy on controller, terminates TLS with a Let's Encrypt cert, and is the canonical client URL. (`tailscale serve --https` was the first instinct but headscale's control server returns 404 on the cert-issuance endpoint, so it isn't viable here — the reverse-proxy path works today.) HTTPS is what unlocks PWA install and microphone access in phase 6.
 - [ ] Open it from: a Linux desktop browser, an Android phone, an iPad. Add it to home screens as a PWA.
 - [ ] Pull the model test roster and compare them on your real tasks:
 
@@ -132,7 +132,7 @@ Same backend, consumed from editors on any of your Linux machines over the tailn
 - [ ] Pick your editor integration:
   - **Continue** (VS Code/JetBrains): point it at `http://ai-box:11434`, set the 14b model for chat and 1.5b for tab-autocomplete.
   - **Zed**: built-in Ollama provider, just set the host URL.
-  - **aider** (terminal, fits a Nix workflow well): `aider --model ollama/qwen2.5-coder:14b` with `OLLAMA_API_BASE=http://ai-box:11434`.
+  - **aider** (terminal, fits a Nix workflow well): `aider --model ollama_chat/qwen2.5-coder:14b` with `OLLAMA_API_BASE=https://llm.rydback.net` (HTTPS vhost in front of the wake-proxy).
 - [ ] Test on a real repo: refactor a module, write a test, ask it to explain unfamiliar code. Judge usefulness honestly vs. cloud assistants — local shines for privacy and unlimited usage, not frontier intelligence.
 
 **Done when:** autocomplete and chat-edit both work from at least one editor on a remote host.
@@ -156,7 +156,7 @@ virtualisation.oci-containers.containers.comfyui = {
 - [ ] Start with **SDXL** (~7GB, fits easily, mature on AMD). Verify a 1024×1024 generation completes in well under a minute.
 - [ ] Then try **SD 3.5 Medium** and a quantized **Flux** (GGUF Q4 variants exist for 16GB cards).
 - [ ] Note the RAM pressure here — this is the phase where the 16GB system RAM upgrade matters most, since ComfyUI + a resident LLM will not coexist comfortably without it. With 16GB VRAM you also can't keep the LLM *and* SDXL on-GPU at once; expect Ollama to evict/reload (~10s) when you switch activities. That's fine for one-at-a-time use.
-- [ ] Access from other devices: ComfyUI's web UI works over the tailnet at `http://ai-box:8188`; Open WebUI can also be wired to ComfyUI so image generation appears inside the chat UI for phones/iPads.
+- [ ] Access from other devices: ComfyUI's web UI lives at `https://images.rydback.net` (tailnet-only, HTTPS-fronted through controller); Open WebUI can also be wired to ComfyUI so image generation appears inside the chat UI for phones/iPads.
 
 **Done when:** you can generate an SDXL image from your iPad's browser.
 
@@ -169,7 +169,7 @@ Goal: talk to the assistant from any device via Open WebUI's voice mode.
 - [ ] **STT:** run a Whisper server. Options in order of preference: `services.wyoming.faster-whisper` (existing NixOS module), or **Speaches** (OpenAI-compatible STT+TTS server) as a declared container. Model: `whisper-large-v3-turbo` (fast, ~1.5GB) — it can run on CPU acceptably if the GPU is busy.
 - [ ] **TTS:** **Piper** (NixOS module exists via wyoming-piper; tiny, instant, decent voices) first; try **Kokoro** via Speaches if you want noticeably nicer voices.
 - [ ] Wire both into Open WebUI (Admin → Settings → Audio: point STT/TTS at your endpoints).
-- [ ] Test the full loop from a phone: hold-to-talk → transcription → LLM reply → spoken answer. HTTPS via `tailscale serve` is required for microphone access in mobile browsers.
+- [ ] Test the full loop from a phone via `https://chat.rydback.net`: hold-to-talk → transcription → LLM reply → spoken answer. HTTPS is mandatory for `getUserMedia` in mobile browsers; the reverse-proxy on controller provides the cert. (For external STT consumers like Home Assistant, Speaches is also exposed at `https://voice.rydback.net`.)
 
 **Done when:** a spoken question from your phone gets a spoken answer.
 
