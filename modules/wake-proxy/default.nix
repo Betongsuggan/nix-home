@@ -5,49 +5,11 @@ with lib;
 let
   cfg = config.wake-proxy;
 
-  wakeAndProxy = port: pkgs.writeShellScript "wake-and-proxy-${toString port}" ''
-    set -u
-    HOST='${cfg.targetHost}'
-    PORT='${toString port}'
-    MAC='${cfg.targetMac}'
-    TIMEOUT=${toString cfg.wakeTimeoutSec}
-
-    probe() {
-      ${pkgs.netcat-openbsd}/bin/nc -z -w1 "$HOST" "$PORT"
-    }
-
-    if ! probe; then
-      ${pkgs.wakeonlan}/bin/wakeonlan ${optionalString (cfg.broadcastAddress != null) "-i ${cfg.broadcastAddress}"} "$MAC" >&2 || true
-      end=$(( $(date +%s) + TIMEOUT ))
-      until probe; do
-        if [ "$(date +%s)" -ge "$end" ]; then
-          echo "wake-proxy: $HOST:$PORT did not come up within ''${TIMEOUT}s" >&2
-          exit 1
-        fi
-        sleep 1
-      done
-    fi
-
-    exec ${pkgs.socat}/bin/socat - "TCP:$HOST:$PORT"
-  '';
-
-  mkSocket = port: nameValuePair "wake-proxy-${toString port}" {
-    description = "Wake-proxy listener on TCP ${toString port}";
-    wantedBy = [ "sockets.target" ];
-    socketConfig = {
-      ListenStream = "0.0.0.0:${toString port}";
-      Accept = true;
-    };
-  };
-
-  mkService = port: nameValuePair "wake-proxy-${toString port}@" {
-    description = "Wake-proxy handler for TCP ${toString port}";
-    serviceConfig = {
-      ExecStart = "${wakeAndProxy port}";
-      StandardInput = "socket";
-      StandardOutput = "socket";
-      StandardError = "journal";
-    };
+  wake-proxy-pkg = pkgs.buildGoModule {
+    pname = "wake-proxy";
+    version = "0.1.0";
+    src = ./src;
+    vendorHash = null;
   };
 in
 {
@@ -75,8 +37,8 @@ in
       default = [ 11434 ];
       description = ''
         TCP ports to proxy. Each port listens on the proxy host and is forwarded
-        to the same port on the upstream. WoL fires on the first connection
-        when the upstream is unreachable.
+        to the same port on the upstream. WoL fires when the cached "upstream
+        alive" flag is false and a fresh probe confirms it.
       '';
     };
 
@@ -99,8 +61,35 @@ in
   };
 
   config = mkIf cfg.enable {
-    systemd.sockets = listToAttrs (map mkSocket cfg.ports);
-    systemd.services = listToAttrs (map mkService cfg.ports);
+    systemd.services.wake-proxy = {
+      description = "Wake-on-LAN reverse proxy (long-running TCP forwarder)";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+
+      path = [ pkgs.wakeonlan ];
+
+      environment = {
+        WAKE_PROXY_MAC = cfg.targetMac;
+        WAKE_PROXY_HOST = cfg.targetHost;
+        WAKE_PROXY_PORTS = concatStringsSep "," (map toString cfg.ports);
+        WAKE_PROXY_TIMEOUT_SEC = toString cfg.wakeTimeoutSec;
+      } // optionalAttrs (cfg.broadcastAddress != null) {
+        WAKE_PROXY_BROADCAST = cfg.broadcastAddress;
+      };
+
+      serviceConfig = {
+        Type = "exec";
+        ExecStart = "${wake-proxy-pkg}/bin/wake-proxy";
+        Restart = "on-failure";
+        RestartSec = "5s";
+        DynamicUser = true;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        NoNewPrivileges = true;
+      };
+    };
+
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = cfg.ports;
   };
 }
