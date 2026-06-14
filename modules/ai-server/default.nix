@@ -144,7 +144,11 @@ in {
       port = cfg.ollamaPort;
       loadModels = cfg.models;
       environmentVariables = {
-        OLLAMA_KEEP_ALIVE = "24h";
+        # 5 minutes — short enough that idle Ollama gives RAM back to the OS
+        # so ComfyUI/Speaches can use it; long enough that consecutive chat
+        # turns don't re-load the model. The wake-proxy already handles the
+        # initial cold-start latency.
+        OLLAMA_KEEP_ALIVE = "5m";
         OLLAMA_MAX_LOADED_MODELS = "1";
       };
     };
@@ -247,12 +251,27 @@ in {
           "${pkgs.docker}/bin/docker run --rm --name=comfyui"
           "--device=/dev/kfd --device=/dev/dri"
           "--security-opt=seccomp=unconfined"
+          # Hard memory cap so a runaway ComfyUI gets OOM-killed by the kernel
+          # rather than dragging the whole host into swap thrashing. 12 GB is
+          # generous for SDXL on this 16 GB host; bump if you start running
+          # heavier image models (Flux dev) and have RAM headroom.
+          "--memory=12g --memory-swap=12g"
+          # Tell PyTorch's HIP allocator to release VRAM more aggressively
+          # back to the OS / driver when tensors are freed. Helps when
+          # switching between models or running many workflows in a row.
+          "-e PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.8,max_split_size_mb:512"
           "-p ${toString cfg.comfyui.port}:8188"
           "-v ${cfg.comfyui.dataDir}/models:/opt/ComfyUI/models"
           "-v ${cfg.comfyui.dataDir}/output:/opt/ComfyUI/output"
           "-v ${cfg.comfyui.dataDir}/input:/opt/ComfyUI/input"
           "-v ${cfg.comfyui.dataDir}/user:/opt/ComfyUI/user"
+          # Override the image CMD so we can append --lowvram.
+          # --lowvram: keep the UNet split across CPU+GPU and minimise the
+          # CPU-side mirror of model weights. Slightly slower per generation,
+          # dramatically less system RAM. Right fit for "VRAM > free RAM"
+          # hosts like this one.
           "comfyui-rocm:local"
+          "python main.py --listen 0.0.0.0 --port 8188 --lowvram"
         ];
         ExecStop = "${pkgs.docker}/bin/docker stop comfyui";
         Restart = "on-failure";
