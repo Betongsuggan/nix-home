@@ -134,6 +134,93 @@ in {
         '';
       };
     };
+
+    search = {
+      enable = mkEnableOption "SearXNG metasearch backend for Open WebUI web search";
+
+      port = mkOption {
+        type = types.port;
+        default = 8082;
+        description = "SearXNG HTTP port; loopback-only.";
+      };
+
+      dataDir = mkOption {
+        type = types.path;
+        default = "/var/lib/searxng";
+        description = "Persistent state directory (caches, generated config).";
+      };
+
+      image = mkOption {
+        type = types.str;
+        default = "searxng/searxng:latest";
+        description = "SearXNG container image.";
+      };
+    };
+
+    documents = {
+      enable = mkEnableOption "Apache Tika sidecar for parsing uploads in Open WebUI Knowledge";
+
+      port = mkOption {
+        type = types.port;
+        default = 9998;
+        description = "Tika HTTP port; loopback-only.";
+      };
+
+      image = mkOption {
+        type = types.str;
+        default = "apache/tika:latest";
+        description = "Tika container image. The default ships a usable JVM and OCR baseline.";
+      };
+    };
+
+    codeInterpreter = {
+      enable = mkEnableOption "Jupyter container for the Open WebUI code-interpreter tool";
+
+      port = mkOption {
+        type = types.port;
+        default = 8888;
+        description = "Jupyter HTTP port; loopback-only.";
+      };
+
+      dataDir = mkOption {
+        type = types.path;
+        default = "/var/lib/jupyter";
+        description = "Persistent state directory (notebook cache, kernel state).";
+      };
+
+      image = mkOption {
+        type = types.str;
+        default = "quay.io/jupyter/minimal-notebook:latest";
+        description = "Jupyter container image.";
+      };
+    };
+
+    features = {
+      memory = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable Open WebUI's long-term per-user memory feature.";
+      };
+
+      directConnections = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Allow users to attach OpenAPI / MCP tool servers in Open WebUI's
+          Connections settings. Enabling this only exposes the UI — actual
+          tool servers are added by users at runtime.
+        '';
+      };
+
+      evaluationArena = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Enable message rating (thumbs up/down) and the model-comparison
+          arena. Useful for the scorecard at `assets/ai-scorecard.md`.
+        '';
+      };
+    };
   };
 
   config = mkIf cfg.enable {
@@ -195,14 +282,79 @@ in {
         AUDIO_TTS_OPENAI_API_KEY = "dummy";
         AUDIO_TTS_MODEL = cfg.voice.ttsModel;
         AUDIO_TTS_VOICE = cfg.voice.ttsVoice;
+      } // {
+        # RAG / embeddings via local Ollama. `nomic-embed-text` must be in
+        # `ai-server.models` for this to work; it's pulled on activation.
+        RAG_EMBEDDING_ENGINE = "ollama";
+        RAG_EMBEDDING_MODEL = "nomic-embed-text";
+        RAG_OLLAMA_BASE_URL = "http://127.0.0.1:${toString cfg.ollamaPort}";
+        ENABLE_RAG_HYBRID_SEARCH = "True";
+        # Title/tag/follow-up generation use the chat LLM and are on by
+        # default; pinning them here makes the intent explicit.
+        ENABLE_TITLE_GENERATION = "True";
+        ENABLE_TAGS_GENERATION = "True";
+        ENABLE_FOLLOW_UP_GENERATION = "True";
+        ENABLE_AUTOCOMPLETE_GENERATION = "True";
+        # UI niceties
+        ENABLE_FOLDERS = "True";
+        ENABLE_NOTES = "True";
+      } // lib.optionalAttrs cfg.features.memory {
+        ENABLE_MEMORY = "True";
+      } // lib.optionalAttrs cfg.features.directConnections {
+        # Lets users attach OpenAPI/MCP tool servers under Settings → Tools.
+        ENABLE_DIRECT_CONNECTIONS = "True";
+        MCP_INITIALIZE_TIMEOUT = "30";
+      } // lib.optionalAttrs cfg.features.evaluationArena {
+        ENABLE_MESSAGE_RATING = "True";
+        ENABLE_EVALUATION_ARENA_MODELS = "True";
+      } // lib.optionalAttrs cfg.search.enable {
+        # Web search via local SearXNG container, JSON output enabled by the
+        # bundled settings.yml. The `<query>` placeholder is filled by Open
+        # WebUI per request. Both env-var prefixes are set because Open WebUI
+        # v0.4+ renamed RAG_WEB_SEARCH_* → WEB_SEARCH_*; we ship both so the
+        # module works across versions.
+        ENABLE_WEB_SEARCH = "True";
+        WEB_SEARCH_ENGINE = "searxng";
+        WEB_SEARCH_RESULT_COUNT = "3";
+        WEB_SEARCH_CONCURRENT_REQUESTS = "10";
+        ENABLE_RAG_WEB_SEARCH = "True";
+        RAG_WEB_SEARCH_ENGINE = "searxng";
+        RAG_WEB_SEARCH_RESULT_COUNT = "3";
+        RAG_WEB_SEARCH_CONCURRENT_REQUESTS = "10";
+        SEARXNG_QUERY_URL = "http://127.0.0.1:${toString cfg.search.port}/search?q=<query>&format=json";
+      } // lib.optionalAttrs cfg.documents.enable {
+        # Apache Tika takes uploaded files and returns clean extracted text,
+        # which Open WebUI then embeds for RAG. Massively better than the
+        # built-in extractor for PDFs and Office docs.
+        CONTENT_EXTRACTION_ENGINE = "tika";
+        TIKA_SERVER_URL = "http://127.0.0.1:${toString cfg.documents.port}";
+      } // lib.optionalAttrs cfg.codeInterpreter.enable {
+        # The auth token comes from /var/lib/ai-server/secrets/env via
+        # EnvironmentFile below (we don't inline the secret here so it
+        # doesn't leak into the Nix store).
+        ENABLE_CODE_INTERPRETER = "True";
+        CODE_INTERPRETER_ENGINE = "jupyter";
+        CODE_INTERPRETER_JUPYTER_URL = "http://127.0.0.1:${toString cfg.codeInterpreter.port}";
+        CODE_INTERPRETER_JUPYTER_AUTH = "token";
       };
     };
+
+    # Open WebUI reads the Jupyter token from this file; the same file is
+    # consumed by jupyter.service so both ends share the value. The leading
+    # `-` makes the file optional — if ai-server-secrets hasn't run yet, the
+    # code-interpreter feature is silently degraded instead of preventing
+    # the rest of Open WebUI from starting.
+    systemd.services.open-webui.serviceConfig.EnvironmentFile = lib.mkIf cfg.codeInterpreter.enable
+      "-/var/lib/ai-server/secrets/env";
 
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [
       cfg.ollamaPort
       cfg.webuiPort
     ] ++ lib.optional cfg.comfyui.enable cfg.comfyui.port
       ++ lib.optional cfg.voice.enable cfg.voice.port;
+      # NOTE: search/documents/codeInterpreter ports are deliberately not
+      # exposed on tailscale0 — they're loopback-only, called server-to-server
+      # by Open WebUI.
 
     environment.systemPackages = [ pkgs.rocmPackages.rocminfo ];
 
@@ -230,7 +382,54 @@ in {
       # files can still be dropped here manually without sudo.
       "d ${cfg.voice.dataDir} 0775 1000 1000 -"
       "d ${cfg.voice.dataDir}/hub 0775 1000 1000 -"
+    ] ++ lib.optionals cfg.search.enable [
+      "d ${cfg.search.dataDir} 0775 root wheel -"
+    ] ++ lib.optionals cfg.codeInterpreter.enable [
+      # jovyan (1000:100) is the container default user for jupyter images.
+      "d ${cfg.codeInterpreter.dataDir} 0775 1000 100 -"
+    ] ++ lib.optionals
+      (cfg.codeInterpreter.enable || cfg.search.enable) [
+      # Shared secrets dir, populated once by ai-server-secrets.service.
+      "d /var/lib/ai-server 0750 root root -"
+      "d /var/lib/ai-server/secrets 0750 root root -"
     ];
+
+    # One-shot that generates random Jupyter and SearXNG secrets on first
+    # boot. Both files live on disk under root:root 0600; consumers read
+    # them via systemd EnvironmentFile. Re-runs are no-ops once the file
+    # exists, so the values are stable across reboots until the file is
+    # deleted manually.
+    systemd.services.ai-server-secrets = lib.mkIf
+      (cfg.codeInterpreter.enable || cfg.search.enable) {
+      description = "Bootstrap shared secrets for ai-server sidecars";
+      wantedBy = [ "multi-user.target" ];
+      before = [ "open-webui.service" ]
+        ++ lib.optional cfg.codeInterpreter.enable "jupyter.service"
+        ++ lib.optional cfg.search.enable "searxng.service";
+
+      path = [ pkgs.openssl ];
+
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+
+      script = ''
+        set -eu
+        install -d -m 0750 /var/lib/ai-server/secrets
+        if [ ! -f /var/lib/ai-server/secrets/env ]; then
+          umask 077
+          JT=$(openssl rand -hex 32)
+          SS=$(openssl rand -hex 32)
+          cat > /var/lib/ai-server/secrets/env <<EOF
+        JUPYTER_TOKEN=$JT
+        CODE_INTERPRETER_JUPYTER_AUTH_TOKEN=$JT
+        SEARXNG_SECRET=$SS
+        EOF
+          chmod 0600 /var/lib/ai-server/secrets/env
+        fi
+      '';
+    };
 
     systemd.services.comfyui = mkIf cfg.comfyui.enable {
       description = "ComfyUI image generation (ROCm container)";
@@ -340,6 +539,102 @@ in {
             echo "speaches: pull failed for $model (will retry on next boot)"
         done
       '';
+    };
+
+    systemd.services.searxng = mkIf cfg.search.enable {
+      description = "SearXNG metasearch backend for Open WebUI";
+      after = [ "docker.service" "network-online.target" "ai-server-secrets.service" ];
+      requires = [ "docker.service" "ai-server-secrets.service" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+
+      serviceConfig = {
+        Type = "exec";
+        EnvironmentFile = "/var/lib/ai-server/secrets/env";
+        TimeoutStartSec = "10min";
+        ExecStartPre = [
+          "${pkgs.docker}/bin/docker pull ${cfg.search.image}"
+          "-${pkgs.docker}/bin/docker rm -f searxng"
+        ];
+        ExecStart = lib.concatStringsSep " " [
+          "${pkgs.docker}/bin/docker run --rm --name=searxng"
+          "-p 127.0.0.1:${toString cfg.search.port}:8080"
+          "-e SEARXNG_BASE_URL=http://localhost:${toString cfg.search.port}/"
+          # Forward SEARXNG_SECRET from the unit env (populated by
+          # EnvironmentFile via ai-server-secrets.service) into the container.
+          "-e SEARXNG_SECRET"
+          "-v ${./searxng}/settings.yml:/etc/searxng/settings.yml:ro"
+          "-v ${cfg.search.dataDir}:/var/cache/searxng"
+          cfg.search.image
+        ];
+        ExecStop = "${pkgs.docker}/bin/docker stop searxng";
+        Restart = "on-failure";
+        RestartSec = "10s";
+      };
+    };
+
+    systemd.services.tika = mkIf cfg.documents.enable {
+      description = "Apache Tika document extraction sidecar";
+      after = [ "docker.service" "network-online.target" ];
+      requires = [ "docker.service" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+
+      serviceConfig = {
+        Type = "exec";
+        TimeoutStartSec = "10min";
+        ExecStartPre = [
+          "${pkgs.docker}/bin/docker pull ${cfg.documents.image}"
+          "-${pkgs.docker}/bin/docker rm -f tika"
+        ];
+        ExecStart = lib.concatStringsSep " " [
+          "${pkgs.docker}/bin/docker run --rm --name=tika"
+          "-p 127.0.0.1:${toString cfg.documents.port}:9998"
+          cfg.documents.image
+        ];
+        ExecStop = "${pkgs.docker}/bin/docker stop tika";
+        Restart = "on-failure";
+        RestartSec = "10s";
+      };
+    };
+
+    systemd.services.jupyter = mkIf cfg.codeInterpreter.enable {
+      description = "Jupyter sandbox for Open WebUI code interpreter";
+      after = [ "docker.service" "network-online.target" "ai-server-secrets.service" ];
+      requires = [ "docker.service" "ai-server-secrets.service" ];
+      wants = [ "network-online.target" ];
+      wantedBy = [ "multi-user.target" ];
+
+      serviceConfig = {
+        Type = "exec";
+        EnvironmentFile = "/var/lib/ai-server/secrets/env";
+        TimeoutStartSec = "10min";
+        ExecStartPre = [
+          "${pkgs.docker}/bin/docker pull ${cfg.codeInterpreter.image}"
+          "-${pkgs.docker}/bin/docker rm -f jupyter"
+        ];
+        ExecStart = lib.concatStringsSep " " [
+          "${pkgs.docker}/bin/docker run --rm --name=jupyter"
+          "-p 127.0.0.1:${toString cfg.codeInterpreter.port}:8888"
+          "-v ${cfg.codeInterpreter.dataDir}:/home/jovyan/work"
+          # docker `-e VAR` with no value forwards the value of VAR from the
+          # current systemd unit's environment (populated by EnvironmentFile).
+          # This avoids relying on systemd's $VAR substitution in ExecStart,
+          # which Nix's escaping interfered with.
+          "-e JUPYTER_TOKEN"
+          "-e JUPYTER_ENABLE_LAB=yes"
+          "-e GRANT_SUDO=no"
+          "-e RESTARTABLE=yes"
+          cfg.codeInterpreter.image
+          "start-notebook.py"
+          "--ServerApp.ip=0.0.0.0"
+          "--ServerApp.allow_origin=*"
+          "--ServerApp.disable_check_xsrf=True"
+        ];
+        ExecStop = "${pkgs.docker}/bin/docker stop jupyter";
+        Restart = "on-failure";
+        RestartSec = "10s";
+      };
     };
   };
 }

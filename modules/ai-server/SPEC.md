@@ -6,6 +6,11 @@ Local AI inference for the tailnet. Runs:
 - **Open WebUI** — browser-based chat front-end wired to local Ollama.
 - **ComfyUI** (optional) — image generation, in a custom ROCm container built on `rocm/pytorch:latest` so it actually works on RDNA4 (gfx1201).
 - **Speaches** (optional) — OpenAI-API-compatible STT + TTS in a CPU container; consumed by Open WebUI's Audio settings.
+- **SearXNG** (optional, `search.enable`) — self-hosted metasearch backend so chats can fetch live web content. Loopback-only.
+- **Tika** (optional, `documents.enable`) — Apache Tika sidecar so Open WebUI's Knowledge feature parses uploaded PDFs/Office docs into clean text. Loopback-only.
+- **Jupyter** (optional, `codeInterpreter.enable`) — sandboxed Python kernel so the LLM can run code via the code-interpreter tool. Loopback-only, token-authenticated.
+- **RAG via local Ollama embeddings** — `nomic-embed-text` is auto-loaded; Open WebUI uses it for Knowledge embedding, memory recall, and web-search reranking. Hybrid BM25+vector search is enabled.
+- **Memory, MCP / Direct Connections, message rating, evaluation arena, folders, notes** are all on by default via `features.*` toggles.
 
 All ports are bound on `tailscale0` only; clients reach them through controller's HTTPS reverse-proxy → wake-proxy chain (`modules/reverse-proxy/SPEC.md`, `modules/wake-proxy/SPEC.md`), so the host can sleep when idle. The canonical entry points are:
 
@@ -45,6 +50,20 @@ ai-server = {
 | voice.sttModel      | string | `deepdml/faster-whisper-large-v3-turbo-ct2` | STT model id; pre-pulled on activation |
 | voice.ttsModel      | string | `speaches-ai/Kokoro-82M-v1.0-ONNX-fp16` | TTS model id; pre-pulled on activation |
 | voice.ttsVoice      | string | `af_heart` | Default voice id (see `/v1/audio/speech/voices`) |
+| search.enable       | bool | false  | Enable the SearXNG container |
+| search.port         | port | 8082   | SearXNG HTTP port (loopback-only) |
+| search.image        | string | `searxng/searxng:latest` | Container image |
+| search.dataDir      | path | `/var/lib/searxng` | Persistent cache dir |
+| documents.enable    | bool | false  | Enable the Apache Tika container |
+| documents.port      | port | 9998   | Tika HTTP port (loopback-only) |
+| documents.image     | string | `apache/tika:latest` | Container image |
+| codeInterpreter.enable | bool | false | Enable the Jupyter container |
+| codeInterpreter.port   | port | 8888   | Jupyter HTTP port (loopback-only) |
+| codeInterpreter.image  | string | `quay.io/jupyter/minimal-notebook:latest` | Container image |
+| codeInterpreter.dataDir | path | `/var/lib/jupyter` | Notebook state |
+| features.memory     | bool | true   | Open WebUI per-user memory |
+| features.directConnections | bool | true | Enable MCP / OpenAPI tool-server connections |
+| features.evaluationArena   | bool | true | Message rating + model comparison |
 
 ## Notes
 
@@ -52,6 +71,9 @@ ai-server = {
 - ComfyUI runs in a container built from `modules/ai-server/comfyui/Dockerfile` (thin layer on `rocm/pytorch:latest`). The build is run by a systemd `ExecStartPre` and is layer-cached; first launch will pull the ~15-20 GB base image — be patient. Edits to the Dockerfile are picked up by `nixos-rebuild switch` because the build context path changes. To download a model, drop the file into `${dataDir}/models/checkpoints/` (e.g. SDXL from Hugging Face).
 - ComfyUI is launched with `--lowvram` (UNet split across CPU+GPU, minimal CPU mirror of weights) and the container is hard-capped at 12 GB RAM (`--memory=12g`). The 16 GB host can't fit a CPU mirror of SDXL alongside Ollama's resident model, so without these flags the host swap-thrashes the moment a workflow runs. `PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.8,max_split_size_mb:512` is also set so the HIP allocator returns VRAM more aggressively between runs.
 - `OLLAMA_KEEP_ALIVE=5m` (down from 24h) — idle Ollama unloads its model so ComfyUI / Speaches have RAM headroom. The first chat turn after idle pays a ~3–5 s reload; the wake-proxy already cushions cold-start latency at the host level.
+- **SearXNG, Tika, Jupyter** follow the same containerised pattern as ComfyUI / Speaches: systemd-managed `docker run --rm`, loopback-only ports, persistent state under `/var/lib/<name>` where applicable. None are exposed on `tailscale0` — Open WebUI is the only consumer and calls them over `127.0.0.1`.
+- **Secrets**: `ai-server-secrets.service` is a one-shot that runs on first boot, generates random Jupyter and SearXNG tokens via `openssl rand`, and writes them to `/var/lib/ai-server/secrets/env` (root:root 0600). Open WebUI, Jupyter and SearXNG all read this file via systemd `EnvironmentFile`, so the values are shared without ever appearing in the Nix store. To rotate, delete the file and `systemctl restart ai-server-secrets`.
+- **`nomic-embed-text`** is added to `ai-server.models` so RAG/memory/search reranking work out of the box. ~270 MB pull, runs efficiently on either CPU or GPU.
 - `ENABLE_PERSISTENT_CONFIG = "False"` is set on Open WebUI so env vars are authoritative on every boot. Without it, Open WebUI seeds env-var values into its DB the first time and then the DB wins — meaning UI edits silently override anything we declare here. With it disabled, this module is the single source of truth for admin/system settings; per-user preferences (each user's personal Audio overrides etc.) still persist normally.
 - When `comfyui.enable = true`, Open WebUI is automatically wired to it via env vars (`ENABLE_IMAGE_GENERATION`, `IMAGE_GENERATION_ENGINE=comfyui`, `COMFYUI_BASE_URL=http://127.0.0.1:<port>`, `IMAGE_GENERATION_MODEL=sd_xl_base_1.0.safetensors`, `IMAGE_SIZE=1024x1024`, `IMAGE_STEPS=25`). To use a different default checkpoint, drop it into `${comfyui.dataDir}/models/checkpoints/` and edit the `IMAGE_GENERATION_MODEL` value in the module.
 - **Custom workflows** are declarative via `comfyui.workflow` (path to a JSON file in ComfyUI's *API format*) and `comfyui.workflowNodes` (which nodes correspond to which generation parameters). A starter SDXL txt2img workflow ships at `modules/ai-server/comfyui/workflows/sdxl-base.json`; the matching node-mapping for it is shown below. Author new workflows by building the graph in ComfyUI, then **menu → Save (API Format)**; commit the JSON next to `sdxl-base.json` and reference it from your host config.

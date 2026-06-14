@@ -266,6 +266,7 @@
       "qwen3:8b"
       "qwen2.5-coder:14b"
       "qwen2.5-coder:1.5b"
+      "nomic-embed-text"   # embeddings for RAG / memory / web-search ranking
     ];
     comfyui = {
       enable = true;
@@ -281,6 +282,9 @@
       ];
     };
     voice.enable = true;
+    search.enable = true;
+    documents.enable = true;
+    codeInterpreter.enable = true;
   };
 
   # Auto-suspend after 30 min of session-idle. Logind tracks input events on
