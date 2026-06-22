@@ -40,6 +40,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 
 - Hardware: AMD Ryzen CPU with RDNA4 GPU, using `amd_pstate=active` and full `amdgpu` feature mask
 - Kernel: Zen kernel with `mitigations=off` and `preempt=full` for maximum gaming performance
+- Headless-streaming bootstrap on the otherwise-unused DP-1 connector via two kernel params: `video=DP-1:1920x1080@60D` (force enumerate as connected) + `drm.edid_firmware=DP-1:edid/1920x1080.bin` (load a synthetic EDID so amdgpu doesn't NULL-deref in `dc_resource_is_dsc_encoding_supported`). The EDID binary is provisioned by `hardware.firmware = [ pkgs.edid-generator ]`, which installs `/lib/firmware/edid/1920x1080.bin` — without this, forcing the connector on with no EDID crashes amdgpu and hangs boot with CPU/GPU spinning. This gives Hyprland a guaranteed DRM output to come up on, so the `exec-once` → `graphical-session.target` → sunshine chain fires even with the real KVM/monitors off. Targeting DP-1 (unused; real monitors are on DP-2 + HDMI-A-1) means normal EDID negotiation for the actual displays is untouched.
 - NTFS filesystem support enabled for accessing Windows drives
 - Custom udev rules for NVMe scheduler and USB autosuspend on KVM switch and Realtek ethernet adapter
 - Unstable Mesa overlay applied for latest GPU driver support on gamer user

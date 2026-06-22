@@ -46,9 +46,10 @@ game-streaming.client.enable = true;
 ## Notes
 
 - The server creates helper scripts (`prepare-streaming-session` and `restore-monitors`) that manage a Hyprland virtual monitor lifecycle: creating it when a stream starts and restoring physical monitors when it ends.
+- A systemd-user oneshot `hypr-virtual-monitors.service` materializes the headless `display` monitor at session start and is ordered before `sunshine.service`. Sunshine `autoStart` is therefore set to `false` on the upstream module and re-wired via a drop-in (`Wants=`/`After=hypr-virtual-monitors.service`, `WantedBy=graphical-session.target`) — this avoids a race where Sunshine would start before the monitor existed and crash-loop with an empty Wayland monitor list.
 - Sunshine is configured with AV1 and HEVC auto-negotiation, optimized for AMD VCN5 encoding.
-- LAN encryption is disabled for lower latency; WAN encryption remains on.
+- LAN encryption is disabled for lower latency; WAN encryption remains on. Tailscale's CGNAT range (`100.64.0.0/10`) is classified as WAN by Sunshine — `origin_pin_allowed` and `origin_web_ui_allowed` are set to `wan` so tailnet clients (Moonlight on Android handhelds, etc.) can pair and access the admin UI.
 - The `uinput` kernel module is loaded automatically for virtual input device support.
-- After enabling the server, pair clients by visiting the Sunshine web UI at `https://localhost:47990`.
+- After enabling the server, pair clients by visiting the Sunshine web UI at `https://localhost:47990` (or `https://<host>.ts.rydback.net:47990` over tailnet).
 - The client configuration file is written to `~/.config/Moonlight Game Streaming Project/Moonlight.conf`.
 - HDR streaming requires HEVC or AV1 codec support on both host and client.

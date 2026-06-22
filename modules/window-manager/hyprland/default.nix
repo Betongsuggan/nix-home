@@ -210,19 +210,14 @@ with lib;
         exec-once = [
           # Launcher daemons (walker, vicinae) are started via systemd services
         ]
-        # Create persistent virtual/headless monitors at startup
-        # Then restart Sunshine so it detects them (required for headless streaming)
-        ++ (
-          if config.windowManager.virtualMonitors != [ ] then
-            (map (
-              name: "${pkgs.hyprland}/bin/hyprctl output create headless ${name}"
-            ) config.windowManager.virtualMonitors)
-            ++ [
-              "sleep 2 && ${pkgs.systemd}/bin/systemctl --user restart sunshine || true"
-            ]
-          else
-            [ ]
-        )
+        # Create persistent virtual/headless monitors at startup as a fast path.
+        # A dedicated systemd-user unit (see modules/game-streaming/system.nix)
+        # is the authoritative creator and is what sunshine.service orders
+        # against — these exec-once lines just shorten the window in the common
+        # case where Hyprland's IPC comes up immediately.
+        ++ (map (
+          name: "${pkgs.hyprland}/bin/hyprctl output create headless ${name}"
+        ) config.windowManager.virtualMonitors)
         # Autostart applications
         ++ builtins.concatLists (
           builtins.attrValues (

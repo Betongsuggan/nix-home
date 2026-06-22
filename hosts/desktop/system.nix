@@ -92,6 +92,16 @@
       "nowatchdog"
       "nmi_watchdog=0"
       "usbcore.usbfs_memory_mb=256" # Increase USB memory buffer for KVM USB ethernet
+      # Headless-streaming bootstrap: force the otherwise-unused DP-1
+      # connector to enumerate as connected, AND supply a built-in 1920x1080
+      # synthetic EDID for it. amdgpu must see *some* output to finish init
+      # and let Hyprland start (gamer tty1 → exec-once → graphical-session
+      # → sunshine). Targeting DP-1 (unused) leaves the real DP-2 ultrawide
+      # and HDMI-A-1 4K untouched so their normal EDID negotiation is
+      # preserved. The EDID is critical: forcing the connector on without
+      # one crashes RDNA4 in dc_resource_is_dsc_encoding_supported.
+      "video=DP-1:1920x1080@60D"
+      "drm.edid_firmware=DP-1:edid/1920x1080.bin"
     ];
 
     kernel.sysctl = {
@@ -116,6 +126,9 @@
     enableRedistributableFirmware = true;
     i2c.enable = true;
     sensor.iio.enable = true;
+    # Provides /lib/firmware/edid/1920x1080.bin, loaded by the
+    # `drm.edid_firmware=DP-1:edid/1920x1080.bin` kernel param above.
+    firmware = [ pkgs.edid-generator ];
   };
 
   time.timeZone = "Europe/Stockholm";

@@ -145,7 +145,12 @@ in {
 
       services.sunshine = {
         enable = true;
-        autoStart = true;
+        # Auto-start via graphical-session.target loses a race against the
+        # `hypr-virtual-monitors` oneshot below — sunshine would come up
+        # before the headless monitor exists and crash-loop. We re-add the
+        # WantedBy on the drop-in instead, after ordering against the monitor
+        # service.
+        autoStart = false;
         openFirewall = true;
         capSysAdmin = true; # Required for KMS capture, which is more reliable
         settings = {
@@ -165,6 +170,14 @@ in {
           # Encryption: Disable on LAN for lower latency
           lan_encryption_mode = 0; # No encryption on trusted LAN
           wan_encryption_mode = 1; # Encrypt WAN streams for security
+
+          # Sunshine classifies a peer as LAN only when its source IP is in
+          # RFC1918 / link-local. Tailscale's CGNAT range (100.64/10) is
+          # neither, so tailnet clients are seen as WAN — without these the
+          # default `pin=pc / web_ui=lan` blocks pairing and the admin UI
+          # from any tailnet device.
+          origin_pin_allowed = "wan";
+          origin_web_ui_allowed = "wan";
         };
         applications = {
           apps = [{
@@ -176,6 +189,56 @@ in {
             auto-detach = "true";
           }];
         };
+      };
+
+      # Materialize the headless monitor Sunshine captures from. Runs as a
+      # systemd-user oneshot ordered before sunshine.service, so the Wayland
+      # monitor list is non-empty by the time Sunshine connects to the
+      # compositor — without this, Sunshine finds no displays at startup and
+      # all encoders (nvenc/vaapi/software) "fail" because there's nothing to
+      # capture. Polls hyprctl until the IPC socket is live (Hyprland's
+      # exec-once creates the dir asynchronously).
+      systemd.user.services.hypr-virtual-monitors = {
+        description = "Materialize Hyprland headless monitor(s) for Sunshine";
+        after = [ "hyprland-session.target" ];
+        bindsTo = [ "hyprland-session.target" ];
+        wantedBy = [ "graphical-session.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = ''
+          set -eu
+          sig_dir="$XDG_RUNTIME_DIR/hypr"
+          for _ in $(seq 1 60); do
+            if [ -d "$sig_dir" ]; then
+              sig="$(ls "$sig_dir" 2>/dev/null | head -1 || true)"
+              if [ -n "''${sig:-}" ] && \
+                 HYPRLAND_INSTANCE_SIGNATURE="$sig" \
+                 ${pkgs.hyprland}/bin/hyprctl monitors >/dev/null 2>&1; then
+                export HYPRLAND_INSTANCE_SIGNATURE="$sig"
+                break
+              fi
+            fi
+            sleep 0.5
+          done
+          if [ -z "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+            echo "Hyprland IPC socket never appeared at $sig_dir" >&2
+            exit 1
+          fi
+          # `hyprctl output create headless` is idempotent for our purposes:
+          # if a monitor with the same name exists, it returns ok without
+          # creating a duplicate.
+          ${pkgs.hyprland}/bin/hyprctl output create headless ${cfg.display}
+        '';
+      };
+
+      # Drop-in: order sunshine after the monitor service and re-add the
+      # graphical-session WantedBy that `autoStart = false` removed.
+      systemd.user.services.sunshine = {
+        wants = [ "hypr-virtual-monitors.service" ];
+        after = [ "hypr-virtual-monitors.service" ];
+        wantedBy = [ "graphical-session.target" ];
       };
 
       environment.systemPackages = [
