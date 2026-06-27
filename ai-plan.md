@@ -135,6 +135,7 @@ The stack is fully assembled. Remaining work is exploration, measurement, and lo
 - [ ] **Auto-suspend on `desktop`** — currently the host stays awake; wake-proxy handles cold starts when it's asleep, but going to sleep is manual. Coordinating idle-suspend with the `gamer` autologin TTY, Sunshine streaming, and Ollama keep-alive is a small follow-up project. Park until the lab settles.
 - [ ] **Monitoring** — `amdgpu_top` on `desktop` shows VRAM / power / temp; `nvtop` works too. Worth a quick screenshot in the scorecard so future-you knows what "warm but idle" looks like.
 - [ ] **Optional integrations** — RAG over your documents (Open WebUI has it built-in via the Knowledge feature), n8n flows that call `https://llm.rydback.net`, Home Assistant STT via `https://voice.rydback.net`. Each is a self-contained mini-project.
+- [ ] **Auto-memory function** — Open WebUI's memory storage + retrieval works (`ENABLE_MEMORY=True`), but automatic extraction from chat ("Remember X") needs a community Filter function (e.g. `adaptive_memory_v2` or `auto_memory`). Install path is `https://chat.rydback.net/admin/functions` → paste source. Once verified, declarative path is a small systemd one-shot that POSTs the function source to Open WebUI's `/api/v1/functions/` API on activation (using an admin API key from `nix-vault`).
 
 **Already in the repo:**
 
