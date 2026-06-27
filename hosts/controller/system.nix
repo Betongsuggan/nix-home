@@ -123,6 +123,33 @@
       owner = "root";
       mode = "0400";
     };
+
+    # First-run admin password for Nextcloud. Read once by
+    # `nextcloud-setup.service` during initial install; ignored thereafter
+    # (admin password is then stored hashed in the Nextcloud DB).
+    "nextcloud-admin-pass" = {
+      key = "services/nextcloud-admin-pass";
+      owner = "nextcloud";
+      mode = "0400";
+    };
+
+    # Shared JWT signing secret. The EXACT same value must be entered in
+    # Nextcloud's ONLYOFFICE app (admin UI → ONLYOFFICE → "Secret key").
+    "onlyoffice-jwt" = {
+      key = "services/onlyoffice-jwt";
+      owner = "onlyoffice";
+      mode = "0400";
+    };
+
+    # nginx `include`s this file at config-parse time to define
+    # `$secure_link_secret` for OnlyOffice's /cache/files location. The
+    # file content is literal nginx syntax (see modules/onlyoffice/SPEC.md).
+    # nginx (running as user `nginx`) reads it, hence owner=nginx.
+    "onlyoffice-nonce" = {
+      key = "services/onlyoffice-nonce";
+      owner = "nginx";
+      mode = "0400";
+    };
   };
 
   home-network = {
@@ -175,6 +202,16 @@
           }
           {
             name = "voice.rydback.net";
+            type = "A";
+            value = "100.64.0.2";
+          }
+          {
+            name = "cloud.rydback.net";
+            type = "A";
+            value = "100.64.0.2";
+          }
+          {
+            name = "office.rydback.net";
             type = "A";
             value = "100.64.0.2";
           }
@@ -340,6 +377,44 @@
     signupsAllowed = false;
   };
 
+  # Browser office suite — file storage shell + collaborative editing
+  # backend. See modules/nextcloud/SPEC.md and modules/onlyoffice/SPEC.md.
+  nextcloud = {
+    enable = true;
+    domain = "cloud.rydback.net";
+    adminUser = "betongsuggan";
+    adminPassFile = config.sops.secrets."nextcloud-admin-pass".path;
+    maxUploadSize = "10G";
+    tailnetOnly = true;
+  };
+
+  onlyoffice = {
+    enable = true;
+    domain = "office.rydback.net";
+    jwtSecretFile = config.sops.secrets."onlyoffice-jwt".path;
+    nonceFile = config.sops.secrets."onlyoffice-nonce".path;
+    tailnetOnly = true;
+  };
+
+  # OnlyOffice docservice defaults to 127.0.0.1:8000, which collides with
+  # wake-proxy's 0.0.0.0:8000 (voice tunnel to desktop's Speaches). Move
+  # the docservice off 8000 — nginx already proxies to it via the upstream
+  # alias, so the change is internal.
+  services.onlyoffice.port = 8765;
+
+  # Daily pg_dump for both Nextcloud and OnlyOffice DBs, landing in
+  # /var/backups/postgresql. The restic timer below picks this up. Runs at
+  # 01:15 by upstream default — leaving the schedule alone so the
+  # `services.postgresqlBackup` defaults stay self-documenting.
+  services.postgresqlBackup = {
+    enable = true;
+    databases = [
+      "nextcloud"
+      "onlyoffice"
+    ];
+    location = "/var/backups/postgresql";
+  };
+
   # Interim backup topology until dedicated NAS hardware lands: push restic
   # snapshots over SFTP-on-tailnet to desktop (on-site copy) and
   # island-stationary (off-site, summer house). Each target is an independent
@@ -351,11 +426,17 @@
       "/var/lib/headscale"
       "/var/lib/git/nix-vault.git"
       "/var/lib/emulation"
+      "/var/lib/nextcloud"
+      "/var/backups/postgresql"
     ];
     excludes = [
       "**/.cache/**"
       "**/.thumbnails/**"
     ];
+    # Shift off the default `daily` (= 00:00) so this runs *after*
+    # postgresqlBackup's default 01:15 dump — picking up today's dump
+    # rather than yesterday's. 30-minute headroom for pg_dump to finish.
+    timerOnCalendar = "*-*-* 01:45:00";
     passwordFile = config.sops.secrets."restic-repo-password".path;
     sshKeyFile = config.sops.secrets."restic-ssh-key".path;
     targets = {

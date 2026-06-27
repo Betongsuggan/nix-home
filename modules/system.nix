@@ -26,6 +26,8 @@
     ./power-management
     ./printers
     ./networking
+    ./nextcloud
+    ./onlyoffice
     ./openssh
     ./restic-backup
     ./restic-target
