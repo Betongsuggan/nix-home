@@ -62,17 +62,23 @@ let
       echo "  Streaming session ready" >> "$LOG"
     '';
 
-  # Script to restore monitors after streaming ends
+  # Script to restore monitors after streaming ends.
+  # NOTE: we deliberately do NOT remove the headless virtual monitor here.
+  # `hypr-virtual-monitors.service` is a Type=oneshot that only runs at
+  # graphical-session start, so nothing would re-create it for the next
+  # session — and sunshine probes encoders against the live monitor list at
+  # startup, so an empty list (no virtual monitor + no physical monitors
+  # connected on a headless host) makes every encoder "fail" and sunshine
+  # rejects subsequent /launch requests with 503. Leaving the headless
+  # monitor alive keeps Hyprland's monitor list non-empty, and the next
+  # prepare-streaming-session's `hyprctl output create headless` is
+  # idempotent for our purposes.
   restore-monitors = pkgs.writeShellScriptBin "restore-monitors" ''
     #!/usr/bin/env bash
     LOG="/tmp/streaming-session.log"
     VIRTUAL_MON="${cfg.display}"
 
     echo "$(date): restore-monitors started" >> "$LOG"
-
-    # Remove the virtual monitor first
-    ${pkgs.hyprland}/bin/hyprctl output remove "$VIRTUAL_MON"
-    echo "  Removed virtual monitor: $VIRTUAL_MON" >> "$LOG"
 
     # Restore physical monitors from backup
     if [[ -f /tmp/monitors-backup.json ]]; then
