@@ -18,8 +18,10 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - RDNA4-optimized Vulkan environment variables (RADV, ray tracing, HDR)
 - RetroArch with 10 libretro cores (SNES, NES, GB/GBC/GBA, N64, NDS, PSX, Mega Drive, Dreamcast, Saturn, Arcade)
 - Standalone emulators: PCSX2 (PS2), Dolphin (GameCube/Wii), PPSSPP (PSP), Duckstation (PSX)
+- Nintendo Switch (gamer user) via Ryubing (Ryujinx fork, from unstable). Keys/firmware are uploaded to the controller `bios/switch` Samba share and symlinked into Ryujinx's data dir; games appear as Steam Big Picture tiles (streamable over Moonlight) via a declarative Steam ROM Manager parser applied headlessly with `switch-apply-shortcuts`. See `modules/games/SPEC.md`.
 - BoilR and Steam ROM Manager for unified Steam library integration (all games in one console UI)
-- Emulation client (gamer user): Syncthing save sync and `mount-emulation-roms` helper targeting controller at `192.168.50.5`
+- Emulation mounts: controller's `emulation-roms` + `emulation-bios` shares auto-mount for both `betongsuggan` and `gamer` at `~/emulation/{roms,bios}`
+- Emulation client (gamer user): Syncthing save sync (includes Switch saves under `~/emulation/saves/switch`) and `mount-emulation-roms` helper targeting controller at `192.168.50.5`
 - Zen kernel optimized for desktop/gaming with ryzen-smu monitoring
 - ZRAM swap (zstd, 50% memory) for memory efficiency
 - CPU governor set to performance mode with undervolting enabled

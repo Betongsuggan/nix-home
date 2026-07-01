@@ -16,22 +16,13 @@ let
     };
   });
 
-  brightnessBackend = if cfg.backend == "light" then pkgs.light else pkgs.brightnessctl;
-  
-  brightnessCommands = {
-    light = {
-      increase = "${brightnessBackend}/bin/light -A";
-      decrease = "${brightnessBackend}/bin/light -U";
-      get = "${brightnessBackend}/bin/light";
-    };
-    brightnessctl = {
-      increase = "${brightnessBackend}/bin/brightnessctl set";
-      decrease = "${brightnessBackend}/bin/brightnessctl set --";
-      get = "${brightnessBackend}/bin/brightnessctl get";
-    };
-  };
+  brightnessBackend = pkgs.brightnessctl;
 
-  cmds = brightnessCommands.${cfg.backend};
+  cmds = {
+    increase = "${brightnessBackend}/bin/brightnessctl set";
+    decrease = "${brightnessBackend}/bin/brightnessctl set --";
+    get = "${brightnessBackend}/bin/brightnessctl get";
+  };
   
   brightnessControl = pkgs.writeShellScriptBin "brightness-control" ''
     #!/usr/bin/env bash
@@ -45,14 +36,10 @@ let
         esac
     done
 
-    ${if cfg.backend == "light" then ''
-      brightness="$(${cmds.get} | sed 's/\..*//')"
-    '' else ''
-      # Calculate percentage for brightnessctl (raw value / max * 100)
-      current="$(${cmds.get})"
-      max="$(${brightnessBackend}/bin/brightnessctl max)"
-      brightness="$((current * 100 / max))"
-    ''}
+    # Calculate percentage for brightnessctl (raw value / max * 100)
+    current="$(${cmds.get})"
+    max="$(${brightnessBackend}/bin/brightnessctl max)"
+    brightness="$((current * 100 / max))"
 
     ${notifyBrightness}
   '';

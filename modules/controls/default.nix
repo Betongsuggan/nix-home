@@ -29,8 +29,10 @@ with lib;
 
       backend = mkOption {
         description = "Brightness control backend";
-        type = types.enum [ "light" "brightnessctl" ];
-        default = "light";
+        # `light` was removed in nixpkgs 26.05 (unmaintained upstream);
+        # brightnessctl is the maintained replacement.
+        type = types.enum [ "brightnessctl" ];
+        default = "brightnessctl";
       };
 
       notifications = mkOption {

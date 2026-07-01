@@ -45,7 +45,7 @@ in {
 
     standaloneEmulators = mkOption {
       type = types.listOf types.str;
-      default = [ "retroarch" "ppsspp" "duckstation" "dolphin" ];
+      default = [ "retroarch" "ppsspp" "duckstation" "dolphin" "switch" ];
       description = "Standalone emulators to create save subdirectories for";
     };
   };

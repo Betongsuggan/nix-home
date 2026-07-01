@@ -217,7 +217,9 @@
   emulation-mounts = {
     enable = true;
     server = inputs.self.lib.tailnet.fqdn "controller";
-    users = [ "betongsuggan" ];
+    # gamer needs the shares too: it runs the streamed Big Picture session and
+    # consumes Switch ROMs (roms/switch) plus keys/firmware (bios/switch).
+    users = [ "betongsuggan" "gamer" ];
   };
 
   # Receive restic snapshots from controller as the on-site copy in the interim

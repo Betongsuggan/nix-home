@@ -33,19 +33,19 @@ emulation-server = {
 | dataDir | path | /var/lib/emulation | Root directory for emulation data (roms, saves, bios) |
 | lanInterface | string | "enp1s0" | LAN network interface to open Syncthing/Samba ports on (ignored when `tailnetOnly = true`) |
 | lanSubnet | string | "192.168.50.0/24" | LAN subnet allowed to reach Samba shares (ignored when `tailnetOnly = true`) |
-| systems | list of string | 17 systems (see below) | ROM subdirectories to create |
-| standaloneEmulators | list of string | ["retroarch" "ppsspp" "duckstation" "dolphin"] | Save subdirectories to create |
+| systems | list of string | 18 systems (see below) | ROM subdirectories to create |
+| standaloneEmulators | list of string | ["retroarch" "ppsspp" "duckstation" "dolphin" "switch"] | Save subdirectories to create |
 | tailnetOnly | bool | false | Restrict Syncthing + Samba to the tailnet — see notes below. |
 | syncthing.devices | attrset of `{ id; tailnetFqdn }` | {} | Syncthing peers. Feed `inputs.self.lib.allSyncthingDevices` to pick up the entire fleet declaratively. |
 | syncthing.selfSyncthingId | nullable string | null | This host's own Syncthing ID — used to filter the local entry out of the peer list. Required on hosts that include themselves in `allSyncthingDevices`. |
 
 ### Default systems
 
-snes, nes, gb, gbc, gba, n64, nds, psx, ps2, psp, megadrive, mastersystem, gamecube, wii, dreamcast, saturn, arcade
+snes, nes, gb, gbc, gba, n64, nds, psx, ps2, psp, megadrive, mastersystem, gamecube, wii, dreamcast, saturn, arcade, switch
 
 ### Default emulators (save directories)
 
-retroarch (with `saves/` and `states/` subdirs), ppsspp, duckstation, dolphin
+retroarch (with `saves/` and `states/` subdirs), ppsspp, duckstation, dolphin, switch
 
 ## Notes
 
@@ -62,10 +62,25 @@ Created automatically via `systemd.tmpfiles` at boot, owned by `${user}:users` m
 
 ```
 ${dataDir}/
-  roms/{snes,nes,gb,gbc,gba,n64,nds,psx,ps2,psp,megadrive,mastersystem,gamecube,wii,dreamcast,saturn,arcade}/
-  saves/{retroarch/{saves,states},ppsspp,duckstation,dolphin}/
+  roms/{snes,nes,gb,gbc,gba,n64,nds,psx,ps2,psp,megadrive,mastersystem,gamecube,wii,dreamcast,saturn,arcade,switch}/
+  saves/{retroarch/{saves,states},ppsspp,duckstation,dolphin,switch}/
   bios/
+    switch/            # prod.keys + title.keys (uploaded over Samba)
+      firmware/        # Nintendo Switch firmware NCA files
 ```
+
+### Nintendo Switch keys & firmware
+
+Switch ROMs (`.nsp`/`.xci`/`.nsz`/`.xcz`/`.nca`/`.nro`) go in `roms/switch/`. The
+BIOS-equivalent secrets — dumped from the user's own console, not distributable — live under
+the BIOS share so they can be uploaded remotely over Samba and consumed by the client:
+
+- `bios/switch/prod.keys` (and optionally `bios/switch/title.keys`)
+- `bios/switch/firmware/*.nca` — the firmware as separated NCA files
+
+On a client with the `games` module's `emulators.switch` enabled, these are symlinked into
+Ryujinx's data dir automatically (`system/` for keys, `bis/system/Contents/registered/` for
+firmware). See `modules/games/SPEC.md` for the client side.
 
 ### Network exposure
 

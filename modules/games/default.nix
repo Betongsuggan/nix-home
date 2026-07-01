@@ -25,6 +25,14 @@
 #        Configure one parser per system, point it at the ROM directory and
 #        the right emulator executable, then run to generate shortcuts.
 #
+#   Nintendo Switch (emulators.switch)
+#     Emulator (default Ryubing) pulled from unstable. Designed for headless
+#     remote setup: keys/firmware are uploaded to the controller BIOS share and
+#     symlinked into Ryujinx's data dir, and the SRM "Nintendo Switch" parser is
+#     upserted declaratively so `switch-apply-shortcuts` (a headless
+#     `steam-rom-manager add`) turns each ROM into a Big Picture tile. No GUI.
+#     See SPEC.md "Nintendo Switch (headless / remote setup)".
+#
 # First-time setup after a fresh build:
 #
 #   1. Place BIOS files in ~/emulation/bios/ (RetroArch, PCSX2, etc. need them)
@@ -158,10 +166,36 @@ with lib;
           default = true;
           description = "Install PPSSPP (PSP emulator)";
         };
-        duckstation = mkOption {
-          type = types.bool;
-          default = true;
-          description = "Install Duckstation (PSX emulator)";
+        # Duckstation was removed from nixpkgs 26.05 on upstream request. PSX is
+        # covered by RetroArch's beetle-psx-hw core (in the default cores list),
+        # so no standalone PSX emulator is installed.
+      };
+
+      # Nintendo Switch — pulled from `unstable` (like heroic) so we track the
+      # fast-moving fork ecosystem. yuzu and the original Ryujinx were both
+      # taken down by Nintendo in 2024; `ryubing` is the maintained Ryujinx
+      # continuation and is the sensible default (Vulkan, stable, and its
+      # `Ryujinx` binary boots straight into a game — ideal for per-game
+      # Steam shortcuts). See the Switch first-time-setup section in SPEC.md.
+      switch = {
+        enable = mkEnableOption "Nintendo Switch emulation";
+
+        emulator = mkOption {
+          type = types.enum [ "ryubing" "citron" "eden" ];
+          default = "ryubing";
+          description = "Switch emulator fork to install (from unstable for latest versions)";
+        };
+
+        dataDir = mkOption {
+          type = types.str;
+          default = "${config.home.homeDirectory}/${config.games.emulators.dataDir}/saves/switch";
+          defaultText = "\${home}/\${emulators.dataDir}/saves/switch";
+          description = ''
+            Ryujinx `--root-data-dir`. Holds `system/` (keys) and `bis/`
+            (firmware + saves). Lives under the synced saves tree so keys,
+            firmware, and saves are backed up via Syncthing. Only used when
+            emulator = "ryubing".
+          '';
         };
       };
     };
@@ -188,7 +222,145 @@ with lib;
     };
   };
 
-  config = let cfg = config.games; in mkIf cfg.enable {
+  config =
+    let
+      cfg = config.games;
+      sw = cfg.emulators.switch;
+      switchEnabled = cfg.emulators.enable && sw.enable;
+      isRyujinx = sw.emulator == "ryubing";
+
+      switchPkg = pkgs.unstable.${sw.emulator};
+      switchBin =
+        {
+          ryubing = "Ryujinx";
+          citron = "citron";
+          eden = "eden";
+        }
+        .${sw.emulator};
+
+      emuDir = "${config.home.homeDirectory}/${cfg.emulators.dataDir}";
+      switchRomDir = "${emuDir}/roms/switch";
+      # Keys + firmware come from the controller BIOS Samba share, auto-mounted
+      # read-only at ~/emulation/bios (see emulation-mounts).
+      switchKeysDir = "${emuDir}/bios/switch";
+      switchFirmwareDir = "${switchKeysDir}/firmware";
+      steamDir = "${config.home.homeDirectory}/.steam/steam";
+
+      # Symlink keys + firmware from the read-only BIOS share into Ryujinx's
+      # writable data dir. Runs at activation and is re-runnable over SSH after
+      # uploading firmware (accessing the share warms the lazy automount).
+      switchRefreshFirmware = pkgs.writeShellScriptBin "switch-refresh-firmware" ''
+        set -euo pipefail
+        SYS_DIR="${sw.dataDir}/system"
+        REG_DIR="${sw.dataDir}/bis/system/Contents/registered"
+        mkdir -p "$SYS_DIR" "$REG_DIR"
+
+        # Keys have fixed names; link them even if the share isn't warm yet —
+        # the symlink resolves once the automount triggers on first access.
+        ln -sf "${switchKeysDir}/prod.keys" "$SYS_DIR/prod.keys"
+        ln -sf "${switchKeysDir}/title.keys" "$SYS_DIR/title.keys"
+
+        # Firmware NCA filenames aren't known ahead of time; link whatever the
+        # share currently holds.
+        shopt -s nullglob
+        ncas=("${switchFirmwareDir}"/*.nca)
+        if (( ''${#ncas[@]} )); then
+          ln -sf "''${ncas[@]}" "$REG_DIR"/
+          echo "Linked ''${#ncas[@]} firmware NCA(s) into $REG_DIR"
+        else
+          echo "No firmware NCAs in ${switchFirmwareDir} yet — upload them to the controller bios/switch/firmware share."
+        fi
+      '';
+
+      # Headless shortcut generation: stop Steam, refresh firmware links, then
+      # run SRM under a virtual X display (Electron needs one even in CLI mode).
+      switchApplyShortcuts = pkgs.writeShellScriptBin "switch-apply-shortcuts" ''
+        set -euo pipefail
+        echo "Stopping Steam (required before SRM writes shortcuts.vdf)..."
+        ${pkgs.steam}/bin/steam -shutdown >/dev/null 2>&1 || true
+        for _ in $(seq 1 15); do
+          ${pkgs.procps}/bin/pgrep -x steam >/dev/null || break
+          sleep 1
+        done
+        ${switchRefreshFirmware}/bin/switch-refresh-firmware || true
+        echo "Generating Steam shortcuts via Steam ROM Manager (headless)..."
+        ${pkgs.xvfb-run}/bin/xvfb-run -a ${pkgs.steam-rom-manager}/bin/steam-rom-manager add
+        echo "Done. Reconnect the Moonlight 'Steam Gaming' app to see the new tiles."
+      '';
+
+      # Steam ROM Manager parser (on-disk schema v10, modelled on a known-good
+      # exported config). This is the one piece whose schema is version-locked
+      # to the installed SRM build — validate on-target with
+      # `steam-rom-manager list`; SRM migrates older `version`s on load.
+      switchSrmParser = {
+        parserType = "Glob";
+        configTitle = "Nintendo Switch - ${sw.emulator}";
+        steamCategory = "\${Nintendo Switch}";
+        steamDirectory = steamDir;
+        romDirectory = switchRomDir;
+        executableArgs =
+          if isRyujinx then
+            "--root-data-dir \"${sw.dataDir}\" \"\${filePath}\""
+          else
+            "\"\${filePath}\"";
+        executableModifier = "\"\${exePath}\"";
+        startInDirectory = "";
+        titleModifier = "\${fuzzyTitle}";
+        imageProviders = [ "SteamGridDB" ];
+        onlineImageQueries = "\${\${fuzzyTitle}}";
+        imagePool = "\${fuzzyTitle}";
+        defaultImage = "";
+        defaultTallImage = "";
+        defaultHeroImage = "";
+        defaultLogoImage = "";
+        defaultIcon = "";
+        localImages = "";
+        localTallImages = "";
+        localHeroImages = "";
+        localLogoImages = "";
+        localIcons = "";
+        userAccounts = {
+          specifiedAccounts = "";
+          skipWithMissingDataDir = true;
+          useCredentials = true;
+        };
+        executable = {
+          path = "${switchPkg}/bin/${switchBin}";
+          shortcutPassthrough = false;
+          appendArgsToExecutable = true;
+        };
+        parserInputs = {
+          glob = "**/\${title}@(.nsp|.xci|.nsz|.xcz|.nca|.nro)";
+        };
+        titleFromVariable = {
+          limitToGroups = "";
+          caseInsensitiveVariables = false;
+          skipFileIfVariableWasNotFound = false;
+          tryToMatchTitle = false;
+        };
+        fuzzyMatch = {
+          replaceDiacritics = true;
+          removeCharacters = true;
+          removeBrackets = true;
+        };
+        imageProviderAPIs = {
+          SteamGridDB = {
+            nsfw = false;
+            humor = false;
+            styles = [ ];
+            stylesHero = [ ];
+            stylesLogo = [ ];
+            stylesIcon = [ ];
+            imageMotionTypes = [ "static" ];
+          };
+        };
+        parserId = "switch-ryujinx-srm-000001";
+        version = 10;
+        disabled = false;
+      };
+      switchSrmParserFile = pkgs.writeText "switch-srm-parser.json" (builtins.toJSON switchSrmParser);
+    in
+    mkIf cfg.enable {
     programs.mangohud = mkIf cfg.mangohud.enable {
       enable = true;
       enableSessionWide = true;
@@ -300,7 +472,7 @@ with lib;
         protontricks
         goverlay # MangoHud/vkBasalt GUI
         bottles # Wine prefix manager
-        heroic # GOG/Epic launcher
+        unstable.heroic # GOG/Epic launcher (stable pulls insecure electron-39)
       ])
       ++ (optionals cfg.vkbasalt.enable [
         vkbasalt
@@ -334,7 +506,6 @@ with lib;
         (optional cfg.emulators.standalone.pcsx2 pcsx2)
         ++ (optional cfg.emulators.standalone.dolphin dolphin-emu)
         ++ (optional cfg.emulators.standalone.ppsspp ppsspp)
-        ++ (optional cfg.emulators.standalone.duckstation duckstation)
       ))
       # Steam library integration — these tools write non-Steam shortcuts into
       # Steam's shortcuts.vdf so everything shows up in Big Picture / gamepad UI.
@@ -342,11 +513,36 @@ with lib;
       ++ (optionals cfg.steamIntegration.enable (
         (optional cfg.steamIntegration.boilr boilr)
         ++ (optional cfg.steamIntegration.steamRomManager steam-rom-manager)
-      ));
+      ))
+      # Nintendo Switch: the emulator (from unstable) plus the headless glue
+      # scripts. jq/xvfb-run back the SRM upsert and headless `add`.
+      ++ (optionals switchEnabled [
+        switchPkg
+        switchApplyShortcuts
+        switchRefreshFirmware
+        jq
+        xvfb-run
+      ]);
 
     # Install Proton-GE to Steam's compatibility tools directory
     home.file = mkIf cfg.protonGE.enable {
       ".steam/root/compatibilitytools.d/proton-ge".source = pkgs.proton-ge-bin;
     };
+
+    # Switch setup: link keys/firmware from the BIOS share and upsert the SRM
+    # parser into the (writable) user config, preserving GUI-created parsers.
+    # Idempotent — matches on configTitle so re-runs replace in place.
+    home.activation.switchSetup = mkIf switchEnabled (
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        ${switchRefreshFirmware}/bin/switch-refresh-firmware || true
+
+        SRM_CFG="${config.home.homeDirectory}/.config/steam-rom-manager/userData/userConfigurations.json"
+        mkdir -p "$(dirname "$SRM_CFG")"
+        [ -f "$SRM_CFG" ] || echo '[]' > "$SRM_CFG"
+        ${pkgs.jq}/bin/jq --slurpfile new ${switchSrmParserFile} \
+          'map(select(.configTitle != $new[0].configTitle)) + $new' \
+          "$SRM_CFG" > "$SRM_CFG.tmp" && mv "$SRM_CFG.tmp" "$SRM_CFG"
+      ''
+    );
   };
 }

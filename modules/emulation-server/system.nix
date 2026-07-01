@@ -47,9 +47,10 @@ let
     "dreamcast"
     "saturn"
     "arcade"
+    "switch"
   ];
 
-  defaultEmulators = [ "retroarch" "ppsspp" "duckstation" "dolphin" ];
+  defaultEmulators = [ "retroarch" "ppsspp" "duckstation" "dolphin" "switch" ];
 
   tmpfilesDir = path: "d ${path} 0775 ${cfg.user} users -";
 
@@ -157,6 +158,12 @@ in
           (tmpfilesDir "${cfg.dataDir}/bios")
           (tmpfilesDir "${cfg.dataDir}/saves/retroarch/saves")
           (tmpfilesDir "${cfg.dataDir}/saves/retroarch/states")
+          # Nintendo Switch keys + firmware live under the BIOS share so they
+          # can be uploaded remotely over Samba and consumed by the client.
+          # `prod.keys`/`title.keys` go directly in `bios/switch/`; firmware
+          # NCA files go in `bios/switch/firmware/`.
+          (tmpfilesDir "${cfg.dataDir}/bios/switch")
+          (tmpfilesDir "${cfg.dataDir}/bios/switch/firmware")
         ]
         ++ map (sys: tmpfilesDir "${cfg.dataDir}/roms/${sys}") cfg.systems
         ++ map (emu: tmpfilesDir "${cfg.dataDir}/saves/${emu}") cfg.standaloneEmulators;

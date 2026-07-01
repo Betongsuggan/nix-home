@@ -21,12 +21,20 @@
     vkbasalt.enable = true;
     protonGE.enable = true;
     tools.enable = true;
-    emulators.enable = true;
+    emulators = {
+      enable = true;
+      # Nintendo Switch via Ryubing (Ryujinx fork). Keys/firmware are pulled
+      # from the controller bios/switch share; see modules/games/SPEC.md.
+      switch.enable = true;
+    };
     steamIntegration.enable = true;
   };
 
+  # Re-enabled for Switch save sync: Ryujinx writes saves under
+  # ~/emulation/saves/switch, which Syncthing mirrors to the controller.
+  # (ROM/BIOS mounts come from the emulation-mounts system module, not this.)
   emulation-client = {
-    enable = false; # TEMP: disabled while iterating on betongsuggan-side setup. Re-enable once port handling decided.
+    enable = true;
     server.address = "192.168.50.5";
   };
 

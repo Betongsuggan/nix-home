@@ -156,9 +156,9 @@ in {
         input * xkb_variant "colemak,"
         input * xkb_options "caps:escape,compose:${config.windowManager.composeKey},grp:shifts_toggle"
 
-        # Brightness
-        bindsym XF86MonBrightnessDown exec light -U 10
-        bindsym XF86MonBrightnessUp exec light -A 10
+        # Brightness (light was removed in nixpkgs 26.05; use brightnessctl)
+        bindsym XF86MonBrightnessDown exec ${pkgs.brightnessctl}/bin/brightnessctl set 10%-
+        bindsym XF86MonBrightnessUp exec ${pkgs.brightnessctl}/bin/brightnessctl set +10%
 
         # Volume
         bindsym XF86AudioRaiseVolume exec '${pamixer}/bin/pamixer -i 2'

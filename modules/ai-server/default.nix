@@ -347,6 +347,11 @@ in {
     systemd.services.open-webui.serviceConfig.EnvironmentFile = lib.mkIf cfg.codeInterpreter.enable
       "-/var/lib/ai-server/secrets/env";
 
+    # Open WebUI 0.9.x (nixpkgs 26.05) calls Python's Path.expanduser(), which
+    # throws "Could not determine home directory" under DynamicUser when $HOME
+    # is unset. Point HOME at its writable StateDirectory.
+    systemd.services.open-webui.environment.HOME = "/var/lib/open-webui";
+
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [
       cfg.ollamaPort
       cfg.webuiPort

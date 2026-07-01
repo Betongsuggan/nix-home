@@ -6,6 +6,7 @@ inputs.nixpkgs.lib.nixosSystem {
   modules = [
     inputs.home-manager.nixosModules.home-manager
     inputs.lanzaboote.nixosModules.lanzaboote
+    inputs.sops-nix.nixosModules.sops
     ../../modules/common
     ../../modules/system.nix
     ./system.nix

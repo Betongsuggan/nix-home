@@ -2,9 +2,11 @@
 
 inputs.nixpkgs.lib.nixosSystem {
   system = "x86_64-linux";
+  specialArgs = { inherit inputs; };
   modules = [
     inputs.home-manager.nixosModules.home-manager
     inputs.lanzaboote.nixosModules.lanzaboote
+    inputs.sops-nix.nixosModules.sops
     ../../modules/common
     ../../modules/system.nix
     ./system.nix

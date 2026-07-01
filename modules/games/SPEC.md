@@ -24,7 +24,10 @@ games = {
     # standalone.pcsx2 = true;  # default
     # standalone.dolphin = true;  # default
     # standalone.ppsspp = true;  # default
-    # standalone.duckstation = true;  # default
+    switch = {
+      enable = true;            # off by default
+      # emulator = "ryubing";   # default; also "citron" or "eden" (all from unstable)
+    };
   };
   steamIntegration = {
     enable = true;
@@ -54,7 +57,9 @@ games = {
 | emulators.standalone.pcsx2 | bool | true | Install PCSX2 (PS2 emulator) |
 | emulators.standalone.dolphin | bool | true | Install Dolphin (GameCube/Wii emulator) |
 | emulators.standalone.ppsspp | bool | true | Install PPSSPP (PSP emulator) |
-| emulators.standalone.duckstation | bool | true | Install Duckstation (PSX emulator) |
+| emulators.switch.enable | bool | false | Enable Nintendo Switch emulation |
+| emulators.switch.emulator | enum | "ryubing" | Switch fork to install from unstable: "ryubing" (Ryujinx fork, recommended), "citron", or "eden" |
+| emulators.switch.dataDir | str | `${home}/${emulators.dataDir}/saves/switch` | Ryujinx `--root-data-dir` (keys, firmware, saves). Only used when emulator = "ryubing" |
 | steamIntegration.enable | bool | false | Enable Steam library integration |
 | steamIntegration.boilr | bool | true | Install BoilR to import games from Heroic/Lutris/etc. into Steam |
 | steamIntegration.steamRomManager | bool | true | Install Steam ROM Manager to create per-ROM Steam shortcuts with artwork |
@@ -92,6 +97,53 @@ games = {
 - Run to generate individual Steam shortcuts with artwork for each ROM
 - Each ROM appears as its own entry in Steam Big Picture
 
+### Nintendo Switch (headless / remote setup)
+
+Designed to be set up entirely over SSH + Moonlight, with no local GUI. yuzu and the
+original Ryujinx were taken down by Nintendo in 2024; the default emulator is **Ryubing**
+(the maintained Ryujinx fork), pulled from `unstable`. Its `Ryujinx` binary boots straight
+into a game, which is what the per-game Steam-shortcut model needs.
+
+**Prerequisites**
+- The user must have this host's `emulation-mounts` (system module) access so
+  `~/emulation/{roms,bios}` mount from the controller (BIOS share holds keys/firmware).
+- Steam must have been logged into at least once so a Steam user data dir exists (SRM writes
+  its `shortcuts.vdf`).
+
+**Data flow** — keys/firmware are uploaded to the controller's BIOS Samba share and
+symlinked into Ryujinx's data dir automatically at `home-manager switch`:
+
+| Item | Uploaded to (controller, over Samba) | Symlinked into (Ryujinx `dataDir`) |
+|------|--------------------------------------|-------------------------------------|
+| `prod.keys` / `title.keys` | `bios/switch/` | `system/` |
+| firmware `*.nca` | `bios/switch/firmware/` | `bis/system/Contents/registered/` |
+| ROMs (`.nsp/.xci/.nsz/.xcz/.nca/.nro`) | `roms/switch/` | (read directly from `~/emulation/roms/switch`) |
+
+**Steps (all remote)**
+1. Rebuild the host with `emulators.switch.enable = true`. On activation, keys/firmware get
+   linked and a **Nintendo Switch** parser is upserted into SRM's `userConfigurations.json`
+   (writable, so any GUI-made parsers are preserved).
+2. From any machine, mount `//controller/emulation-bios` (guest) and drop `prod.keys`
+   (+ firmware `.nca`s under `switch/firmware/`); put ROMs on `//controller/emulation-roms`
+   under `switch/`.
+3. Refresh firmware links without a full rebuild: run `switch-refresh-firmware` over SSH.
+4. Generate the Steam tiles headlessly: run `switch-apply-shortcuts` over SSH — it stops
+   Steam, relinks firmware, and runs `steam-rom-manager add` under a virtual X display
+   (`xvfb-run`), then reconnect the Moonlight "Steam Gaming" app to see them.
+
+**Notes / caveats**
+- Validate the generated parser on-target with `steam-rom-manager list`. SRM's
+  `userConfigurations.json` schema is version-locked; the module writes on-disk schema
+  `version: 10` and SRM migrates older versions on load — adjust if the installed build
+  rejects it.
+- **Firmware fallback:** if Ryujinx doesn't detect the symlinked firmware (the `registered/`
+  layout can be version-sensitive), do a one-time `Tools → Install Firmware → from directory`
+  pointed at `~/emulation/bios/switch/firmware` over the Moonlight stream. Everything else
+  stays headless.
+- `citron`/`eden` don't use Ryujinx's `--root-data-dir`; the keys/firmware auto-symlink and
+  `dataDir` apply only to `ryubing`. For those forks, place keys/firmware in their own data
+  dirs manually.
+
 ### Battle.net
 - Install via Bottles (already available via `tools.enable`)
 - Manually add game shortcuts to Steam after installation
@@ -102,4 +154,5 @@ games = {
 - MangoHud is enabled session-wide when active.
 - Base packages always installed: chiaki, discord, evtest, gamemode, lutris, steam, steam-run, sc-controller, vulkan-tools, mesa-demos.
 - RetroArch uses the `retroarch-bare.wrapper` function for declarative configuration while preserving runtime changes.
-- Standalone emulators (PCSX2, Dolphin, PPSSPP, Duckstation) are for systems that benefit from dedicated emulators over RetroArch cores.
+- Standalone emulators (PCSX2, Dolphin, PPSSPP) are for systems that benefit from dedicated emulators over RetroArch cores. (Duckstation was removed from nixpkgs 26.05 upstream; PSX is covered by RetroArch's beetle-psx-hw core.)
+- Switch emulation (`emulators.switch`) is pulled from `unstable`. It ships two helper scripts: `switch-refresh-firmware` (relink keys/firmware from the BIOS share) and `switch-apply-shortcuts` (headless `steam-rom-manager add`). The SRM parser is managed declaratively via an idempotent activation upsert into `userConfigurations.json`.

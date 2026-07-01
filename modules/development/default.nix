@@ -35,7 +35,7 @@ in
         # Infrastructure
         localstack
         awscli-local
-        nodePackages.aws-cdk-local
+        aws-cdk-local # top-level attr from overrides/aws-cdk.nix (was nodePackages.*)
         aws-cdk
         unstable.awscli2
         terraform
@@ -49,9 +49,9 @@ in
         python3
       ]
       ++ optionals cfg.node.enable [
-        nodejs_20
+        nodejs_22 # nodejs_20 is EOL and marked insecure in 26.05
         yarn
-        nodePackages.pnpm
+        pnpm # was nodePackages.pnpm; nodePackages set removed in 26.05
       ]
       ++ optionals cfg.go.enable [
         delve

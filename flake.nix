@@ -2,17 +2,17 @@
   description = "Betongsuggan's flake to rule them all";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-25.11";
+    nixpkgs.url = "nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
     nur.url = "github:nix-community/NUR";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     stylix = {
-      url = "github:nix-community/stylix/release-25.11";
+      url = "github:nix-community/stylix/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -107,7 +107,21 @@
             console-mode =
               inputs.console-mode.packages.${self.stdenv.hostPlatform.system}.default;
             d2 = inputs.d2.packages.${self.stdenv.hostPlatform.system}.default;
-            vicinae = inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.default;
+            # nixpkgs 26.05 ships a newer LayerShellQt whose <LayerShellQt/Shell>
+            # header no longer transitively declares LayerShellQt::Window.
+            # native-file-chooser.cpp uses Shell::Window (= LayerShellQt::Window)
+            # but only includes <LayerShellQt/Shell>, so it fails to compile.
+            # Add the missing include until the fix lands in vicinae-fork.
+            vicinae =
+              (inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.default).overrideAttrs
+                (old: {
+                  postPatch = (old.postPatch or "") + ''
+                    cpp="$(find . -path '*services/file-chooser/native/native-file-chooser.cpp' | head -1)"
+                    if [ -n "$cpp" ]; then
+                      sed -i '/#include <LayerShellQt\/Shell>/a #include <LayerShellQt/Window>' "$cpp"
+                    fi
+                  '';
+                });
 
             # Vicinae extensions
             vicinae-wifi-commander = mkVicinaeExtension {
