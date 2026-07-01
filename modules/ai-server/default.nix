@@ -443,11 +443,11 @@ in {
         # Build is layer-cached; first run pulls the ~15GB rocm/pytorch base.
         TimeoutStartSec = "2h";
         ExecStartPre = [
-          "${pkgs.docker}/bin/docker build --pull=false -t comfyui-rocm:local ${./comfyui}"
-          "-${pkgs.docker}/bin/docker rm -f comfyui"
+          "${pkgs.docker_29}/bin/docker build --pull=false -t comfyui-rocm:local ${./comfyui}"
+          "-${pkgs.docker_29}/bin/docker rm -f comfyui"
         ];
         ExecStart = lib.concatStringsSep " " [
-          "${pkgs.docker}/bin/docker run --rm --name=comfyui"
+          "${pkgs.docker_29}/bin/docker run --rm --name=comfyui"
           "--device=/dev/kfd --device=/dev/dri"
           "--security-opt=seccomp=unconfined"
           # Hard memory cap so a runaway ComfyUI gets OOM-killed by the kernel
@@ -472,7 +472,7 @@ in {
           "comfyui-rocm:local"
           "python main.py --listen 0.0.0.0 --port 8188 --lowvram"
         ];
-        ExecStop = "${pkgs.docker}/bin/docker stop comfyui";
+        ExecStop = "${pkgs.docker_29}/bin/docker stop comfyui";
         Restart = "on-failure";
         RestartSec = "10s";
       };
@@ -489,16 +489,16 @@ in {
         Type = "exec";
         TimeoutStartSec = "30min";
         ExecStartPre = [
-          "${pkgs.docker}/bin/docker pull ${cfg.voice.image}"
-          "-${pkgs.docker}/bin/docker rm -f speaches"
+          "${pkgs.docker_29}/bin/docker pull ${cfg.voice.image}"
+          "-${pkgs.docker_29}/bin/docker rm -f speaches"
         ];
         ExecStart = lib.concatStringsSep " " [
-          "${pkgs.docker}/bin/docker run --rm --name=speaches"
+          "${pkgs.docker_29}/bin/docker run --rm --name=speaches"
           "-p ${toString cfg.voice.port}:8000"
           "-v ${cfg.voice.dataDir}:/home/ubuntu/.cache/huggingface"
           cfg.voice.image
         ];
-        ExecStop = "${pkgs.docker}/bin/docker stop speaches";
+        ExecStop = "${pkgs.docker_29}/bin/docker stop speaches";
         Restart = "on-failure";
         RestartSec = "10s";
       };
@@ -553,11 +553,11 @@ in {
         EnvironmentFile = "/var/lib/ai-server/secrets/env";
         TimeoutStartSec = "10min";
         ExecStartPre = [
-          "${pkgs.docker}/bin/docker pull ${cfg.search.image}"
-          "-${pkgs.docker}/bin/docker rm -f searxng"
+          "${pkgs.docker_29}/bin/docker pull ${cfg.search.image}"
+          "-${pkgs.docker_29}/bin/docker rm -f searxng"
         ];
         ExecStart = lib.concatStringsSep " " [
-          "${pkgs.docker}/bin/docker run --rm --name=searxng"
+          "${pkgs.docker_29}/bin/docker run --rm --name=searxng"
           "-p 127.0.0.1:${toString cfg.search.port}:8080"
           "-e SEARXNG_BASE_URL=http://localhost:${toString cfg.search.port}/"
           # Forward SEARXNG_SECRET from the unit env (populated by
@@ -567,7 +567,7 @@ in {
           "-v ${cfg.search.dataDir}:/var/cache/searxng"
           cfg.search.image
         ];
-        ExecStop = "${pkgs.docker}/bin/docker stop searxng";
+        ExecStop = "${pkgs.docker_29}/bin/docker stop searxng";
         Restart = "on-failure";
         RestartSec = "10s";
       };
@@ -584,15 +584,15 @@ in {
         Type = "exec";
         TimeoutStartSec = "10min";
         ExecStartPre = [
-          "${pkgs.docker}/bin/docker pull ${cfg.documents.image}"
-          "-${pkgs.docker}/bin/docker rm -f tika"
+          "${pkgs.docker_29}/bin/docker pull ${cfg.documents.image}"
+          "-${pkgs.docker_29}/bin/docker rm -f tika"
         ];
         ExecStart = lib.concatStringsSep " " [
-          "${pkgs.docker}/bin/docker run --rm --name=tika"
+          "${pkgs.docker_29}/bin/docker run --rm --name=tika"
           "-p 127.0.0.1:${toString cfg.documents.port}:9998"
           cfg.documents.image
         ];
-        ExecStop = "${pkgs.docker}/bin/docker stop tika";
+        ExecStop = "${pkgs.docker_29}/bin/docker stop tika";
         Restart = "on-failure";
         RestartSec = "10s";
       };
@@ -610,11 +610,11 @@ in {
         EnvironmentFile = "/var/lib/ai-server/secrets/env";
         TimeoutStartSec = "10min";
         ExecStartPre = [
-          "${pkgs.docker}/bin/docker pull ${cfg.codeInterpreter.image}"
-          "-${pkgs.docker}/bin/docker rm -f jupyter"
+          "${pkgs.docker_29}/bin/docker pull ${cfg.codeInterpreter.image}"
+          "-${pkgs.docker_29}/bin/docker rm -f jupyter"
         ];
         ExecStart = lib.concatStringsSep " " [
-          "${pkgs.docker}/bin/docker run --rm --name=jupyter"
+          "${pkgs.docker_29}/bin/docker run --rm --name=jupyter"
           "-p 127.0.0.1:${toString cfg.codeInterpreter.port}:8888"
           "-v ${cfg.codeInterpreter.dataDir}:/home/jovyan/work"
           # docker `-e VAR` with no value forwards the value of VAR from the
@@ -631,7 +631,7 @@ in {
           "--ServerApp.allow_origin=*"
           "--ServerApp.disable_check_xsrf=True"
         ];
-        ExecStop = "${pkgs.docker}/bin/docker stop jupyter";
+        ExecStop = "${pkgs.docker_29}/bin/docker stop jupyter";
         Restart = "on-failure";
         RestartSec = "10s";
       };

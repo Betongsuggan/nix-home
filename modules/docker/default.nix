@@ -15,9 +15,11 @@ with lib;
     environment.sessionVariables.DOCKER_HOST = "unix:///run/user/1000/docker.sock";
     virtualisation.docker = {
       enable = true;
+      package = pkgs.docker_29;
       rootless = {
         enable = true;
         setSocketVariable = true;
+        package = pkgs.docker_29;
       };
       daemon.settings = { features = { buildkit = true; }; };
     };
