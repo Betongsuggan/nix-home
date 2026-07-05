@@ -22,7 +22,7 @@ with lib;
     windowRules = mkOption {
       type = types.listOf types.str;
       default = [];
-      description = "Additional Hyprland window rules (windowrulev2 format)";
+      description = "Additional Hyprland window rules (windowrulev2 format, e.g. \"float, class:^(foo)$\")";
     };
     workspaceRules = mkOption {
       type = types.listOf types.str;
@@ -410,14 +410,20 @@ with lib;
 
         render = {
           cm_enabled = true;
-          cm_fs_passthrough = config.hyprland.cmFsPassthrough;
+          # cm_fs_passthrough was removed in Hyprland 0.55 (fullscreen HDR
+          # passthrough is now automatic via render:cm_auto_hdr). The
+          # cmFsPassthrough option is kept for back-compat but no longer emitted.
         };
 
+        # windowrulev2 is deprecated in Hyprland 0.55 (emits a warning) but still
+        # applies the rules; the unified `windowrule` directive rejects this
+        # rule spelling ("invalid field type fullscreenstate"), so keep v2 until
+        # the rules are rewritten to the new syntax. The warning is non-fatal.
         windowrulev2 = config.hyprland.windowRules;
 
         misc = {
           disable_splash_rendering = true;
-          vfr = true;
+          # vfr moved to debug: in Hyprland 0.55 and defaults to on — no longer set here.
         };
 
         debug = {

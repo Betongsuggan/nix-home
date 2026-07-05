@@ -26,12 +26,14 @@
 #        the right emulator executable, then run to generate shortcuts.
 #
 #   Nintendo Switch (emulators.switch)
-#     Emulator (default Ryubing) pulled from unstable. Designed for headless
-#     remote setup: keys/firmware are uploaded to the controller BIOS share and
-#     symlinked into Ryujinx's data dir, and the SRM "Nintendo Switch" parser is
-#     upserted declaratively so `switch-apply-shortcuts` (a headless
-#     `steam-rom-manager add`) turns each ROM into a Big Picture tile. No GUI.
-#     See SPEC.md "Nintendo Switch (headless / remote setup)".
+#     Emulator (default Ryubing) pulled from unstable. Keys are copied from the
+#     controller BIOS share into Ryujinx's data dir; ROMs are read live from the
+#     roms/switch share (mounted cache=none — see emulation-client). SRM's
+#     headless CLI hangs on this host, so `switch-apply-shortcuts` writes
+#     shortcuts.vdf directly (via switch-add-shortcuts.py), one tile per game
+#     folder, launched through a per-game script that opens fullscreen on the
+#     SUNSHINE monitor. Firmware + controller are a one-time Ryujinx-UI setup
+#     that persists in the synced data dir. See SPEC.md "Nintendo Switch".
 #
 # First-time setup after a fresh build:
 #
@@ -197,6 +199,25 @@ with lib;
             emulator = "ryubing".
           '';
         };
+
+        # Over Moonlight there is no keyboard and no Steam overlay (Steam Input
+        # must stay off for the pad to reach Ryujinx), so a controller chord is
+        # the only way to leave a game. A listener service watches the Sunshine
+        # virtual pad and politely closes the Ryujinx window on the chord,
+        # dropping the stream back to Big Picture.
+        quitChord = {
+          enable = mkOption {
+            type = types.bool;
+            default = true;
+            description = "Hold Select+Start on the streamed gamepad to quit the running Switch game";
+          };
+
+          holdSeconds = mkOption {
+            type = types.float;
+            default = 1.5;
+            description = "How long Select+Start must be held together before the game is closed";
+          };
+        };
       };
     };
 
@@ -229,7 +250,20 @@ with lib;
       switchEnabled = cfg.emulators.enable && sw.enable;
       isRyujinx = sw.emulator == "ryubing";
 
-      switchPkg = pkgs.unstable.${sw.emulator};
+      # Ryubing 1.3.3 opens controllers by their position in its own filtered
+      # gamepad list, but SDL_GameControllerOpen expects SDL's device index,
+      # which also counts non-gamepad joysticks (G13 thumbstick, Sunshine's
+      # mouse/pen passthrough nodes). On this host the Sunshine virtual pad
+      # never sits at index 0, so Ryujinx opened the wrong device, got NULL,
+      # and silently dropped the pad from its Input list. The patch resolves
+      # the real SDL index via the joystick instance id.
+      switchPkg =
+        if isRyujinx then
+          pkgs.unstable.${sw.emulator}.overrideAttrs (old: {
+            patches = (old.patches or [ ]) ++ [ ./ryubing-sdl2-device-index.patch ];
+          })
+        else
+          pkgs.unstable.${sw.emulator};
       switchBin =
         {
           ryubing = "Ryujinx";
@@ -243,122 +277,296 @@ with lib;
       # Keys + firmware come from the controller BIOS Samba share, auto-mounted
       # read-only at ~/emulation/bios (see emulation-mounts).
       switchKeysDir = "${emuDir}/bios/switch";
-      switchFirmwareDir = "${switchKeysDir}/firmware";
-      steamDir = "${config.home.homeDirectory}/.steam/steam";
 
-      # Symlink keys + firmware from the read-only BIOS share into Ryujinx's
-      # writable data dir. Runs at activation and is re-runnable over SSH after
-      # uploading firmware (accessing the share warms the lazy automount).
-      switchRefreshFirmware = pkgs.writeShellScriptBin "switch-refresh-firmware" ''
+      # Copy the Switch keys from the BIOS share into Ryujinx's data dir as real
+      # local files. (Symlinking to the lazily-automounted CIFS share is fragile
+      # at launch; a local copy is always readable.) Firmware is NOT provisioned
+      # here: dropping raw NCAs into registered/ does not register with Ryujinx
+      # ("No firmware installed") and would clobber a proper install. Instead do
+      # a one-time firmware install via the Ryujinx UI (from a game cartridge, or
+      # Tools → Install Firmware pointed at the bios/switch dump); it persists in
+      # the synced data dir. Only relevant for the ryubing (Ryujinx) emulator.
+      switchRefreshKeys = pkgs.writeShellScriptBin "switch-refresh-keys" ''
         set -euo pipefail
         SYS_DIR="${sw.dataDir}/system"
-        REG_DIR="${sw.dataDir}/bis/system/Contents/registered"
-        mkdir -p "$SYS_DIR" "$REG_DIR"
-
-        # Keys have fixed names; link them even if the share isn't warm yet —
-        # the symlink resolves once the automount triggers on first access.
-        ln -sf "${switchKeysDir}/prod.keys" "$SYS_DIR/prod.keys"
-        ln -sf "${switchKeysDir}/title.keys" "$SYS_DIR/title.keys"
-
-        # Firmware NCA filenames aren't known ahead of time; link whatever the
-        # share currently holds.
-        shopt -s nullglob
-        ncas=("${switchFirmwareDir}"/*.nca)
-        if (( ''${#ncas[@]} )); then
-          ln -sf "''${ncas[@]}" "$REG_DIR"/
-          echo "Linked ''${#ncas[@]} firmware NCA(s) into $REG_DIR"
+        mkdir -p "$SYS_DIR"
+        if [ -r "${switchKeysDir}/prod.keys" ]; then
+          cp -Lf "${switchKeysDir}/prod.keys" "$SYS_DIR/prod.keys"
+          [ -r "${switchKeysDir}/title.keys" ] && cp -Lf "${switchKeysDir}/title.keys" "$SYS_DIR/title.keys"
+          echo "Copied Switch keys into $SYS_DIR"
         else
-          echo "No firmware NCAs in ${switchFirmwareDir} yet — upload them to the controller bios/switch/firmware share."
+          echo "No prod.keys at ${switchKeysDir} yet — upload keys to the controller bios/switch share, then re-run switch-refresh-keys."
         fi
       '';
 
-      # Headless shortcut generation: stop Steam, refresh firmware links, then
-      # run SRM under a virtual X display (Electron needs one even in CLI mode).
+      # SDL gamecontroller mapping for the Sunshine virtual pad. Its GUID embeds
+      # a CRC of the device name ("Sunshine X-Box One (virtual) pad") and a
+      # nonstandard version, so SDL's built-in database never matches it and
+      # SDL classifies it "joystick but not gamecontroller" — invisible to
+      # Ryujinx. Ryujinx natively loads <dataDir>/SDL_GameControllerDB.txt at
+      # startup, so shipping the mapping there fixes every invocation. Layout
+      # is the standard Linux xpad layout (verified against the live device).
+      # Second line = same GUID with the name-CRC zeroed, as a fallback in
+      # case a Sunshine update changes the device name.
+      switchControllerDb = pkgs.writeText "SDL_GameControllerDB.txt" ''
+        # Sunshine virtual X-Box One pad (managed by modules/games; do not edit)
+        03008d205e040000ea02000008040000,Sunshine Virtual Pad,a:b0,b:b1,x:b2,y:b3,back:b6,guide:b8,start:b7,leftstick:b9,rightstick:b10,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,platform:Linux,
+        030000005e040000ea02000008040000,Sunshine Virtual Pad,a:b0,b:b1,x:b2,y:b3,back:b6,guide:b8,start:b7,leftstick:b9,rightstick:b10,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,platform:Linux,
+      '';
+
+      switchRefreshInput = pkgs.writeShellScriptBin "switch-refresh-input" ''
+        set -euo pipefail
+        mkdir -p "${sw.dataDir}"
+        install -m 644 "${switchControllerDb}" "${sw.dataDir}/SDL_GameControllerDB.txt"
+        echo "Installed Sunshine pad mapping into ${sw.dataDir}/SDL_GameControllerDB.txt"
+      '';
+
+      # Known-good Player1 -> Sunshine pad binding (verified in-game). The id is
+      # what ryubing's SDL2GamepadDriver.GenerateGamepadId produces for the pad:
+      # "0-" + the SDL GUID as a .NET Guid string with the name-CRC nibbles
+      # zeroed. Schema mirrors GenericControllerInputConfig (snake_case).
+      switchInputEntry = pkgs.writeText "sunshine-pad-input.json" (builtins.toJSON {
+        version = 1;
+        backend = "GamepadSDL2";
+        id = "0-00000003-045e-0000-ea02-000008040000";
+        name = "Sunshine Virtual Pad";
+        controller_type = "ProController";
+        player_index = "Player1";
+        deadzone_left = 0.1;
+        deadzone_right = 0.1;
+        range_left = 1.0;
+        range_right = 1.0;
+        trigger_threshold = 0.5;
+        left_joycon_stick = {
+          joystick = "Left";
+          stick_button = "LeftStick";
+          invert_stick_x = false;
+          invert_stick_y = false;
+          rotate90_cw = false;
+        };
+        right_joycon_stick = {
+          joystick = "Right";
+          stick_button = "RightStick";
+          invert_stick_x = false;
+          invert_stick_y = false;
+          rotate90_cw = false;
+        };
+        left_joycon = {
+          button_minus = "Minus";
+          button_l = "LeftShoulder";
+          button_zl = "LeftTrigger";
+          button_sl = "Unbound";
+          button_sr = "Unbound";
+          dpad_up = "DpadUp";
+          dpad_down = "DpadDown";
+          dpad_left = "DpadLeft";
+          dpad_right = "DpadRight";
+        };
+        right_joycon = {
+          button_plus = "Plus";
+          button_r = "RightShoulder";
+          button_zr = "RightTrigger";
+          button_sl = "Unbound";
+          button_sr = "Unbound";
+          # Xbox-style physical layout (ryubing's non-Nintendo default)
+          button_x = "Y";
+          button_b = "A";
+          button_y = "X";
+          button_a = "B";
+        };
+        motion = {
+          motion_backend = "GamepadDriver";
+          sensitivity = 100;
+          gyro_deadzone = 1;
+          enable_motion = false;
+        };
+        rumble = {
+          strong_rumble = 1.0;
+          weak_rumble = 1.0;
+          enable_rumble = false;
+        };
+        led = {
+          enable_led = false;
+          turn_off_led = false;
+          use_rainbow = false;
+          led_color = 0;
+        };
+      });
+
+      # Merge ONLY the Player1 binding into Config.json, keyed by the pad's
+      # GUID — idempotent, and everything else in the file (graphics settings,
+      # firmware state, UI prefs) passes through untouched, so it neither
+      # clobbers runtime changes nor fights the Syncthing-synced data dir.
+      switchApplyInput = pkgs.writeShellScriptBin "switch-apply-input" ''
+        set -euo pipefail
+        CFG="${sw.dataDir}/Config.json"
+        GUID="00000003-045e-0000-ea02-000008040000"
+        if [ ! -f "$CFG" ]; then
+          echo "No Config.json at $CFG yet — start a game (or switch-run-emulator) once, then re-run switch-apply-input."
+          exit 0
+        fi
+        cp -f "$CFG" "$CFG.bak"
+        ${pkgs.jq}/bin/jq --slurpfile entry ${switchInputEntry} --arg guid "$GUID" '
+          .input_config = ((.input_config // [])
+            | map(select((.id // "") | contains($guid) | not))
+            + $entry)
+        ' "$CFG" > "$CFG.tmp"
+        mv -f "$CFG.tmp" "$CFG"
+        echo "Player1 -> Sunshine pad binding merged into $CFG (backup: $CFG.bak)"
+      '';
+
+      # Canonical way to start the emulator: forces SDL's direct /dev/input
+      # scan (the udev enumeration path misses the hotplugged Sunshine pad)
+      # and skips HIDAPI (the virtual pad has no hidraw node). Used by the
+      # generated Steam launchers and for manual/binding sessions alike.
+      switchRunEmulator = pkgs.writeShellScriptBin "switch-run-emulator" ''
+        export SDL_JOYSTICK_DISABLE_UDEV=1
+        export SDL_JOYSTICK_HIDAPI=0
+        exec ${switchPkg}/bin/${switchBin} ${lib.optionalString isRyujinx ''--root-data-dir "${sw.dataDir}" ''}"$@"
+      '';
+
+      # Quit-chord listener: hold Select+Start on the Sunshine virtual pad to
+      # close the running game. Reads the pad's evdev node directly (the pad is
+      # hotplugged by Sunshine on first input, so the device is re-discovered
+      # in a poll loop). Closing goes through `hyprctl dispatch closewindow`
+      # (same as clicking the window's X, so Ryujinx shuts down cleanly), with
+      # a SIGTERM fallback if the window ignores it.
+      switchQuitListener = pkgs.writeText "switch-quit-listener.py" ''
+        import os
+        import re
+        import select
+        import struct
+        import subprocess
+        import time
+
+        PAD_NAME = "Sunshine X-Box One (virtual) pad"
+        BTN_SELECT, BTN_START = 314, 315
+        HOLD_SECONDS = ${toString sw.quitChord.holdSeconds}
+        EVENT_FORMAT = "llHHi"
+        EVENT_SIZE = struct.calcsize(EVENT_FORMAT)
+
+
+        def find_pad():
+            try:
+                blocks = open("/proc/bus/input/devices").read().split("\n\n")
+            except OSError:
+                return None
+            for block in blocks:
+                if PAD_NAME in block:
+                    m = re.search(r"event(\d+)", block)
+                    if m:
+                        return "/dev/input/event" + m.group(1)
+            return None
+
+
+        def hyprland_env():
+            env = dict(os.environ)
+            hypr_dir = os.path.join(env.get("XDG_RUNTIME_DIR", ""), "hypr")
+            try:
+                sigs = sorted(
+                    os.listdir(hypr_dir),
+                    key=lambda s: os.path.getmtime(os.path.join(hypr_dir, s)),
+                    reverse=True,
+                )
+                if sigs:
+                    env["HYPRLAND_INSTANCE_SIGNATURE"] = sigs[0]
+            except OSError:
+                pass
+            return env
+
+
+        def quit_game():
+            env = hyprland_env()
+            subprocess.run(
+                ["${pkgs.hyprland}/bin/hyprctl", "dispatch", "closewindow", "class:Ryujinx"],
+                env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            )
+            for _ in range(10):
+                alive = subprocess.run(
+                    ["${pkgs.procps}/bin/pgrep", "-x", "Ryujinx"],
+                    stdout=subprocess.DEVNULL,
+                ).returncode == 0
+                if not alive:
+                    return
+                time.sleep(0.5)
+            subprocess.run(["${pkgs.procps}/bin/pkill", "-TERM", "-x", "Ryujinx"])
+
+
+        while True:
+            dev = find_pad()
+            if dev is None:
+                time.sleep(2)
+                continue
+            try:
+                fd = os.open(dev, os.O_RDONLY)
+            except OSError:
+                time.sleep(2)
+                continue
+            down = {}
+            fired = False
+            try:
+                while True:
+                    ready, _, _ = select.select([fd], [], [], 0.2)
+                    if ready:
+                        data = os.read(fd, EVENT_SIZE)
+                        if len(data) < EVENT_SIZE:
+                            break
+                        _, _, etype, code, value = struct.unpack(EVENT_FORMAT, data)
+                        if etype == 1 and code in (BTN_SELECT, BTN_START):
+                            if value == 1:
+                                down[code] = time.monotonic()
+                            elif value == 0:
+                                down.pop(code, None)
+                                fired = False
+                    if (
+                        not fired
+                        and len(down) == 2
+                        and time.monotonic() - max(down.values()) >= HOLD_SECONDS
+                    ):
+                        fired = True
+                        quit_game()
+            except OSError:
+                pass  # pad unplugged (Moonlight disconnect) — rediscover
+            finally:
+                os.close(fd)
+      '';
+
+      # Steam shortcut generation. Steam ROM Manager's headless CLI hangs on
+      # this setup (Electron never returns after "Fetching parsers...", under
+      # both Xvfb and an attached Wayland session), so instead of SRM we write
+      # shortcuts.vdf directly with a tiny Python+vdf script. Deterministic,
+      # needs no display/GPU/D-Bus, and idempotent (upserts by app name).
+      pyEnv = pkgs.python3.withPackages (ps: [ ps.vdf ]);
+
+      # Stop Steam (so it doesn't clobber shortcuts.vdf on exit), refresh the
+      # keys, then upsert one Steam shortcut per game folder.
       switchApplyShortcuts = pkgs.writeShellScriptBin "switch-apply-shortcuts" ''
         set -euo pipefail
-        echo "Stopping Steam (required before SRM writes shortcuts.vdf)..."
+        # Reach the running Steam in the user's graphical session (needed when
+        # invoked over SSH) so -shutdown actually stops it; otherwise Steam
+        # would rewrite shortcuts.vdf from memory on its next exit.
+        export XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+        echo "Stopping Steam (so it doesn't overwrite shortcuts.vdf on exit)..."
         ${pkgs.steam}/bin/steam -shutdown >/dev/null 2>&1 || true
-        for _ in $(seq 1 15); do
+        for _ in $(seq 1 20); do
           ${pkgs.procps}/bin/pgrep -x steam >/dev/null || break
           sleep 1
         done
-        ${switchRefreshFirmware}/bin/switch-refresh-firmware || true
-        echo "Generating Steam shortcuts via Steam ROM Manager (headless)..."
-        ${pkgs.xvfb-run}/bin/xvfb-run -a ${pkgs.steam-rom-manager}/bin/steam-rom-manager add
-        echo "Done. Reconnect the Moonlight 'Steam Gaming' app to see the new tiles."
+        # Fallback if it's still up after the graceful shutdown window.
+        ${pkgs.procps}/bin/pgrep -x steam >/dev/null && ${pkgs.procps}/bin/pkill -TERM -u "$(id -u)" steam || true
+        sleep 2
+        ${switchRefreshKeys}/bin/switch-refresh-keys || true
+        ${switchRefreshInput}/bin/switch-refresh-input || true
+        ${switchApplyInput}/bin/switch-apply-input || true
+        echo "Writing Steam shortcuts for Switch games..."
+        SWITCH_ROMDIR="${switchRomDir}" \
+        SWITCH_EMU="${switchRunEmulator}/bin/switch-run-emulator" \
+        SWITCH_HYPRCTL="${pkgs.hyprland}/bin/hyprctl" \
+        SWITCH_LAUNCH_PREFIX="" \
+        SWITCH_TAG="Nintendo Switch" \
+          ${pyEnv}/bin/python3 ${./switch-add-shortcuts.py}
+        echo "Reconnect the Moonlight 'Steam Gaming' app to see the tiles."
       '';
-
-      # Steam ROM Manager parser (on-disk schema v10, modelled on a known-good
-      # exported config). This is the one piece whose schema is version-locked
-      # to the installed SRM build — validate on-target with
-      # `steam-rom-manager list`; SRM migrates older `version`s on load.
-      switchSrmParser = {
-        parserType = "Glob";
-        configTitle = "Nintendo Switch - ${sw.emulator}";
-        steamCategory = "\${Nintendo Switch}";
-        steamDirectory = steamDir;
-        romDirectory = switchRomDir;
-        executableArgs =
-          if isRyujinx then
-            "--root-data-dir \"${sw.dataDir}\" \"\${filePath}\""
-          else
-            "\"\${filePath}\"";
-        executableModifier = "\"\${exePath}\"";
-        startInDirectory = "";
-        titleModifier = "\${fuzzyTitle}";
-        imageProviders = [ "SteamGridDB" ];
-        onlineImageQueries = "\${\${fuzzyTitle}}";
-        imagePool = "\${fuzzyTitle}";
-        defaultImage = "";
-        defaultTallImage = "";
-        defaultHeroImage = "";
-        defaultLogoImage = "";
-        defaultIcon = "";
-        localImages = "";
-        localTallImages = "";
-        localHeroImages = "";
-        localLogoImages = "";
-        localIcons = "";
-        userAccounts = {
-          specifiedAccounts = "";
-          skipWithMissingDataDir = true;
-          useCredentials = true;
-        };
-        executable = {
-          path = "${switchPkg}/bin/${switchBin}";
-          shortcutPassthrough = false;
-          appendArgsToExecutable = true;
-        };
-        parserInputs = {
-          glob = "**/\${title}@(.nsp|.xci|.nsz|.xcz|.nca|.nro)";
-        };
-        titleFromVariable = {
-          limitToGroups = "";
-          caseInsensitiveVariables = false;
-          skipFileIfVariableWasNotFound = false;
-          tryToMatchTitle = false;
-        };
-        fuzzyMatch = {
-          replaceDiacritics = true;
-          removeCharacters = true;
-          removeBrackets = true;
-        };
-        imageProviderAPIs = {
-          SteamGridDB = {
-            nsfw = false;
-            humor = false;
-            styles = [ ];
-            stylesHero = [ ];
-            stylesLogo = [ ];
-            stylesIcon = [ ];
-            imageMotionTypes = [ "static" ];
-          };
-        };
-        parserId = "switch-ryujinx-srm-000001";
-        version = 10;
-        disabled = false;
-      };
-      switchSrmParserFile = pkgs.writeText "switch-srm-parser.json" (builtins.toJSON switchSrmParser);
     in
     mkIf cfg.enable {
     programs.mangohud = mkIf cfg.mangohud.enable {
@@ -514,14 +722,15 @@ with lib;
         (optional cfg.steamIntegration.boilr boilr)
         ++ (optional cfg.steamIntegration.steamRomManager steam-rom-manager)
       ))
-      # Nintendo Switch: the emulator (from unstable) plus the headless glue
-      # scripts. jq/xvfb-run back the SRM upsert and headless `add`.
+      # Nintendo Switch: the emulator (from unstable) plus the shortcut/firmware
+      # helper scripts (switch-apply-shortcuts writes shortcuts.vdf directly).
       ++ (optionals switchEnabled [
         switchPkg
         switchApplyShortcuts
-        switchRefreshFirmware
-        jq
-        xvfb-run
+        switchApplyInput
+        switchRefreshKeys
+        switchRefreshInput
+        switchRunEmulator
       ]);
 
     # Install Proton-GE to Steam's compatibility tools directory
@@ -529,20 +738,36 @@ with lib;
       ".steam/root/compatibilitytools.d/proton-ge".source = pkgs.proton-ge-bin;
     };
 
-    # Switch setup: link keys/firmware from the BIOS share and upsert the SRM
-    # parser into the (writable) user config, preserving GUI-created parsers.
-    # Idempotent — matches on configTitle so re-runs replace in place.
+    # Switch setup: copy keys from the BIOS share into Ryujinx's data dir.
+    # Steam shortcuts are generated on demand by switch-apply-shortcuts (which
+    # must stop Steam first), not at activation time. Firmware is a one-time
+    # Ryujinx UI install (see modules/games/SPEC.md), persisted in the data dir.
     home.activation.switchSetup = mkIf switchEnabled (
       lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        ${switchRefreshFirmware}/bin/switch-refresh-firmware || true
-
-        SRM_CFG="${config.home.homeDirectory}/.config/steam-rom-manager/userData/userConfigurations.json"
-        mkdir -p "$(dirname "$SRM_CFG")"
-        [ -f "$SRM_CFG" ] || echo '[]' > "$SRM_CFG"
-        ${pkgs.jq}/bin/jq --slurpfile new ${switchSrmParserFile} \
-          'map(select(.configTitle != $new[0].configTitle)) + $new' \
-          "$SRM_CFG" > "$SRM_CFG.tmp" && mv "$SRM_CFG.tmp" "$SRM_CFG"
+        ${switchRefreshKeys}/bin/switch-refresh-keys || true
+        ${switchRefreshInput}/bin/switch-refresh-input || true
+        ${switchApplyInput}/bin/switch-apply-input || true
       ''
     );
+
+    # Quit-chord listener (Select+Start held -> close the running game).
+    # Same service shape as controller-mangohud-toggle in modules/controller.
+    systemd.user.services.switch-quit-listener = mkIf (switchEnabled && sw.quitChord.enable) {
+      Unit = {
+        Description = "Quit Switch games via Select+Start on the streamed gamepad";
+        After = [ "graphical-session.target" ];
+      };
+
+      Service = {
+        Type = "simple";
+        ExecStart = "${pkgs.python3}/bin/python3 ${switchQuitListener}";
+        Restart = "always";
+        RestartSec = "5s";
+      };
+
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
+    };
   };
 }

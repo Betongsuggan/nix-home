@@ -83,11 +83,13 @@
   # Steam Big Picture is managed by Sunshine when streaming clients connect
   hyprland.lockscreen.enable = false; # Gaming user doesn't need lockscreen
   hyprland.cmFsPassthrough = 1; # Always passthrough in fullscreen for HDR gaming
-  hyprland.windowRules = [
-    "fullscreenstate 1 2, class:^(steam)$" # Maximize internally (CM applies) but Steam thinks fullscreen
-    "bordersize 0, class:^(steam)$"
-    "rounding 0, class:^(steam)$"
-  ];
+  # No window rules: Hyprland 0.55's new `windowrule` parser rejects the old
+  # `class:^()$` matcher, and `windowrulev2` (still functional) emits a
+  # persistent on-screen deprecation warning. The old Steam tweaks are obsolete
+  # on 0.55 — Big Picture self-fullscreens and HDR/CM fullscreen passthrough is
+  # automatic now (cm_auto_hdr replaced cm_fs_passthrough). Ryujinx is brought
+  # fullscreen by its per-game launcher (hyprctl dispatch fullscreen 0).
+  hyprland.windowRules = [ ];
   hyprland.workspaceRules = [
     "1, gapsin:0, gapsout:0" # No gaps on Steam workspace so maximize fills entire screen
   ];

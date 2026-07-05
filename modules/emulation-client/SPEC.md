@@ -61,6 +61,8 @@ emulation-mounts = {
 
 This generates `x-systemd.automount` mounts at `/home/<user>/emulation/{roms,bios}`. They don't actually mount until the path is first accessed, so there's no boot delay and no failure if controller is offline (the dir is just empty). After 60s of inactivity the mount is dropped automatically.
 
+The mounts use `closetimeo=0` to disable CIFS deferred-close handle caching. Without it, a shutdown that happens while a ROM was recently open (e.g. a Switch `.xci` in Ryujinx) *and* the server has become unreachable can leave a busy inode that trips `kernel BUG at fs/super.c:654` ("Busy inodes after unmount of cifs") — hanging shutdown in PID 1 and forcing a hard power-off. Closing handles immediately removes that trigger.
+
 **Manual helper script** (still installed by the user-side module — useful for ad-hoc mounts to alternate locations or debugging):
 
 ```bash

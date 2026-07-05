@@ -57,6 +57,8 @@ For shares with `guestOk = false`: per-user Samba passwords must be set separate
 
 For shares with `guestOk = true`: the share is served in **guest-only** mode (`guest only = yes`). Every connection is mapped to the guest account regardless of any username the client supplies; no `smbpasswd` setup is needed. Security must come from the network layer — typically by restricting `allowedSubnets` to a trusted network (LAN, tailnet).
 
+The global `map to guest = Bad User` makes this work for *all* clients, not just anonymous ones. Without it (`security = user` defaults to `map to guest = Never`), a client that sends an explicit unknown username — e.g. Solid Explorer on Android logging in as `guest` — is rejected with `NT_STATUS_LOGON_FAILURE` ("authentication problem"), because Samba tries to authenticate that name and refuses to fall back. `Bad User` maps any unknown username to the guest account, so both null-session (Linux `cifs guest`) and named-guest clients connect.
+
 ### `forceUser` for writable guest shares
 
 When a guest connection lands without a real username, Samba runs filesystem ops as the Unix `nobody` user by default. If the share's backing directory is owned by `betongsuggan:users` mode `0775`, `nobody` falls into the "other" bucket (`5` = read+execute, no write) and writes will fail with EACCES even with `readOnly = false`.

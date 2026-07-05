@@ -28,6 +28,24 @@ let
     "x-systemd.automount"
     "x-systemd.idle-timeout=60s"
     "x-systemd.mount-timeout=15s"
+    # closetimeo=0: disable CIFS deferred-close handle caching. By default CIFS
+    # keeps a file handle open server-side for a few seconds after the app
+    # closes it (see `cifs_close_all_deferred_files_sb`). At shutdown, if a ROM
+    # was still recently open (e.g. a Switch .xci in Ryujinx) AND the server has
+    # gone unreachable, the deferred handle can't be flushed, leaving a busy
+    # inode that trips `kernel BUG at fs/super.c:654` ("Busy inodes after
+    # unmount of cifs") — which hangs shutdown in PID 1 and forces a hard
+    # power-off. Closing handles immediately removes the trigger. Safe here: the
+    # shares are read-only-ish media access, not latency-sensitive.
+    "closetimeo=0"
+    # cache=none: the default cache=strict corrupts random-access reads deep
+    # into large files over this tailnet CIFS link (a plain sequential copy is
+    # fine, but Ryujinx's seek-heavy reads of multi-GB Switch .xci images come
+    # back wrong → LibHac ResultFsOutOfRange / "no valid application"). Reading
+    # uncached fixes it. If Switch gameplay stutters from the uncached reads,
+    # try "cache=loose" (cached, relaxed coherency — safe for these read-only
+    # shares) instead.
+    "cache=none"
   ];
 
   mkUserMounts =

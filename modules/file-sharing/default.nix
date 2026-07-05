@@ -169,6 +169,15 @@ in {
           "netbios name" = config.networking.hostName;
           security = "user";
 
+          # Guest shares (guest ok = yes / guest only = yes) accept anonymous
+          # (null-session) clients out of the box, but clients that send an
+          # explicit username like "guest" (e.g. Solid Explorer on Android)
+          # would otherwise be rejected: "user" security tries to authenticate
+          # that name, finds no such account, and the default `map to guest =
+          # Never` refuses to fall back. Mapping unknown usernames to the guest
+          # account makes both anonymous and named-guest logins work.
+          "map to guest" = "Bad User";
+
           # SMB2/SMB3 security (disable SMB1)
           "server min protocol" = "SMB2_10";
           "client min protocol" = "SMB2_10";

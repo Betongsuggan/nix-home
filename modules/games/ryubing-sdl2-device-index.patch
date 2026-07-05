@@ -1,0 +1,32 @@
+--- a/src/Ryujinx.Input.SDL2/SDL2GamepadDriver.cs	2026-07-04 09:13:50.563231136 +0200
++++ b/src/Ryujinx.Input.SDL2/SDL2GamepadDriver.cs	2026-07-04 09:14:59.398348586 +0200
+@@ -82,7 +82,28 @@
+         {
+             lock (_lock)
+             {
+-                return _gamepadsIds.IndexOf(id);
++                // The position in _gamepadsIds is NOT a valid SDL device index:
++                // SDL numbers every joystick (including non-gamecontroller
++                // devices we filtered out), so opening by list position opens
++                // the wrong device whenever such a device has a lower index.
++                // Resolve the SDL device index via the joystick instance id.
++                foreach ((int instanceId, string mappedId) in _gamepadsInstanceIdsMapping)
++                {
++                    if (mappedId == id)
++                    {
++                        int numJoysticks = SDL_NumJoysticks();
++
++                        for (int joystickIndex = 0; joystickIndex < numJoysticks; joystickIndex++)
++                        {
++                            if (SDL_JoystickGetDeviceInstanceID(joystickIndex) == instanceId)
++                            {
++                                return joystickIndex;
++                            }
++                        }
++                    }
++                }
++
++                return -1;
+             }
+         }
+ 
