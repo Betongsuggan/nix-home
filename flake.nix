@@ -4,6 +4,14 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
+
+    # onlyoffice-documentserver 9.3.1 fails to link on current nixos-26.05: its
+    # bundled V8 references `icu_78::UnicodeSet` symbols the linked ICU doesn't
+    # provide, so the local from-source build dies in ld. Hydra last built this
+    # package green (and cached) at the rev below, so pinning the whole package
+    # + its own closure here makes it *substitute* instead of compiling. Drop
+    # this input + its overlay once 26.05 ships a working onlyoffice build.
+    nixpkgs-onlyoffice.url = "github:NixOS/nixpkgs/e8210c649915deed7080033cdbabcc19e40bb899";
     nur.url = "github:nix-community/NUR";
 
     home-manager = {
@@ -143,6 +151,17 @@
             system = prev.stdenv.hostPlatform.system;
             config.allowUnfree = true;
           };
+        })
+        # See the nixpkgs-onlyoffice input comment. The upstream NixOS module
+        # derives x2t and x2t-with-fonts-and-themes from this package's
+        # passthru, so overriding onlyoffice-documentserver alone swaps the
+        # whole closure to the pinned (cached, working) build.
+        (final: prev: {
+          onlyoffice-documentserver =
+            (import inputs.nixpkgs-onlyoffice {
+              system = prev.stdenv.hostPlatform.system;
+              config.allowUnfree = true;
+            }).onlyoffice-documentserver;
         })
         (import ./overrides/aws-cdk.nix)
         (import ./overrides/niri.nix { inherit inputs; })
