@@ -6,6 +6,8 @@ Unified module with system-level services and user-level configuration. The syst
 
 Installs Thunar with plugins and enables supporting system services: GVFS (virtual filesystem), Tumbler (thumbnails), udisks2 (disk management), and Polkit (privileged operations). Activates automatically when any home-manager user has `fileManager.enable = true`.
 
+When any user sets `fileManager.networkShares.enable = true`, Avahi is additionally enabled (with mDNS name resolution via nss-mdns and firewall ports opened) so SMB/Samba shares advertised on the local network show up under "Network" and `.local` hostnames resolve when mounting shares.
+
 ## User layer
 
 Configurable graphical file manager with backend selection, sidebar bookmarks, and a Thunar sub-module providing custom context menu actions, thumbnail settings, archive integration, and volume management.
@@ -32,6 +34,7 @@ fileManager = {
 |--------|------|---------|-------------|
 | enable | bool | false | Enable file manager |
 | backend | enum: "thunar", "nautilus", "dolphin", "pcmanfm" | "thunar" | File manager backend to use |
+| networkShares.enable | bool | false | Browse SMB/Samba network shares; auto-enables Avahi (mDNS) on the system |
 | bookmarks | list of string | [] | Bookmark paths for the sidebar (format: `file:///path` or `file:///path Label`) |
 | terminalOverride | function or null | null | Override for terminal command with working directory; if null, uses `config.terminal.commandWithCwd` |
 
@@ -69,3 +72,4 @@ When `backend = "thunar"`, the Thunar sub-module is automatically enabled and pr
 - Bookmarks are written to `~/.config/gtk-3.0/bookmarks`.
 - The Thunar sub-module writes custom actions to `~/.config/Thunar/uca.xml` and tumbler config to `~/.config/tumbler/tumbler.rc`.
 - System services (xfconf, Thunar, GVFS, Tumbler, udisks2, Polkit) are enabled automatically — no need for a separate system enable.
+- SMB support itself comes from GVFS; `networkShares` only adds discovery. Hosts that don't advertise via mDNS or NetBIOS (e.g. Windows machines using WS-Discovery only) won't appear in "Network" but can still be reached by typing `smb://hostname/share` in the path bar.

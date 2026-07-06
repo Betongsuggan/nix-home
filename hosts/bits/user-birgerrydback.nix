@@ -37,6 +37,7 @@
   fileManager = {
     enable = true;
     backend = "thunar";
+    networkShares.enable = true;
   };
   starship.enable = true;
 

@@ -15,6 +15,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Docker for containerized development
 - Bluetooth and printer support
 - LocalSend for local file sharing (with CLI)
+- SMB network share browsing in Thunar (GVFS + Avahi/mDNS discovery)
 - Colemak keyboard layout
 - Stylix theming with Banana cursor
 - Secret management for Tavily and LocalStack API keys

@@ -42,6 +42,14 @@ in
       description = "File manager backend to use";
     };
 
+    networkShares.enable = mkEnableOption "browsing SMB/Samba network shares" // {
+      description = ''
+        Enable browsing SMB/Samba shares on the local network.
+        Auto-enables Avahi (mDNS) on the system so shares show up under
+        "Network" in the file manager and `.local` hostnames resolve.
+      '';
+    };
+
     bookmarks = mkOption {
       type = types.listOf types.str;
       default = [];

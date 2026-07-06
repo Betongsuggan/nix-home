@@ -7,31 +7,46 @@ let
   anyUserEnabled = any
     (u: (u.fileManager.enable or false))
     (attrValues hmUsers);
+  anyNetworkShares = any
+    (u: (u.fileManager.enable or false) && (u.fileManager.networkShares.enable or false))
+    (attrValues hmUsers);
 in
 {
-  config = mkIf anyUserEnabled {
-    # Settings backend for Thunar/XFCE applications
-    programs.xfconf.enable = true;
+  config = mkMerge [
+    (mkIf anyUserEnabled {
+      # Settings backend for Thunar/XFCE applications
+      programs.xfconf.enable = true;
 
-    # Thunar file manager with plugins
-    programs.thunar = {
-      enable = true;
-      plugins = with pkgs.xfce; [
-        thunar-archive-plugin
-        thunar-volman
-      ];
-    };
+      # Thunar file manager with plugins
+      programs.thunar = {
+        enable = true;
+        plugins = with pkgs.xfce; [
+          thunar-archive-plugin
+          thunar-volman
+        ];
+      };
 
-    # Virtual filesystem support (trash, MTP, SMB, SFTP, etc.)
-    services.gvfs.enable = true;
+      # Virtual filesystem support (trash, MTP, SMB, SFTP, etc.)
+      services.gvfs.enable = true;
 
-    # Thumbnail service
-    services.tumbler.enable = true;
+      # Thumbnail service
+      services.tumbler.enable = true;
 
-    # Disk management for auto-mounting
-    services.udisks2.enable = true;
+      # Disk management for auto-mounting
+      services.udisks2.enable = true;
 
-    # Polkit for privileged operations (mounting, etc.)
-    security.polkit.enable = true;
-  };
+      # Polkit for privileged operations (mounting, etc.)
+      security.polkit.enable = true;
+    })
+
+    (mkIf anyNetworkShares {
+      # mDNS discovery so SMB shares appear under "Network" and
+      # .local hostnames resolve when mounting shares
+      services.avahi = {
+        enable = true;
+        nssmdns4 = true;
+        openFirewall = true;
+      };
+    })
+  ];
 }
