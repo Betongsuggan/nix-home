@@ -38,6 +38,11 @@
     enable = true;
     backend = "thunar";
     networkShares.enable = true;
+    # Shares on the tailnet can't be discovered via mDNS (multicast doesn't
+    # route over Tailscale), so bookmark them directly instead
+    bookmarks = [
+      "smb://${inputs.self.lib.tailnet.fqdn "controller"}/emulation-roms ROMs (controller)"
+    ];
   };
   starship.enable = true;
 
