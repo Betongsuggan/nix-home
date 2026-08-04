@@ -23,3 +23,4 @@ firefox.enable = true;
 - Privacy settings include: tracking protection, do-not-track header, restricted cross-origin referrers, first-party-only cookies.
 - Performance settings include: disk cache disabled (memory-only, 512 MB), WebRender enabled, session store interval set to 30 seconds.
 - Enables `toolkit.legacyUserProfileCustomizations.stylesheets` for Stylix theming support.
+- Enables the stylix firefox target for the `default` profile (`profileNames = [ "default" ]`), theming the browser chrome with the base16 palette. Dark mode for page content additionally follows the system `color-scheme=prefer-dark` preference set by the stylix gnome target.

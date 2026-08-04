@@ -54,6 +54,10 @@
     # Basic common system packages for all devices
     environment.systemPackages = with pkgs; [ git vim wget curl ];
 
+    # System-side dconf/gsettings plumbing, required for the home-manager
+    # stylix gtk/gnome targets' dark-mode preference to reach GTK apps
+    programs.dconf.enable = true;
+
     # Controller's SSH host key, trusted on every host so new installs don't
     # hit a TOFU prompt when fetching nix-vault via the tailnet.
     programs.ssh.knownHosts."controller" = {

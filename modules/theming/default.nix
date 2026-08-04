@@ -174,28 +174,25 @@ in {
   config = mkIf cfg.enable {
     fonts.fontconfig = {
       enable = true;
-      defaultFonts = {
-        monospace = [ config.theme.font.name "Symbols Nerd Font Mono" "Noto Color Emoji" ];
-        sansSerif = [ "DejaVu Sans" "Noto Color Emoji" ];
-        serif = [ "DejaVu Serif" "Noto Color Emoji" ];
-        emoji = [ "Noto Color Emoji" ];
-      };
+      # Primary families come from stylix (targets.fontconfig, inserted at
+      # list order 600); these merge in after them as fallbacks.
+      defaultFonts.monospace = [ "Symbols Nerd Font Mono" "Noto Color Emoji" ];
     };
-
 
     home.packages = with pkgs; [
       papirus-icon-theme
-      config.theme.cursor.package
-      config.theme.font.package
       nerd-fonts.symbols-only
-      noto-fonts-color-emoji
-      dejavu_fonts
       glibcLocales
     ];
 
     home.file.".background-image".source = cfg.wallpaper;
 
     stylix = {
+      enable = true;
+      # Explicit opt-in per target: app modules enable their own stylix
+      # target, so a flake update can't silently start theming new apps.
+      autoEnable = false;
+
       image = cfg.wallpaper;
       base16Scheme = {
         base00 = cfg.colors.primary.background;
@@ -218,19 +215,24 @@ in {
 
       polarity = "dark";
 
+      cursor = { inherit (cfg.cursor) name package size; };
+
+      fonts = {
+        monospace = { inherit (cfg.font) name package; };
+        # sansSerif/serif/emoji keep stylix defaults (DejaVu + Noto Color
+        # Emoji), matching the previous manual fontconfig defaults.
+        sizes = {
+          applications = cfg.font.size;
+          desktop = cfg.font.size;
+          # popups follows desktop; terminal is set by the terminal module
+        };
+      };
+
       targets = {
-        #btop.enable = true;
-        #firefox.enable = config.firefox.enable;
-        #font-packages.enable = true;
-        #fontconfig.enable = true;
-        #hyprland.enable = config.hyprland.enable;
-        #hyprpaper.enable = config.hyprland.enable;
-        #hyprlock.enable = config.hyprland.enable;
-        gtk.enable = true;
-        #qt.enable = true;
-        #mangohud.enable = true;
-        #neovim.enable = true;
-        #starship.enable = true;
+        gtk.enable = true; # GTK3 apps (thunar): adw-gtk3 + base16 gtk.css
+        gnome.enable = true; # dconf color-scheme=prefer-dark (GTK4/libadwaita, firefox)
+        fontconfig.enable = true;
+        font-packages.enable = true;
       };
     };
   };

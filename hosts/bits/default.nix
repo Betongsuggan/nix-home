@@ -20,6 +20,7 @@ inputs.nixpkgs.lib.nixosSystem {
       home-manager = {
         useGlobalPkgs = true;
         useUserPackages = true;
+        backupFileExtension = "hm-backup";
         extraSpecialArgs = { inherit inputs overlays; };
         sharedModules = [
           inputs.walker.homeManagerModules.default

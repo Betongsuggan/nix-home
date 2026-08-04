@@ -57,3 +57,4 @@ launcher = {
 - Other modules can use the exposed functions (`config.launcher.dmenu`, `config.launcher.show`, `config.launcher.wifi`, `config.launcher.bluetooth`, `config.launcher.audioOutput`, `config.launcher.audioInput`, `config.launcher.monitor`) to invoke the launcher without knowing which backend is active.
 - Not all features are implemented for all backends. WiFi and Bluetooth menus are not yet implemented for rofi. Audio and monitor menus are only available on walker and vicinae.
 - The walker backend runs as a systemd service with elephant as a dependency. The vicinae backend also runs as a systemd service.
+- The vicinae backend is themed by stylix (`stylix.targets.vicinae`), which adds a "stylix" theme from the base16 palette and selects it. Walker keeps its hardcoded gruvbox CSS (no stylix target exists).

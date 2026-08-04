@@ -99,6 +99,10 @@ in {
     launcher.vicinae.buildDmenuCmd = buildDmenuCmd;
     launcher.vicinae.buildShowCmd = buildShowCmd;
 
+    # Theme vicinae from the base16 scheme (adds a "stylix" theme and
+    # selects it in services.vicinae.settings)
+    stylix.targets.vicinae.enable = true;
+
     # Use vicinae's official home-manager module
     services.vicinae = {
       enable = true;

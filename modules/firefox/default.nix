@@ -16,6 +16,20 @@ with lib;
     home.sessionVariables = {
       MOZ_ENABLE_WAYLAND = "1";
     };
+
+    stylix.targets.firefox = {
+      enable = true;
+      profileNames = [ "default" ];
+      # Theme the browser chrome with the base16 palette (via the Firefox
+      # Color extension); without this the target only sets fonts and
+      # reader-mode colors
+      colorTheme.enable = true;
+    };
+
+    # Stylix's colorTheme manages the Firefox Color extension's settings
+    # declaratively; home-manager requires acknowledging that they are
+    # overwritten on activation
+    programs.firefox.profiles.default.extensions.settings."FirefoxColor@mozilla.com".force = true;
     programs.firefox = {
       enable = true;
       profiles.default = {

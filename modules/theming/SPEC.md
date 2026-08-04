@@ -1,6 +1,6 @@
 # Theming
 
-Provides a centralized theme configuration for the entire desktop environment, including wallpaper, cursor, fonts, and a full 16-color palette. Integrates with Stylix for base16 scheme generation and configures fontconfig defaults.
+Provides a centralized theme configuration ("theme picker") for the entire desktop environment, including wallpaper, cursor, fonts, and a full 16-color palette. Stylix is the application mechanism: this module enables stylix, derives the base16 scheme, fonts, and cursor from the `theme.*` options, and enables the app-agnostic stylix targets. App modules enable their own stylix targets; manual theming from `config.theme.*` remains only where stylix has no target (e.g. niri focus ring).
 
 ## Usage
 
@@ -52,7 +52,11 @@ theme = {
 ## Notes
 
 - The default color scheme is Gruvbox Dark.
-- Installs Papirus icon theme, Nerd Font symbols, Noto Color Emoji, and DejaVu fonts alongside the configured font.
-- Configures Stylix with a base16 scheme derived from the color options and enables GTK theming.
+- Sets `stylix.enable = true` with `stylix.autoEnable = false`: targets are opt-in so a flake update can't silently start theming new apps. Convention: each app module enables its own target (`stylix.targets.<app>.enable` — see alacritty, dunst, vicinae, firefox, niri/swaylock); this module owns only the app-agnostic targets:
+  - `gtk` — GTK3 apps (thunar) get adw-gtk3 recolored with the base16 palette
+  - `gnome` — sets dconf `color-scheme=prefer-dark`, which makes GTK4/libadwaita apps and Firefox follow dark mode (requires system-level `programs.dconf.enable`, set in `modules/common`)
+  - `fontconfig` / `font-packages` — default font families and their packages
+- `theme.font` drives `stylix.fonts.monospace` and the application/desktop font sizes; `theme.cursor` drives `stylix.cursor` (which sets `home.pointerCursor` with x11+gtk integration). sansSerif/serif/emoji keep stylix defaults (DejaVu + Noto Color Emoji), matching the previous manual fontconfig defaults.
+- Installs Papirus icon theme (kept manual; `stylix.icons` unused), Nerd Font symbols as monospace fallback, and glibc locales. Font and cursor packages are installed via stylix.
 - The wallpaper is also written to `~/.background-image` for compatibility with tools that expect it there.
-- Other modules (terminal, waybar, zellij) reference `config.theme.*` to inherit colors and fonts.
+- Modules for apps without a stylix target (niri focus ring, ghostty, walker, polybar) still reference `config.theme.*` directly.

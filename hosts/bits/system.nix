@@ -27,7 +27,7 @@
       options uvcvideo quirks=0x100
     '';
 
-    kernelPackages = pkgs.linuxPackages_6_12;
+    kernelPackages = pkgs.linuxPackages_6_18;
 
     kernelParams = [
       "amd_pstate=active" # Modern AMD CPU frequency scaling

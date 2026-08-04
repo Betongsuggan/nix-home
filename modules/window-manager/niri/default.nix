@@ -117,10 +117,9 @@ in
     controls.enable = mkDefault true;
     controls.windowManager = "niri";
 
+    # home.pointerCursor is provided by stylix (stylix.cursor in the theming
+    # module), including the x11/gtk integration the old block lacked.
     home = {
-      pointerCursor = {
-        inherit (config.theme.cursor) name package;
-      };
       packages =
         with pkgs;
         [
@@ -185,14 +184,14 @@ in
           [ ];
     };
 
-    # Swaylock configuration (styled to match hyprlock)
+    # Wallpaper and colors come from stylix; only swaylock-effects extras
+    # (blur, clock, indicator) are configured here.
+    stylix.targets.swaylock.enable = cfg.lockscreen.enable;
     programs.swaylock = mkIf cfg.lockscreen.enable {
       enable = true;
       package = pkgs.swaylock-effects;
       settings = {
-        # Background with blur (like hyprlock blur_passes=2, blur_size=4)
-        image = "${config.theme.wallpaper}";
-        scaling = "fill";
+        # Background blur (like hyprlock blur_passes=2, blur_size=4)
         effect-blur = "7x5";
         effect-vignette = "0.5:0.5";
 
@@ -205,23 +204,6 @@ in
         indicator = true;
         indicator-radius = 100;
         indicator-thickness = 7;
-
-        # Colors matching theme (like hyprlock)
-        color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
-        inside-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
-        inside-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
-        inside-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
-        inside-wrong-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
-        key-hl-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        ring-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        ring-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        ring-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        ring-wrong-color = lib.strings.removePrefix "#" config.theme.colors.normal.red;
-        line-color = "00000000";
-        text-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        text-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        text-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        text-wrong-color = lib.strings.removePrefix "#" config.theme.colors.normal.red;
 
         # Font settings
         font = config.theme.font.name;

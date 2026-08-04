@@ -37,3 +37,5 @@ terminal = {
 
 - Setting `backend` automatically enables the corresponding terminal sub-module.
 - The `terminal.command` and `terminal.commandWithCwd` options are internal read-only values used by other modules (e.g., window-manager) to launch the configured terminal.
+- **Alacritty is themed by stylix**: `colors.useTheme` toggles the stylix alacritty target (colors, font, opacity as a whole); `font.size` is wired to `stylix.fonts.sizes.terminal` and `opacity` to `stylix.opacity.terminal`. `alacritty.extraSettings` merges via the module system — use `lib.mkForce` to override a stylix-set leaf (e.g. `font.normal.style`, which stylix sets to "Regular").
+- Ghostty and urxvt keep manual theming from `config.theme.*` (no stylix target enabled).

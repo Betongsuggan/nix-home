@@ -28,6 +28,7 @@
   };
   direnv.enable = true;
   chromium.enable = true;
+  firefox.enable = true;
   communication.enable = true;
   localsend = {
     enable = true;

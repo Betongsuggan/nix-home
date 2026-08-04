@@ -40,6 +40,8 @@ windowManager = {
 ## Notes
 
 - Setting `backend` automatically enables the corresponding window manager sub-module (hyprland, i3, niri, or sway).
+- The pointer cursor (`home.pointerCursor`) is provided by stylix from `theme.cursor` (see theming module); the hyprland sub-module only adds the hyprcursor part stylix doesn't manage.
+- Niri's swaylock lock screen: wallpaper and colors come from the stylix swaylock target; swaylock-effects extras (blur, vignette, clock, indicator, font) stay in the niri sub-module. The niri focus ring still reads `config.theme.*` directly (no stylix niri target).
 - Installs a `.XCompose` file with Swedish character mappings (e.g., Compose+o+o produces o with diaeresis).
 - Sets `GTK_IM_MODULE`, `QT_IM_MODULE`, and `XMODIFIERS` session variables to make `.XCompose` work in XWayland apps.
 - Virtual monitors are useful for headless streaming setups (e.g., Sunshine) -- configure resolution via the `monitors` option.

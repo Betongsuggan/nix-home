@@ -14,6 +14,9 @@ in {
   };
 
   config = mkIf (cfg.enable && cfg.backend == "dunst") {
+    # Font and colors come from stylix (per-urgency sections)
+    stylix.targets.dunst.enable = true;
+
     # Auto-enable launcher for dmenu functionality
     launcher.enable = mkDefault true;
 
@@ -33,9 +36,6 @@ in {
             markup = "full";
             dmenu = if config.launcher.enable then config.launcher.dmenu { } else "${pkgs.coreutils}/bin/true";
             show_indicators = false;
-            font = "${config.theme.font.name} ${
-                builtins.toString config.theme.font.size
-              }";
             format = "<b>%a</b>\\n%s\\n\\n%b";
             width = "(0,400)";
             offset = "40x40";
@@ -48,9 +48,6 @@ in {
             mouse_left = "context";
             mouse_middle = "context";
             mouse_right = "close_current";
-            inherit (config.theme.colors.primary) background foreground;
-            highlight = config.theme.colors.normal.red;
-            frame_color = config.theme.colors.bright.black;
           };
           slack = {
             desktop_entry = "Slack";

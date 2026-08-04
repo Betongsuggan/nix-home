@@ -41,3 +41,4 @@ notifications = {
 - The mako backend uses notify-send from libnotify.
 - The dunst backend auto-enables the launcher module for dmenu context menu support.
 - Installs the Papirus icon theme for notification icons.
+- Dunst font and colors come from stylix (`stylix.targets.dunst`): sans-serif font at the popup size, per-urgency base16 colors. Layout, icons, per-app rules, and timeouts remain configured in this module.

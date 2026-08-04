@@ -46,12 +46,11 @@ with lib;
     # services.touchegg.enable = true;  # TODO: Move to system level
 
     home = {
-      pointerCursor = {
-        inherit (config.theme.cursor) name package;
-        hyprcursor = {
-          enable = true;
-          inherit (config.theme.cursor) size;
-        };
+      # name/package/size come from stylix (stylix.cursor in the theming
+      # module); hyprcursor is the only part stylix doesn't manage.
+      pointerCursor.hyprcursor = {
+        enable = true;
+        inherit (config.theme.cursor) size;
       };
       packages = with pkgs; [
         hyprlock
