@@ -595,6 +595,7 @@
     },
     "nix-vault": {
       "locked": {
+<<<<<<< HEAD
         "lastModified": 1783536677,
         "narHash": "sha256-uHtQHCGU7UIMnrm7pP0Xr8/bJFULwAlGQRjRc4RNwek=",
         "ref": "main",
@@ -602,6 +603,12 @@
         "revCount": 17,
         "type": "git",
         "url": "ssh://git@controller/var/lib/git/nix-vault.git"
+=======
+        "lastModified": 1779465664,
+        "narHash": "sha256-7knqUD8y++ZwVd9xzSZKK1OJvPt8nmP4ipKJuctNh18=",
+        "path": "/home/betongsuggan/nix-vault",
+        "type": "path"
+>>>>>>> 46f62af (Island stationary updates)
       },
       "original": {
         "ref": "main",

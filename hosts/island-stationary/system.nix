@@ -1,4 +1,10 @@
-{ pkgs, inputs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 
 {
   users.users.gamer = {
