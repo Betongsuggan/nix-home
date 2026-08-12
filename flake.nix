@@ -78,6 +78,7 @@
     # Bootstrap an installer via `--override-input nix-vault path:...` if the
     # host hasn't joined the tailnet yet.
     nix-vault.url = "git+ssh://git@controller/var/lib/git/nix-vault.git?ref=main";
+
     #nix-vault.url = "git+ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git?ref=main";
     # once you want hosts/installers to fetch over SSH instead of relying on a
     # local clone. Bootstrap an installer via `--override-input nix-vault path:...`
@@ -121,7 +122,8 @@
             # but only includes <LayerShellQt/Shell>, so it fails to compile.
             # Add the missing include until the fix lands in vicinae-fork.
             vicinae =
-              (inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.default).overrideAttrs
+              (inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.default)
+              .overrideAttrs
                 (old: {
                   postPatch = (old.postPatch or "") + ''
                     cpp="$(find . -path '*services/file-chooser/native/native-file-chooser.cpp' | head -1)"
@@ -220,8 +222,7 @@
       homeConfigurations = {
         "betongsuggan@desktop" =
           mkHomeConfiguration ./hosts/desktop/user-betongsuggan.nix;
-        "gamer@desktop" =
-          mkHomeConfiguration ./hosts/desktop/user-gamer.nix;
+        "gamer@desktop" = mkHomeConfiguration ./hosts/desktop/user-gamer.nix;
         "betongsuggan@private-laptop" =
           mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
         "birgerrydback@bits" = mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;

@@ -25,7 +25,8 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 - Bluetooth with wake support for DualSense controller
 - Secure boot via Lanzaboote
 - Firewall with ports for LocalSend
-- Restic backup target: receives snapshots from controller into `/var/lib/restic-repos/controller/repo` via chrooted SFTP user `restic-controller` (key sourced from `lib/default.nix`). Off-site copy in the interim backup topology — requires island to be onboarded to the tailnet for controller to reach it. See `modules/restic-target/SPEC.md`.
+- Tailnet membership via `home-network` module. Currently in `bootstrap` mode as a first onboarding pass; flip to `onboarded` after the runbook in `modules/home-network/SPEC.md` (bootstrap join → mint preauth on controller → land preauth in `nix-vault/secrets/island.yaml` → rebuild).
+- Restic backup target: receives snapshots from controller into `/var/lib/restic-repos/controller/repo` via chrooted SFTP user `restic-controller` (key sourced from `lib/default.nix`). Off-site copy in the interim backup topology — requires island-stationary to be onboarded to the tailnet for controller to reach it. See `modules/restic-target/SPEC.md`.
 
 ## Differences from desktop
 

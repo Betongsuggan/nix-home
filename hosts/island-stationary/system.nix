@@ -144,19 +144,19 @@
 
   services.fwupd.enable = true;
 
-  sops-secrets = {
-    enable = true;
-    secretsFile = "${inputs.nix-vault}/secrets/island.yaml";
-  };
+  #sops-secrets = {
+  #  enable = true;
+  #  secretsFile = "${inputs.nix-vault}/secrets/island.yaml";
+  #};
 
-  sops.secrets = {
-    "ssh-id-rsa" = {
-      key = "users/betongsuggan/ssh/id_rsa";
-      owner = "betongsuggan";
-      mode = "0600";
-      path = "/home/betongsuggan/.ssh/id_rsa";
-    };
-  };
+  #sops.secrets = {
+  #  "ssh-id-rsa" = {
+  #    key = "users/betongsuggan/ssh/id_rsa";
+  #    owner = "betongsuggan";
+  #    mode = "0600";
+  #    path = "/home/betongsuggan/.ssh/id_rsa";
+  #  };
+  #};
 
   programs.gamemode = {
     enable = true;
@@ -211,14 +211,29 @@
   };
 
   # Receive restic snapshots from controller as the off-site copy. Prerequisite:
-  # island must be onboarded to the tailnet (`home-network.mode = "onboarded"`)
-  # before controller can actually reach `island.ts.rydback.net`. The pubkey is
-  # pulled from lib so onboarding can happen independently — no edits here.
+  # island-stationary must be onboarded to the tailnet
+  # (`home-network.mode = "onboarded"`) before controller can actually reach
+  # `island-stationary.ts.rydback.net`. The pubkey is pulled from lib so
+  # onboarding can happen independently — no edits here.
   restic-target = {
     enable = true;
     sources.controller = {
       sshKey = inputs.self.lib.hosts.controller.users.restic.ssh.id_ed25519;
     };
+  };
+
+  # Tailnet membership. Start in `bootstrap` for the first pass; run
+  # `home-network-bootstrap` on the host to join, follow the steps in
+  # `modules/home-network/SPEC.md`, then flip to `onboarded` and rebuild.
+  home-network = {
+    enable = true;
+    mode = "bootstrap";
+    authorizeSshFor.betongsuggan = [
+      {
+        host = "controller";
+        user = "betongsuggan";
+      }
+    ];
   };
 
   wayland-security.enable = true;

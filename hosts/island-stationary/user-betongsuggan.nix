@@ -84,8 +84,8 @@
     enable = true;
   };
 
-  home.file.".ssh/id_rsa.pub".text =
-    inputs.nix-vault.keys.hosts.island.users.betongsuggan.id_rsa + "\n";
+  #home.file.".ssh/id_rsa.pub".text =
+  #  inputs.nix-vault.keys.hosts.island-stationary.users.betongsuggan.id_rsa + "\n";
 
   programs.ssh = {
     enable = true;

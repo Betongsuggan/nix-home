@@ -444,8 +444,8 @@
         sftpHost = "desktop.ts.rydback.net";
         sftpUser = "restic-controller";
       };
-      island = {
-        sftpHost = "island.ts.rydback.net";
+      island-stationary = {
+        sftpHost = "island-stationary.ts.rydback.net";
         sftpUser = "restic-controller";
       };
     };

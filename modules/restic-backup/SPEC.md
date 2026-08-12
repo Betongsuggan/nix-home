@@ -29,8 +29,8 @@ restic-backup = {
       sftpUser = "restic-controller";
       # sftpPath defaults to /repo (post-chroot path on the receiver)
     };
-    island = {
-      sftpHost = "island.ts.rydback.net";
+    island-stationary = {
+      sftpHost = "island-stationary.ts.rydback.net";
       sftpUser = "restic-controller";
     };
   };
@@ -96,7 +96,7 @@ The repo password never needs to live outside sops because nix-vault is itself t
 # a wrapper named `restic-<target>` that pre-injects --repo, --password-file
 # and sftp.args from this module's config — no need to repeat them.
 restic-desktop snapshots
-restic-island  snapshots
+restic-island-stationary snapshots
 
 # Restore the most recent snapshot of /var/lib/vaultwarden into a sandbox:
 restic-desktop restore latest --target /tmp/restore --path /var/lib/vaultwarden
@@ -115,6 +115,6 @@ restic \
 ## Notes
 
 - **Host key TOFU.** First connection to each target accepts and pins the host key into `/var/lib/restic/known_hosts`. On the tailnet with deny-by-default firewalls and Headscale-coordinated peers, MITM is implausible — but a paranoid operator can pre-populate that file from `hosts.<target>.ssh.host` in `lib/default.nix` before the first backup runs.
-- **Initial snapshot size.** `/var/lib/emulation` is potentially many GB. The first push to `island.ts.rydback.net` over residential upload is slow; consider seeding island over LAN on a visit, then letting incremental snapshots take over.
+- **Initial snapshot size.** `/var/lib/emulation` is potentially many GB. The first push to `island-stationary.ts.rydback.net` over residential upload is slow; consider seeding island-stationary over LAN on a visit, then letting incremental snapshots take over.
 - **One password, multiple repos.** The single `passwordFile` is reused across every target — each repo is initialised with the same password. Restic's threat model treats each repo independently, so this is fine; the only operational cost is that rotating the password means rotating every repo.
 - **Verify restores quarterly.** Untested backups are hope, not backups. The de-googling plan explicitly calls this out; consider a systemd timer that picks a random path and restores it to a tmp dir as a smoke test.
