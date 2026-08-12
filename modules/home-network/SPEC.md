@@ -82,6 +82,8 @@ On the new host, grab `/etc/ssh/ssh_host_ed25519_key.pub` (the `openssh.enable` 
 
 Commit and push `nix-home`. (Controller hasn't been rebuilt yet, so these keys aren't trusted yet — that happens in step 4.)
 
+**`ssh.host` is mandatory, not decorative.** `lib.allSshKeys` feeds controller's `git-server.authorizedKeys`, and `modules/tailnet` gives root a `Match user root host controller.ts.rydback.net` block that authenticates with `/etc/ssh/ssh_host_ed25519_key`. That is the identity the nix-daemon/root uses when `sudo nixos-rebuild` has to fetch the `nix-vault` flake input. Omit `ssh.host` and every root-side fetch fails with `Permission denied (publickey)`, even though the same fetch works as your user.
+
 ### 3. Run `home-network-bootstrap` on the new host
 
 ```bash
@@ -119,8 +121,10 @@ Exit the SSH session.
 Controller now trusts your user key, so:
 
 ```bash
-cd ~ && git clone git@controller:nix-vault.git
+cd ~ && git clone git@controller.ts.rydback.net:nix-vault.git
 ```
+
+Use the tailnet FQDN (`controller.ts.rydback.net`), not the short `controller` alias. Controller's sshd listens only on `tailscale0`, and on hosts far from home the short alias may resolve via `lib/default.nix` addresses (or a stale `~/.ssh/config` block) to controller's LAN IP `192.168.50.5`, which is unreachable from off-LAN and gives `No route to host`. The FQDN resolves via MagicDNS to controller's tailnet address (`100.64.0.2`) and routes over `tailscale0`, which always works from any tailnet peer.
 
 ### 6. Register the host in `nix-vault`
 
@@ -145,6 +149,13 @@ cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age
   cd ~/nix-vault && git add .sops.yaml secrets/<host>.yaml && git commit -m "add <host>" && git push
   ```
 
+  If the push fails with `No route to host`, the clone's `origin` remote was set from a short `controller` alias that resolves to the LAN IP. Retarget it at the tailnet FQDN once and it'll stick:
+
+  ```bash
+  git remote set-url origin git@controller.ts.rydback.net:nix-vault.git
+  git push
+  ```
+
 ### 7. Flip to `onboarded` and rebuild
 
 In `nix-home`, update the host's `system.nix`:
@@ -161,10 +172,21 @@ sops-secrets = {
 };
 ```
 
-Commit, push, then on the new host:
+Commit, push, then on the new host lock the input and rebuild:
 
 ```bash
+GIT_SSH_COMMAND='ssh -i ~/.ssh/id_ed25519_sk_rk_nix-vault -o IdentitiesOnly=yes' \
+  nix flake update nix-vault
 sudo nixos-rebuild switch --flake .#<host>
+```
+
+**Why the `GIT_SSH_COMMAND` prefix.** This step is the one circular dependency left in the flow: `nix-vault` is fetched over SSH as *your user*, whose `~/.ssh/id_rsa` is a symlink to `/run/secrets/ssh-id-rsa` — a path that does not exist until the very rebuild you are trying to run. A plain `nix flake update nix-vault` therefore has no usable identity and dies with `Permission denied (publickey,keyboard-interactive)`. The FIDO resident key from step 3 is authorized for `git@controller` inline in controller's `git-server.authorizedKeys`, so it breaks the cycle (YubiKey must be inserted; touch when it blinks). From the second rebuild onward `~/.ssh/id_rsa` resolves and the prefix is unnecessary.
+
+If the YubiKey isn't at hand, the alternative is to skip the fetch entirely and build against the clone from step 5:
+
+```bash
+sudo nixos-rebuild switch --flake .#<host> \
+  --override-input nix-vault git+file:///home/<you>/nix-vault
 ```
 
 The host now joins the tailnet permanently under its real hostname using the sops-decrypted preauth key. The ephemeral `installer-XXXXXXXX` node from step 3 disappears from headscale within a few minutes of the old tailscaled session ending.
@@ -194,6 +216,7 @@ The `--ephemeral` flag is what makes the `installer-XXXXXXXX` nodes auto-clean: 
 - **Rotator dies, blob goes stale.** Every blob on disk eventually references an expired key. Onboarding is blocked until the rotator runs again. There is no remote recovery path by design — fix it from controller's physical console. `sudo systemctl status home-network-rotate-preauth.{timer,service}` to investigate; `sudo systemctl start home-network-rotate-preauth.service` writes a fresh blob immediately. Mitigations baked in: 15-min rotation interval keeps freshness loud; the 1h TTL is longer than the rotation interval so a brief outage does not lock onboarding out.
 - **YubiKey lost.** All rotated blobs become undecryptable. Stand up a replacement YubiKey, register its age public key in `nix-vault`, set `home-network.controller.yubikeyAgeRecipient` to the new value, and rebuild controller.
 - **SSH session in step 3 exits early.** Just re-run `home-network-bootstrap` — it's idempotent. Steps 1 and 2 of the script (join, materialize) short-circuit; step 3 re-opens the SSH session.
+- **`Permission denied (publickey,keyboard-interactive)` fetching the `nix-vault` input.** Which identity was offered decides the fix. As your user during onboarding: `~/.ssh/id_rsa` is still a dangling symlink into `/run/secrets` — use the `GIT_SSH_COMMAND` FIDO prefix from step 7. As root (`sudo nixos-rebuild`): the host is missing its `ssh.host` entry in `lib/default.nix`, or controller hasn't been rebuilt since it was added — see step 2. Also check that the input URL uses the tailnet FQDN (`controller.ts.rydback.net`); the short `controller` alias resolves to the LAN IP off-LAN.
 - **`nixos-rebuild switch` to `onboarded` fails before completing.** The host is stuck without permanent tailnet membership. Recovery: re-run `home-network-bootstrap` to rejoin the tailnet as a new ephemeral installer node, fix the underlying issue, retry the flip.
 
 ## Notes

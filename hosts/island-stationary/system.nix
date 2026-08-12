@@ -46,10 +46,8 @@
     permittedInsecurePackages = [ "freeimage-3.18.0-unstable-2024-04-18" ];
   };
 
-  openssh = {
-    enable = true;
-    openFirewall = true;
-  };
+  # openssh is enabled by home-network/tailnet in onboarded mode, with the
+  # firewall closed so sshd is reachable on tailscale0 only.
 
   secure-boot.enable = true;
   boot = {
@@ -144,19 +142,19 @@
 
   services.fwupd.enable = true;
 
-  #sops-secrets = {
-  #  enable = true;
-  #  secretsFile = "${inputs.nix-vault}/secrets/island.yaml";
-  #};
+  sops-secrets = {
+    enable = true;
+    secretsFile = "${inputs.nix-vault}/secrets/island.yaml";
+  };
 
-  #sops.secrets = {
-  #  "ssh-id-rsa" = {
-  #    key = "users/betongsuggan/ssh/id_rsa";
-  #    owner = "betongsuggan";
-  #    mode = "0600";
-  #    path = "/home/betongsuggan/.ssh/id_rsa";
-  #  };
-  #};
+  sops.secrets = {
+    "ssh-id-rsa" = {
+      key = "users/betongsuggan/ssh/id_rsa";
+      owner = "betongsuggan";
+      mode = "0600";
+      path = "/home/betongsuggan/.ssh/id_rsa";
+    };
+  };
 
   programs.gamemode = {
     enable = true;
@@ -227,7 +225,7 @@
   # `modules/home-network/SPEC.md`, then flip to `onboarded` and rebuild.
   home-network = {
     enable = true;
-    mode = "bootstrap";
+    mode = "onboarded";
     authorizeSshFor.betongsuggan = [
       {
         host = "controller";

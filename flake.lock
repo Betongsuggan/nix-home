@@ -593,6 +593,22 @@
         "type": "github"
       }
     },
+    "nix-vault": {
+      "locked": {
+        "lastModified": 1786550648,
+        "narHash": "sha256-QB0S2D4cLEkvb+RDesqE+tOHDy233Gjj6s+7XM2kGhA=",
+        "ref": "main",
+        "rev": "f0aca3af20ebb28d57f9f2a12056c9a2a18b23b7",
+        "revCount": 18,
+        "type": "git",
+        "url": "ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1760284886,
@@ -875,6 +891,7 @@
         "lanzaboote": "lanzaboote",
         "monitormenu": "monitormenu",
         "niri": "niri",
+        "nix-vault": "nix-vault",
         "nixpkgs": "nixpkgs_8",
         "nixpkgs-onlyoffice": "nixpkgs-onlyoffice",
         "nixpkgs-unstable": "nixpkgs-unstable",

@@ -90,10 +90,17 @@
   programs.ssh = {
     enable = true;
     matchBlocks = {
-      "controller" = {
-        hostname = "192.168.50.5";
+      # This host lives off the home LAN, so controller is only reachable over
+      # the tailnet. Both identities are offered: the sops-provisioned id_rsa
+      # (steady state) and the FIDO resident key (works before /run/secrets
+      # exists, e.g. during onboarding).
+      "controller ${inputs.self.lib.tailnet.fqdn "controller"}" = {
+        hostname = inputs.self.lib.tailnet.fqdn "controller";
         user = "betongsuggan";
-        identityFile = "/home/betongsuggan/.ssh/id_rsa";
+        identityFile = [
+          "/home/betongsuggan/.ssh/id_rsa"
+          "/home/betongsuggan/.ssh/id_ed25519_sk_rk_nix-vault"
+        ];
         identitiesOnly = true;
       };
     };
