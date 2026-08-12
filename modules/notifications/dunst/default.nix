@@ -36,7 +36,7 @@ in {
             markup = "full";
             dmenu = if config.launcher.enable then config.launcher.dmenu { } else "${pkgs.coreutils}/bin/true";
             show_indicators = false;
-            format = "<b>%a</b>\\n%s\\n\\n%b";
+            format = "<b>%a</b>\\n%s\\n%b";
             width = "(0,400)";
             offset = "40x40";
             corner_radius = 5;

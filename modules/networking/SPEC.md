@@ -1,6 +1,6 @@
 # Networking
 
-Configures NetworkManager with iwd as the Wi-Fi backend. Sets up automatic wireless connectivity and includes a network notifier utility.
+Configures NetworkManager with iwd as the Wi-Fi backend. Sets up automatic wireless connectivity.
 
 ## Usage
 
@@ -22,4 +22,4 @@ networkmanager = {
 
 - Uses iwd instead of wpa_supplicant for Wi-Fi, with `AutoConnect` and automatic `wlan0` interface creation enabled.
 - A localhost entry for `bits.execute-api.localhost.localstack.cloud` is added to `/etc/hosts` (for LocalStack development).
-- The network notifier script is a placeholder and not yet functional.
+- Desktop notifications for network events are provided by the separate `network-monitor` user module.

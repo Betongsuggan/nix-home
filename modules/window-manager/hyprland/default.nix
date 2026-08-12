@@ -271,15 +271,14 @@ with lib;
           # Records the currently focused monitor using H.264 in MKV container (more resilient)
           ''$mod, v, exec, ${pkgs.procps}/bin/pkill -SIGINT wf-recorder && ${
             config.notifications.send {
-              summary = "Recording Stopped";
+              category = "recording";
               icon = "media-playback-stop";
-              appName = "Screen Recorder";
+              summary = "Recording stopped";
             }
           } || { ${
             config.notifications.send {
-              summary = "Recording Started";
-              icon = "media-record";
-              appName = "Screen Recorder";
+              category = "recording";
+              summary = "Recording started";
             }
           }; ${pkgs.wf-recorder}/bin/wf-recorder -o "$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name')" -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv; }''
 

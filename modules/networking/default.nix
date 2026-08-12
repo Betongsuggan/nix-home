@@ -1,8 +1,7 @@
 { config, lib, pkgs, ... }:
 with lib;
 
-let notifier = import ./networkNotifier.nix { inherit pkgs; };
-in {
+{
   options.networkmanager = {
     enable = mkEnableOption "Enable network management";
 
@@ -14,7 +13,7 @@ in {
   };
 
   config = mkIf config.networkmanager.enable {
-    environment.systemPackages = [ notifier pkgs.networkmanager ];
+    environment.systemPackages = [ pkgs.networkmanager ];
     networking = {
       inherit (config.networkmanager) hostName;
 

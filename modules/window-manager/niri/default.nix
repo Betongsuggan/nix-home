@@ -452,17 +452,17 @@ in
             ''
               if ${pkgs.procps}/bin/pkill -SIGINT wf-recorder; then
                 ${config.notifications.send {
-                  summary = "Recording Stopped";
+                  category = "recording";
                   icon = "media-playback-stop";
-                  appName = "Screen Recorder";
+                  summary = "Recording stopped";
                 }}
               else
                 GEOMETRY=$(${pkgs.slurp}/bin/slurp)
                 if [ -n "$GEOMETRY" ]; then
                   ${config.notifications.send {
-                    summary = "Recording Started (Region)";
-                    icon = "media-record";
-                    appName = "Screen Recorder";
+                    category = "recording";
+                    summary = "Recording started";
+                    body = "Selected region";
                   }}
                   ${pkgs.wf-recorder}/bin/wf-recorder -g "$GEOMETRY" -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv
                 fi
@@ -477,15 +477,14 @@ in
             ''
               if ${pkgs.procps}/bin/pkill -SIGINT wf-recorder; then
                 ${config.notifications.send {
-                  summary = "Recording Stopped";
+                  category = "recording";
                   icon = "media-playback-stop";
-                  appName = "Screen Recorder";
+                  summary = "Recording stopped";
                 }}
               else
                 ${config.notifications.send {
-                  summary = "Recording Started";
-                  icon = "media-record";
-                  appName = "Screen Recorder";
+                  category = "recording";
+                  summary = "Recording started";
                 }}
                 ${pkgs.wf-recorder}/bin/wf-recorder -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv
               fi

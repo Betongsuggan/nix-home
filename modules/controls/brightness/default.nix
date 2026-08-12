@@ -6,21 +6,15 @@ let
   
   # Build notification command using the notifications module
   notifyBrightness = optionalString cfg.notifications (config.notifications.send {
-    urgency = "low";
-    icon = "whitebalance";
-    appName = "Brightness";
-    summary = "";
-    hints = {
-      "string:x-dunst-stack-tag" = "brightnessControl";
-      "int:value" = "\$brightness";
-    };
+    category = "brightness";
+    summary = "\$brightness%";
+    progress = "\$brightness";
   });
 
   brightnessBackend = pkgs.brightnessctl;
 
   cmds = {
-    increase = "${brightnessBackend}/bin/brightnessctl set";
-    decrease = "${brightnessBackend}/bin/brightnessctl set --";
+    set = "${brightnessBackend}/bin/brightnessctl set";
     get = "${brightnessBackend}/bin/brightnessctl get";
   };
   
@@ -31,8 +25,8 @@ let
     do
         case "''${option}"
             in
-            i) ${cmds.increase} +''${OPTARG};;
-            d) ${cmds.decrease} -''${OPTARG};;
+            i) ${cmds.set} +''${OPTARG}%;;
+            d) ${cmds.set} ''${OPTARG}%-;;
         esac
     done
 

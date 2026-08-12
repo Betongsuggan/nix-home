@@ -2,11 +2,8 @@
 let
   # Build notification command using the notifications module
   notifyWifiConnected = config.notifications.send {
-    urgency = "normal";
-    icon = "network-wireless";
-    appName = "Wi-Fi Connection";
-    summary = "Connection Established";
-    body = "\$success_message";
+    category = "network";
+    summary = "Connected to \$chosen_id";
   };
 
   wifiControl = pkgs.writeShellScriptBin "wifi-control" ''
@@ -38,8 +35,6 @@ let
     elif [ "$chosen_network" = "󰖪  Rescan Wi-Fi" ]; then
     	nmcli dev wifi list --rescan yes
     else
-    	# Message to show when connection is activated successfully
-      	success_message="Connected to \"<b>$chosen_id</b>\"."
     	# Get saved connections
     	saved_connections=$(nmcli -g NAME connection)
     	if [[ $(echo "$saved_connections" | grep -w "$chosen_id") = "$chosen_id" ]]; then

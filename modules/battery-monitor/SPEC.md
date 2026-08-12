@@ -24,7 +24,7 @@ battery-monitor = {
 
 ## Notes
 
-- Automatically enables the `notifications` module when active.
+- Automatically enables the `notifications` module when active. All notifications share one visual identity from the `battery` category preset: "Battery" header, the battery icon, a charge-level progress bar, and a shared stack tag. Charger connect/disconnect are routine (low urgency); severity is signaled by urgency frame color alone — normal for low battery, critical for the critical threshold.
 - Runs as a systemd user timer (`battery-monitor.timer`) and oneshot service (`battery-monitor.service`).
 - Tracks state between checks to avoid duplicate notifications (resets when charger is connected).
 - On machines without a battery, the service exits silently.

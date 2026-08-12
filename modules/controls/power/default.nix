@@ -12,54 +12,38 @@ let
 
   # Build notification commands using the notifications module
   notifySuspend = optionalString cfg.notifications (config.notifications.send {
-    urgency = "normal";
+    category = "power";
     icon = "system-suspend";
-    appName = "Power";
-    summary = "Suspending system...";
-    timeout = 2000;
+    summary = "Suspending";
   });
 
   notifyHibernate = optionalString cfg.notifications (config.notifications.send {
-    urgency = "normal";
+    category = "power";
     icon = "system-hibernate";
-    appName = "Power";
-    summary = "Hibernating system...";
-    timeout = 2000;
+    summary = "Hibernating";
   });
 
   notifyLogout = optionalString cfg.notifications (config.notifications.send {
-    urgency = "normal";
+    category = "power";
     icon = "system-log-out";
-    appName = "Power";
-    summary = "Logging out...";
-    timeout = 2000;
+    summary = "Logging out";
   });
 
   notifyReboot = optionalString cfg.notifications (config.notifications.send {
-    urgency = "normal";
+    category = "power";
     icon = "system-reboot";
-    appName = "Power";
-    summary = "Rebooting system...";
-    timeout = 2000;
+    summary = "Rebooting";
   });
 
   notifyShutdown = optionalString cfg.notifications (config.notifications.send {
-    urgency = "normal";
-    icon = "system-shutdown";
-    appName = "Power";
-    summary = "Shutting down system...";
-    timeout = 2000;
+    category = "power";
+    summary = "Shutting down";
   });
 
   notifyStatus = optionalString cfg.notifications (config.notifications.send {
-    urgency = "low";
-    icon = "computer";
-    appName = "Power Status";
-    summary = "System Status";
-    body = "Uptime: \$uptime_info\\nLoad: \$load_avg\\nHypridle: \$hypridle_status\\n\$battery_status";
-    hints = {
-      "string:x-dunst-stack-tag" = "powerStatus";
-    };
+    category = "system";
+    summary = "\$uptime_info";
+    body = "Load \$load_avg\$battery_detail";
   });
 
   # Window manager specific commands
@@ -170,22 +154,16 @@ let
 
       status)
         # Show power status notification
-        battery_status=""
+        battery_detail=""
         if ${pkgs.which}/bin/which ${pkgs.upower}/bin/upower >/dev/null 2>&1; then
           battery_info=$(${pkgs.upower}/bin/upower -i $(${pkgs.upower}/bin/upower -e | ${pkgs.gnugrep}/bin/grep 'BAT') 2>/dev/null | ${pkgs.gnugrep}/bin/grep -E "state|percentage" | ${pkgs.gnused}/bin/sed 's/.*: *//' | ${pkgs.coreutils}/bin/tr '\n' ' ')
           if [ -n "$battery_info" ]; then
-            battery_status="Battery: $battery_info"
+            battery_detail=" · Battery $battery_info"
           fi
         fi
 
         uptime_info=$(${pkgs.procps}/bin/uptime -p)
         load_avg=$(${pkgs.procps}/bin/uptime | ${pkgs.gawk}/bin/awk -F'load average:' '{print $2}' | ${pkgs.gnused}/bin/sed 's/^ *//')
-
-        # Check if hypridle is running (window manager specific)
-        hypridle_status="❌ Not running"
-        if ${pkgs.procps}/bin/pgrep -x "hypridle" > /dev/null; then
-          hypridle_status="✅ Running"
-        fi
 
         ${notifyStatus}
         ;;

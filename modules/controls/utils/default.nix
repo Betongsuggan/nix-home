@@ -6,46 +6,28 @@ let
   
   # Build notification commands using the notifications module
   notifyTime = optionalString cfg.time (config.notifications.send {
-    urgency = "low";
-    icon = "clock";
-    appName = "Time";
-    summary = "\$(date --rfc-3339=seconds)";
-    hints = {
-      "string:x-dunst-stack-tag" = "timeNotifier";
-    };
+    category = "time";
+    summary = "\$(date '+%H:%M')";
+    body = "\$(date '+%A %-d %B %Y')";
   });
 
   notifyWorkspace = optionalString cfg.workspaces (config.notifications.send {
-    urgency = "low";
-    icon = "system";
-    appName = "Workspaces";
-    summary = "Current: \$currentWorkspace";
+    category = "workspace";
+    summary = "Workspace \$currentWorkspace";
     body = "\$notification";
-    hints = {
-      "string:x-dunst-stack-tag" = "workspaceNotifier";
-    };
   });
 
   notifyBattery = optionalString cfg.battery (config.notifications.send {
-    urgency = "low";
-    icon = "battery";
-    appName = "Battery";
-    summary = "";
-    body = "<b>State</b>: \$status\\n<b>Percent</b>: \$percent%\$time_info";
-    hints = {
-      "string:x-dunst-stack-tag" = "batteryNotifier";
-    };
+    category = "battery";
+    summary = "\$headline";
+    body = "\$percent%\$time_info";
+    progress = "\$percent";
   });
 
   notifySystem = optionalString cfg.system (config.notifications.send {
-    urgency = "low";
-    icon = "cpu";
-    appName = "System";
-    summary = "";
-    body = "<b>CPU</b>: \$cpu 🧠\\n<b>Memory</b>: \$memUsedPercent% \$usedMem GB| \$totalMem GB🪜\\n<b>Storage</b>: \$deviceUsedPercent% \$deviceUsed GB| \$deviceCapacity GB 🪣";
-    hints = {
-      "string:x-dunst-stack-tag" = "systemNotifier";
-    };
+    category = "system";
+    summary = "System load";
+    body = "CPU \$cpu · Mem \$memUsedPercent% · Disk \$deviceUsedPercent%";
   });
 
   # Window manager specific workspace commands
@@ -56,14 +38,14 @@ let
       notification=""
 
       for display in $displays; do
-        notification+="$display\n"
+        notification+="$display"$'\n'
 
         workspaces=$(${pkgs.hyprland}/bin/hyprctl workspaces | grep "workspace\sID" | grep "\s''${display}" | awk '{print($3)}')
         for workspace in $workspaces; do
           if [ "$workspace" == "$currentWorkspace" ]; then
-            notification+="  $workspace\n"
+            notification+="  → $workspace"$'\n'
           else
-            notification+="  $workspace\n"
+            notification+="    $workspace"$'\n'
           fi
         done
       done
@@ -71,24 +53,24 @@ let
     i3 = ''
       currentWorkspace=$(${pkgs.i3}/bin/i3-msg -t get_workspaces | ${pkgs.jq}/bin/jq -r '.[] | select(.focused==true).name')
       workspaces=$(${pkgs.i3}/bin/i3-msg -t get_workspaces | ${pkgs.jq}/bin/jq -r '.[].name')
-      notification="Workspaces:\n"
+      notification=""
       for workspace in $workspaces; do
         if [ "$workspace" == "$currentWorkspace" ]; then
-          notification+="  → $workspace\n"
+          notification+="  → $workspace"$'\n'
         else
-          notification+="    $workspace\n"
+          notification+="    $workspace"$'\n'
         fi
       done
     '';
     sway = ''
       currentWorkspace=$(${pkgs.sway}/bin/swaymsg -t get_workspaces | ${pkgs.jq}/bin/jq -r '.[] | select(.focused==true).name')
       workspaces=$(${pkgs.sway}/bin/swaymsg -t get_workspaces | ${pkgs.jq}/bin/jq -r '.[].name')
-      notification="Workspaces:\n"
+      notification=""
       for workspace in $workspaces; do
         if [ "$workspace" == "$currentWorkspace" ]; then
-          notification+="  → $workspace\n"
+          notification+="  → $workspace"$'\n'
         else
-          notification+="    $workspace\n"
+          notification+="    $workspace"$'\n'
         fi
       done
     '';
@@ -96,18 +78,18 @@ let
       # Get workspace info from niri
       workspaceJson=$(niri msg -j workspaces)
       currentWorkspace=$(echo "$workspaceJson" | ${pkgs.jq}/bin/jq -r '.[] | select(.is_focused==true).idx')
-      notification="Workspaces:\n"
+      notification=""
 
       # Group by output
       outputs=$(echo "$workspaceJson" | ${pkgs.jq}/bin/jq -r '.[].output' | sort -u)
       for output in $outputs; do
-        notification+="$output:\n"
+        notification+="$output:"$'\n'
         workspaces=$(echo "$workspaceJson" | ${pkgs.jq}/bin/jq -r ".[] | select(.output==\"$output\") | .idx")
         for workspace in $workspaces; do
           if [ "$workspace" == "$currentWorkspace" ]; then
-            notification+="  → $workspace\n"
+            notification+="  → $workspace"$'\n'
           else
-            notification+="    $workspace\n"
+            notification+="    $workspace"$'\n'
           fi
         done
       done
@@ -165,25 +147,21 @@ let
     if [ "$status" == "discharging" ]; then
       time_remaining=$(echo "$battery_info" | grep "time to empty" | awk '{print $4, $5}')
       if [ -n "$time_remaining" ]; then
-        time_info="\n<b>Time left</b>: $time_remaining"
+        time_info=" · $time_remaining left"
       fi
     elif [ "$status" == "charging" ]; then
       time_until_full=$(echo "$battery_info" | grep "time to full" | awk '{print $4, $5}')
       if [ -n "$time_until_full" ]; then
-        time_info="\n<b>Time to full</b>: $time_until_full"
+        time_info=" · $time_until_full to full"
       fi
     fi
 
-    if [ "$status" == "charging" ]
-    then
-      status="''${status} 🔌"
-    elif [ "$status" == "discharging" ]
-    then
-      status="''${status} 🔋"
-    elif [ "$status" == "fully-charged" ]
-    then
-      status="''${status} 💯"
-    fi
+    case "$status" in
+      charging)      headline="Charging";;
+      discharging)   headline="Discharging";;
+      fully-charged) headline="Fully charged";;
+      *)             headline="$status";;
+    esac
 
     ${notifyBattery}
   '');

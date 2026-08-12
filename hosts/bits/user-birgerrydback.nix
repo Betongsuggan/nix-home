@@ -58,6 +58,7 @@
   };
 
   notifications.enable = true;
+  network-monitor.enable = true;
 
   controls = {
     enable = true;

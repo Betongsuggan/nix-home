@@ -10,37 +10,38 @@ with lib;
 let
   cfg = config.battery-monitor;
 
-  # Notification commands using the notifications module
+  # Notification commands using the notifications module. All share the
+  # battery category's icon and a charge progress bar; severity is signaled
+  # by urgency (frame color) alone. The state-specific battery-* icons only
+  # exist in Papirus' panel/ context, which dunst's icon path doesn't cover.
   notifyChargerConnected = config.notifications.send {
-    urgency = "low";
-    icon = "battery-charging";
-    appName = "Battery Monitor";
-    summary = "Charger Connected";
-    body = "Battery: \$PERCENT%\\nPower: \$POWER_DRAW";
+    category = "battery";
+    summary = "Charger connected";
+    body = "\$PERCENT% · \$POWER_DRAW";
+    progress = "\$PERCENT";
   };
 
   notifyChargerDisconnected = config.notifications.send {
-    urgency = "normal";
-    icon = "battery-discharging";
-    appName = "Battery Monitor";
-    summary = "Charger Disconnected";
-    body = "Battery: \$PERCENT%\\nPower: \$POWER_DRAW";
+    category = "battery";
+    summary = "Charger disconnected";
+    body = "\$PERCENT% · \$POWER_DRAW";
+    progress = "\$PERCENT";
   };
 
   notifyCritical = config.notifications.send {
+    category = "battery";
     urgency = "critical";
-    icon = "battery-caution";
-    appName = "Battery Monitor";
-    summary = "Critical Battery Level!";
-    body = "Battery at \$PERCENT%\\nPower: \$POWER_DRAW\\nPlease connect charger immediately!";
+    summary = "Battery critical";
+    body = "\$PERCENT% remaining · connect charger now";
+    progress = "\$PERCENT";
   };
 
   notifyLow = config.notifications.send {
+    category = "battery";
     urgency = "normal";
-    icon = "battery-low";
-    appName = "Battery Monitor";
-    summary = "Low Battery";
-    body = "Battery at \$PERCENT%\\nPower: \$POWER_DRAW\\nConsider connecting charger soon.";
+    summary = "Battery low";
+    body = "\$PERCENT% remaining";
+    progress = "\$PERCENT";
   };
 
   batteryMonitorScript = pkgs.writeShellScriptBin "battery-monitor-check" ''
@@ -113,11 +114,8 @@ let
     fi
 
     # Save current state
-    cat > "$STATE_FILE" <<EOF
-    PREV_STATE="$STATE"
-    NOTIFIED_LOW=$NOTIFIED_LOW
-    NOTIFIED_CRITICAL=$NOTIFIED_CRITICAL
-    EOF
+    printf 'PREV_STATE=%q\nNOTIFIED_LOW=%s\nNOTIFIED_CRITICAL=%s\n' \
+      "$STATE" "$NOTIFIED_LOW" "$NOTIFIED_CRITICAL" > "$STATE_FILE"
   '';
 
 in

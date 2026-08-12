@@ -37,6 +37,7 @@
   };
 
   notifications.enable = true;
+  network-monitor.enable = true;
   battery-monitor.enable = false;
   fileManager = {
     enable = true;

@@ -52,7 +52,7 @@
     };
 
     # Basic common system packages for all devices
-    environment.systemPackages = with pkgs; [ git vim wget curl ];
+    environment.systemPackages = with pkgs; [ git vim wget curl sshfs ];
 
     # System-side dconf/gsettings plumbing, required for the home-manager
     # stylix gtk/gnome targets' dark-mode preference to reach GTK apps

@@ -17,6 +17,7 @@
   communication.enable = true;
   starship.enable = true;
   notifications.enable = true;
+  network-monitor.enable = true;
   battery-monitor.enable = true;
   kanshi.enable = true;
   development = {

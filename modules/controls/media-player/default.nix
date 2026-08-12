@@ -6,13 +6,10 @@ let
   
   # Build notification command using the notifications module
   notifyMedia = optionalString cfg.notifications (config.notifications.send {
-    urgency = "low";
+    category = "media";
     icon = "\$icon";
-    appName = "\$artist";
     summary = "\$title";
-    hints = {
-      "string:x-dunst-stack-tag" = "mediaPlayer";
-    };
+    body = "\$artist";
   });
 
   mediaPlayerControl = pkgs.writeShellScriptBin "media-player" ''
@@ -24,8 +21,8 @@ let
     if [ -z "$status" ]; then
       # No player found
       icon="media-playback-stop"
-      artist="Media Player"
-      title="No player active"
+      artist=""
+      title="No active player"
       ${notifyMedia}
       exit 0
     fi

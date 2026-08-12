@@ -18,6 +18,7 @@
     ./kanshi
     ./launcher
     ./localsend
+    ./network-monitor
     ./notifications
     ./picom
     ./polybar

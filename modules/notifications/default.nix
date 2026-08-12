@@ -5,6 +5,22 @@ with lib;
 let
   cfg = config.notifications;
 
+  # Category presets: one visual identity per kind of notification.
+  # Senders pick a category and supply the text; any field can still be
+  # overridden per call (e.g. urgency for battery-critical).
+  categories = {
+    volume     = { appName = "Volume";     icon = "audio-volume-high";        urgency = "low";    replaceTag = "volume";     timeout = 2000; };
+    brightness = { appName = "Brightness"; icon = "display-brightness";       urgency = "low";    replaceTag = "brightness"; timeout = 2000; };
+    media      = { appName = "Media";      icon = "multimedia-player";        urgency = "low";    replaceTag = "media";      timeout = 5000; };
+    battery    = { appName = "Battery";    icon = "battery";                  urgency = "low";    replaceTag = "battery";    };
+    network    = { appName = "Network";    icon = "network-wireless";         urgency = "low";    replaceTag = "network";    };
+    power      = { appName = "Power";      icon = "system-shutdown";          urgency = "normal"; replaceTag = "power";      timeout = 2000; };
+    system     = { appName = "System";     icon = "utilities-system-monitor"; urgency = "low";    replaceTag = "system";     };
+    workspace  = { appName = "Workspaces"; icon = "virtual-desktops";         urgency = "low";    replaceTag = "workspace";  timeout = 3000; };
+    time       = { appName = "Time";       icon = "clock";                    urgency = "low";    replaceTag = "time";       timeout = 5000; };
+    recording  = { appName = "Recording";  icon = "media-record";             urgency = "normal"; replaceTag = "recording";  timeout = 3000; };
+  };
+
   # Helper to build dunst command
   buildDunstifyCmd = {
     urgency ? "normal"
@@ -15,6 +31,7 @@ let
     , hints ? {}
     , timeout ? null
     , replaceTag ? null
+    , progress ? null
   }: let
     urgencyFlag = "-u ${urgency}";
     iconFlag = optionalString (icon != null) "-i ${icon}";
@@ -30,10 +47,14 @@ let
     stackTagFlag = optionalString (replaceTag != null)
       "-h string:x-dunst-stack-tag:${replaceTag}";
 
+    # Progress bar value (rendered as a bar by dunst)
+    progressFlag = optionalString (progress != null)
+      "-h int:value:${toString progress}";
+
     summaryArg = "\"${summary}\"";
     bodyArg = optionalString (body != "") "\"${body}\"";
 
-  in "${pkgs.dunst}/bin/dunstify ${urgencyFlag} ${iconFlag} ${appNameFlag} ${timeoutFlag} ${hintFlags} ${stackTagFlag} ${summaryArg} ${bodyArg}";
+  in "${pkgs.dunst}/bin/dunstify ${urgencyFlag} ${iconFlag} ${appNameFlag} ${timeoutFlag} ${hintFlags} ${stackTagFlag} ${progressFlag} ${summaryArg} ${bodyArg}";
 
   # Helper to build mako/notify-send command
   buildNotifySendCmd = {
@@ -45,6 +66,7 @@ let
     , timeout ? null
     , hints ? {}
     , replaceTag ? null  # notify-send doesn't support this natively
+    , progress ? null
   }: let
     urgencyFlag = "-u ${urgency}";
     iconFlag = optionalString (icon != null) "-i ${icon}";
@@ -55,15 +77,26 @@ let
       mapAttrsToList (k: v: "-h ${k}:${toString v}") hints
     );
 
+    progressFlag = optionalString (progress != null)
+      "-h int:value:${toString progress}";
+
     summaryArg = "\"${summary}\"";
     bodyArg = optionalString (body != "") "\"${body}\"";
 
-  in "${pkgs.libnotify}/bin/notify-send ${urgencyFlag} ${iconFlag} ${appNameFlag} ${timeoutFlag} ${hintFlags} ${summaryArg} ${bodyArg}";
+  in "${pkgs.libnotify}/bin/notify-send ${urgencyFlag} ${iconFlag} ${appNameFlag} ${timeoutFlag} ${hintFlags} ${progressFlag} ${summaryArg} ${bodyArg}";
 
-  # Main notification function - delegates to backend
+  # Main notification function - delegates to backend after merging in the
+  # category preset (explicit args win over the preset)
   notifyCmd = args:
-    if cfg.backend == "dunst" then buildDunstifyCmd args
-    else if cfg.backend == "mako" then buildNotifySendCmd args
+    let
+      preset =
+        if args ? category
+        then categories.${args.category}
+        else { };
+      merged = preset // removeAttrs args [ "category" ];
+    in
+    if cfg.backend == "dunst" then buildDunstifyCmd merged
+    else if cfg.backend == "mako" then buildNotifySendCmd merged
     else throw "Unsupported notification backend: ${cfg.backend}";
 
 in {
@@ -97,14 +130,15 @@ in {
 
         Usage:
           config.notifications.send {
-            urgency = "low";        # "low", "normal", "critical"
-            icon = "battery-low";   # icon name
-            appName = "Battery";    # application name
-            summary = "Low Battery";
+            category = "battery";   # preset: appName, icon, urgency,
+                                    # replaceTag, timeout (any overridable)
+            summary = "Battery low";
             body = "15% remaining";
-            hints = {               # backend-specific hints
-              "int:value" = 15;     # progress bar value (dunst)
-            };
+            progress = 15;          # progress bar value (0-100)
+            urgency = "normal";     # override preset: "low", "normal", "critical"
+            icon = "battery-low";   # override preset icon
+            appName = "Battery";    # override preset header
+            hints = {};             # extra backend-specific hints
             timeout = 5000;         # milliseconds
             replaceTag = "battery"; # tag for replacing notifications (dunst)
           }
