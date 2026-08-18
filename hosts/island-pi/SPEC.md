@@ -31,7 +31,9 @@ On any x86 host with binfmt active (rebuild it once first):
 
 ```bash
 nix eval .#nixosConfigurations.island-pi.config.system.build.toplevel.drvPath  # cheap sanity check
-nix build .#island-pi-sd-image        # tens of minutes; image assembly runs under qemu
+# Full attribute path required: bare `.#island-pi-sd-image` only searches the
+# current system's packages (x86_64), but the image is an aarch64 derivation.
+nix build .#packages.aarch64-linux.island-pi-sd-image   # tens of minutes; image assembly runs under qemu
 zstd -d result/sd-image/*.img.zst -o /tmp/island-pi.img
 sudo dd if=/tmp/island-pi.img of=/dev/sdX bs=4M conv=fsync status=progress
 ```
