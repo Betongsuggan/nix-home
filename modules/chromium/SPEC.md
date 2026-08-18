@@ -19,6 +19,7 @@ chromium.enable = true;
 ## Notes
 
 - Uses `ungoogled-chromium` package which removes Google telemetry, service integrations, and tracking.
+- Widevine DRM: built with `enableWideVine = true`, which bundles Google's proprietary Widevine CDM (unfree, extracted from the official Chrome package) so DRM-protected streaming (Netflix, Spotify web, etc.) works. If playback still fails, check that "Sites can play protected content" is enabled under `chrome://settings/content/protectedContent`. Netflix caps Linux browser playback at 720p.
 - VA-API driver selection (`LIBVA_DRIVER_NAME`) is handled by the system-level `graphics` module, not this module.
 - Pre-installed extensions: uBlock Origin, Bitwarden, Vimium.
 - Wayland support via `--ozone-platform-hint=auto` (Ozone is default in modern Chromium, no extra feature flag needed).

@@ -14,7 +14,10 @@ with lib;
   config = mkIf config.chromium.enable {
     programs.chromium = {
       enable = true;
-      package = pkgs.ungoogled-chromium;
+      # enableWideVine bundles Google's Widevine CDM (extracted from the
+      # official Chrome package) so DRM streaming (Netflix, Spotify, ...)
+      # works. Prebuilt binary — does not trigger a Chromium source rebuild.
+      package = pkgs.ungoogled-chromium.override { enableWideVine = true; };
       extensions = [
         { id = "cjpalhdlnbpafiamejdnhcphjbkeiagm"; } # uBlock Origin
         { id = "nngceckbapebfimnlniiiahkandclblb"; } # Bitwarden
