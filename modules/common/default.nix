@@ -13,6 +13,14 @@
   };
 
   config = {
+    # aarch64 builder support: island-pi is deployed with `nixos-rebuild
+    # --target-host` from whatever fleet machine is at hand; evaluation and
+    # building happen on the deployer (the Pi never builds — see
+    # hosts/island-pi/SPEC.md). Gated on x86_64 so aarch64 hosts don't try to
+    # emulate themselves.
+    boot.binfmt.emulatedSystems =
+      lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 [ "aarch64-linux" ];
+
     nix = {
       # Enable features in Nix commands
       extraOptions = ''

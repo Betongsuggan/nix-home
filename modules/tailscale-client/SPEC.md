@@ -29,6 +29,7 @@ On first boot after enabling, tailscaled reads the preauth key from `authKeyFile
 | loginServer | string | (required) | URL of the headscale control server, e.g. `https://headscale.example.com` |
 | authKeyFile | path | (required) | File containing the preauth key (one line, no trailing newline issues) |
 | extraUpFlags | list of string | [ ] | Extra flags passed to `tailscale up` on first registration |
+| advertiseRoutes | list of string | [ ] | Subnets to advertise as a subnet router, e.g. `[ "192.168.1.0/24" ]`. Enables kernel IP forwarding (`services.tailscale.useRoutingFeatures = "server"`) |
 
 ## Notes
 
@@ -36,3 +37,4 @@ On first boot after enabling, tailscaled reads the preauth key from `authKeyFile
 - Use a long-lived (`-e 8760h`) `--reusable` preauth key so rebuilds before re-registration don't break things.
 - The preauth key is generated on the headscale server with `sudo headscale preauthkeys create -u <user> --reusable -e 8760h`, then encrypted into the `nix-vault` flake.
 - This module does not open the firewall. Tailscale handles its own UDP socket and works fine through a default-deny firewall on outbound connections.
+- `advertiseRoutes`, like every up-flag, is consumed **at registration only** (the nixpkgs module runs `tailscale up` just when the node has no login state). Changing routes on an already-registered node: `sudo tailscale set --advertise-routes=…` on the host. Advertised routes also need approval on the headscale side: `sudo headscale nodes list-routes` then `sudo headscale nodes approve-routes --identifier <id> --routes <subnet>` (syntax for headscale ≥0.26; older versions used `headscale routes enable`).

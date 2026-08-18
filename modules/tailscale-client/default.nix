@@ -27,13 +27,31 @@ in {
       example = [ "--accept-routes" "--ssh" ];
       description = "Extra flags passed to `tailscale up` on first registration.";
     };
+
+    advertiseRoutes = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
+      example = [ "192.168.1.0/24" ];
+      description = ''
+        Subnets to advertise to the tailnet (subnet router). Also enables
+        kernel IP forwarding via services.tailscale.useRoutingFeatures.
+        Like all up-flags this is applied at registration only; changing it
+        later requires `tailscale set --advertise-routes=...` on the host.
+        Routes must additionally be approved on the headscale side.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
     services.tailscale = {
       enable = true;
       authKeyFile = cfg.authKeyFile;
-      extraUpFlags = [ "--login-server=${cfg.loginServer}" ] ++ cfg.extraUpFlags;
+      useRoutingFeatures = mkIf (cfg.advertiseRoutes != [ ]) "server";
+      extraUpFlags =
+        [ "--login-server=${cfg.loginServer}" ]
+        ++ optional (cfg.advertiseRoutes != [ ])
+          "--advertise-routes=${concatStringsSep "," cfg.advertiseRoutes}"
+        ++ cfg.extraUpFlags;
     };
   };
 }

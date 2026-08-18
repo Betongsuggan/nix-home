@@ -27,6 +27,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 - Firewall with ports for LocalSend
 - Tailnet membership via `home-network` module, `onboarded` mode. Joins under its real hostname with the sops-decrypted preauth key from `nix-vault/secrets/island.yaml`. Off the home LAN, so `controller` is reached only over the tailnet — the user SSH `matchBlock` targets `controller.ts.rydback.net` and offers both `~/.ssh/id_rsa` (sops-provisioned) and the FIDO resident key from the onboarding pass.
 - Restic backup target: receives snapshots from controller into `/var/lib/restic-repos/controller/repo` via chrooted SFTP user `restic-controller` (key sourced from `lib/default.nix`). Off-site copy in the interim backup topology — requires island-stationary to be onboarded to the tailnet for controller to reach it. See `modules/restic-target/SPEC.md`.
+- Wake-on-LAN: the wired NIC has `wakeOnLan.enable = true` so the always-on `island-pi` host at the same location can wake this machine remotely (`ssh island-pi wake-island-stationary`, then ssh island-stationary directly). The MAC is registered as `wol.mac` in `lib/default.nix`; WoL must also be enabled in BIOS. NIC name and MAC are placeholders until read off the machine (`ip -br link`).
 
 ## Differences from desktop
 

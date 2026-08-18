@@ -234,6 +234,12 @@
     ];
   };
 
+  # Wake-on-LAN from island-pi (the always-on relay at the summer place):
+  # `ssh island-pi wake-island-stationary`. The MAC lives in lib/default.nix;
+  # WoL must also be enabled in BIOS ("Power On By PCI-E" / ErP off).
+  # FIXME: placeholder — real NIC name from `ip -br link` on this machine.
+  networking.interfaces."eth0".wakeOnLan.enable = true;
+
   wayland-security.enable = true;
   networkmanager = {
     enable = true;

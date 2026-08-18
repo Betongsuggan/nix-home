@@ -39,10 +39,23 @@ let
     island-stationary = {
       tailnetName = "island-stationary";
       addresses = [ "island-stationary" ];
+      # FIXME: placeholder — real MAC from `ip -br link` on island-stationary
+      # (the wired NIC). Consumed by island-pi's wake-island-stationary script.
+      wol.mac = "00:00:00:00:00:00";
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFadvK7ZRpD4sA+aHutNTz9c6AP8KWWjcSfbKRDmI+Ow root@island-stationary";
       users.betongsuggan = {
         ssh.id_rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDCOlpUl/qIipCBKP3Opoo+FxrsfX0zoh/5LrkVso1qlH2AWj3IDEHnoWpibqxtDYhU5J7CTJzvhh6AuIZLTb2plB/bu6hrh7y2/Sm3nkvOt1qZgXU4PERVjEOCu4hZQpHXpPtnNL0xYwr/bQ8eaz6f5oio2jn8xNo5YVv8jLjZSNHbPX/rcfuQz9xsAGNafOfpmM0+0ZjFlgpj/J791VhuM7w4XrJ6zzUYYqXvpo3mA49vpr/R2v1hktQmo0gCoIwQISLH8henuGCgaL51eCjze6mMygb37SjI/3nORoYNy2mxt25Twktpj20oc95HUB9aiUEn/pOoJVCaEVLugvu1IBbpwgfeP2Ymy6N2MyZ5daGlhUujOYg0LGHXFyvIC5db9P04MoaUPZMg9/4E+PagHKy11bKheWvNNkizFjo2FXil4tYf/0/wxWiSXzlPpRdROgGItTXrTtFcuDfooEtbjignxtB4EdIo32KC2VZ2a217PLdfbDhabSu2/Ogh503ZnKDQl8TV1kpFoyg7QkE3TBblrGWozrHUD66UypS8fU5UcpULXQyhKkZusgZ41td+97sbsQESqnSy8jOl+yFSg0gdiaLSfUaCOX+ybDNdSJJsFhPDJsQfV8f5/ZpyCFw9nwt2wZ8kf5eB2RQ6x8bg8tfOQZ3o32RaqzD5pJLTzw== rydback@gmail.com";
       };
+    };
+
+    island-pi = {
+      tailnetName = "island-pi";
+      addresses = [ "island-pi" ];
+      # FIXME: fill in after first boot (onboarding step 2 in
+      # hosts/island-pi/SPEC.md): /etc/ssh/ssh_host_ed25519_key.pub. Feeds
+      # lib.allSshKeys -> controller's git-server authorized keys, per fleet
+      # convention. Left out until known so no bogus key lands on controller.
+      # ssh.host = "ssh-ed25519 AAAA... root@island-pi";
     };
 
     desktop = {

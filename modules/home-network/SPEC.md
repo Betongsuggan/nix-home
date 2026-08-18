@@ -191,6 +191,18 @@ sudo nixos-rebuild switch --flake .#<host> \
 
 The host now joins the tailnet permanently under its real hostname using the sops-decrypted preauth key. The ephemeral `installer-XXXXXXXX` node from step 3 disappears from headscale within a few minutes of the old tailscaled session ending.
 
+## Headless remote-managed hosts (no bootstrap mode)
+
+Bootstrap mode exists to break one cycle: a new host that evaluates the flake *itself* cannot fetch `nix-vault` before joining the tailnet. A host that is only ever deployed with `nixos-rebuild --target-host` from an already-onboarded machine never has that problem — the *deployer* fetches `nix-vault`; the target only needs its host SSH key registered as an age recipient so sops can decrypt at activation.
+
+Such hosts skip `mode = "bootstrap"` (and the YubiKey-on-host dance of steps 3–5) entirely:
+
+1. Get the host running with plain LAN ssh (e.g. flashed from a flake-built image) and grab `/etc/ssh/ssh_host_ed25519_key.pub`.
+2. Steps 2, 4 (rebuild controller + mint preauth key) and 6 (register recipient + `secrets/<host>.yaml`) from the runbook above, all driven from an existing machine.
+3. Flip the host straight to `mode = "onboarded"` + `sops-secrets` and deploy with `--target-host`.
+
+`island-pi` is the example — see `hosts/island-pi/SPEC.md`.
+
 ## Server-side rotator (controller mode)
 
 What `controller` mode wires up beyond regular tailnet membership:

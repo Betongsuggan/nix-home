@@ -209,6 +209,9 @@
         mail = import ./hosts/mail/default.nix {
           inherit inputs overlays;
         };
+        island-pi = import ./hosts/island-pi/default.nix {
+          inherit inputs overlays;
+        };
       };
 
       packages.x86_64-linux.terraform-mail =
@@ -218,6 +221,19 @@
             modules = [ ./hosts/mail/terraform.nix ];
             extraArgs = { inherit inputs; };
           };
+
+      # Bootable SD-card image for island-pi with the host config baked in.
+      # Built on any x86 host via binfmt (see modules/common):
+      #   nix build .#island-pi-sd-image
+      # The sd-image module only augments the image build (partitioning,
+      # all-hardware initrd); deployed generations come from nixosConfigurations
+      # .island-pi unchanged.
+      packages.aarch64-linux.island-pi-sd-image =
+        (inputs.self.nixosConfigurations.island-pi.extendModules {
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+          ];
+        }).config.system.build.sdImage;
 
       homeConfigurations = {
         "betongsuggan@desktop" =
