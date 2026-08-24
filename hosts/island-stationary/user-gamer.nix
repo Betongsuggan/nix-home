@@ -67,9 +67,9 @@
   # Enable Hyprland for gaming session
   hyprland.lockscreen.enable = false; # Gaming user doesn't need lockscreen
   hyprland.windowRules = [
-    "fullscreenstate 1 2, class:^(steam)$"
-    "bordersize 0, class:^(steam)$"
-    "rounding 0, class:^(steam)$"
+    "fullscreen_state 1 2, match:class ^(steam)$"
+    "border_size 0, match:class ^(steam)$"
+    "rounding 0, match:class ^(steam)$"
   ];
   hyprland.workspaceRules = [
     "1, gapsin:0, gapsout:0" # No gaps on Steam workspace so maximize fills entire screen

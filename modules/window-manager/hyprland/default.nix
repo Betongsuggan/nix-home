@@ -6,6 +6,98 @@
 }:
 with lib;
 
+let
+  # Niri-style maximize-column toggle for the scrolling layout: full column
+  # width <-> the 0.5 default, staying tiled (borders/gaps kept) — unlike
+  # `fullscreen, 1`, which enters maximize mode. The layout has no native
+  # width toggle, so decide based on whether the focused window already spans
+  # (nearly) the monitor's usable width.
+  toggleColumnMaximize = pkgs.writeShellScriptBin "hypr-toggle-column-maximize" ''
+    usable=$(${pkgs.hyprland}/bin/hyprctl -j monitors \
+      | ${pkgs.jq}/bin/jq '.[] | select(.focused) | ((.width / .scale) - .reserved[0] - .reserved[2])')
+    win=$(${pkgs.hyprland}/bin/hyprctl -j activewindow | ${pkgs.jq}/bin/jq '.size[0]')
+    if ${pkgs.gawk}/bin/awk "BEGIN { exit !($win >= 0.93 * $usable) }"; then
+      ${pkgs.hyprland}/bin/hyprctl dispatch layoutmsg "colresize 0.5"
+    else
+      ${pkgs.hyprland}/bin/hyprctl dispatch layoutmsg "colresize 1.0"
+    fi
+  '';
+
+  # Steps through the focused monitor's open workspaces, clamped at the ends
+  # (no wrap) — Hyprland's `workspace m±1` selector wraps via hardcoded modulo
+  # with no config to disable it.
+  workspaceStep = pkgs.writeShellScriptBin "hypr-workspace-step" ''
+    # Usage: hypr-workspace-step <dispatcher> <+1|-1>
+    dispatcher="$1"; step="$2"
+    active=$(${pkgs.hyprland}/bin/hyprctl -j activeworkspace)
+    target=$(${pkgs.hyprland}/bin/hyprctl -j workspaces | ${pkgs.jq}/bin/jq \
+      --argjson active "$active" --argjson step "$step" '
+      [ .[] | select(.monitor == $active.monitor and .id > 0) | .id ] | sort
+      | . as $ids
+      | ($ids | index($active.id)) as $i
+      | $ids[[[ $i + $step, 0 ] | max, (($ids | length) - 1)] | min]')
+    exec ${pkgs.hyprland}/bin/hyprctl dispatch "$dispatcher" "$target"
+  '';
+
+  # Lid switch handling, gated on external displays (mirrors the logind config
+  # in power-management): with an external monitor connected, lid close just
+  # disables the internal panel so work continues on the external screen
+  # (logind ignores the lid in that case); with the panel alone, lock and
+  # blank before logind suspends. Lid open re-enables the panel from its
+  # config rules.
+  lidSwitch = pkgs.writeShellScriptBin "hypr-lid-switch" ''
+    # Usage: hypr-lid-switch <close|open>
+    hyprctl() { ${pkgs.hyprland}/bin/hyprctl "$@"; }
+    internal=$(hyprctl -j monitors all \
+      | ${pkgs.jq}/bin/jq -r '[.[] | select(.name | startswith("eDP"))][0].name // empty')
+    externals=$(hyprctl -j monitors all \
+      | ${pkgs.jq}/bin/jq '[.[] | select(.name | startswith("eDP") | not)] | length')
+    case "$1" in
+      close)
+        if [ "$externals" -gt 0 ]; then
+          [ -n "$internal" ] && hyprctl keyword monitor "$internal, disable"
+        else
+          ${pkgs.procps}/bin/pgrep -x hyprlock || ${pkgs.hyprlock}/bin/hyprlock &
+          hyprctl dispatch dpms off
+        fi
+        ;;
+      open)
+        [ -n "$internal" ] && hyprctl keyword monitor "$internal, enable"
+        hyprctl dispatch dpms on
+        ;;
+    esac
+  '';
+
+  # Guards against the zero-monitor state: if the internal panel was disabled
+  # by hypr-lid-switch and the last external monitor is then unplugged (lid
+  # still closed), Hyprland is left with no enabled outputs and wedges. Watch
+  # socket2 for monitorremoved; when no externals remain, re-enable the panel
+  # and — if the lid is closed — suspend, matching the "no monitor + closed
+  # lid = sleep" semantics that logind can't provide here (unplugging isn't a
+  # lid event).
+  monitorWatch = pkgs.writeShellScriptBin "hypr-monitor-watch" ''
+    hyprctl() { ${pkgs.hyprland}/bin/hyprctl "$@"; }
+    export HYPRLAND_INSTANCE_SIGNATURE=''${HYPRLAND_INSTANCE_SIGNATURE:-$(${pkgs.coreutils}/bin/ls -t "$XDG_RUNTIME_DIR/hypr" | ${pkgs.coreutils}/bin/head -1)}
+    ${pkgs.socat}/bin/socat -u "UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" - \
+    | while IFS= read -r event; do
+      case "$event" in
+        monitorremoved*)
+          externals=$(hyprctl -j monitors all \
+            | ${pkgs.jq}/bin/jq '[.[] | select(.name | startswith("eDP") | not)] | length')
+          [ "$externals" -gt 0 ] && continue
+          internal=$(hyprctl -j monitors all \
+            | ${pkgs.jq}/bin/jq -r '[.[] | select(.name | startswith("eDP")) | select(.disabled)][0].name // empty')
+          [ -n "$internal" ] || continue
+          hyprctl keyword monitor "$internal, enable"
+          hyprctl dispatch dpms on
+          if ${pkgs.gnugrep}/bin/grep -qs closed /proc/acpi/button/lid/*/state; then
+            ${pkgs.systemd}/bin/systemctl suspend
+          fi
+          ;;
+      esac
+    done
+  '';
+in
 {
   options.hyprland = {
     enable = mkEnableOption "Enable Hyprland";
@@ -22,7 +114,7 @@ with lib;
     windowRules = mkOption {
       type = types.listOf types.str;
       default = [];
-      description = "Additional Hyprland window rules (windowrulev2 format, e.g. \"float, class:^(foo)$\")";
+      description = "Additional Hyprland window rules (unified 0.55 windowrule format, e.g. \"float on, match:class ^(foo)$\")";
     };
     workspaceRules = mkOption {
       type = types.listOf types.str;
@@ -61,12 +153,32 @@ with lib;
       ];
     };
 
+    # Screen-share restore tokens: Electron apps (Slack) re-request the portal
+    # for every thumbnail refresh, popping hyprland-share-picker over and over
+    # (upstream: xdg-desktop-portal-hyprland#11, "allow the restore token and
+    # on recent xdph versions it won't show up multiple times"). This
+    # pre-checks the picker's restore-token checkbox so follow-up requests
+    # reuse the selected stream silently. The picker itself still appears for
+    # every NEW selection — full monitor/window choice is kept.
+    # XDPH reads this at startup; restart xdg-desktop-portal-hyprland after
+    # changing it.
+    xdg.configFile."hypr/xdph.conf".text = ''
+      screencopy {
+        allow_token_by_default = true
+      }
+    '';
+
     services.hyprpaper = {
       enable = true;
+      # hyprpaper ≥0.8 config format: wallpaper is a block keyed by monitor
+      # (empty = all monitors). The pre-0.8 `preload`/`wallpaper = ,path`
+      # lines are silently ignored, leaving monitors with "no target".
       settings = {
-        preload = "${config.theme.wallpaper}";
-        wallpaper = ",${config.theme.wallpaper}";
         splash = false;
+        wallpaper = {
+          monitor = "";
+          path = "${config.theme.wallpaper}";
+        };
       };
     };
 
@@ -126,6 +238,21 @@ with lib;
         BindsTo = [ "hyprland-session.target" ];
         After = [ "hyprland-session.target" ];
       };
+    };
+
+    # See monitorWatch above: recovers from unplugging the last external
+    # monitor while the lid is closed (internal panel disabled).
+    systemd.user.services.hypr-monitor-watch = {
+      Unit = {
+        Description = "Re-enable internal panel when the last external monitor is removed";
+        BindsTo = [ "hyprland-session.target" ];
+        After = [ "hyprland-session.target" ];
+      };
+      Service = {
+        ExecStart = "${monitorWatch}/bin/hypr-monitor-watch";
+        Restart = "on-failure";
+      };
+      Install.WantedBy = [ "hyprland-session.target" ];
     };
 
     programs.hyprlock = mkIf config.hyprland.lockscreen.enable {
@@ -188,6 +315,10 @@ with lib;
 
     wayland.windowManager.hyprland = {
       enable = true;
+      # Keep the hyprlang config format — the settings below are hyprlang
+      # attrs; the new "lua" default (stateVersion >= 26.05) would change how
+      # the config is generated.
+      configType = "hyprlang";
       systemd.variables = [ "--all" ];
       settings = {
         monitor = config.windowManager.monitors;
@@ -205,6 +336,7 @@ with lib;
         "$mod" = "SUPER";
         "$modShift" = "SUPER_SHIFT";
         "$modCtrl" = "SUPER_CTRL";
+        "$modCtrlShift" = "SUPER_CTRL_SHIFT";
 
         exec-once = [
           # Launcher daemons (walker, vicinae) are started via systemd services
@@ -236,10 +368,33 @@ with lib;
 
         general = {
           "col.active_border" = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
+          # Built-in scrollable-tiling layout (Hyprland ≥0.55), mimicking niri:
+          # windows are columns on an infinite horizontal strip.
+          layout = "scrolling";
+          # Without this, movefocus at the strip end probes from the opposite
+          # monitor edge — i.e. wraps to the first column. niri stops instead.
+          no_focus_fallback = true;
         };
 
+        # Defaults already match niri (column_width 0.5, presets
+        # 0.333/0.5/0.667/1.0, follow_focus); niri does not wrap focus or
+        # column movement at the strip ends, so disable wrapping.
+        scrolling = {
+          wrap_focus = false;
+          wrap_swapcol = false;
+        };
+
+        # Kept for workspaces explicitly opting back into dwindle via rules.
         dwindle = {
           force_split = 2;
+        };
+
+        animations = {
+          animation = [
+            # Workspaces slide vertically like niri's stacked-workspace visual
+            # (also flips the workspace swipe gesture to vertical).
+            "workspaces, 1, 6, default, slidevert"
+          ];
         };
 
         decoration = {
@@ -282,21 +437,61 @@ with lib;
             }
           }; ${pkgs.wf-recorder}/bin/wf-recorder -o "$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name')" -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv; }''
 
-          ### Screen handling
-          # Forcus navigation
+          ### Screen handling — mirrors the niri module's layout: left/right
+          ### navigates columns, up/down navigates workspaces, Ctrl variants
+          ### act within a column.
+          # Focus column left/right (niri Mod+H/L)
           "$mod, h, movefocus, l"
           "$mod, l, movefocus, r"
-          "$mod, k, movefocus, u"
-          "$mod, j, movefocus, d"
 
-          # Move application in screen
-          "$modShift, h, movewindow, l"
-          "$modShift, l, movewindow, r"
-          "$modShift, k, movewindow, u"
-          "$modShift, j, movewindow, d"
+          # Focus workspace up/down (niri Mod+K/J), stopping at the ends —
+          # `workspace m±1` would wrap around
+          "$mod, k, exec, ${workspaceStep}/bin/hypr-workspace-step workspace -1"
+          "$mod, j, exec, ${workspaceStep}/bin/hypr-workspace-step workspace +1"
 
-          # Fullscreen application
-          "$mod, f, fullscreen"
+          # Move column left/right on the strip (niri Mod+Shift+H/L)
+          "$modShift, h, layoutmsg, swapcol l"
+          "$modShift, l, layoutmsg, swapcol r"
+
+          # Move to workspace up/down (niri Mod+Shift+K/J moves the whole
+          # column; Hyprland can only take the focused window along)
+          "$modShift, k, exec, ${workspaceStep}/bin/hypr-workspace-step movetoworkspace -1"
+          "$modShift, j, exec, ${workspaceStep}/bin/hypr-workspace-step movetoworkspace +1"
+
+          # Focus window within column (niri Mod+Ctrl+K/J)
+          "$modCtrl, k, movefocus, u"
+          "$modCtrl, j, movefocus, d"
+
+          # Move window within column (niri Mod+Ctrl+Shift+K/J)
+          "$modCtrlShift, k, movewindow, u"
+          "$modCtrlShift, j, movewindow, d"
+
+          # Column width adjustments (niri Mod+Minus/Equal)
+          "$mod, minus, layoutmsg, colresize -0.1"
+          "$mod, equal, layoutmsg, colresize +0.1"
+
+          # Window height adjustments (niri Mod+Shift+Minus/Equal)
+          "$modShift, minus, resizeactive, 0 -10%"
+          "$modShift, equal, resizeactive, 0 10%"
+
+          # Maximize-column toggle (niri Mod+F): full column width <-> 0.5,
+          # stays tiled with borders/gaps
+          "$mod, f, exec, ${toggleColumnMaximize}/bin/hypr-toggle-column-maximize"
+
+          # Fullscreen toggle (niri Mod+Shift+F)
+          "$modShift, f, fullscreen"
+
+          # Cycle column through preset widths 0.333/0.5/0.667/1.0 (niri Mod+R)
+          "$mod, r, layoutmsg, colresize +conf"
+
+          # Consume the next window into this column / expel one out into its
+          # own column (niri Mod+Comma/Period)
+          "$mod, comma, layoutmsg, consume"
+          "$mod, period, layoutmsg, expel"
+
+          # Center the focused column on screen (niri Mod+C; Mod+C itself is
+          # the clipboard launcher here)
+          "$modCtrl, c, layoutmsg, center"
 
           # Kill application
           "$modShift, q, killactive,"
@@ -383,6 +578,9 @@ with lib;
         ));
         binds = {
           movefocus_cycles_fullscreen = true;
+          # Don't hop focus to the adjacent monitor at the strip end — niri
+          # stops there too (it uses dedicated monitor binds instead).
+          window_direction_monitor_fallback = false;
         };
         binde = [
           ### Controls
@@ -396,14 +594,10 @@ with lib;
           ", XF86AudioMute, exec, volume-control -m"
         ];
 
-        # Lid switch bindings for lock and display power management
+        # Lid switch bindings: external-display-aware lock/panel handling
         bindl = lib.optionals config.hyprland.lockscreen.enable [
-          # Lock screen when lid closes
-          ", switch:on:Lid Switch, exec, ${pkgs.procps}/bin/pgrep -x hyprlock || ${pkgs.hyprlock}/bin/hyprlock"
-          # Turn off display when lid closes (power saving while locked)
-          ", switch:on:Lid Switch, exec, ${pkgs.hyprland}/bin/hyprctl dispatch dpms off"
-          # Turn display back on when lid opens
-          ", switch:off:Lid Switch, exec, ${pkgs.hyprland}/bin/hyprctl dispatch dpms on"
+          ", switch:on:Lid Switch, exec, ${lidSwitch}/bin/hypr-lid-switch close"
+          ", switch:off:Lid Switch, exec, ${lidSwitch}/bin/hypr-lid-switch open"
         ];
 
         render = {
@@ -413,11 +607,20 @@ with lib;
           # cmFsPassthrough option is kept for back-compat but no longer emitted.
         };
 
-        # windowrulev2 is deprecated in Hyprland 0.55 (emits a warning) but still
-        # applies the rules; the unified `windowrule` directive rejects this
-        # rule spelling ("invalid field type fullscreenstate"), so keep v2 until
-        # the rules are rewritten to the new syntax. The warning is non-fatal.
-        windowrulev2 = config.hyprland.windowRules;
+        # Unified windowrule syntax (Hyprland 0.55): comma-separated fields of
+        # `match:<prop> <value>` and `<effect> <value>`; every field takes a
+        # value (booleans are truthy strings like "on"). windowrulev2 is a hard
+        # error in 0.55 and its rules are NOT applied.
+        windowrule = [
+          # xdg-desktop-portal-hyprland's screen-share picker is a dialog, not
+          # a tile — float it (upstream-recommended rule).
+          "float on, match:class ^(hyprland-share-picker)$"
+          "center on, match:class ^(hyprland-share-picker)$"
+          # Browsers' "<site> is sharing your screen" indicator bubble: tiled
+          # into a column it can't be clicked or dismissed — float it instead.
+          "float on, match:title ^(.* is sharing (your screen|a window|a tab)\\.?)$"
+        ]
+        ++ config.hyprland.windowRules;
 
         misc = {
           disable_splash_rendering = true;

@@ -89,19 +89,22 @@
 
   programs.ssh = {
     enable = true;
-    matchBlocks = {
+    # The legacy implicit defaults ("*" block) match OpenSSH's own defaults;
+    # nothing needs preserving.
+    enableDefaultConfig = false;
+    settings = {
       # This host lives off the home LAN, so controller is only reachable over
       # the tailnet. Both identities are offered: the sops-provisioned id_rsa
       # (steady state) and the FIDO resident key (works before /run/secrets
       # exists, e.g. during onboarding).
       "controller ${inputs.self.lib.tailnet.fqdn "controller"}" = {
-        hostname = inputs.self.lib.tailnet.fqdn "controller";
-        user = "betongsuggan";
-        identityFile = [
+        HostName = inputs.self.lib.tailnet.fqdn "controller";
+        User = "betongsuggan";
+        IdentityFile = [
           "/home/betongsuggan/.ssh/id_rsa"
           "/home/betongsuggan/.ssh/id_ed25519_sk_rk_nix-vault"
         ];
-        identitiesOnly = true;
+        IdentitiesOnly = true;
       };
     };
   };

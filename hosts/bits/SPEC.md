@@ -1,10 +1,10 @@
 # Bits
 
-Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixOS with the Niri Wayland compositor, configured for software development and daily office use.
+Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixOS with the Hyprland Wayland compositor (scrolling layout mimicking niri), configured for software development and daily office use.
 
 ## Key Features
 
-- Niri tiling Wayland compositor with Vicinae launcher (wifi, bluetooth, monitor extensions)
+- Hyprland compositor using the built-in scrolling layout configured to mimic niri's scrollable tiling (see `modules/window-manager/SPEC.md` for the niri-equivalent keybinds), with Vicinae launcher (wifi, bluetooth, monitor extensions)
 - Development tooling with direnv, git, and SSH agent
 - Firefox browser (home-manager managed, `firefox.enable`) with Slack and other communication apps
 - Alacritty terminal with Bash shell and Starship prompt

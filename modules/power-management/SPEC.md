@@ -30,7 +30,7 @@ power-management = {
 
 - Enables TLP for automatic power state switching between AC and battery.
 - Enables upower for power device monitoring.
-- Lid close behavior: suspend on battery, ignore on AC or when docked (Hyprland handles locking).
+- Lid close behavior is gated on external displays, not power source: with an external monitor connected (logind "docked" state: docking station or more than one connected display) the lid is ignored; otherwise lid close suspends, on AC and battery alike. Inactivity suspend (hypridle) is unaffected. Hyprland handles locking and panel disable via lid switch binds.
 - AMD CPU: configures P-State energy policy and platform profile.
 - Intel CPU: configures HWP energy policy.
 - AMD GPU: configures DPM state and performance level per power source.

@@ -194,12 +194,12 @@
   };
 
   services.xserver.desktopManager.runXdgAutostartIfNone = true;
+  # Portal setup for the hyprland backend, mirroring island-stationary.
   xdg.portal = {
     enable = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-gnome
-      xdg-desktop-portal-gtk
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
     ];
-    configPackages = [ pkgs.niri-stable ];
+    config.common.default = "*";
   };
 }

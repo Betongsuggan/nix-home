@@ -79,7 +79,7 @@
 
   windowManager = {
     enable = true;
-    backend = "niri";
+    backend = "hyprland";
     composeKey = "ralt";
     monitors = [ ",preferred,auto,1" ];
     autostartApps = {
@@ -144,28 +144,31 @@
 
   programs.ssh = {
     enable = true;
-    matchBlocks = {
+    # The legacy implicit defaults ("*" block) match OpenSSH's own defaults;
+    # nothing needs preserving.
+    enableDefaultConfig = false;
+    settings = {
       "controller ${inputs.self.lib.tailnet.fqdn "controller"}" = {
-        hostname = inputs.self.lib.tailnet.fqdn "controller";
-        user = "betongsuggan";
-        identityFile = "/home/birgerrydback/.ssh/bits";
-        identitiesOnly = true;
+        HostName = inputs.self.lib.tailnet.fqdn "controller";
+        User = "betongsuggan";
+        IdentityFile = "/home/birgerrydback/.ssh/bits";
+        IdentitiesOnly = true;
       };
       "desktop ${inputs.self.lib.tailnet.fqdn "desktop"}" = {
-        hostname = inputs.self.lib.tailnet.fqdn "desktop";
-        user = "betongsuggan";
-        identityFile = "/home/birgerrydback/.ssh/bits";
-        identitiesOnly = true;
+        HostName = inputs.self.lib.tailnet.fqdn "desktop";
+        User = "betongsuggan";
+        IdentityFile = "/home/birgerrydback/.ssh/bits";
+        IdentitiesOnly = true;
       };
       "github.com-betongsuggan" = {
-        hostname = "github.com";
-        user = "git";
-        identityFile = "/home/birgerrydback/.ssh/id_rsa";
+        HostName = "github.com";
+        User = "git";
+        IdentityFile = "/home/birgerrydback/.ssh/id_rsa";
       };
       "github.com" = {
-        hostname = "github.com";
-        user = "git";
-        identityFile = "/home/birgerrydback/.ssh/bits";
+        HostName = "github.com";
+        User = "git";
+        IdentityFile = "/home/birgerrydback/.ssh/bits";
       };
     };
   };

@@ -49,13 +49,16 @@ with lib;
 
     services.upower.enable = true;
 
-    # Lid close behavior
+    # Lid close behavior, gated on external displays rather than power source:
+    # logind counts the system as "docked" when a docking station is attached
+    # OR more than one display is connected, so lid close with an external
+    # monitor stays awake while lid close on the panel alone suspends (on AC
+    # and battery alike). Inactivity suspend is unaffected (hypridle).
     # Note: Hyprland handles locking via bindl on lid switch events
-    # hypridle's before_sleep_cmd provides a safety net for suspend
-    services.logind = {
-      lidSwitch = "suspend";              # Lid close on battery: suspend (after Hyprland locks)
-      lidSwitchExternalPower = "ignore";  # Lid close on AC: let Hyprland handle locking
-      lidSwitchDocked = "ignore";         # Lid close when docked: ignore
+    services.logind.settings.Login = {
+      HandleLidSwitch = "suspend";              # No external display: suspend
+      HandleLidSwitchExternalPower = "suspend"; # Same on AC
+      HandleLidSwitchDocked = "ignore";         # External display connected: stay awake
     };
 
     services.tlp = {

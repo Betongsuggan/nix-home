@@ -458,14 +458,12 @@
     hybrid-sleep.enable = false;
   };
 
-  services.logind = {
-    lidSwitch = "ignore";
-    lidSwitchExternalPower = "ignore";
-    lidSwitchDocked = "ignore";
-    settings.Login = {
-      HandleSuspendKey = "ignore";
-      HandleHibernateKey = "ignore";
-      IdleAction = "ignore";
-    };
+  services.logind.settings.Login = {
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+    HandleLidSwitchDocked = "ignore";
+    HandleSuspendKey = "ignore";
+    HandleHibernateKey = "ignore";
+    IdleAction = "ignore";
   };
 }

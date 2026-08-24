@@ -138,7 +138,7 @@ in
     # Idle management using swayidle
     services.swayidle = {
       enable = true;
-      systemdTarget = "graphical-session.target";
+      systemdTargets = [ "graphical-session.target" ];
       timeouts = [
         {
           timeout = 240; # 4 minutes
@@ -170,18 +170,12 @@ in
       ];
       events =
         if cfg.lockscreen.enable then
-          [
-            {
-              event = "before-sleep";
-              command = "${pkgs.systemd}/bin/loginctl lock-session";
-            }
-            {
-              event = "lock";
-              command = "${pkgs.swaylock-effects}/bin/swaylock -f";
-            }
-          ]
+          {
+            "before-sleep" = "${pkgs.systemd}/bin/loginctl lock-session";
+            "lock" = "${pkgs.swaylock-effects}/bin/swaylock -f";
+          }
         else
-          [ ];
+          { };
     };
 
     # Wallpaper and colors come from stylix; only swaylock-effects extras

@@ -32,6 +32,10 @@ with lib;
     programs.firefox.profiles.default.extensions.settings."FirefoxColor@mozilla.com".force = true;
     programs.firefox = {
       enable = true;
+      # Keep the pre-26.05 profile location — existing profiles live in
+      # ~/.mozilla/firefox and migrating to the XDG path would require moving
+      # the directory by hand on every host.
+      configPath = ".mozilla/firefox";
       profiles.default = {
         extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
           vimium
