@@ -29,6 +29,29 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 - Restic backup target: receives snapshots from controller into `/var/lib/restic-repos/controller/repo` via chrooted SFTP user `restic-controller` (key sourced from `lib/default.nix`). Off-site copy in the interim backup topology — requires island-stationary to be onboarded to the tailnet for controller to reach it. See `modules/restic-target/SPEC.md`.
 - Wake-on-LAN: the wired NIC has `wakeOnLan.enable = true` so the always-on `island-pi` host at the same location can wake this machine remotely (`ssh island-pi wake-island-stationary`, then ssh island-stationary directly). The MAC is registered as `wol.mac` in `lib/default.nix`; WoL must also be enabled in BIOS. NIC name and MAC are placeholders until read off the machine (`ip -br link`).
 
+## TODO (next on-site visit): wire up emulation for gamer
+
+The desktop's retro/Switch emulation setup (per-ROM Steam tiles, ROM/BIOS mounts, save
+sync — see `modules/games/SPEC.md` and `modules/emulation-client/SPEC.md`) is not wired
+here yet. To mirror it:
+
+1. **`system.nix`**: enable the mounts —
+   `emulation-mounts = { enable = true; server = inputs.self.lib.tailnet.fqdn "controller"; users = [ "betongsuggan" "gamer" ]; };`
+2. **`user-gamer.nix`**: enable `games.emulators` (+ `games.emulators.steamShortcuts`,
+   and `switch` if wanted) and
+   `emulation-client = { enable = true; server.address = inputs.self.lib.tailnet.fqdn "controller"; };`
+3. **Register the Syncthing ID**: after the first rebuild, run `syncthing --device-id`
+   as `gamer` on this machine and add it in `lib/default.nix` under
+   `hosts.island-stationary.users.gamer.syncthing.id`, then rebuild **controller** so it
+   accepts the peer.
+4. If tiles are wanted, mirror the desktop's `steamgriddb-api-key` sops secret (owner
+   `gamer`) for artwork, and note this host has no Sunshine/Hyprland-over-stream setup —
+   the launcher's hyprctl fullscreen poll is harmless locally, but verify fullscreen
+   behavior on the local session.
+
+Prerequisite: the host must be onboarded to the tailnet (it is — `home-network` mode
+`onboarded`), since controller serves Samba/Syncthing tailnet-only.
+
 ## Differences from desktop
 
 - NVIDIA RTX 2070 GPU instead of AMD RDNA4 (no AMD GPU env vars, no undervolting, no mesa unstable overlay)

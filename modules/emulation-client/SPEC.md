@@ -7,7 +7,9 @@ User-level module for NixOS machines that connect to the emulation server. Enabl
 ```nix
 emulation-client = {
   enable = true;
-  server.address = "192.168.50.5";  # controller's LAN IP, or tailnet hostname
+  # Use the tailnet FQDN: controller runs `emulation-server.tailnetOnly = true`,
+  # so Samba/Syncthing are NOT reachable via its LAN IP.
+  server.address = inputs.self.lib.tailnet.fqdn "controller";
 };
 ```
 
@@ -18,7 +20,7 @@ emulation-client = {
 | enable | bool | false | Enable emulation client (save sync + ROM access) |
 | savesDir | path | ~/emulation/saves | Local directory for synced save files |
 | server.address | string | "desktop" | Address of the emulation server (hostname or IP) |
-| standaloneEmulators | list of string | ["retroarch" "ppsspp" "duckstation" "dolphin"] | Standalone emulators to create save subdirectories for |
+| standaloneEmulators | list of string | ["retroarch" "ppsspp" "dolphin" "switch"] | Standalone emulators to create save subdirectories for |
 
 ## Notes
 
@@ -88,7 +90,20 @@ The server exposes Syncthing and Samba on its `tailscale0` interface as well as 
 
 Configure each emulator to use `~/emulation/saves/<emulator>/` for saves:
 
-- **RetroArch**: Settings > Directory > Savefile = `~/emulation/saves/retroarch/saves`, Savestate = `~/emulation/saves/retroarch/states`
+- **RetroArch**: declarative — the `games` module's wrapper settings pin
+  Savefile = `~/emulation/saves/retroarch/saves` and Savestate =
+  `~/emulation/saves/retroarch/states` (see `modules/games/default.nix`); no
+  manual step
+- **Switch (Ryubing)**: declarative — `games.emulators.switch.dataDir` defaults
+  to `~/emulation/saves/switch`
 - **PPSSPP**: Settings > System > Save path = `~/emulation/saves/ppsspp`
-- **Duckstation**: Settings > Memory Cards directory = `~/emulation/saves/duckstation`
 - **Dolphin**: Config > Paths > Wii NAND Root / GC Memory Cards = `~/emulation/saves/dolphin`
+
+### Onboarding a new client user
+
+Syncthing pairing is declarative on both ends, but the server must know the
+client's device ID: run `syncthing --device-id` as the client user (the ID is
+generated on first daemon start), add it in `lib/default.nix` under
+`hosts.<host>.users.<user>.syncthing.id`, and rebuild controller. Note this is
+**per user** — e.g. `gamer@desktop` has its own ID, separate from
+`betongsuggan@desktop`.

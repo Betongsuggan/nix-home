@@ -23,14 +23,18 @@
     tools.enable = true;
     emulators = {
       enable = true;
-      # Nintendo Switch via Ryubing (Ryujinx fork). Keys/firmware are pulled
-      # from the controller bios/switch share; see modules/games/SPEC.md.
-      switch = {
+      # Per-ROM Steam tiles for all emulated systems (SNES/NES/GB/GBC/GBA/N64/
+      # PSX/MegaDrive/MasterSystem from the RetroArch cores, plus Switch),
+      # written by emulation-apply-shortcuts. See modules/games/SPEC.md.
+      steamShortcuts = {
         enable = true;
-        # SteamGridDB key (vault common.yaml) — switch-apply-shortcuts uses it
-        # to fetch grid artwork for the generated Steam tiles.
+        # SteamGridDB key (vault common.yaml) — used to fetch grid artwork
+        # for the generated Steam tiles.
         artwork.apiKeyFile = "/run/secrets/steamgriddb-api-key";
       };
+      # Nintendo Switch via Ryubing (Ryujinx fork). Keys/firmware are pulled
+      # from the controller bios/switch share; see modules/games/SPEC.md.
+      switch.enable = true;
     };
     steamIntegration.enable = true;
   };
@@ -40,7 +44,9 @@
   # (ROM/BIOS mounts come from the emulation-mounts system module, not this.)
   emulation-client = {
     enable = true;
-    server.address = "192.168.50.5";
+    # Controller runs tailnetOnly (Samba/Syncthing closed on the LAN), so the
+    # share address must be the tailnet FQDN — the old LAN IP was dead.
+    server.address = inputs.self.lib.tailnet.fqdn "controller";
   };
 
   general.enable = true;

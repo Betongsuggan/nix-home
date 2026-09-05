@@ -50,7 +50,7 @@ let
     "switch"
   ];
 
-  defaultEmulators = [ "retroarch" "ppsspp" "duckstation" "dolphin" "switch" ];
+  defaultEmulators = [ "retroarch" "ppsspp" "dolphin" "switch" ];
 
   tmpfilesDir = path: "d ${path} 0775 ${cfg.user} users -";
 

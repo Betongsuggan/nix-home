@@ -1,6 +1,6 @@
 # Games
 
-Provides a full Linux gaming setup including Steam, Lutris, MangoHud performance overlay, vkBasalt post-processing, Proton-GE compatibility, emulators (RetroArch + standalone), Steam library integration (BoilR + Steam ROM Manager), and various gaming utilities.
+Provides a full Linux gaming setup including Steam, Lutris, MangoHud performance overlay, vkBasalt post-processing, Proton-GE compatibility, emulators (RetroArch + standalone), per-ROM Steam tiles written directly into `shortcuts.vdf` (`emulators.steamShortcuts`), Steam library integration for store launchers (BoilR), and various gaming utilities.
 
 ## Usage
 
@@ -24,6 +24,13 @@ games = {
     # standalone.pcsx2 = true;  # default
     # standalone.dolphin = true;  # default
     # standalone.ppsspp = true;  # default
+    steamShortcuts = {
+      enable = true;            # off by default — per-ROM Steam tiles
+      artwork.apiKeyFile = "/run/secrets/steamgriddb-api-key";
+      # systems.<name>.{enable,romDir,extensions,layout,command,windowClass,tag,launcherDir}
+      # are generated per enabled RetroArch core (+ switch) and overridable piecemeal:
+      # systems.n64.enable = false;
+    };
     switch = {
       enable = true;            # off by default
       # emulator = "ryubing";   # default; also "citron" or "eden" (all from unstable)
@@ -32,7 +39,7 @@ games = {
   steamIntegration = {
     enable = true;
     # boilr = true;  # default
-    # steamRomManager = true;  # default
+    # steamRomManager = true;  # default (installed, but unused for ROM tiles — see below)
   };
 };
 ```
@@ -62,10 +69,12 @@ games = {
 | emulators.switch.dataDir | str | `${home}/${emulators.dataDir}/saves/switch` | Ryujinx `--root-data-dir` (keys, firmware, saves). Only used when emulator = "ryubing" |
 | emulators.switch.quitChord.enable | bool | true | Hold Select+Start on the streamed gamepad to quit the running Switch game |
 | emulators.switch.quitChord.holdSeconds | float | 1.5 | How long Select+Start must be held before the game closes |
-| emulators.switch.artwork.apiKeyFile | nullOr str | null | Path to a file with a SteamGridDB API key (e.g. a sops `/run/secrets` path, read at runtime). When set, `switch-apply-shortcuts` fetches Steam grid artwork per game |
+| emulators.steamShortcuts.enable | bool | false | Per-ROM Steam tiles written directly into `shortcuts.vdf` by `emulation-apply-shortcuts` |
+| emulators.steamShortcuts.artwork.apiKeyFile | nullOr str | null | Path to a file with a SteamGridDB API key (e.g. a sops `/run/secrets` path, read at runtime). When set, `emulation-apply-shortcuts` fetches Steam grid artwork per game. (Moved here from `emulators.switch.artwork.apiKeyFile`.) |
+| emulators.steamShortcuts.systems | attrsOf submodule | generated | Systems to generate tiles for; defaults generated per enabled RetroArch core (+ Switch), merged with host overrides. Fields: `enable`, `romDir`, `extensions`, `layout` ("flat"\|"folder"), `command` (argv prefix, ROM appended), `windowClass`, `tag`, `launcherDir` |
 | steamIntegration.enable | bool | false | Enable Steam library integration |
 | steamIntegration.boilr | bool | true | Install BoilR to import games from Heroic/Lutris/etc. into Steam |
-| steamIntegration.steamRomManager | bool | true | Install Steam ROM Manager to create per-ROM Steam shortcuts with artwork |
+| steamIntegration.steamRomManager | bool | true | Install Steam ROM Manager (unused for ROM tiles — its headless CLI hangs on this host; `emulation-apply-shortcuts` replaces it) |
 
 ## RetroArch Core-to-System Mapping
 
@@ -82,23 +91,96 @@ games = {
 | beetle-saturn | Saturn | `libretro.beetle-saturn` |
 | fbneo | Arcade | `libretro.fbneo` |
 
+## Steam tiles for emulated systems (`emulators.steamShortcuts`)
+
+Every ROM becomes its own Steam Big Picture tile with SteamGridDB artwork, written
+**directly into `shortcuts.vdf`** by `emulation-apply-shortcuts`. Steam ROM Manager is
+*not* used: its Electron CLI hangs headless on this host (never returns after
+"Fetching parsers…", under both Xvfb and an attached Wayland session). The direct writer
+needs no display/GPU/D-Bus and is idempotent.
+
+**Architecture:** Nix builds a JSON manifest (per system: ROM dir, extensions, layout,
+launch argv, Hyprland window class, Steam tag, launcher dir) from
+`emulators.steamShortcuts.systems`; `add-shortcuts.py` consumes it in one run.
+Default entries are generated for every enabled RetroArch core with a known mapping,
+plus Switch when `emulators.switch.enable` — all fields `mkDefault`'d, so hosts
+override piecemeal (`systems.n64.enable = false;`, `systems.snes.tag = "…";`) or add
+custom systems (e.g. a standalone emulator) as one new entry.
+
+**Default systems** (gated on the corresponding core being in `retroarch.cores`):
+
+| System | Core | Extensions | Tag |
+|--------|------|------------|-----|
+| snes | snes9x | .sfc .smc .zip | SNES |
+| nes | fceumm | .nes .zip | NES |
+| gb / gbc / gba | mgba | .gb / .gbc / .gba (+.zip) | Game Boy (Color/Advance) |
+| n64 | mupen64plus | .n64 .z64 .v64 .zip | Nintendo 64 |
+| psx | beetle-psx-hw | .m3u .cue .chd .pbp | PlayStation |
+| megadrive | genesis-plus-gx | .md .gen .bin .zip | Mega Drive |
+| mastersystem | genesis-plus-gx | .sms .zip | Master System |
+| switch (when enabled) | Ryubing | .xci (folder layout) | Nintendo Switch |
+
+Deferred on purpose: nds/dreamcast/saturn/arcade cores need writable or subdirectory
+BIOS layouts the read-only flat BIOS mount doesn't provide; standalone emulators
+(PS2/GC/PSP) each need controller/save-path validation. Each becomes a one-entry
+`systems` addition once solved.
+
+**Semantics** (see `add-shortcuts.py`):
+- **Layouts:** `flat` = one tile per ROM file (name = filename stem); `folder` = one
+  tile per subdirectory launching the base file, skipping `(UPD)`/`(DLC)` (Switch).
+  Flat dedups multi-file games: files whose stem extends an `.m3u` playlist's stem are
+  skipped, and same-stem siblings resolve `.m3u` > `.cue` > `.chd` — a multi-disc PSX
+  game is one tile.
+- **Launchers:** per-game scripts under `launcherDir` (default
+  `~/.local/share/emulation-shortcuts/<system>/`; Switch keeps its legacy
+  `~/.local/share/switch-shortcuts/`) that poll `hyprctl` for the emulator's window
+  class and fullscreen it over Big Picture, then exec the manifest command with the
+  ROM appended — Steam never parses the paths.
+- **Upsert keyed by exe path** (not app name — the same title can exist on two
+  systems); the per-system `tag` becomes a Steam collection. `LastPlayTime` is
+  preserved across re-runs.
+- **Pruning:** entries whose launcher lives under a managed `launcherDir` but wasn't
+  produced this run are removed (ROM deleted/renamed), along with the orphaned
+  launcher script. Systems that yield zero games are skipped entirely — an
+  unreachable/empty CIFS automount never wipes tiles. BoilR/manual shortcuts are
+  never touched.
+- **Appid stability:** the appid hashes launcher path + name, so artwork,
+  collections, and playtime survive re-runs; changing `launcherDir` or renaming a
+  ROM orphans them.
+- **Artwork:** same SteamGridDB flow as before (see the Switch artwork section);
+  `.sgdbid` overrides live in the game folder (folder layout) or as
+  `<RomStem>.sgdbid` next to the ROM (flat layout). Re-fetch with
+  `EMU_ARTWORK_FORCE=1 emulation-apply-shortcuts`.
+
+`switch-apply-shortcuts` remains as a deprecated alias that execs
+`emulation-apply-shortcuts`.
+
 ## First-Time Setup
 
 ### RetroArch
-- BIOS files must be manually placed in `~/emulation/bios/` (or your configured dataDir)
+- BIOS files go **flat** in `~/emulation/bios/` (the read-only CIFS mount of the
+  controller's `emulation-bios` share) — e.g. `scph5500.bin`/`scph5501.bin`/
+  `scph5502.bin` for PSX (beetle-psx-hw fails to boot discs silently without them),
+  optionally `gba_bios.bin` for mGBA. Upload them to the share; see
+  `modules/emulation-server/SPEC.md`.
 - ROMs go in `~/emulation/roms/` organized by system subdirectory
-- RetroArch is configured declaratively via Nix wrapper `settings` (paths, Vulkan, udev joypad, Ozone menu)
-- Runtime config changes are preserved since `config_save_on_exit` is enabled
+- RetroArch is configured declaratively via Nix wrapper `settings`: paths (saves and
+  states inside the Syncthing-synced `~/emulation/saves/retroarch/{saves,states}`),
+  Vulkan, udev joypad, Ozone menu
+- Runtime config changes to *undeclared* keys are preserved (`config_save_on_exit`);
+  declared keys re-win on every launch via `--appendconfig`
+- **Streamed gamepad:** a udev autoconfig profile for the Sunshine virtual pad is
+  baked in (merged with the upstream autoconfig DB via `symlinkJoin`, so physical
+  pads keep working). Hotkeys mirror the Switch quit chord: **hold Select + press
+  Start = quit** (clean exit, SRAM flushed to the synced saves dir), **Select +
+  Guide = RetroArch menu**. RetroPad convention note: `input_b` is the *bottom*
+  face button — if confirm/cancel feel swapped in-game, the autoconfig's b/a and
+  y/x assignments in `modules/games/default.nix` are the place to flip.
 
 ### BoilR
 - Run `boilr` once to scan and import games from Heroic, Lutris, and other launchers into Steam
 - Re-run when adding new games to external launchers
 - Automatically fetches artwork from SteamGridDB
-
-### Steam ROM Manager
-- Configure parsers per system pointing at `~/emulation/roms/{system}/`
-- Run to generate individual Steam shortcuts with artwork for each ROM
-- Each ROM appears as its own entry in Steam Big Picture
 
 ### Nintendo Switch (headless / remote setup)
 
@@ -107,11 +189,10 @@ original Ryujinx were taken down by Nintendo in 2024; the default emulator is **
 (the maintained Ryujinx fork), pulled from `unstable`. Its `Ryujinx` binary boots straight
 into a game, which is what the per-game Steam-shortcut model needs.
 
-Steam shortcuts are written **directly into `shortcuts.vdf`** by a small Python + `vdf`
-script (`switch-add-shortcuts.py`), invoked by `switch-apply-shortcuts`. Steam ROM Manager is
-*not* used for Switch: its Electron CLI hangs headless on this host (never returns after
-"Fetching parsers…", under both Xvfb and an attached Wayland session). The direct writer
-needs no display/GPU/D-Bus and is idempotent (upserts by app name).
+Steam shortcuts are written **directly into `shortcuts.vdf`** by `add-shortcuts.py`,
+invoked by `emulation-apply-shortcuts` (Switch is one `steamShortcuts.systems` entry —
+folder layout, `.xci`; see "Steam tiles for emulated systems" above). The old
+`switch-apply-shortcuts` name survives as a deprecated alias.
 
 **Prerequisites**
 - The user must have this host's `emulation-mounts` (system module) access so
@@ -130,7 +211,8 @@ reads them over the auto-mounted shares:
 
 The shortcut writer picks the base `.xci` per game folder (ignoring `(UPD)`/`(DLC)` files), so
 each folder becomes one Steam shortcut named after the folder. It writes a small launcher
-script (`~/.local/share/switch-shortcuts/<game>.sh`) that runs
+script (`~/.local/share/switch-shortcuts/<game>.sh` — the legacy dir is kept so existing
+tiles' appids, artwork, and collections survive) that runs
 `Ryujinx --root-data-dir <dataDir> "<base.xci>"`, and points the Steam shortcut's `exe` at it
 (empty LaunchOptions) — this sidesteps Steam mangling the quoting of space-filled paths.
 Updates/DLC are applied separately via Ryujinx's title manager.
@@ -140,8 +222,9 @@ Updates/DLC are applied separately via Ryujinx's title manager.
   default `cache=strict` corrupts random-access reads deep into multi-GB `.xci` files over the
   tailnet CIFS link → `LibHac ResultFsOutOfRange` / "no valid application". If gameplay
   stutters from uncached reads, try `cache=loose`.
-- **Ryujinx must open fullscreen on the SUNSHINE monitor** — a Hyprland window rule
-  (`fullscreen, class:^(Ryujinx)$` in `hosts/desktop/user-gamer.nix`); without it the game
+- **Ryujinx must open fullscreen on the SUNSHINE monitor** — the generated per-game
+  launcher polls `hyprctl` for the emulator's window class and fullscreens it at runtime
+  (Hyprland 0.55 dropped the old `fullscreen` window-rule form); without it the game
   renders *behind* Big Picture's fullscreen window (audio but no video on the stream).
 - **Controller plumbing** (see "Sunshine virtual pad → Ryujinx" below): a source patch on
   ryubing, an SDL controller-DB entry in the data dir, and two SDL env vars set by
@@ -217,24 +300,26 @@ have. Documented here so it's a small future step:
 2. From any machine, mount `//controller/emulation-bios` (guest) and drop `prod.keys`
    (+ `title.keys`) in `switch/`; put ROMs on `//controller/emulation-roms` under
    `switch/<Game>/` (base `.xci` per folder).
-3. Generate the Steam tiles: run `switch-apply-shortcuts` over SSH — it stops Steam, copies
-   keys, writes `shortcuts.vdf`, and (when `artwork.apiKeyFile` is configured) fetches
-   SteamGridDB artwork. Reconnect the Moonlight "Steam Gaming" app to see them.
+3. Generate the Steam tiles: run `emulation-apply-shortcuts` over SSH — it stops Steam,
+   copies keys, writes `shortcuts.vdf` for all systems, and (when
+   `steamShortcuts.artwork.apiKeyFile` is configured) fetches SteamGridDB artwork.
+   Reconnect the Moonlight "Steam Gaming" app to see them.
 4. **One-time in Steam:** disable Steam Input so Steam releases its exclusive grab on the
    pad: Big Picture → Settings → Controller → turn off Steam Input for Xbox controllers
    (or per-tile: game tile → gear → Controller → Force Off).
 5. **One-time per data dir:** launch a game; when Ryujinx prompts, install firmware (from the
    cartridge, or Tools → Install Firmware). It persists in `<dataDir>` (synced).
    The controller binding needs **no manual step**: `switch-apply-input` (run at activation
-   and by `switch-apply-shortcuts`) merges the verified Player 1 binding into
+   and by `emulation-apply-shortcuts`) merges the verified Player 1 binding into
    `<dataDir>/Config.json`. Note the merge is a no-op until Ryujinx has run once and created
    `Config.json` — after the very first game launch, run `switch-apply-input` (or re-run
-   `switch-apply-shortcuts`) once.
+   `emulation-apply-shortcuts`) once.
 
 **Artwork (SteamGridDB)**
 
-When `emulators.switch.artwork.apiKeyFile` is set, `switch-apply-shortcuts` also fetches
-artwork per game from SteamGridDB into each `userdata/<id>/config/grid/`, named after the
+When `emulators.steamShortcuts.artwork.apiKeyFile` is set, `emulation-apply-shortcuts`
+also fetches artwork per game from SteamGridDB into each `userdata/<id>/config/grid/`
+(for every system, not just Switch), named after the
 shortcut's *unsigned* appid: `{appid}p` (portrait library tile), `{appid}` (wide capsule),
 `{appid}_hero` (game-page banner), `{appid}_logo`, and `{appid}_icon` (also written into the
 shortcut's `icon` vdf field). Behavior:
@@ -250,7 +335,7 @@ shortcut's `icon` vdf field). Behavior:
   the matched title is printed next to each folder name so mismatches are visible. To pin a
   wrong match, drop a `.sgdbid` file containing the SGDB game id into the game's ROM folder.
 - **Idempotent & non-fatal:** existing grid files are kept (re-fetch with
-  `SWITCH_ARTWORK_FORCE=1 switch-apply-shortcuts`); a missing/unreadable key, an unmatched
+  `EMU_ARTWORK_FORCE=1 emulation-apply-shortcuts`); a missing/unreadable key, an unmatched
   game, or any download error only prints a warning — shortcuts are always written.
 
 **Notes / caveats**
@@ -270,4 +355,4 @@ shortcut's `icon` vdf field). Behavior:
 - Base packages always installed: chiaki, discord, evtest, gamemode, lutris, steam, steam-run, sc-controller, vulkan-tools, mesa-demos.
 - RetroArch uses the `retroarch-bare.wrapper` function for declarative configuration while preserving runtime changes.
 - Standalone emulators (PCSX2, Dolphin, PPSSPP) are for systems that benefit from dedicated emulators over RetroArch cores. (Duckstation was removed from nixpkgs 26.05 upstream; PSX is covered by RetroArch's beetle-psx-hw core.)
-- Switch emulation (`emulators.switch`) is pulled from `unstable` (ryubing carries a local source patch, `ryubing-sdl2-device-index.patch`, so it rebuilds from source). It ships five helper scripts: `switch-refresh-keys` (copy keys from the BIOS share into the data dir), `switch-refresh-input` (install the Sunshine-pad SDL controller DB into the data dir), `switch-apply-input` (merge the verified Player 1 pad binding into `Config.json`, GUID-keyed and idempotent), `switch-run-emulator` (canonical launch wrapper setting the SDL env vars and teeing stderr to `~/.local/state/switch-emulator/stderr.log`), and `switch-apply-shortcuts` (stop Steam, refresh keys+input+binding, write `shortcuts.vdf` directly via a Python+`vdf` script — SRM's headless CLI hangs on this host, so it's bypassed for Switch — and fetch SteamGridDB artwork when `artwork.apiKeyFile` is set).
+- Switch emulation (`emulators.switch`) is pulled from `unstable` (ryubing carries a local source patch, `ryubing-sdl2-device-index.patch`, so it rebuilds from source). It ships helper scripts: `switch-refresh-keys` (copy keys from the BIOS share into the data dir), `switch-refresh-input` (install the Sunshine-pad SDL controller DB into the data dir), `switch-apply-input` (merge the verified Player 1 pad binding into `Config.json`, GUID-keyed and idempotent), and `switch-run-emulator` (canonical launch wrapper setting the SDL env vars and teeing stderr to `~/.local/state/switch-emulator/stderr.log`). Steam tiles are written by `emulation-apply-shortcuts` (see "Steam tiles for emulated systems"); `switch-apply-shortcuts` is a deprecated alias for it.

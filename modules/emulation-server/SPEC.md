@@ -34,7 +34,7 @@ emulation-server = {
 | lanInterface | string | "enp1s0" | LAN network interface to open Syncthing/Samba ports on (ignored when `tailnetOnly = true`) |
 | lanSubnet | string | "192.168.50.0/24" | LAN subnet allowed to reach Samba shares (ignored when `tailnetOnly = true`) |
 | systems | list of string | 18 systems (see below) | ROM subdirectories to create |
-| standaloneEmulators | list of string | ["retroarch" "ppsspp" "duckstation" "dolphin" "switch"] | Save subdirectories to create |
+| standaloneEmulators | list of string | ["retroarch" "ppsspp" "dolphin" "switch"] | Save subdirectories to create |
 | tailnetOnly | bool | false | Restrict Syncthing + Samba to the tailnet — see notes below. |
 | syncthing.devices | attrset of `{ id; tailnetFqdn }` | {} | Syncthing peers. Feed `inputs.self.lib.allSyncthingDevices` to pick up the entire fleet declaratively. |
 | syncthing.selfSyncthingId | nullable string | null | This host's own Syncthing ID — used to filter the local entry out of the peer list. Required on hosts that include themselves in `allSyncthingDevices`. |
@@ -45,7 +45,7 @@ snes, nes, gb, gbc, gba, n64, nds, psx, ps2, psp, megadrive, mastersystem, gamec
 
 ### Default emulators (save directories)
 
-retroarch (with `saves/` and `states/` subdirs), ppsspp, duckstation, dolphin, switch
+retroarch (with `saves/` and `states/` subdirs), ppsspp, dolphin, switch
 
 ## Notes
 
@@ -63,11 +63,28 @@ Created automatically via `systemd.tmpfiles` at boot, owned by `${user}:users` m
 ```
 ${dataDir}/
   roms/{snes,nes,gb,gbc,gba,n64,nds,psx,ps2,psp,megadrive,mastersystem,gamecube,wii,dreamcast,saturn,arcade,switch}/
-  saves/{retroarch/{saves,states},ppsspp,duckstation,dolphin,switch}/
+  saves/{retroarch/{saves,states},ppsspp,dolphin,switch}/
   bios/
     switch/            # prod.keys + title.keys (uploaded over Samba)
       firmware/        # Nintendo Switch firmware NCA files
 ```
+
+### RetroArch BIOS files
+
+Clients point RetroArch's `system_directory` at the (read-only) BIOS share mount, and
+RetroArch cores expect their BIOS files **flat at the top of `bios/`** (not in per-system
+subdirectories). Upload over the `emulation-bios` Samba share as needed:
+
+- **PSX (beetle-psx-hw): required** — `scph5500.bin` (JP), `scph5501.bin` (US),
+  `scph5502.bin` (EU). Without the right region file the core fails to boot discs,
+  often silently (black screen).
+- **GBA (mGBA): optional** — `gba_bios.bin` improves accuracy; games boot without it.
+- SNES/NES/N64/Mega Drive/Master System need no BIOS.
+
+Cores that *write* into the system dir or need subdirectory layouts (Dreamcast `dc/`,
+NDS, Saturn, FBNeo) are intentionally not part of the client tile defaults yet — see
+`modules/games/SPEC.md`. If one is added, either provision its subtree here or switch
+the client to a local `system_directory` seeded from the mount.
 
 ### Nintendo Switch keys & firmware
 

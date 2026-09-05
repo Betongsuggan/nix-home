@@ -45,7 +45,9 @@ in {
 
     standaloneEmulators = mkOption {
       type = types.listOf types.str;
-      default = [ "retroarch" "ppsspp" "duckstation" "dolphin" "switch" ];
+      # duckstation was dropped from nixpkgs 26.05 (PSX is covered by the
+      # RetroArch beetle-psx-hw core, whose saves live under retroarch/).
+      default = [ "retroarch" "ppsspp" "dolphin" "switch" ];
       description = "Standalone emulators to create save subdirectories for";
     };
   };

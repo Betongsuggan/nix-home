@@ -16,36 +16,36 @@
 #        non-Steam shortcuts in your Steam library, complete with artwork.
 #        Run it once, then re-run whenever you add games to those stores.
 #
-#   Emulated ROMs (retro consoles)
+#   Emulated ROMs (retro consoles + Nintendo Switch)
 #     ROMs live in ~/emulation/roms/{system}/ (or your configured dataDir).
-#     RetroArch handles older systems (NES through Saturn) via libretro cores.
-#     Standalone emulators handle systems that need them (PS2, GameCube, PSP).
-#     -> Steam ROM Manager (steamIntegration) creates an individual Steam
-#        shortcut for each ROM, with per-game artwork from SteamGridDB.
-#        Configure one parser per system, point it at the ROM directory and
-#        the right emulator executable, then run to generate shortcuts.
+#     RetroArch handles older systems (NES through Saturn) via libretro cores;
+#     standalone emulators cover systems that need them (PS2, GameCube, PSP).
+#     -> emulation-apply-shortcuts (emulators.steamShortcuts) writes one Steam
+#        shortcut per ROM directly into shortcuts.vdf, with per-game artwork
+#        from SteamGridDB. Steam ROM Manager is NOT used: its headless Electron
+#        CLI hangs on this host (see SPEC.md). The generator is driven by a
+#        Nix-built JSON manifest (per system: ROM dir, extensions, launch
+#        command, window class, Steam tag) consumed by add-shortcuts.py.
 #
 #   Nintendo Switch (emulators.switch)
 #     Emulator (default Ryubing) pulled from unstable. Keys are copied from the
 #     controller BIOS share into Ryujinx's data dir; ROMs are read live from the
-#     roms/switch share (mounted cache=none — see emulation-client). SRM's
-#     headless CLI hangs on this host, so `switch-apply-shortcuts` writes
-#     shortcuts.vdf directly (via switch-add-shortcuts.py), one tile per game
-#     folder, launched through a per-game script that opens fullscreen on the
-#     SUNSHINE monitor. Firmware + controller are a one-time Ryujinx-UI setup
-#     that persists in the synced data dir. See SPEC.md "Nintendo Switch".
+#     roms/switch share (mounted cache=none — see emulation-client). Switch is
+#     just another steamShortcuts system entry (folder layout, .xci), with
+#     extra key/firmware/controller plumbing. Firmware + controller are a
+#     one-time Ryujinx-UI setup persisted in the synced data dir. See SPEC.md.
 #
 # First-time setup after a fresh build:
 #
-#   1. Place BIOS files in ~/emulation/bios/ (RetroArch, PCSX2, etc. need them)
-#   2. Place ROMs in ~/emulation/roms/{snes,nes,gba,n64,ps2,...}/
-#   3. Open Steam ROM Manager, add a parser per system, generate shortcuts
+#   1. Place BIOS files in ~/emulation/bios/ (flat, where RetroArch cores look)
+#   2. Place ROMs in ~/emulation/roms/{snes,nes,gba,n64,psx,...}/
+#   3. Run emulation-apply-shortcuts (stops Steam, writes the tiles + artwork)
 #   4. Open BoilR, let it scan Heroic/Lutris libraries, apply to Steam
 #   5. Restart Steam — all games now appear in Big Picture / gamepad UI
 #
 # After adding new games:
 #   - New store games: re-run BoilR
-#   - New ROMs: re-run Steam ROM Manager
+#   - New ROMs: re-run emulation-apply-shortcuts
 #   - New Steam games: nothing to do, they appear automatically
 {
   config,
@@ -200,20 +200,6 @@ with lib;
           '';
         };
 
-        artwork.apiKeyFile = mkOption {
-          # str, not path: a path would copy the key into the world-readable
-          # nix store. The file is read at runtime by switch-apply-shortcuts.
-          type = types.nullOr types.str;
-          default = null;
-          example = "/run/secrets/steamgriddb-api-key";
-          description = ''
-            Path to a file containing a SteamGridDB API key (typically a
-            sops-nix /run/secrets path). When set, switch-apply-shortcuts
-            fetches grid artwork and icons per game from SteamGridDB.
-            When null, shortcuts are created without artwork.
-          '';
-        };
-
         # Over Moonlight there is no keyboard and no Steam overlay (Steam Input
         # must stay off for the pad to reach Ryujinx), so a controller chord is
         # the only way to leave a game. A listener service watches the Sunshine
@@ -231,6 +217,98 @@ with lib;
             default = 1.5;
             description = "How long Select+Start must be held together before the game is closed";
           };
+        };
+      };
+
+      # Per-ROM Steam tiles, written directly into shortcuts.vdf by
+      # emulation-apply-shortcuts (add-shortcuts.py). Steam ROM Manager is
+      # deliberately not used — its headless Electron CLI hangs on this host.
+      # Default entries are generated for every enabled RetroArch core with a
+      # known system mapping, plus Switch when emulators.switch is enabled;
+      # hosts only need to flip `enable` (and can override/add systems).
+      steamShortcuts = {
+        enable = mkEnableOption "per-ROM Steam tiles written directly into shortcuts.vdf";
+
+        artwork.apiKeyFile = mkOption {
+          # str, not path: a path would copy the key into the world-readable
+          # nix store. The file is read at runtime by emulation-apply-shortcuts.
+          type = types.nullOr types.str;
+          default = null;
+          example = "/run/secrets/steamgriddb-api-key";
+          description = ''
+            Path to a file containing a SteamGridDB API key (typically a
+            sops-nix /run/secrets path). When set, emulation-apply-shortcuts
+            fetches grid artwork and icons per game from SteamGridDB.
+            When null, shortcuts are created without artwork.
+          '';
+        };
+
+        systems = mkOption {
+          type = types.attrsOf (types.submodule ({ name, ... }: {
+            options = {
+              enable = mkOption {
+                type = types.bool;
+                default = true;
+                description = "Generate Steam tiles for this system";
+              };
+
+              romDir = mkOption {
+                type = types.str;
+                default = "${config.home.homeDirectory}/${config.games.emulators.dataDir}/roms/${name}";
+                defaultText = "\${home}/\${emulators.dataDir}/roms/<system>";
+                description = "Directory scanned for this system's ROMs";
+              };
+
+              extensions = mkOption {
+                type = types.listOf types.str;
+                description = "ROM file extensions (with leading dot, case-insensitive)";
+              };
+
+              layout = mkOption {
+                type = types.enum [ "flat" "folder" ];
+                default = "flat";
+                description = ''
+                  "flat": one tile per ROM file in romDir (retro systems).
+                  "folder": one tile per subdirectory, launching the base ROM
+                  inside it, skipping (UPD)/(DLC) files (Switch layout).
+                '';
+              };
+
+              command = mkOption {
+                type = types.listOf types.str;
+                description = "Launch argv prefix; the ROM path is appended as the last argument";
+              };
+
+              windowClass = mkOption {
+                type = types.str;
+                default = "retroarch";
+                description = "Hyprland window class the launcher polls to fullscreen the emulator over Big Picture";
+              };
+
+              tag = mkOption {
+                type = types.str;
+                default = name;
+                description = "Steam collection tag applied to this system's tiles";
+              };
+
+              launcherDir = mkOption {
+                type = types.str;
+                default = "${config.home.homeDirectory}/.local/share/emulation-shortcuts/${name}";
+                defaultText = "~/.local/share/emulation-shortcuts/<system>";
+                description = ''
+                  Where per-game launcher scripts are written. The shortcut
+                  appid hashes the launcher path, so changing this orphans
+                  existing artwork/collections/playtime for the system.
+                '';
+              };
+            };
+          }));
+          default = { };
+          description = ''
+            Systems to generate Steam tiles for. Merged over the generated
+            defaults — override a field (`systems.snes.tag = ...`), disable a
+            system (`systems.n64.enable = false`), or add a custom one.
+          '';
         };
       };
     };
@@ -286,11 +364,198 @@ with lib;
         }
         .${sw.emulator};
 
+      ss = cfg.emulators.steamShortcuts;
+      shortcutsEnabled = cfg.emulators.enable && ss.enable;
+      retroarchEnabled = cfg.emulators.enable && cfg.emulators.retroarch.enable;
+
       emuDir = "${config.home.homeDirectory}/${cfg.emulators.dataDir}";
       switchRomDir = "${emuDir}/roms/switch";
       # Keys + firmware come from the controller BIOS Samba share, auto-mounted
       # read-only at ~/emulation/bios (see emulation-mounts).
       switchKeysDir = "${emuDir}/bios/switch";
+
+      # RetroArch autoconfig profile for the Sunshine virtual pad. Its udev
+      # device name/ids never match anything in the upstream autoconfig DB
+      # (the GUID trick that broke SDL, see switchControllerDb above, applies
+      # here too), so without this the pad can't navigate the Ozone menu
+      # deterministically. Button/axis indices follow the evdev/xpad order —
+      # the same layout verified live for switchControllerDb (A=0 B=1 X=2 Y=3,
+      # back=6 start=7 guide=8, sticks a0/a1 + a3/a4, triggers a2/a5, dpad on
+      # hat0). Note RetroPad convention: input_b is the BOTTOM face button
+      # (physical A), so b/a and y/x are cross-assigned on purpose.
+      sunshinePadAutoconfig =
+        pkgs.writeTextDir "share/libretro/autoconfig/udev/Sunshine X-Box One (virtual) pad.cfg" ''
+          input_driver = "udev"
+          input_device = "Sunshine X-Box One (virtual) pad"
+          input_vendor_id = "1118"
+          input_product_id = "746"
+          input_b_btn = "0"
+          input_a_btn = "1"
+          input_y_btn = "2"
+          input_x_btn = "3"
+          input_l_btn = "4"
+          input_r_btn = "5"
+          input_select_btn = "6"
+          input_start_btn = "7"
+          input_menu_toggle_btn = "8"
+          input_l3_btn = "9"
+          input_r3_btn = "10"
+          input_l2_axis = "+2"
+          input_r2_axis = "+5"
+          input_l_x_plus_axis = "+0"
+          input_l_x_minus_axis = "-0"
+          input_l_y_plus_axis = "+1"
+          input_l_y_minus_axis = "-1"
+          input_r_x_plus_axis = "+3"
+          input_r_x_minus_axis = "-3"
+          input_r_y_plus_axis = "+4"
+          input_r_y_minus_axis = "-4"
+          input_up_btn = "h0up"
+          input_down_btn = "h0down"
+          input_left_btn = "h0left"
+          input_right_btn = "h0right"
+        '';
+
+      # Upstream autoconfig DB (physical pads keep working) + the Sunshine
+      # profile. The wrapper's default joypad_autoconfig_dir points at the
+      # upstream DB only, so we join and override.
+      retroarchAutoconfigDir = pkgs.symlinkJoin {
+        name = "retroarch-autoconfig-with-sunshine-pad";
+        paths = [ pkgs.retroarch-joypad-autoconfig sunshinePadAutoconfig ];
+      };
+
+      # Hoisted (rather than inline in home.packages) so the Steam-tile launch
+      # commands below reference the exact same wrapped binary + core set.
+      retroarchPkg = pkgs.retroarch-bare.wrapper {
+        cores = map (name: pkgs.libretro.${name}) cfg.emulators.retroarch.cores;
+        settings = {
+          # Must match the provisioned layout inside the Syncthing-synced
+          # saves tree (emulation-client creates saves/retroarch/{saves,states}
+          # and the server mirrors it) — anything outside ~/emulation/saves
+          # is never synced or backed up.
+          savefile_directory = "${emuDir}/saves/retroarch/saves";
+          savestate_directory = "${emuDir}/saves/retroarch/states";
+          # Read-only CIFS mount; fine for the default cores, which only read
+          # BIOS files from it (flat, e.g. scph5501.bin). Cores that write into
+          # the system dir are deliberately not in the default tile set.
+          system_directory = "${emuDir}/bios";
+          content_directory = "${emuDir}/roms";
+          input_joypad_driver = "udev";
+          video_driver = "vulkan";
+          video_fullscreen = "true";
+          menu_driver = "ozone";
+          config_save_on_exit = "true";
+          joypad_autoconfig_dir = "${retroarchAutoconfigDir}/share/libretro/autoconfig";
+          # Streamed sessions have no keyboard, so quitting must be a pad
+          # chord, mirroring the Switch quitChord: hold Select (6, the hotkey
+          # modifier) + Start (7) to exit — a clean exit, so SRAM is flushed
+          # to the synced saves dir. Select+Guide (8) opens the RetroArch menu.
+          input_enable_hotkey_btn = "6";
+          input_exit_emulator_btn = "7";
+          input_menu_toggle_btn = "8";
+          quit_press_twice = "false";
+        };
+      };
+
+      # Core .so filenames don't always match their nixpkgs attr names. Paths
+      # resolve inside the wrapper's core dir, so a tile can only launch cores
+      # that are actually installed.
+      coreFile = {
+        snes9x = "snes9x_libretro.so";
+        fceumm = "fceumm_libretro.so";
+        mgba = "mgba_libretro.so";
+        mupen64plus = "mupen64plus_next_libretro.so";
+        "beetle-psx-hw" = "mednafen_psx_hw_libretro.so";
+        "genesis-plus-gx" = "genesis_plus_gx_libretro.so";
+      };
+      raCmd = core: [
+        "${retroarchPkg}/bin/retroarch"
+        "-L"
+        "${retroarchPkg}/lib/retroarch/cores/${coreFile.${core}}"
+      ];
+      hasCore = core: retroarchEnabled && elem core cfg.emulators.retroarch.cores;
+
+      # Default Steam-tile systems: one entry per enabled RetroArch core with a
+      # known mapping. Deferred on purpose: nds/dreamcast/saturn/arcade cores
+      # need writable or subdirectory BIOS layouts that the read-only flat BIOS
+      # mount doesn't provide, and standalone emulators (PS2/GC/PSP) each need
+      # their own controller/save-path validation first — all become one-entry
+      # additions here once solved.
+      retroSystemDefaults =
+        optionalAttrs (hasCore "snes9x") {
+          snes = {
+            extensions = [ ".sfc" ".smc" ".zip" ];
+            command = raCmd "snes9x";
+            tag = "SNES";
+          };
+        }
+        // optionalAttrs (hasCore "fceumm") {
+          nes = {
+            extensions = [ ".nes" ".zip" ];
+            command = raCmd "fceumm";
+            tag = "NES";
+          };
+        }
+        // optionalAttrs (hasCore "mgba") {
+          gb = {
+            extensions = [ ".gb" ".zip" ];
+            command = raCmd "mgba";
+            tag = "Game Boy";
+          };
+          gbc = {
+            extensions = [ ".gbc" ".zip" ];
+            command = raCmd "mgba";
+            tag = "Game Boy Color";
+          };
+          gba = {
+            extensions = [ ".gba" ".zip" ];
+            command = raCmd "mgba";
+            tag = "Game Boy Advance";
+          };
+        }
+        // optionalAttrs (hasCore "mupen64plus") {
+          n64 = {
+            extensions = [ ".n64" ".z64" ".v64" ".zip" ];
+            command = raCmd "mupen64plus";
+            tag = "Nintendo 64";
+          };
+        }
+        // optionalAttrs (hasCore "beetle-psx-hw") {
+          psx = {
+            # .m3u > .cue > .chd stem-dedup in add-shortcuts.py keeps
+            # multi-disc/multi-track games as a single tile.
+            extensions = [ ".m3u" ".cue" ".chd" ".pbp" ];
+            command = raCmd "beetle-psx-hw";
+            tag = "PlayStation";
+          };
+        }
+        // optionalAttrs (hasCore "genesis-plus-gx") {
+          megadrive = {
+            extensions = [ ".md" ".gen" ".bin" ".zip" ];
+            command = raCmd "genesis-plus-gx";
+            tag = "Mega Drive";
+          };
+          mastersystem = {
+            extensions = [ ".sms" ".zip" ];
+            command = raCmd "genesis-plus-gx";
+            tag = "Master System";
+          };
+        };
+
+      switchSystemDefault = optionalAttrs switchEnabled {
+        switch = {
+          romDir = switchRomDir;
+          extensions = [ ".xci" ];
+          layout = "folder";
+          command = [ "${switchRunEmulator}/bin/switch-run-emulator" ];
+          windowClass = "Ryujinx";
+          tag = "Nintendo Switch";
+          # Legacy dir from the Switch-only pipeline: the shortcut appid hashes
+          # the launcher path, so keeping it preserves existing Switch tiles'
+          # artwork, collections, and playtime.
+          launcherDir = "${config.home.homeDirectory}/.local/share/switch-shortcuts";
+        };
+      };
 
       # Copy the Switch keys from the BIOS share into Ryujinx's data dir as real
       # local files. (Symlinking to the lazily-automounted CIFS share is fragile
@@ -562,9 +827,21 @@ with lib;
       # needs no display/GPU/D-Bus, and idempotent (upserts by app name).
       pyEnv = pkgs.python3.withPackages (ps: [ ps.vdf ]);
 
-      # Stop Steam (so it doesn't clobber shortcuts.vdf on exit), refresh the
-      # keys, then upsert one Steam shortcut per game folder.
-      switchApplyShortcuts = pkgs.writeShellScriptBin "switch-apply-shortcuts" ''
+      # Nix-built manifest consumed by add-shortcuts.py: per system the ROM
+      # dir, extensions, layout, launch argv, Hyprland window class, and Steam
+      # tag. Hosts extend/override via emulators.steamShortcuts.systems.
+      shortcutsManifest = pkgs.writeText "emulation-shortcuts.json" (builtins.toJSON {
+        hyprctl = "${pkgs.hyprland}/bin/hyprctl";
+        artworkKeyFile = if ss.artwork.apiKeyFile == null then "" else ss.artwork.apiKeyFile;
+        systems = mapAttrs (_: s: {
+          inherit (s) romDir extensions layout command windowClass tag launcherDir;
+        }) (filterAttrs (_: s: s.enable) ss.systems);
+      });
+
+      # Stop Steam (so it doesn't clobber shortcuts.vdf on exit), run the
+      # Switch pre-hooks when enabled, then upsert one Steam shortcut per game
+      # across all manifest systems (pruning tiles whose ROM disappeared).
+      emulationApplyShortcuts = pkgs.writeShellScriptBin "emulation-apply-shortcuts" ''
         set -euo pipefail
         # Reach the running Steam in the user's graphical session (needed when
         # invoked over SSH) so -shutdown actually stops it; otherwise Steam
@@ -579,22 +856,34 @@ with lib;
         # Fallback if it's still up after the graceful shutdown window.
         ${pkgs.procps}/bin/pgrep -x steam >/dev/null && ${pkgs.procps}/bin/pkill -TERM -u "$(id -u)" steam || true
         sleep 2
-        ${switchRefreshKeys}/bin/switch-refresh-keys || true
-        ${switchRefreshInput}/bin/switch-refresh-input || true
-        ${switchApplyInput}/bin/switch-apply-input || true
-        echo "Writing Steam shortcuts for Switch games..."
-        SWITCH_ROMDIR="${switchRomDir}" \
-        SWITCH_EMU="${switchRunEmulator}/bin/switch-run-emulator" \
-        SWITCH_HYPRCTL="${pkgs.hyprland}/bin/hyprctl" \
-        SWITCH_LAUNCH_PREFIX="" \
-        SWITCH_TAG="Nintendo Switch" \
-        SWITCH_SGDB_KEY_FILE="${if sw.artwork.apiKeyFile == null then "" else sw.artwork.apiKeyFile}" \
-        SWITCH_ARTWORK_FORCE="''${SWITCH_ARTWORK_FORCE:-}" \
-          ${pyEnv}/bin/python3 ${./switch-add-shortcuts.py}
+        ${optionalString switchEnabled ''
+          ${switchRefreshKeys}/bin/switch-refresh-keys || true
+          ${switchRefreshInput}/bin/switch-refresh-input || true
+          ${switchApplyInput}/bin/switch-apply-input || true
+        ''}
+        echo "Writing Steam shortcuts..."
+        EMU_MANIFEST=${shortcutsManifest} \
+        EMU_ARTWORK_FORCE="''${EMU_ARTWORK_FORCE:-''${SWITCH_ARTWORK_FORCE:-}}" \
+          ${pyEnv}/bin/python3 ${./add-shortcuts.py}
         echo "Reconnect the Moonlight 'Steam Gaming' app to see the tiles."
+      '';
+
+      # Back-compat alias from the Switch-only pipeline.
+      switchApplyShortcuts = pkgs.writeShellScriptBin "switch-apply-shortcuts" ''
+        echo "switch-apply-shortcuts is deprecated; running emulation-apply-shortcuts (all systems)." >&2
+        exec ${emulationApplyShortcuts}/bin/emulation-apply-shortcuts "$@"
       '';
     in
     mkIf cfg.enable {
+    # Generated per-system Steam-tile defaults (retro systems from the enabled
+    # RetroArch cores when steamShortcuts is on; Switch whenever it's enabled,
+    # matching the pre-manifest behavior). Every field is mkDefault'd so hosts
+    # can override piecemeal via emulators.steamShortcuts.systems.<name>.
+    games.emulators.steamShortcuts.systems =
+      mapAttrs (_: s: mapAttrs (_: mkDefault) s) (
+        (optionalAttrs shortcutsEnabled retroSystemDefaults) // switchSystemDefault
+      );
+
     programs.mangohud = mkIf cfg.mangohud.enable {
       enable = true;
       enableSessionWide = true;
@@ -712,38 +1001,29 @@ with lib;
         vkbasalt
       ])
       # RetroArch — the emulation backend for older systems (NES through Saturn).
-      # Uses retroarch-bare.wrapper to bake in cores and path settings declaratively
-      # via --appendconfig, while still allowing runtime tweaks (config_save_on_exit).
-      # Steam ROM Manager will create shortcuts that launch:
-      #   retroarch -L /nix/store/.../snes9x_libretro.so "/path/to/rom.sfc"
-      ++ (optionals (cfg.emulators.enable && cfg.emulators.retroarch.enable) [
-        (retroarch-bare.wrapper {
-          cores = map (name: libretro.${name}) cfg.emulators.retroarch.cores;
-          settings = {
-            savefile_directory = "${config.home.homeDirectory}/${cfg.emulators.dataDir}/saves";
-            savestate_directory = "${config.home.homeDirectory}/${cfg.emulators.dataDir}/states";
-            system_directory = "${config.home.homeDirectory}/${cfg.emulators.dataDir}/bios";
-            content_directory = "${config.home.homeDirectory}/${cfg.emulators.dataDir}/roms";
-            input_joypad_driver = "udev";
-            video_driver = "vulkan";
-            video_fullscreen = "true";
-            menu_driver = "ozone";
-            config_save_on_exit = "true";
-          };
-        })
-      ])
+      # Uses retroarch-bare.wrapper (hoisted into the let so the Steam-tile
+      # launchers run the same binary) to bake in cores, paths, the Sunshine-pad
+      # autoconfig, and the Select+Start quit chord declaratively via
+      # --appendconfig, while still allowing runtime tweaks (config_save_on_exit
+      # persists undeclared keys; declared keys re-win on every launch).
+      ++ (optionals retroarchEnabled [ retroarchPkg ])
       # Standalone emulators for systems where dedicated apps outperform RetroArch
-      # cores (better accuracy, HDR support, per-game settings, etc.).
-      # Steam ROM Manager shortcuts for these use the emulator's own CLI, e.g.:
-      #   pcsx2 "/path/to/game.iso"
+      # cores (better accuracy, HDR support, per-game settings, etc.). Not yet
+      # wired into steamShortcuts — each needs controller/save-path validation.
       ++ (optionals cfg.emulators.enable (
         (optional cfg.emulators.standalone.pcsx2 pcsx2)
         ++ (optional cfg.emulators.standalone.dolphin dolphin-emu)
         ++ (optional cfg.emulators.standalone.ppsspp ppsspp)
       ))
-      # Steam library integration — these tools write non-Steam shortcuts into
-      # Steam's shortcuts.vdf so everything shows up in Big Picture / gamepad UI.
-      # BoilR handles store launchers; Steam ROM Manager handles individual ROMs.
+      # Per-ROM Steam tiles: installed for steamShortcuts, and kept for plain
+      # switch.enable so the pre-manifest Switch-only workflow still works.
+      ++ (optionals (cfg.emulators.enable && (ss.enable || switchEnabled)) [
+        emulationApplyShortcuts
+      ])
+      # Steam library integration — BoilR writes non-Steam shortcuts for store
+      # launchers (Heroic/Lutris/etc.) into shortcuts.vdf. Steam ROM Manager is
+      # installable but unused for ROMs: its headless CLI hangs on this host —
+      # emulation-apply-shortcuts covers per-ROM tiles instead.
       ++ (optionals cfg.steamIntegration.enable (
         (optional cfg.steamIntegration.boilr boilr)
         ++ (optional cfg.steamIntegration.steamRomManager steam-rom-manager)
