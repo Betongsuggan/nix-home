@@ -150,6 +150,59 @@ with lib;
           ];
           description = "List of libretro core names to include with RetroArch";
         };
+
+        # Subtle per-core video shaders (slang, vulkan-compatible), auto-loaded
+        # via <video_shader_dir>/presets/<CoreName>/<CoreName>.slangp, where
+        # <CoreName> is the core's display name (library_name), e.g. "Snes9x".
+        shaders = {
+          enable = mkOption {
+            type = types.bool;
+            default = true;
+            description = "Wire libretro slang shaders into RetroArch and auto-load per-core presets";
+          };
+
+          corePresets = mkOption {
+            type = types.attrsOf (types.submodule {
+              options = {
+                preset = mkOption {
+                  type = types.str;
+                  description = "Preset path relative to the shaders_slang root of pkgs.libretro-shaders-slang";
+                };
+                parameters = mkOption {
+                  type = types.attrsOf types.str;
+                  default = { };
+                  description = ''
+                    Shader parameter overrides (name -> value as string), written
+                    after the #reference line — the same format RetroArch itself
+                    uses when saving a simple preset. Parameter names/defaults:
+                    `#pragma parameter` lines in the referenced .slang sources.
+                  '';
+                };
+              };
+            });
+            default = {
+              # Light CRT look: subtle scanlines, softened pixels, no curvature.
+              # Subtler alternative: "pixel-art-scaling/sharp-bilinear.slangp".
+              Snes9x = {
+                preset = "crt/crt-easymode.slangp";
+                # Toned down for large screens: halve scanline darkness, lift
+                # the gap brightness floor, soften the phosphor dot mask, and
+                # nudge sharpness down for slightly softened pixel edges.
+                parameters = {
+                  SCANLINE_STRENGTH = "0.50"; # default 1.0
+                  SCANLINE_BRIGHT_MIN = "0.50"; # default 0.35
+                  MASK_STRENGTH = "0.15"; # default 0.3
+                  SHARPNESS_H = "0.35"; # default 0.5
+                  SHARPNESS_V = "0.75"; # default 1.0
+                };
+              };
+            };
+            description = ''
+              Core display name (library_name, e.g. "Snes9x") -> auto-loaded
+              shader preset (+ optional parameter overrides) for that core.
+            '';
+          };
+        };
       };
 
       standalone = {
@@ -424,6 +477,32 @@ with lib;
         paths = [ pkgs.retroarch-joypad-autoconfig sunshinePadAutoconfig ];
       };
 
+      # One store dir per core preset: presets/<CoreName>/<CoreName>.slangp with
+      # a #reference to the real preset. #reference points at the ORIGINAL
+      # store path, so the preset's internal relative shader paths resolve
+      # against real files regardless of symlinkJoin layout. writeTextFile (not
+      # writeTextDir) so core names with spaces still yield a valid drv name.
+      shaderCorePresets = mapAttrsToList (coreName: p:
+        pkgs.writeTextFile {
+          name = "retroarch-auto-preset-${strings.sanitizeDerivationName coreName}";
+          destination = "/share/libretro/shaders/presets/${coreName}/${coreName}.slangp";
+          # Parameter overrides after #reference — the exact layout RetroArch
+          # writes when saving a "simple preset" in-menu.
+          text = ''
+            #reference "${pkgs.libretro-shaders-slang}/share/libretro/shaders/shaders_slang/${p.preset}"
+          '' + concatStrings (mapAttrsToList (param: value: ''
+            ${param} = "${value}"
+          '') p.parameters);
+        }
+      ) cfg.emulators.retroarch.shaders.corePresets;
+
+      # Full upstream slang collection (browsable in-menu) overlaid with the
+      # generated presets/ auto-load dir — same pattern as retroarchAutoconfigDir.
+      retroarchShaderDir = pkgs.symlinkJoin {
+        name = "retroarch-shaders-with-auto-presets";
+        paths = [ pkgs.libretro-shaders-slang ] ++ shaderCorePresets;
+      };
+
       # Hoisted (rather than inline in home.packages) so the Steam-tile launch
       # commands below reference the exact same wrapped binary + core set.
       retroarchPkg = pkgs.retroarch-bare.wrapper {
@@ -472,7 +551,37 @@ with lib;
           # autoconfig profile: Guide on the Sunshine pad, PS on a DualSense.
           input_quit_gamepad_combo = "4"; # INPUT_COMBO_START_SELECT
           quit_press_twice = "false";
-        };
+          # Tombstones: these raw-index hotkeys were previously declared here,
+          # and config_save_on_exit persisted them into retroarch.cfg — merely
+          # REMOVING a key from this set doesn't undo that (appendconfig only
+          # overrides declared keys), so the stale values kept applying (on a
+          # DualSense 6/7/8 = L2/R2/Create → triggers quit the game). "nul" is
+          # RetroArch's unbind value; per-pad menu toggles from autoconfig
+          # profiles still apply. Never delete a key from this set — tombstone
+          # it.
+          input_enable_hotkey_btn = "nul";
+          input_exit_emulator_btn = "nul";
+          input_menu_toggle_btn = "nul";
+          # Menu is otherwise controllable only by the pad on port 0; with
+          # more than one joystick-tagged device present, let any pad drive it.
+          input_all_users_control_menu = "true";
+        } // (if cfg.emulators.retroarch.shaders.enable then {
+          # Per-core shaders: video_shader_dir's presets/ subdir is one of the
+          # auto-preset search roots (lowest priority — presets the user saves
+          # in-menu under ~/.config/retroarch/config/<Core>/ still win).
+          # video_shader_enable defaults to FALSE on desktop and gates all
+          # shader loading.
+          video_shader_dir = "${retroarchShaderDir}/share/libretro/shaders";
+          auto_shaders_enable = "true";
+          video_shader_enable = "true";
+        } else {
+          # Tombstones (never delete a declared key — see SPEC.md): reset to
+          # RetroArch defaults; "default" is the canonical reset value for
+          # directory settings.
+          video_shader_dir = "default";
+          auto_shaders_enable = "true";
+          video_shader_enable = "false";
+        });
       };
 
       # Core .so filenames don't always match their nixpkgs attr names. Paths

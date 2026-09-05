@@ -61,6 +61,8 @@ games = {
 | emulators.dataDir | str | "emulation" | Directory name under $HOME for emulation data (ROMs, saves, BIOS) |
 | emulators.retroarch.enable | bool | true | Enable RetroArch with libretro cores |
 | emulators.retroarch.cores | list of str | (all 10 cores) | List of libretro core names to include |
+| emulators.retroarch.shaders.enable | bool | true | Wire `libretro-shaders-slang` into RetroArch and auto-load per-core presets |
+| emulators.retroarch.shaders.corePresets | attrsOf submodule | Snes9x → crt-easymode, toned down (see below) | Core display name (`library_name`) → `{ preset, parameters }`: preset path relative to the `shaders_slang` root plus optional shader parameter overrides (name → value string) |
 | emulators.standalone.pcsx2 | bool | true | Install PCSX2 (PS2 emulator) |
 | emulators.standalone.dolphin | bool | true | Install Dolphin (GameCube/Wii emulator) |
 | emulators.standalone.ppsspp | bool | true | Install PPSSPP (PSP emulator) |
@@ -168,7 +170,11 @@ BIOS layouts the read-only flat BIOS mount doesn't provide; standalone emulators
   states inside the Syncthing-synced `~/emulation/saves/retroarch/{saves,states}`),
   Vulkan, udev joypad, Ozone menu
 - Runtime config changes to *undeclared* keys are preserved (`config_save_on_exit`);
-  declared keys re-win on every launch via `--appendconfig`
+  declared keys re-win on every launch via `--appendconfig`. **Corollary: never
+  just delete a key from the wrapper `settings`** — `config_save_on_exit` has
+  persisted its old value into `retroarch.cfg`, and once undeclared the stale
+  value applies again. Tombstone it instead (bind keys → `"nul"`, booleans →
+  their default), as done for the retired raw-index hotkeys.
 - **Gamepads:** a udev autoconfig profile for the Sunshine virtual pad is baked
   in, merged with the upstream autoconfig DB via `symlinkJoin` — so physical pads
   (e.g. a locally-connected **DualSense**, USB or Bluetooth) work on plug-in with
@@ -182,6 +188,33 @@ BIOS layouts the read-only flat BIOS mount doesn't provide; standalone emulators
   triggers quit the game.) RetroPad convention note: `input_b` is the *bottom*
   face button — if confirm/cancel feel swapped in-game, the autoconfig's b/a and
   y/x assignments in `modules/games/default.nix` are the place to flip.
+- **Shaders:** declarative per-core presets via RetroArch's auto-preset mechanism:
+  `video_shader_dir` points at a `symlinkJoin` of the full `libretro-shaders-slang`
+  collection (browsable in the Quick Menu) plus generated
+  `presets/<CoreName>/<CoreName>.slangp` files, where `<CoreName>` is the core's
+  `library_name` (e.g. `Snes9x`, `Mesen`, `mGBA`, `Genesis Plus GX`). Each generated
+  preset is a `#reference "<store path>.slangp"` line plus optional parameter
+  overrides (`corePresets.<Core>.parameters`) — the same format RetroArch writes
+  when saving a simple preset — so the referenced preset's internal relative
+  paths resolve against the real shader tree. Default: **crt-easymode on Snes9x
+  only** (light CRT: subtle scanlines + softened pixels, no curvature), toned
+  down for large screens: `SCANLINE_STRENGTH 0.50` (upstream 1.0),
+  `SCANLINE_BRIGHT_MIN 0.50` (0.35), `MASK_STRENGTH 0.15` (0.3), plus a slight
+  pixel softening via `SHARPNESS_H 0.35` (0.5) and `SHARPNESS_V 0.75` (1.0) —
+  scanlines fade and edges blend gently without going blurry. Parameter
+  names/defaults come from the
+  `#pragma parameter` lines in the referenced `.slang` sources; tune live via
+  Quick Menu → Shaders → Shader Parameters, then pin values here. The
+  even-subtler preset swap is `pixel-art-scaling/sharp-bilinear.slangp`.
+  Presets saved in-menu ("Save Core Preset" → `~/.config/retroarch/config/<Core>/`)
+  take precedence over the declarative ones (search order: menu config dir →
+  retroarch.cfg dir → `video_shader_dir/presets`) — a runtime tweak wins until
+  the saved file is deleted. Tombstone contract: `shaders.enable = false` keeps
+  emitting `video_shader_dir = "default"`, `video_shader_enable = "false"`,
+  `auto_shaders_enable = "true"` (RetroArch defaults) instead of deleting the
+  keys, since `config_save_on_exit` has persisted them into `retroarch.cfg`.
+  Note `video_shader_enable` defaults to *false* on desktop builds and gates all
+  shader loading — it must stay declared `"true"` while shaders are on.
 
 ### Cross-device save sync (Android handheld / Ayn Thor)
 
