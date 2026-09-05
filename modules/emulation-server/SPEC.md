@@ -115,7 +115,7 @@ With `tailnetOnly = true` the network exposure collapses to the tailnet only:
 - **Firewall:** Syncthing and Samba ports are opened on `tailscale0` only — the `lanInterface` opening is dropped entirely.
 - **Samba `hosts allow`:** reduced to `100.64.0.0/10` only (no LAN subnet) — Samba rejects connections from any source IP outside the tailnet regardless of which interface they came in on.
 - **Syncthing:** `globalAnnounceEnabled`, `relaysEnabled`, `natEnabled`, and `localAnnounceEnabled` are all set to `false`. No public-internet chatter, no LAN multicast.
-- **Syncthing peer addresses:** each device gets `addresses = [ "tcp://<tailnetFqdn>:22000" ]` derived from `lib.allSyncthingDevices`. Peers without a known `tailnetFqdn` (Android devices not yet on the tailnet, fairphone's placeholder ID) fall back to `dynamic`, which won't work in tailnet-only mode — they'll be unreachable until their lib entries gain a `tailnetName`.
+- **Syncthing peer addresses:** each device gets `addresses = [ "tcp://<tailnetFqdn>:22000" ]` derived from `lib.allSyncthingDevices`. A peer without a known `tailnetFqdn` (a lib entry missing `tailnetName`) falls back to `dynamic`, which won't work in tailnet-only mode — it stays unreachable until its lib entry gains a `tailnetName`. All current entries (including the Android devices `ayn-thor` and `fairphone`, which run the Tailscale app always-on) have tailnet names and get pinned addresses.
 
 The trade-off: stricter posture, no public-infra footprint, every peer must be on the tailnet. Recommended once the whole personal fleet is enrolled in Headscale.
 
@@ -174,8 +174,35 @@ Android devices don't run NixOS modules but can still join the save-sync mesh.
    };
    ```
 4. Rebuild the server (the device is picked up automatically via `allSyncthingDevices`).
+   In tailnet-only mode the device also needs a `tailnetName` in its lib entry (and the
+   Tailscale app running on the device) or the server can't reach it.
 5. On Android, add the server as a device using the server's device ID (find it at `http://server:8384` > Actions > Show ID).
-6. Accept the `emulation-saves` folder share. Point it at `/storage/emulated/0/emulation/saves`.
+6. Accept the `emulation-saves` folder share and pick a device-local path for it
+   (e.g. `/storage/emulated/0/emulation/saves`; on the Ayn Thor it lives at
+   `/storage/emulated/0/Eumlations/saves`). The path is local to the device — only
+   the folder id `emulation-saves` and the *relative* layout inside it must match.
+
+#### RetroArch on Android: cross-device save continuity
+
+To continue games between the handheld and a desktop client, RetroArch on Android
+must honor the same save-layout contract that the desktop pins declaratively (see
+`modules/games/SPEC.md` "Cross-device save sync"). One-time setup in RetroArch:
+
+1. Grant RetroArch **All Files Access** (Android settings → Apps → RetroArch →
+   Permissions) so it can write outside its app-private storage.
+2. Settings → Directory: **Savefiles** = `<synced folder>/retroarch/saves`,
+   **Savestates** = `<synced folder>/retroarch/states` (on the Thor:
+   `/storage/emulated/0/Eumlations/saves/retroarch/{saves,states}`).
+3. Settings → Saving: turn **off** all four "Sort Saves/States into Folders …"
+   options and both "Write Saves/States to Content Directory" options; set
+   **SaveRAM Autosave Interval** = 60 seconds.
+4. Configuration → **Save Current Configuration** (or enable save-on-exit).
+5. Keep ROM filenames identical to the `emulation-roms` share — `.srm` files are
+   named after the ROM basename, so a renamed ROM gets a different (empty) save.
+
+Frontends like Cocoon only launch RetroArch; they don't affect save paths. In-game
+saves (`.srm`) transfer across platforms; savestates are core-version-sensitive and
+may only load on the device that made them.
 
 #### ROM access via Samba
 

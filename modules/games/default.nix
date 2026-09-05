@@ -435,6 +435,21 @@ with lib;
           # is never synced or backed up.
           savefile_directory = "${emuDir}/saves/retroarch/saves";
           savestate_directory = "${emuDir}/saves/retroarch/states";
+          # Cross-device save contract (shared with the Ayn Thor through the
+          # emulation-saves Syncthing folder): flat layout — no per-core or
+          # per-content subdirs — so both devices resolve the same .srm from
+          # the same ROM filename. The Thor's RetroArch must mirror these
+          # (see modules/games/SPEC.md "Cross-device save sync").
+          sort_savefiles_enable = "false";
+          sort_savestates_enable = "false";
+          sort_savefiles_by_content_enable = "false";
+          sort_savestates_by_content_enable = "false";
+          savefiles_in_content_dir = "false";
+          savestates_in_content_dir = "false";
+          # Flush SaveRAM every 60s (default: only on content close) so saves
+          # survive crashes and reach the other device without waiting for a
+          # clean quit.
+          autosave_interval = "60";
           # Read-only CIFS mount; fine for the default cores, which only read
           # BIOS files from it (flat, e.g. scph5501.bin). Cores that write into
           # the system dir are deliberately not in the default tile set.

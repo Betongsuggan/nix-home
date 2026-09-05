@@ -177,6 +177,42 @@ BIOS layouts the read-only flat BIOS mount doesn't provide; standalone emulators
   face button — if confirm/cancel feel swapped in-game, the autoconfig's b/a and
   y/x assignments in `modules/games/default.nix` are the place to flip.
 
+### Cross-device save sync (Android handheld / Ayn Thor)
+
+The Ayn Odin 2 ("Thor") plays the same games natively (Cocoon frontend → RetroArch
+Android) and shares the `emulation-saves` Syncthing folder through controller
+(hub-and-spoke: Thor ↔ controller ↔ desktop-gamer). Saves continue across devices
+when both sides honor the same **layout contract**, which this module pins
+declaratively on the desktop:
+
+- **Flat layout**: saves in `<saves>/retroarch/saves`, states in
+  `<saves>/retroarch/states`, all four `sort_save*` options and both
+  `*_in_content_dir` options **off** — a mismatch means each device reads/writes
+  different paths and nothing "syncs".
+- **Filename parity**: RetroArch names `.srm` after the ROM's basename, so the
+  Thor's local ROM copies must keep the exact filenames from the `emulation-roms`
+  share.
+- **SaveRAM autosave every 60s** (`autosave_interval`): saves survive crashes and
+  sync without waiting for a clean quit. Mirror the setting on the Thor.
+
+Expectations:
+
+- **In-game saves (`.srm`) are portable** across platforms — this is the
+  continue-anywhere mechanism.
+- **Savestates are core-version-sensitive**: they sync but may not load on the
+  other device's core build. Save in-game for cross-device handoff; treat states
+  as per-device conveniences.
+- **One device at a time per game**: simultaneous play produces Syncthing
+  `.sync-conflict-*` files (versioning keeps 5 — recoverable, but avoid it).
+- **Switch is not portable**: desktop Ryujinx and Android Switch emulators have
+  incompatible save layouts. Switch continuity across devices = stream the
+  desktop session via Moonlight.
+- **Cocoon is config-neutral**: it only launches RetroArch; all save behavior
+  lives in RetroArch's own settings.
+
+The Thor-side (manual) setup steps live in `modules/emulation-server/SPEC.md`
+under "Android client setup".
+
 ### BoilR
 - Run `boilr` once to scan and import games from Heroic, Lutris, and other launchers into Steam
 - Re-run when adding new games to external launchers
