@@ -54,9 +54,14 @@ in
       networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 ];
 
       # nix-daemon (root) reaches nix-vault over the tailnet using the host SSH
-      # key. Scoped to root so the user's own SSH config is unaffected.
+      # key. `localuser` (not `user`) is the criterion for the local account
+      # running ssh — `Match user` matches the *remote* login name, and these
+      # fetches log in as git@controller, so a `Match user root` block never
+      # applies and root falls back to nonexistent /root/.ssh keys. Scoped to
+      # localuser root + remote user git so neither user SSH configs nor root's
+      # admin logins to controller are affected.
       programs.ssh.extraConfig = ''
-        Match user root host ${selfLib.tailnet.fqdn "controller"}
+        Match localuser root user git host ${selfLib.tailnet.fqdn "controller"}
           IdentityFile /etc/ssh/ssh_host_ed25519_key
           IdentitiesOnly yes
       '';

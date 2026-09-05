@@ -82,7 +82,7 @@ On the new host, grab `/etc/ssh/ssh_host_ed25519_key.pub` (the `openssh.enable` 
 
 Commit and push `nix-home`. (Controller hasn't been rebuilt yet, so these keys aren't trusted yet — that happens in step 4.)
 
-**`ssh.host` is mandatory, not decorative.** `lib.allSshKeys` feeds controller's `git-server.authorizedKeys`, and `modules/tailnet` gives root a `Match user root host controller.ts.rydback.net` block that authenticates with `/etc/ssh/ssh_host_ed25519_key`. That is the identity the nix-daemon/root uses when `sudo nixos-rebuild` has to fetch the `nix-vault` flake input. Omit `ssh.host` and every root-side fetch fails with `Permission denied (publickey)`, even though the same fetch works as your user.
+**`ssh.host` is mandatory, not decorative.** `lib.allSshKeys` feeds controller's `git-server.authorizedKeys`, and `modules/tailnet` gives root a `Match localuser root user git host controller.ts.rydback.net` block that authenticates with `/etc/ssh/ssh_host_ed25519_key`. That is the identity the nix-daemon/root uses when `sudo nixos-rebuild` has to fetch the `nix-vault` flake input. (`localuser` is the criterion for the local account running ssh; a plain `Match user root` matches the *remote* login name — the fetch logs in as `git@controller`, so such a block never applies and root offers no key at all. This bug shipped for a while, masked on hosts where the locked input was already fetched as a normal user and served from the store cache.) Omit `ssh.host` and every root-side fetch fails with `Permission denied (publickey)`, even though the same fetch works as your user.
 
 ### 3. Run `home-network-bootstrap` on the new host
 
