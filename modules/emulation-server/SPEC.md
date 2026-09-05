@@ -204,6 +204,18 @@ Frontends like Cocoon only launch RetroArch; they don't affect save paths. In-ga
 saves (`.srm`) transfer across platforms; savestates are core-version-sensitive and
 may only load on the device that made them.
 
+**Why flat (not core-name folders):** core-name folders (`Snes9x/`, `Mesen/`,
+`VBA Next/`…) are named after whichever core each *device* runs, so the same game
+lands in different folders across devices (and gets stranded on any core change,
+even on one device). The flat layout is core-agnostic — it's what let the
+fceumm→Mesen swap keep its saves.
+
+**Migrating saves that were already core-sorted** (device previously had sorting
+on): for each `.srm` inside a core folder, keep whichever device's progress you
+want — either move it to the flat `saves/` root *renamed to the share ROM's exact
+basename* (it overwrites the other device's save on next sync; versioning keeps 5),
+or delete it to adopt the other device's save. Then remove the empty core folders.
+
 #### ROM access via Samba
 
 Most Android file managers (Material Files, X-plore, Solid Explorer, CX File Explorer, etc.) support SMB. Connect to `<server>/emulation-roms` or `<server>/emulation-bios` and select "Anonymous" / "Guest" — no username or password.
