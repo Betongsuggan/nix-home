@@ -169,11 +169,17 @@ BIOS layouts the read-only flat BIOS mount doesn't provide; standalone emulators
   Vulkan, udev joypad, Ozone menu
 - Runtime config changes to *undeclared* keys are preserved (`config_save_on_exit`);
   declared keys re-win on every launch via `--appendconfig`
-- **Streamed gamepad:** a udev autoconfig profile for the Sunshine virtual pad is
-  baked in (merged with the upstream autoconfig DB via `symlinkJoin`, so physical
-  pads keep working). Hotkeys mirror the Switch quit chord: **hold Select + press
-  Start = quit** (clean exit, SRAM flushed to the synced saves dir), **Select +
-  Guide = RetroArch menu**. RetroPad convention note: `input_b` is the *bottom*
+- **Gamepads:** a udev autoconfig profile for the Sunshine virtual pad is baked
+  in, merged with the upstream autoconfig DB via `symlinkJoin` — so physical pads
+  (e.g. a locally-connected **DualSense**, USB or Bluetooth) work on plug-in with
+  no setup. Hotkeys mirror the Switch quit chord and are bound as a RetroPad
+  *combo* (`input_quit_gamepad_combo = 4`), not raw button indices, so they mean
+  the same physical buttons on every controller: **Start + Select together =
+  quit** (clean exit, SRAM flushed to the synced saves dir). The RetroArch menu
+  opens with each pad's autoconfig-assigned menu button: **Guide** on the
+  Sunshine pad, the **PS button** on a DualSense. (Raw-index hotkeys were a bug:
+  index 6/7 is Back/Start on the Sunshine pad but L2/R2 on a DualSense — the
+  triggers quit the game.) RetroPad convention note: `input_b` is the *bottom*
   face button — if confirm/cancel feel swapped in-game, the autoconfig's b/a and
   y/x assignments in `modules/games/default.nix` are the place to flip.
 

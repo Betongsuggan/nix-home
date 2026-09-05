@@ -462,12 +462,15 @@ with lib;
           config_save_on_exit = "true";
           joypad_autoconfig_dir = "${retroarchAutoconfigDir}/share/libretro/autoconfig";
           # Streamed sessions have no keyboard, so quitting must be a pad
-          # chord, mirroring the Switch quitChord: hold Select (6, the hotkey
-          # modifier) + Start (7) to exit — a clean exit, so SRAM is flushed
-          # to the synced saves dir. Select+Guide (8) opens the RetroArch menu.
-          input_enable_hotkey_btn = "6";
-          input_exit_emulator_btn = "7";
-          input_menu_toggle_btn = "8";
+          # chord — and it must be a RetroPad *combo*, not raw button indices:
+          # raw indices differ per pad (Sunshine pad: 6/7 = Back/Start; a
+          # locally-connected DualSense: 6/7 = L2/R2 — raw-index hotkeys made
+          # squeezing the triggers quit the game). Combos are resolved after
+          # autoconfig, so Start+Select means the same physical chord on every
+          # controller (mirrors the Switch quitChord; clean exit flushes SRAM
+          # to the synced saves dir). Menu toggle comes from each pad's
+          # autoconfig profile: Guide on the Sunshine pad, PS on a DualSense.
+          input_quit_gamepad_combo = "4"; # INPUT_COMBO_START_SELECT
           quit_press_twice = "false";
         };
       };
