@@ -63,6 +63,8 @@ This generates `x-systemd.automount` mounts at `/home/<user>/emulation/{roms,bio
 
 The mounts use `closetimeo=0` to disable CIFS deferred-close handle caching. Without it, a shutdown that happens while a ROM was recently open (e.g. a Switch `.xci` in Ryujinx) *and* the server has become unreachable can leave a busy inode that trips `kernel BUG at fs/super.c:654` ("Busy inodes after unmount of cifs") — hanging shutdown in PID 1 and forcing a hard power-off. Closing handles immediately removes that trigger.
 
+`closetimeo=0` only covers *recently closed* handles, though. If a process still has a ROM **open** when shutdown starts (e.g. a game left running) and tailscaled stops before the unmount, the process gets stuck in an uninterruptible CIFS wait against the now-unreachable server, the handle is never released, and the same `fs/super.c:654` kernel BUG fires (this happened 2026-07-01; the host needed a manual power-cycle). To close that gap, when the host has `services.tailscale.enable` the mounts also carry `x-systemd.requires=tailscaled.service`, ordering mount-after and unmount-*before* tailscaled — so the server stays reachable while sessions are torn down and the shares unmount. Safest reboot procedure remains: quit the running game first.
+
 **Manual helper script** (still installed by the user-side module — useful for ad-hoc mounts to alternate locations or debugging):
 
 ```bash

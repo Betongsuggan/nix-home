@@ -200,6 +200,20 @@ with lib;
           '';
         };
 
+        artwork.apiKeyFile = mkOption {
+          # str, not path: a path would copy the key into the world-readable
+          # nix store. The file is read at runtime by switch-apply-shortcuts.
+          type = types.nullOr types.str;
+          default = null;
+          example = "/run/secrets/steamgriddb-api-key";
+          description = ''
+            Path to a file containing a SteamGridDB API key (typically a
+            sops-nix /run/secrets path). When set, switch-apply-shortcuts
+            fetches grid artwork and icons per game from SteamGridDB.
+            When null, shortcuts are created without artwork.
+          '';
+        };
+
         # Over Moonlight there is no keyboard and no Steam overlay (Steam Input
         # must stay off for the pad to reach Ryujinx), so a controller chord is
         # the only way to leave a game. A listener service watches the Sunshine
@@ -368,11 +382,14 @@ with lib;
           button_zr = "RightTrigger";
           button_sl = "Unbound";
           button_sr = "Unbound";
-          # Xbox-style physical layout (ryubing's non-Nintendo default)
-          button_x = "Y";
-          button_b = "A";
-          button_y = "X";
-          button_a = "B";
+          # Direct 1:1 (Nintendo-label) mapping: the pad's A/B/X/Y drive the Switch
+          # A/B/X/Y of the same name, so the printed letters match in-game actions.
+          # (ryubing's default position-swaps A/B and X/Y, which put actions on the
+          # wrong buttons — e.g. jump landing on Y instead of X.)
+          button_a = "A";
+          button_b = "B";
+          button_x = "X";
+          button_y = "Y";
         };
         motion = {
           motion_backend = "GamepadDriver";
@@ -422,7 +439,14 @@ with lib;
       switchRunEmulator = pkgs.writeShellScriptBin "switch-run-emulator" ''
         export SDL_JOYSTICK_DISABLE_UDEV=1
         export SDL_JOYSTICK_HIDAPI=0
-        exec ${switchPkg}/bin/${switchBin} ${lib.optionalString isRyujinx ''--root-data-dir "${sw.dataDir}" ''}"$@"
+        # Native aborts (glibc "stack smashing detected", .NET FailFast, driver
+        # asserts) go to stderr, which Steam swallows — without this the process
+        # dies silently and only a coredump remains. Kept out of the synced data
+        # dir to avoid Syncthing churn; previous session's log survives as .old.
+        STDERR_LOG="''${XDG_STATE_HOME:-$HOME/.local/state}/switch-emulator/stderr.log"
+        mkdir -p "$(dirname "$STDERR_LOG")"
+        [ -f "$STDERR_LOG" ] && mv -f "$STDERR_LOG" "$STDERR_LOG.old"
+        exec ${switchPkg}/bin/${switchBin} ${lib.optionalString isRyujinx ''--root-data-dir "${sw.dataDir}" ''}"$@" 2> >(${pkgs.coreutils}/bin/tee "$STDERR_LOG" >&2)
       '';
 
       # Quit-chord listener: hold Select+Start on the Sunshine virtual pad to
@@ -564,6 +588,8 @@ with lib;
         SWITCH_HYPRCTL="${pkgs.hyprland}/bin/hyprctl" \
         SWITCH_LAUNCH_PREFIX="" \
         SWITCH_TAG="Nintendo Switch" \
+        SWITCH_SGDB_KEY_FILE="${if sw.artwork.apiKeyFile == null then "" else sw.artwork.apiKeyFile}" \
+        SWITCH_ARTWORK_FORCE="''${SWITCH_ARTWORK_FORCE:-}" \
           ${pyEnv}/bin/python3 ${./switch-add-shortcuts.py}
         echo "Reconnect the Moonlight 'Steam Gaming' app to see the tiles."
       '';

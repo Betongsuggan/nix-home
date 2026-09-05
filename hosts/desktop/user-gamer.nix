@@ -25,7 +25,12 @@
       enable = true;
       # Nintendo Switch via Ryubing (Ryujinx fork). Keys/firmware are pulled
       # from the controller bios/switch share; see modules/games/SPEC.md.
-      switch.enable = true;
+      switch = {
+        enable = true;
+        # SteamGridDB key (vault common.yaml) — switch-apply-shortcuts uses it
+        # to fetch grid artwork for the generated Steam tiles.
+        artwork.apiKeyFile = "/run/secrets/steamgriddb-api-key";
+      };
     };
     steamIntegration.enable = true;
   };
@@ -153,18 +158,13 @@
     # forceHdr = true;
 
     environmentVariables = {
-      RADV_PERFTEST = "gpl,ngg_culling,sam,rt";
       MESA_VK_WSI_PRESENT_MODE = "mailbox";
-      AMD_VULKAN_ICD = "RADV";
-      mesa_glthread = "true";
-      VKD3D_CONFIG = "dxr11,dxr";
       STEAM_FRAME_FORCE_CLOSE = "1";
       STEAM_USE_DYNAMIC_VRS = "0";
       SDL_JOYSTICK_HIDAPI = "0";
       DXVK_ASYNC = "1";
       ENABLE_HDR_WSI = "1";
       DXVK_HDR = "1";
-      RADV_RT_WAVE64 = "1";
 
       # Performance
       PROTON_FORCE_LARGE_ADDRESS_AWARE = "1";
@@ -227,12 +227,8 @@
   };
 
   home.sessionVariables = {
-    # AMD GPU - RDNA4 optimized
-    RADV_PERFTEST = "gpl,ngg_culling,sam,rt";
+    # AMD GPU — RADV/vkd3d defaults are correct on modern Mesa; no tuning vars
     MESA_VK_WSI_PRESENT_MODE = "mailbox";
-    AMD_VULKAN_ICD = "RADV";
-    mesa_glthread = "true";
-    VKD3D_CONFIG = "dxr11,dxr";
 
     # Steam
     STEAM_FRAME_FORCE_CLOSE = "1";

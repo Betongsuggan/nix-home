@@ -46,7 +46,19 @@ let
     # try "cache=loose" (cached, relaxed coherency — safe for these read-only
     # shares) instead.
     "cache=none"
-  ];
+  ]
+  # When the host runs tailscale, the share is (in this setup) reached over
+  # the tailnet, so order the mount after tailscaled AND — crucially — its
+  # unmount before tailscaled stops. `_netdev` alone is not enough: plain
+  # network.target ordering let tailscaled stop first during shutdown,
+  # leaving a process with an open ROM handle stuck in an uninterruptible
+  # CIFS wait against an unreachable server. The handle couldn't be
+  # released, unmount found busy inodes, and the kernel tripped
+  # `BUG at fs/super.c:654` mid-shutdown (observed 2026-07-01: Ryujinx held
+  # an .xci open, tailscaled stopped, CIFS waited 180s, kernel crashed —
+  # host unreachable until manually power-cycled). With this ordering the
+  # server stays reachable through session teardown and unmount.
+  ++ optional config.services.tailscale.enable "x-systemd.requires=tailscaled.service";
 
   mkUserMounts =
     user:

@@ -120,10 +120,9 @@ with lib;
         VK_DRIVER_FILES = "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.x86_64.json";
       })
       (mkIf config.graphics.amd {
-        RADV_PERFTEST = "gpl,ngg_culling,sam,rt"; # RDNA4 optimizations with RT
-        AMD_VULKAN_ICD = "RADV";
-        mesa_glthread = "true";
-        VKD3D_CONFIG = "dxr11,dxr"; # DXR 1.1 for RDNA4
+        # No RADV/vkd3d tuning vars: modern Mesa enables gpl/ngg/sam/rt by
+        # default, and forcing VKD3D_CONFIG=dxr makes games silently enable
+        # ray tracing paths that tank performance under vkd3d-proton.
         ENABLE_HDR_WSI = "1"; # HDR support
       })
     ];

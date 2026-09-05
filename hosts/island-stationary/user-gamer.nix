@@ -120,7 +120,6 @@
     steamArgs = [ "-steamos3" ];
 
     environmentVariables = {
-      VKD3D_CONFIG = "dxr11,dxr";
       STEAM_FRAME_FORCE_CLOSE = "1";
       STEAM_USE_DYNAMIC_VRS = "0";
       SDL_JOYSTICK_HIDAPI = "0";
@@ -190,9 +189,6 @@
     # NVIDIA shader caching
     __GL_SHADER_DISK_CACHE = "1";
     __GL_SHADER_DISK_CACHE_SKIP_CLEANUP = "1";
-
-    # Vulkan
-    VKD3D_CONFIG = "dxr11,dxr";
 
     # Steam
     STEAM_FRAME_FORCE_CLOSE = "1";

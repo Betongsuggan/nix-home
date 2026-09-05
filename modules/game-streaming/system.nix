@@ -126,6 +126,20 @@ in {
         default = 10;
         example = 10;
       };
+      user = mkOption {
+        description = ''
+          User account that runs the streaming session. `services.sunshine`
+          installs its unit as a global systemd *user* service, so every
+          graphical user otherwise starts its own Sunshine — the loser of the
+          race crash-loops on the RTSP port (48010) forever. When set, Sunshine
+          and the virtual-monitor oneshot are gated with `ConditionUser` and
+          only start in this user's session. `null` keeps the unrestricted
+          behavior.
+        '';
+        type = types.nullOr types.str;
+        default = null;
+        example = "gamer";
+      };
       hdr = mkOption {
         description = ''
           Enable HDR streaming support.
@@ -209,6 +223,7 @@ in {
         after = [ "hyprland-session.target" ];
         bindsTo = [ "hyprland-session.target" ];
         wantedBy = [ "graphical-session.target" ];
+        unitConfig = mkIf (cfg.user != null) { ConditionUser = cfg.user; };
         serviceConfig = {
           Type = "oneshot";
           RemainAfterExit = true;
@@ -245,6 +260,7 @@ in {
         wants = [ "hypr-virtual-monitors.service" ];
         after = [ "hypr-virtual-monitors.service" ];
         wantedBy = [ "graphical-session.target" ];
+        unitConfig = mkIf (cfg.user != null) { ConditionUser = cfg.user; };
       };
 
       environment.systemPackages = [

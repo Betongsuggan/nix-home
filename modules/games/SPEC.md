@@ -62,6 +62,7 @@ games = {
 | emulators.switch.dataDir | str | `${home}/${emulators.dataDir}/saves/switch` | Ryujinx `--root-data-dir` (keys, firmware, saves). Only used when emulator = "ryubing" |
 | emulators.switch.quitChord.enable | bool | true | Hold Select+Start on the streamed gamepad to quit the running Switch game |
 | emulators.switch.quitChord.holdSeconds | float | 1.5 | How long Select+Start must be held before the game closes |
+| emulators.switch.artwork.apiKeyFile | nullOr str | null | Path to a file with a SteamGridDB API key (e.g. a sops `/run/secrets` path, read at runtime). When set, `switch-apply-shortcuts` fetches Steam grid artwork per game |
 | steamIntegration.enable | bool | false | Enable Steam library integration |
 | steamIntegration.boilr | bool | true | Install BoilR to import games from Heroic/Lutris/etc. into Steam |
 | steamIntegration.steamRomManager | bool | true | Install Steam ROM Manager to create per-ROM Steam shortcuts with artwork |
@@ -160,10 +161,25 @@ and each has a fix in this module:
 | ryubing device-index bug | Ryujinx opens controllers by position in its own filtered list, but `SDL_GameControllerOpen` wants SDL's device index (which also counts non-gamepad joysticks like the G13 thumbstick and Sunshine's pen/touch passthrough) → opens the wrong device → NULL → dropped from the Input list | `ryubing-sdl2-device-index.patch` (applied via `overrideAttrs`) resolves the index through the joystick instance id |
 | Player binding | Ryujinx needs a Player 1 `input_config` entry whose `id` matches the pad (`0-<guid>` with the name-CRC nibbles zeroed) — hand-guessed ids never match | `switch-apply-input` merges a known-good, in-game-verified binding into `<dataDir>/Config.json`, keyed by the pad GUID; idempotent and leaves all other settings untouched |
 
+The baked binding uses a **direct 1:1 (Nintendo-label) face-button map** — the pad's
+A/B/X/Y drive the Switch A/B/X/Y of the same name, so printed letters match in-game
+actions. (ryubing's default position-swaps A/B and X/Y, which lands actions on the
+wrong buttons, e.g. jump on Y instead of X.) If a pad ever comes out mirrored, flip
+the relevant `button_*` values in `switchInputEntry` (`modules/games/default.nix`)
+and re-run `switch-apply-input`.
+
 `switch-run-emulator` is the canonical entrypoint (generated Steam launchers use it; use it
 manually too, e.g. for the one-time binding: `switch-run-emulator` with no ROM opens the GUI
 with the menu bar visible). `SDL_JOYSTICK_HIDAPI=0` is also set — the virtual pad has no
-hidraw node, so HIDAPI must not claim it.
+hidraw node, so HIDAPI must not claim it. The wrapper also tees the emulator's stderr to
+`~/.local/state/switch-emulator/stderr.log` (previous session kept as `stderr.log.old`):
+native aborts — glibc's "stack smashing detected", .NET FailFast messages, driver asserts —
+only print to stderr, which Steam swallows, so without this a native crash is silent and
+leaves nothing but a coredump. (Diagnosed July 2026: TotK sessions died silently with
+SIGABRT from a stack-canary failure inside coreclr's `sigsegv_handler`, and the message
+was lost; check this log first when a game "just closes". Caveat: the same abort also
+fires during *normal* teardown — even a clean quit-chord exit leaves an identical
+SIGABRT coredump — so a Ryujinx coredump alone does not prove a mid-play crash.)
 
 **Quitting a game without a keyboard (`quitChord`)**
 
@@ -177,6 +193,24 @@ path, identical to clicking ✕), falling back to SIGTERM if the window ignores 
 Big Picture is still fullscreen underneath, so the stream lands back on the game library.
 Note: the chord cannot save the game first — save in-game, then quit.
 
+**Higher frame rate (not enabled)**
+
+Some titles (e.g. Tears of the Kingdom) are engine-locked to 30 fps; unlocking is
+possible but not wired up, because it needs two things the setup doesn't currently
+have. Documented here so it's a small future step:
+
+- **Game update.** The game must be updated to a mod-supported version (TotK: v1.2.1;
+  base v1.0 has a save-loading bug above 30 fps). Updates are separate title-update
+  NSPs — upload the NSP to the `emulation-roms` share and apply it via Ryujinx's title
+  manager (persists in the synced data dir).
+- **DynamicFPS mod.** Install the DynamicFPS mod (pin from `hoverbike1/TOTK-Mods-collection`)
+  into `<dataDir>/mods/contents/<titleid>/` (TotK titleid `0100f2c0115b6000`). This is
+  implementable declaratively as a `switch-refresh-mods` helper mirroring
+  `switch-refresh-input` — fetched via Nix, copied in at activation. Mods live under the
+  Syncthing-synced data dir, so they replicate to the controller too.
+- **Ryujinx/stream:** keep vsync on (DynamicFPS decouples game speed from frame rate);
+  the Sunshine stream is already 120 fps-capable, so no streaming changes are needed.
+
 **Steps (all remote)**
 1. Rebuild the host with `emulators.switch.enable = true`. On activation, `switch-refresh-keys`
    copies the keys into the data dir.
@@ -184,7 +218,8 @@ Note: the chord cannot save the game first — save in-game, then quit.
    (+ `title.keys`) in `switch/`; put ROMs on `//controller/emulation-roms` under
    `switch/<Game>/` (base `.xci` per folder).
 3. Generate the Steam tiles: run `switch-apply-shortcuts` over SSH — it stops Steam, copies
-   keys, and writes `shortcuts.vdf`. Reconnect the Moonlight "Steam Gaming" app to see them.
+   keys, writes `shortcuts.vdf`, and (when `artwork.apiKeyFile` is configured) fetches
+   SteamGridDB artwork. Reconnect the Moonlight "Steam Gaming" app to see them.
 4. **One-time in Steam:** disable Steam Input so Steam releases its exclusive grab on the
    pad: Big Picture → Settings → Controller → turn off Steam Input for Xbox controllers
    (or per-tile: game tile → gear → Controller → Force Off).
@@ -196,9 +231,29 @@ Note: the chord cannot save the game first — save in-game, then quit.
    `Config.json` — after the very first game launch, run `switch-apply-input` (or re-run
    `switch-apply-shortcuts`) once.
 
+**Artwork (SteamGridDB)**
+
+When `emulators.switch.artwork.apiKeyFile` is set, `switch-apply-shortcuts` also fetches
+artwork per game from SteamGridDB into each `userdata/<id>/config/grid/`, named after the
+shortcut's *unsigned* appid: `{appid}p` (portrait library tile), `{appid}` (wide capsule),
+`{appid}_hero` (game-page banner), `{appid}_logo`, and `{appid}_icon` (also written into the
+shortcut's `icon` vdf field). Behavior:
+
+- **Key sourcing:** the key lives in nix-vault `secrets/common.yaml` (encrypted to *all*
+  host keys, so any host/account can consume it) and is decrypted to
+  `/run/secrets/steamgriddb-api-key` (owner `gamer`) on the desktop. One-time manual step:
+  create an account at steamgriddb.com (Profile → Preferences → API), then in the nix-vault
+  repo `sops secrets/common.yaml` and add `accounts.steamgriddb.apikey: <key>` — the
+  existing `.sops.yaml` rule for `common.yaml` picks all recipients. Push, `nix flake update
+  nix-vault`, rebuild.
+- **Matching:** games are matched by folder name via SGDB's fuzzy autocomplete (first hit);
+  the matched title is printed next to each folder name so mismatches are visible. To pin a
+  wrong match, drop a `.sgdbid` file containing the SGDB game id into the game's ROM folder.
+- **Idempotent & non-fatal:** existing grid files are kept (re-fetch with
+  `SWITCH_ARTWORK_FORCE=1 switch-apply-shortcuts`); a missing/unreadable key, an unmatched
+  game, or any download error only prints a warning — shortcuts are always written.
+
 **Notes / caveats**
-- Shortcuts carry no artwork (SteamGridDB matching was SRM's job); tiles show a default icon.
-  Artwork can be added later by dropping images into `userdata/<id>/config/grid/`.
 - Ryujinx's `"start_fullscreen": true` (in `<dataDir>/Config.json`) hides its menu bar so only
   the game shows; F11 toggles it at runtime.
 - `citron`/`eden` don't use Ryujinx's `--root-data-dir`; the key-copy and `dataDir` apply only
@@ -215,4 +270,4 @@ Note: the chord cannot save the game first — save in-game, then quit.
 - Base packages always installed: chiaki, discord, evtest, gamemode, lutris, steam, steam-run, sc-controller, vulkan-tools, mesa-demos.
 - RetroArch uses the `retroarch-bare.wrapper` function for declarative configuration while preserving runtime changes.
 - Standalone emulators (PCSX2, Dolphin, PPSSPP) are for systems that benefit from dedicated emulators over RetroArch cores. (Duckstation was removed from nixpkgs 26.05 upstream; PSX is covered by RetroArch's beetle-psx-hw core.)
-- Switch emulation (`emulators.switch`) is pulled from `unstable` (ryubing carries a local source patch, `ryubing-sdl2-device-index.patch`, so it rebuilds from source). It ships five helper scripts: `switch-refresh-keys` (copy keys from the BIOS share into the data dir), `switch-refresh-input` (install the Sunshine-pad SDL controller DB into the data dir), `switch-apply-input` (merge the verified Player 1 pad binding into `Config.json`, GUID-keyed and idempotent), `switch-run-emulator` (canonical launch wrapper setting the SDL env vars), and `switch-apply-shortcuts` (stop Steam, refresh keys+input+binding, write `shortcuts.vdf` directly via a Python+`vdf` script — SRM's headless CLI hangs on this host, so it's bypassed for Switch).
+- Switch emulation (`emulators.switch`) is pulled from `unstable` (ryubing carries a local source patch, `ryubing-sdl2-device-index.patch`, so it rebuilds from source). It ships five helper scripts: `switch-refresh-keys` (copy keys from the BIOS share into the data dir), `switch-refresh-input` (install the Sunshine-pad SDL controller DB into the data dir), `switch-apply-input` (merge the verified Player 1 pad binding into `Config.json`, GUID-keyed and idempotent), `switch-run-emulator` (canonical launch wrapper setting the SDL env vars and teeing stderr to `~/.local/state/switch-emulator/stderr.log`), and `switch-apply-shortcuts` (stop Steam, refresh keys+input+binding, write `shortcuts.vdf` directly via a Python+`vdf` script — SRM's headless CLI hangs on this host, so it's bypassed for Switch — and fetch SteamGridDB artwork when `artwork.apiKeyFile` is set).

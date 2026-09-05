@@ -11,6 +11,7 @@ game-streaming.server = {
   display = "SUNSHINE";
   workspace = 10;
   hdr = true;
+  user = "gamer";
 };
 
 # Client (in user config — connect to a Sunshine server)
@@ -25,6 +26,7 @@ game-streaming.client.enable = true;
 | server.display | string | "DP-1" | Display connector or virtual monitor name to use for streaming |
 | server.workspace | int | 10 | Workspace number dedicated for streaming |
 | server.hdr | bool | true | Enable HDR streaming support (requires HEVC Main10 or AV1 10-bit) |
+| server.user | null or string | null | Restrict Sunshine (and the virtual-monitor oneshot) to this user's session via `ConditionUser`. `services.sunshine` installs a *global* systemd user unit, so on multi-user hosts every graphical session otherwise starts its own instance and the loser of the race crash-loops on RTSP port 48010. `null` = no restriction. |
 
 ## Options (client — user.nix)
 

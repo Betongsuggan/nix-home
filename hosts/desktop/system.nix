@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ pkgs, lib, inputs, ... }:
 
 {
   nixpkgs.overlays = [
@@ -121,6 +121,19 @@
 
   powerManagement.cpuFreqGovernor = "performance";
 
+  # The cpufreq boost knob is volatile kernel state: amd-pstate can come out
+  # of S3 resume (and possibly boot — this CPU doesn't advertise the `cpb`
+  # CPUID flag) with boost disabled, flat-capping all cores at base clock
+  # (~3.2 GHz instead of 4.1). This host auto-suspends after 30 min idle, so
+  # re-assert boost at boot and after every resume.
+  # Diagnosed 2026-07-05: CPU-bound game at 20 fps with boost silently off.
+  powerManagement.resumeCommands = ''
+    echo 1 > /sys/devices/system/cpu/cpufreq/boost || true
+  '';
+  systemd.tmpfiles.rules = [
+    "w- /sys/devices/system/cpu/cpufreq/boost - - - - 1"
+  ];
+
   hardware = {
     enableAllFirmware = true;
     enableRedistributableFirmware = true;
@@ -180,6 +193,10 @@
     enable = true;
     display = "SUNSHINE";
     workspace = 10;
+    # Sunshine belongs to the autologin gaming session only — without this,
+    # betongsuggan's graphical session spawns a second instance that
+    # crash-loops on the RTSP port.
+    user = "gamer";
   };
 
   sops-secrets = {
@@ -193,6 +210,20 @@
       owner = "betongsuggan";
       mode = "0600";
       path = "/home/betongsuggan/.ssh/id_rsa";
+    };
+  }
+  # Shared across hosts via the vault's common.yaml (encrypted to all host
+  # keys), unlike the per-host secrets above. Consumed by
+  # switch-apply-shortcuts (gamer) to fetch Steam grid artwork. Guarded on
+  # existence so the host still evaluates before common.yaml lands in the
+  # vault (sops-nix asserts the sopsFile path at eval time); until then
+  # switch-apply-shortcuts just warns and skips artwork.
+  // lib.optionalAttrs (builtins.pathExists "${inputs.nix-vault}/secrets/common.yaml") {
+    "steamgriddb-api-key" = {
+      sopsFile = "${inputs.nix-vault}/secrets/common.yaml";
+      key = "accounts/steamgriddb/apikey";
+      owner = "gamer";
+      mode = "0400";
     };
   };
 
