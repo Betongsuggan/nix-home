@@ -20,7 +20,7 @@ games = {
     enable = true;
     # dataDir = "emulation";  # default, relative to $HOME
     # retroarch.enable = true;  # default
-    # retroarch.cores = [ "snes9x" "fceumm" ... ];  # all 10 cores by default
+    # retroarch.cores = [ "snes9x" "mesen" ... ];  # all 10 cores by default
     # standalone.pcsx2 = true;  # default
     # standalone.dolphin = true;  # default
     # standalone.ppsspp = true;  # default
@@ -81,7 +81,7 @@ games = {
 | Core | Systems | Package |
 |------|---------|---------|
 | snes9x | SNES | `libretro.snes9x` |
-| fceumm | NES | `libretro.fceumm` |
+| mesen | NES | `libretro.mesen` |
 | mgba | GB, GBC, GBA | `libretro.mgba` |
 | mupen64plus | N64 | `libretro.mupen64plus` |
 | melonds | NDS | `libretro.melonds` |
@@ -112,7 +112,7 @@ custom systems (e.g. a standalone emulator) as one new entry.
 | System | Core | Extensions | Tag |
 |--------|------|------------|-----|
 | snes | snes9x | .sfc .smc .zip | SNES |
-| nes | fceumm | .nes .zip | NES |
+| nes | mesen (fceumm fallback) | .nes .zip | NES |
 | gb / gbc / gba | mgba | .gb / .gbc / .gba (+.zip) | Game Boy (Color/Advance) |
 | n64 | mupen64plus | .n64 .z64 .v64 .zip | Nintendo 64 |
 | psx | beetle-psx-hw | .m3u .cue .chd .pbp | PlayStation |

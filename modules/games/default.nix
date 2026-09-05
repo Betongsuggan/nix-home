@@ -138,7 +138,7 @@ with lib;
           type = types.listOf types.str;
           default = [
             "snes9x" # SNES
-            "fceumm" # NES
+            "mesen" # NES (most accurate core; NES .srm is raw SRAM, so saves carry over from fceumm)
             "mgba" # GB, GBC, GBA
             "mupen64plus" # N64
             "melonds" # NDS
@@ -477,6 +477,7 @@ with lib;
       # that are actually installed.
       coreFile = {
         snes9x = "snes9x_libretro.so";
+        mesen = "mesen_libretro.so";
         fceumm = "fceumm_libretro.so";
         mgba = "mgba_libretro.so";
         mupen64plus = "mupen64plus_next_libretro.so";
@@ -504,10 +505,12 @@ with lib;
             tag = "SNES";
           };
         }
-        // optionalAttrs (hasCore "fceumm") {
+        // optionalAttrs (hasCore "mesen" || hasCore "fceumm") {
           nes = {
             extensions = [ ".nes" ".zip" ];
-            command = raCmd "fceumm";
+            # Mesen preferred (accuracy); fceumm honored for hosts that keep it
+            # in their cores list instead.
+            command = raCmd (if hasCore "mesen" then "mesen" else "fceumm");
             tag = "NES";
           };
         }
