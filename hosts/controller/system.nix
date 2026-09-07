@@ -215,10 +215,24 @@
             type = "A";
             value = "100.64.0.2";
           }
+          # Home-LAN devices, reachable from tailnet peers via the subnet
+          # route advertised below. Only DHCP-reserved/static addresses belong
+          # here — records against dynamic leases rot silently.
+          {
+            name = "router.home.rydback.net";
+            type = "A";
+            value = "192.168.50.1";
+          }
         ];
       };
     };
   };
+
+  # Subnet router: expose the home LAN to tailnet peers. Up-flags apply at
+  # registration only, so on this already-registered node the route must be
+  # activated once by hand (`tailscale set --advertise-routes=...`) and
+  # approved in headscale (`headscale nodes approve-routes`) — see SPEC.md.
+  tailscale-client.advertiseRoutes = [ "192.168.50.0/24" ];
 
   emulation-server = {
     enable = true;
