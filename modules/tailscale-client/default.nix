@@ -35,9 +35,11 @@ in {
       description = ''
         Subnets to advertise to the tailnet (subnet router). Also enables
         kernel IP forwarding via services.tailscale.useRoutingFeatures.
-        Like all up-flags this is applied at registration only; changing it
-        later requires `tailscale set --advertise-routes=...` on the host.
-        Routes must additionally be approved on the headscale side.
+        Applied via `tailscale set` on every daemon start, so changes take
+        effect on rebuild. Emptying the list does NOT withdraw previously
+        advertised routes — run `tailscale set --advertise-routes=` once for
+        that. Routes must additionally be approved on the headscale side
+        (declaratively via `headscale.autoApprovedRoutes`, or manually).
       '';
     };
   };
@@ -52,6 +54,11 @@ in {
         ++ optional (cfg.advertiseRoutes != [ ])
           "--advertise-routes=${concatStringsSep "," cfg.advertiseRoutes}"
         ++ cfg.extraUpFlags;
+      # Unlike up-flags (registration only), set-flags are applied by the
+      # nixpkgs tailscaled-set service on every daemon start, so route changes
+      # converge on rebuild without re-registering the node.
+      extraSetFlags = optional (cfg.advertiseRoutes != [ ])
+        "--advertise-routes=${concatStringsSep "," cfg.advertiseRoutes}";
     };
   };
 }

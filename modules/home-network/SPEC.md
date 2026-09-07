@@ -37,6 +37,7 @@ Exactly one mode applies per host. Set `home-network.mode` explicitly — there 
 | `controller.headscale.baseDomain` | string | `""` | MagicDNS base domain — required, must differ from `domain` |
 | `controller.headscale.users` | list str | `[ ]` | Headscale users to provision idempotently |
 | `controller.headscale.extraDnsRecords` | list submod | `[ ]` | MagicDNS overrides pushed to tailnet clients |
+| `controller.headscale.autoApprovedRoutes` | attrs of list str | `{ }` | Subnet routes to auto-approve, forwarded to `headscale.autoApprovedRoutes` (installs an allow-all ACL policy — see that module's SPEC) |
 | `controller.bootstrap.publicDomain` | string | `"rydback.net"` | Existing nginx vhost that serves the blob |
 | `controller.bootstrap.urlPath` | string | `"/.well-known/tailnet-bootstrap.age"` | Path under that vhost |
 | `controller.bootstrap.rotateInterval` | string | `"15min"` | How often the blob is regenerated |

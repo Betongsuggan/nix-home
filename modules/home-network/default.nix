@@ -224,6 +224,16 @@ in
           default = [ ];
           description = "Extra DNS records pushed to tailnet clients via MagicDNS.";
         };
+        autoApprovedRoutes = mkOption {
+          type = types.attrsOf (types.listOf types.str);
+          default = { };
+          example = { "192.168.50.0/24" = [ "birger@" ]; };
+          description = ''
+            Subnet routes to auto-approve, forwarded to
+            `headscale.autoApprovedRoutes` (see that module for semantics,
+            including the allow-all ACL that comes with a policy file).
+          '';
+        };
       };
 
       bootstrap = {
@@ -285,7 +295,8 @@ in
 
       headscale = {
         enable = true;
-        inherit (cfg.controller.headscale) domain baseDomain users extraDnsRecords;
+        inherit (cfg.controller.headscale)
+          domain baseDomain users extraDnsRecords autoApprovedRoutes;
       };
 
       # Server-side bootstrap rotator: every `rotateInterval`, mint a fresh

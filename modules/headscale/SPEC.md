@@ -38,6 +38,7 @@ sudo tailscale up --login-server=https://headscale.example.com --auth-key=<preau
 | listenPort | port | 8080 | Loopback port headscale listens on |
 | metricsPort | port | 9090 | Loopback port for Prometheus metrics |
 | users | list of string | [ ] | Users to provision idempotently via `headscale users create` |
+| autoApprovedRoutes | attrs of list of string | { } | Subnet routes to auto-approve, keyed by CIDR, each listing trusted advertisers — users (`name@`, trailing `@` required by policy v2), `group:x`, or `tag:x` |
 | derp.enable | bool | true | Run an embedded DERP relay region |
 | derp.stunPort | port | 3478 | UDP STUN port for the embedded DERP server |
 | derp.regionCode | string | "controller" | Short region code |
@@ -65,5 +66,6 @@ The resulting key is what a client passes to `tailscale up --auth-key=...`. For 
 
 - The embedded DERP region is added on top of Tailscale's public DERP map (`derp.urls` is left at upstream default). Clients can use either as a fallback when direct connections fail.
 - Headscale auto-generates its noise and DERP private keys under `/var/lib/headscale/` on first start. No secrets are needed in Nix for the server itself.
+- `autoApprovedRoutes` (non-empty) installs a declarative ACL policy file (`policy.mode = "file"`). Headscale enforces ACLs whenever a policy exists, so the generated policy includes an explicit allow-all rule (`src: *, dst: *:*`) to preserve the module's default open-tailnet behavior. If you later want real ACLs, extend the policy generation in this module rather than approving routes manually.
 - Removing a name from `users` does not delete the headscale user; use `sudo headscale users destroy <name>` to do that.
 - This module assigns to `networking.firewall.allowedUDPPorts` directly. The existing `firewall` module's `tcpPorts`/`udpPorts` lists merge via Nix list-typed option merging, so a host can keep `firewall.udpPorts = []` and still have the STUN port open.

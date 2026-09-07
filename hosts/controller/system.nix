@@ -224,14 +224,16 @@
             value = "192.168.50.1";
           }
         ];
+        # Auto-approve the LAN route advertised below. Trailing @ is
+        # headscale policy-v2 username syntax.
+        autoApprovedRoutes."192.168.50.0/24" = [ "birger@" ];
       };
     };
   };
 
-  # Subnet router: expose the home LAN to tailnet peers. Up-flags apply at
-  # registration only, so on this already-registered node the route must be
-  # activated once by hand (`tailscale set --advertise-routes=...`) and
-  # approved in headscale (`headscale nodes approve-routes`) — see SPEC.md.
+  # Subnet router: expose the home LAN to tailnet peers. Advertised via
+  # `tailscale set` on every daemon start and auto-approved by the headscale
+  # policy (autoApprovedRoutes above), so a rebuild is all it takes.
   tailscale-client.advertiseRoutes = [ "192.168.50.0/24" ];
 
   emulation-server = {
