@@ -54,11 +54,13 @@ let
       | ${pkgs.jq}/bin/jq '[.[] | select(.name | startswith("eDP") | not)] | length')
     case "$1" in
       close)
+        # Only act when an external monitor is present. With the panel alone,
+        # logind suspends (HandleLidSwitch) and hypridle locks via its
+        # before-sleep hook under a sleep inhibitor; spawning hyprlock or
+        # blanking here races the suspend freeze and can leave the panel
+        # black on resume.
         if [ "$externals" -gt 0 ]; then
           [ -n "$internal" ] && hyprctl keyword monitor "$internal, disable"
-        else
-          ${pkgs.procps}/bin/pgrep -x hyprlock || ${pkgs.hyprlock}/bin/hyprlock &
-          hyprctl dispatch dpms off
         fi
         ;;
       open)
@@ -260,9 +262,11 @@ in
       settings = {
         general = {
           hide_cursor = true;
-          grace = 0;
-          no_fade_out = true;
-          no_fade_in = true;
+        };
+
+        # No fade in/out (the pre-0.7 no_fade_in/no_fade_out options are gone)
+        animations = {
+          enabled = false;
         };
 
         auth = {
@@ -632,7 +636,24 @@ in
           disable_logs = false;
         };
 
-        gestures = { };
+        # Hyprland ≥0.51 gesture syntax (the old gestures:workspace_swipe
+        # toggle is gone; the tuning options below remain). Workspaces stack
+        # vertically (slidevert), so the 3-finger workspace swipe is vertical,
+        # like niri. Horizontally, 3 fingers step focus through the scrolling
+        # layout's columns — discrete dispatcher gestures, since no smooth
+        # layout-scroll action exists.
+        gesture = [
+          "3, vertical, workspace"
+          "3, left, dispatcher, movefocus, l"
+          "3, right, dispatcher, movefocus, r"
+        ];
+
+        gestures = {
+          # Viewport follows the fingers (swipe down = workspace below),
+          # inverted from the content-follows-fingers default. Flip this (and
+          # swap the left/right gestures above) for the opposite feel.
+          workspace_swipe_invert = false;
+        };
 
         input = {
           kb_layout = "us";
