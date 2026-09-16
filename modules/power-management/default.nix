@@ -1,6 +1,53 @@
 { config, lib, pkgs, ... }:
 with lib;
+let
+  cfg = config.power-management;
 
+  # Samples the battery/AC sysfs nodes to a log that is fdatasync'd after every
+  # write. Buffered writers (journald included) lose the final seconds on a hard
+  # power cut, which is exactly the window that tells a failing battery pack
+  # (present=0, or voltage_now sagging under load) apart from a firmware fault
+  # (telemetry normal right up to the cut).
+  powerTelemetry = pkgs.writeShellApplication {
+    name = "power-telemetry";
+    runtimeInputs = [ pkgs.coreutils ];
+    text = ''
+      log=/var/log/power-telemetry.log
+      bat=/sys/class/power_supply/BAT0
+      ac=/sys/class/power_supply/AC
+
+      val() {
+        if [ -r "$1" ]; then cat "$1" 2>/dev/null || echo "?"; else echo "?"; fi
+      }
+
+      tctl() {
+        for h in /sys/class/hwmon/hwmon*; do
+          if [ -r "$h/name" ] && [ "$(cat "$h/name")" = "k10temp" ] \
+             && [ -r "$h/temp1_input" ]; then
+            cat "$h/temp1_input"
+            return
+          fi
+        done
+        echo "?"
+      }
+
+      while true; do
+        printf '%s present=%s status=%s ac=%s volt_uV=%s power_uW=%s energy_uWh=%s cap=%s tctl_mC=%s\n' \
+          "$(date -Is)" \
+          "$(val "$bat/present")" \
+          "$(val "$bat/status")" \
+          "$(val "$ac/online")" \
+          "$(val "$bat/voltage_now")" \
+          "$(val "$bat/power_now")" \
+          "$(val "$bat/energy_now")" \
+          "$(val "$bat/capacity")" \
+          "$(tctl)" >> "$log"
+        sync --data "$log"
+        sleep ${toString cfg.forensics.interval}
+      done
+    '';
+  };
+in
 {
   options.power-management = {
     enable = mkEnableOption "Enable power management";
@@ -41,9 +88,57 @@ with lib;
         default = "powersave";
       };
     };
+
+    platformProfiles = {
+      ac = mkOption {
+        description = ''
+          ACPI platform profile on AC. Lowering this to "low-power" caps the
+          firmware power budget, which reduces the transient draw a weak or
+          failing battery has to absorb on top of the charger.
+        '';
+        type = types.str;
+        default = "balanced";
+      };
+
+      battery = mkOption {
+        description = "ACPI platform profile on battery";
+        type = types.str;
+        default = "low-power";
+      };
+    };
+
+    amdgpuPerfLevel = {
+      ac = mkOption {
+        description = ''
+          amdgpu DPM performance level on AC. "low" pins the GPU to its lowest
+          clocks, trading throughput for a much smaller peak draw.
+        '';
+        type = types.str;
+        default = "auto";
+      };
+
+      battery = mkOption {
+        description = "amdgpu DPM performance level on battery";
+        type = types.str;
+        default = "low";
+      };
+    };
+
+    forensics = {
+      enable = mkEnableOption ''
+        power-loss forensics: sample battery/AC telemetry to a disk-synced log
+        and make kernel oopses reboot so they leave a pstore record
+      '';
+
+      interval = mkOption {
+        description = "Seconds between telemetry samples";
+        type = types.int;
+        default = 5;
+      };
+    };
   };
 
-  config = mkIf config.power-management.enable {
+  config = mkIf cfg.enable {
     # Prioritize performance over efficiency
     powerManagement.cpuFreqGovernor = "powersave";
 
@@ -67,8 +162,8 @@ with lib;
         # Common settings (apply to all systems)
         {
           # CPU Scaling
-          CPU_SCALING_GOVERNOR_ON_AC = config.power-management.powerModes.ac;
-          CPU_SCALING_GOVERNOR_ON_BAT = config.power-management.powerModes.battery;
+          CPU_SCALING_GOVERNOR_ON_AC = cfg.powerModes.ac;
+          CPU_SCALING_GOVERNOR_ON_BAT = cfg.powerModes.battery;
 
           # Disable CPU boost on battery (significant power savings)
           CPU_BOOST_ON_AC = 1;
@@ -102,31 +197,60 @@ with lib;
         }
 
         # AMD CPU-specific settings
-        (mkIf (config.power-management.cpuVendor == "amd") {
+        (mkIf (cfg.cpuVendor == "amd") {
           # AMD P-State Energy Policy
           CPU_ENERGY_PERF_POLICY_ON_AC = "balance_performance";
           CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
 
           # Platform profile (AMD laptops)
-          PLATFORM_PROFILE_ON_AC = "balanced";
-          PLATFORM_PROFILE_ON_BAT = "low-power";
+          PLATFORM_PROFILE_ON_AC = cfg.platformProfiles.ac;
+          PLATFORM_PROFILE_ON_BAT = cfg.platformProfiles.battery;
         })
 
         # Intel CPU-specific settings
-        (mkIf (config.power-management.cpuVendor == "intel") {
+        (mkIf (cfg.cpuVendor == "intel") {
           # Intel P-State/HWP Energy Policy
           CPU_ENERGY_PERF_POLICY_ON_AC = "balance_performance";
           CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
         })
 
         # AMD GPU-specific settings
-        (mkIf (config.power-management.gpuVendor == "amd") {
+        (mkIf (cfg.gpuVendor == "amd") {
           AMDGPU_POWER_DPM_STATE_ON_AC = "balanced";
           AMDGPU_POWER_DPM_STATE_ON_BAT = "battery";
-          AMDGPU_DPM_PERF_LEVEL_ON_AC = "auto";
-          AMDGPU_DPM_PERF_LEVEL_ON_BAT = "low";
+          AMDGPU_DPM_PERF_LEVEL_ON_AC = cfg.amdgpuPerfLevel.ac;
+          AMDGPU_DPM_PERF_LEVEL_ON_BAT = cfg.amdgpuPerfLevel.battery;
         })
       ];
+    };
+
+    # Forensics for unexplained hard power-offs: a hard cut leaves no trace in
+    # the journal, so sample power state continuously and sync each line to
+    # disk, and make any kernel oops panic so it lands in pstore instead of
+    # limping on and dying unrecorded.
+    boot.kernel.sysctl = mkIf cfg.forensics.enable {
+      "kernel.panic" = 10;
+      "kernel.panic_on_oops" = 1;
+    };
+
+    systemd.services.power-telemetry = mkIf cfg.forensics.enable {
+      description = "Power-loss forensics telemetry";
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        ExecStart = getExe powerTelemetry;
+        Restart = "always";
+        RestartSec = 5;
+        Nice = 10;
+      };
+    };
+
+    services.logrotate.settings.power-telemetry = mkIf cfg.forensics.enable {
+      files = "/var/log/power-telemetry.log";
+      frequency = "daily";
+      rotate = 14;
+      compress = true;
+      missingok = true;
+      notifempty = true;
     };
   };
 }

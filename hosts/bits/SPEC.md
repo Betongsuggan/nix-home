@@ -11,7 +11,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Disk encryption enabled for security
 - Fingerprint reader authentication
 - Touchpad and backlight support
-- Battery monitoring and power management
+- Battery monitoring and power management, currently in a **diagnostic posture** for unexplained hard power-offs: AC capped to the `low-power` platform profile and `low` amdgpu DPM level, plus `forensics.enable` writing `/var/log/power-telemetry.log` (see `modules/power-management/SPEC.md`). This costs performance on AC and should be reverted once the battery pack (~10% of design capacity) and BIOS (1.63, 18 releases behind) are addressed.
 - Docker for containerized development
 - Bluetooth and printer support
 - LocalSend for local file sharing (with CLI)

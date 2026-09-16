@@ -163,6 +163,15 @@
     enable = true;
     cpuVendor = "amd";
     gpuVendor = "amd";
+
+    # Diagnostic posture while chasing unexplained hard power-offs (BIOS 1.63,
+    # battery pack down to ~10% of design capacity). Capping the AC power
+    # budget shrinks the transient spikes the pack has to absorb alongside the
+    # charger; the forensics log records the seconds a hard cut would otherwise
+    # erase. Revert both once the battery and firmware are sorted.
+    platformProfiles.ac = "low-power";
+    amdgpuPerfLevel.ac = "low";
+    forensics.enable = true;
   };
   firewall = {
     enable = true;
