@@ -15,6 +15,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Docker for containerized development
 - Bluetooth and printer support
 - LocalSend for local file sharing (with CLI)
+- 3D printing toolchain: PrusaSlicer, OpenSCAD (dev snapshot), FreeCAD (`printing3d` with `cad.enable`, see `modules/3d-printing/SPEC.md`)
 - SMB network share browsing in Thunar (GVFS + Avahi/mDNS discovery); the controller's `emulation-roms` share is bookmarked directly since tailnet shares can't be mDNS-discovered
 - Colemak keyboard layout
 - Stylix theming (gruvbox dark via the theming module's `theme.*` picker) with Banana cursor

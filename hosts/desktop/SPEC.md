@@ -30,6 +30,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - Development environment on betongsuggan user with Docker support
 - Vicinae launcher with wifi, bluetooth, and monitor extensions on both users
 - Firefox, communication apps, and LocalSend on both users
+- PrusaSlicer on `betongsuggan` only (`printing3d.enable`, see `modules/3d-printing/SPEC.md`)
 - Alacritty terminal with Bash shell and Starship prompt
 - Bluetooth with wake support for DualSense controller
 - Secure boot via Lanzaboote

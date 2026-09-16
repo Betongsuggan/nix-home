@@ -1,5 +1,6 @@
 { ... }: {
   imports = [
+    ./3d-printing
     ./autorandr
     ./battery-monitor
     ./chromium/user.nix

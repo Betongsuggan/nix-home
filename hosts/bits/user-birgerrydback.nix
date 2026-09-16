@@ -34,6 +34,10 @@
     enable = true;
     cli = true;
   };
+  printing3d = {
+    enable = true;
+    cad.enable = true;
+  };
   battery-monitor.enable = true;
   fileManager = {
     enable = true;

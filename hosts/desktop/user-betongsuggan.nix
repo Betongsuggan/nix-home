@@ -12,6 +12,7 @@
   games.enable = true;
   communication.enable = true;
   localsend.enable = true;
+  printing3d.enable = true;
 
   emulation-client = {
     enable = true;
