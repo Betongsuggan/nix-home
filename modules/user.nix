@@ -19,6 +19,7 @@
     ./kanshi
     ./launcher
     ./localsend
+    ./media
     ./network-monitor
     ./notifications
     ./picom

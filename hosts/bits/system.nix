@@ -151,6 +151,10 @@
   networking.nameservers = [ "1.1.1.1" ];
 
   docker.enable = true;
+  waydroid = {
+    enable = true;
+    drmSetup = true;
+  };
   bluetooth.enable = true;
   fingerprint = {
     enable = false;

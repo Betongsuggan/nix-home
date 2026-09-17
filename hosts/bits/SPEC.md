@@ -13,6 +13,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Touchpad and backlight support
 - Battery monitoring and power management, currently in a **diagnostic posture** for unexplained hard power-offs: AC capped to the `low-power` platform profile and `low` amdgpu DPM level, plus `forensics.enable` writing `/var/log/power-telemetry.log` (see `modules/power-management/SPEC.md`). This costs performance on AC and should be reverted once the battery pack (~10% of design capacity) and BIOS (1.63, 18 releases behind) are addressed.
 - Docker for containerized development
+- Offline media for travel: `media` (mpv + yt-dlp) for DRM-free sources, and Waydroid with `drmSetup` (Widevine CDM + libndk) so Netflix's Android app can download episodes to disk — SD only, and Disney+/HBO Max are hard-blocked (see `modules/waydroid/SPEC.md` for the one-time Google device-certification steps and the reboot requirement)
 - Bluetooth and printer support
 - LocalSend for local file sharing (with CLI)
 - 3D printing toolchain: PrusaSlicer, OpenSCAD (dev snapshot), FreeCAD (`printing3d` with `cad.enable`, see `modules/3d-printing/SPEC.md`)
@@ -29,6 +30,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 
 - Hardware: AMD CPU with `amd_pstate=active` frequency scaling and microcode updates
 - Kernel: Linux 6.18 with laptop-mode power optimizations (`vm.laptop_mode=5`)
+- Waydroid pulls in `psi=1` on the kernel command line, so enabling it required a reboot; it also forces `pkgs.waydroid-nftables` because 6.18 no longer ships `ip_tables`
 - Boot: systemd-boot with Lanzaboote secure boot support
 - Firmware updates via fwupd (deferred to on-demand start)
 - Timezone: Europe/Stockholm

@@ -30,6 +30,7 @@
   chromium.enable = true;
   firefox.enable = true;
   communication.enable = true;
+  media.enable = true;
   localsend = {
     enable = true;
     cli = true;
