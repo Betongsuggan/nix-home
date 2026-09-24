@@ -32,7 +32,10 @@ in
           }
         )
       );
-      default = { };
+      default = filterAttrs (_: peers: peers != [ ]) (
+        genAttrs config.my.common.accounts (selfLib.sshFrom config.my.common.host)
+      );
+      defaultText = literalExpression "the host's accounts' sshFrom / sshFromFleet in lib.hosts";
       example = {
         betongsuggan = [
           {

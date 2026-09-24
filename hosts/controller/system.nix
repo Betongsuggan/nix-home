@@ -14,7 +14,7 @@
       # Kept inline because it's a bootstrap credential, not a tailnet peer.
       # See hosts/controller/SPEC.md for the full flow.
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
-      # Tailnet peer keys (e.g. birgerrydback@bits) come from `home-network.authorizeSshFor` below.
+      # Tailnet peer keys come from lib (sshFromFleet on this account).
     ];
   };
 
@@ -75,13 +75,6 @@
   };
 
   sops.secrets = {
-    "ssh-ed25519" = {
-      key = "users/betongsuggan/ssh/id_ed25519";
-      owner = "betongsuggan";
-      mode = "0600";
-      path = "/home/betongsuggan/.ssh/id_ed25519";
-    };
-
     "vaultwarden-env" = {
       key = "services/vaultwarden-env";
       owner = "vaultwarden";
@@ -132,11 +125,9 @@
     enable = true;
     mode = "controller";
 
-    # Every user pubkey defined in `lib/default.nix` is authorized to SSH
-    # into controller as `betongsuggan`. New hosts get login access by simply
-    # being added to lib and re-running controller's `nixos-rebuild switch` —
-    # no per-onboarding edit of this file.
-    authorizeSshFor.betongsuggan = inputs.self.lib.allUserPeers;
+    # Every user pubkey in `lib/default.nix` may SSH in as `betongsuggan`
+    # (sshFromFleet there): new hosts get access by being added to lib and
+    # rebuilding controller, with no edit of this file.
 
     controller = {
       # Public age recipient string for the operator's master YubiKey. Same

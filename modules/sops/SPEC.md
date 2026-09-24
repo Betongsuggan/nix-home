@@ -24,13 +24,13 @@ The module has two halves:
     mode  = "0400";
   };
 
-  sops.secrets."ssh-bits" = {
-    key   = "users/birgerrydback/ssh/bits";
-    owner = "birgerrydback";
-    mode  = "0600";
-    path  = "/home/birgerrydback/.ssh/bits";
-  };
 }
+```
+
+SSH private keys need no declaration: for every key a host's accounts have in `lib.hosts.<host>.users.<user>.ssh.<key>`, the module creates `sops.secrets."ssh-<user>-<key>"`, decrypted from `users/<user>/ssh/<key>` to `~<user>/.ssh/<key>` (0600). If the vault stores a key under another name, override just the key, e.g. on bits:
+
+```nix
+sops.secrets."ssh-birgerrydback-id_rsa".key = "users/birgerrydback/ssh/github";
 ```
 
 The sops-nix NixOS module is imported by this module itself, so hosts need no extra wiring.

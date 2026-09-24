@@ -145,32 +145,6 @@ in
       '';
     };
 
-    authorizeSshFor = mkOption {
-      type = types.attrsOf (
-        types.listOf (
-          types.submodule {
-            options = {
-              host = mkOption {
-                type = types.str;
-                description = "Tailnet host name (must be a key in flake.lib.hosts).";
-              };
-              user = mkOption {
-                type = types.str;
-                description = "Username on the peer host whose SSH keys to authorize.";
-              };
-            };
-          }
-        )
-      );
-      default = { };
-      description = ''
-        Map of local user → list of `{host, user}` peer identities. All SSH
-        pubkeys under `lib.hosts.<host>.users.<user>.ssh.*` are added to that
-        local user's `authorized_keys`. Only honoured in `controller` and
-        `onboarded` modes.
-      '';
-    };
-
     bootstrap = {
       blobUrl = mkOption {
         type = types.str;
@@ -291,10 +265,7 @@ in
       # tailscale-client wiring to the existing `tailnet` module. `home-network`
       # is the host-facing aggregator; `tailnet` remains the low-level
       # building block.
-      my.tailnet = {
-        enable = true;
-        inherit (cfg) authorizeSshFor;
-      };
+      my.tailnet.enable = true;
     })
 
     (mkIf (cfg.enable && isController) {

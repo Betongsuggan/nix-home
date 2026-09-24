@@ -15,6 +15,11 @@ with lib;
       description = "Boot through systemd-boot on UEFI (off for e.g. the Pi's extlinux).";
     };
 
+    host = mkOption {
+      type = types.str;
+      description = "This host's name in lib.hosts (set by lib/mk-host.nix).";
+    };
+
     accounts = mkOption {
       type = types.listOf types.str;
       default = [ ];

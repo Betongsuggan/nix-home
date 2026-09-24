@@ -13,6 +13,14 @@ let
       addresses = [ "bits" ];
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILcnHOXC9oIhImCClI4g+TpRtEUTf3l2V7U3JQOtId/i root@bits-nixos";
       users.birgerrydback = {
+        # Fleet logins use the `bits` key; `id_rsa` is the GitHub identity
+        sshIdentities = [ "bits" ];
+        sshFrom = [
+          {
+            host = "controller";
+            user = "betongsuggan";
+          }
+        ];
         syncthing.id = "O6CQT6T-QUDEZ3C-LPG6NY5-E6VLNWN-SBAQISQ-GPE4HXK-PHJQL33-RMOQZQ6";
         ssh = {
           bits = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC67mvs+2WPmMHch87LUxKBhJkc71RK5ErZYmB536OeMoiu1zi+p+XkoVrynW8BwZeGP5plbc0opgh10NqAWXGNaKWQOddDJ2e1DwkX1McbexkRqs3Q7ycUbR1VDbiXn9o9Qd8ve/YbT6gG+9eAL92BBPRPkFpeXd9J5Rf6DxJxrMFtx9g6rXK0ehF+Rte+xOwWuT7dcazZwEZ563LJuNvAVoodd8kzPnikTNNw6z9iUfULC+WN5TjuxTsME+HrAuClqvWtSLkzhF1lmzgZbHEyPwL16nhZ/dkPAUbxON0YvFLjF5VTDfzrpk8hjAIWX0CiIw4gwo9M5LJInQlabmM+yecs8dDjjzEGuJAH9l5znoz026nPdxPgS0jp6QNtY4e5Mr8d64B72vDHotBRsyMDnQpIb36KIE52LroHnt7tjgRUo/YDoDmpUB8KuVLSibAoBfGW3CqP5Vv35VXnb/275xirAkjyzWTpUxc6pGkltZ+zv5vFFXno2L0HNTDxy08= birgerrydback@bits-nixos";
@@ -31,7 +39,9 @@ let
       users = {
         betongsuggan = {
           syncthing.id = "4AUKVSW-5SDSOZS-WLDB5LE-YJAVG3C-YMABN52-HEQTHJP-PCBEVCC-EEWM6AH";
-          ssh.ssh_ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAR/t68PUZdYs0cECO0yPuywEBvFJQAGVMp4t6IkZIRz rydback@gmail.com";
+          # Every fleet identity may log in here (admin hub)
+          sshFromFleet = true;
+          ssh.id_ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAR/t68PUZdYs0cECO0yPuywEBvFJQAGVMp4t6IkZIRz rydback@gmail.com";
         };
         restic = {
           ssh.id_ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEpk7NPFSW1LjC9gB89bQuS3QwpoKYotzb3RJGd3cvgE restic@controller";
@@ -46,6 +56,17 @@ let
       wol.mac = "00:00:00:00:00:00";
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFadvK7ZRpD4sA+aHutNTz9c6AP8KWWjcSfbKRDmI+Ow root@island-stationary";
       users.betongsuggan = {
+        # The FIDO resident key works before /run/secrets exists (onboarding)
+        sshIdentities = [
+          "id_rsa"
+          "id_ed25519_sk_rk_nix-vault"
+        ];
+        sshFrom = [
+          {
+            host = "controller";
+            user = "betongsuggan";
+          }
+        ];
         ssh.id_rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDCOlpUl/qIipCBKP3Opoo+FxrsfX0zoh/5LrkVso1qlH2AWj3IDEHnoWpibqxtDYhU5J7CTJzvhh6AuIZLTb2plB/bu6hrh7y2/Sm3nkvOt1qZgXU4PERVjEOCu4hZQpHXpPtnNL0xYwr/bQ8eaz6f5oio2jn8xNo5YVv8jLjZSNHbPX/rcfuQz9xsAGNafOfpmM0+0ZjFlgpj/J791VhuM7w4XrJ6zzUYYqXvpo3mA49vpr/R2v1hktQmo0gCoIwQISLH8henuGCgaL51eCjze6mMygb37SjI/3nORoYNy2mxt25Twktpj20oc95HUB9aiUEn/pOoJVCaEVLugvu1IBbpwgfeP2Ymy6N2MyZ5daGlhUujOYg0LGHXFyvIC5db9P04MoaUPZMg9/4E+PagHKy11bKheWvNNkizFjo2FXil4tYf/0/wxWiSXzlPpRdROgGItTXrTtFcuDfooEtbjignxtB4EdIo32KC2VZ2a217PLdfbDhabSu2/Ogh503ZnKDQl8TV1kpFoyg7QkE3TBblrGWozrHUD66UypS8fU5UcpULXQyhKkZusgZ41td+97sbsQESqnSy8jOl+yFSg0gdiaLSfUaCOX+ybDNdSJJsFhPDJsQfV8f5/ZpyCFw9nwt2wZ8kf5eB2RQ6x8bg8tfOQZ3o32RaqzD5pJLTzw== rydback@gmail.com";
       };
     };
@@ -68,6 +89,16 @@ let
       wol.mac = "34:1b:22:84:72:67";
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgyXzp0dQ+uwIHBV6RGsNASeKgMMQb9NFX5Dv/xPrvE root@desktop";
       users.betongsuggan = {
+        sshFrom = [
+          {
+            host = "controller";
+            user = "betongsuggan";
+          }
+          {
+            host = "bits";
+            user = "birgerrydback";
+          }
+        ];
         ssh.id_rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCvvJ1JmeY0gc1NgbsTgELa7on4xjtW3ZJfJ5MRMgrmQhg+yMWJyMpS6M0Z9b1aLRp1Fnvq7TDX40PiFlQZ+0rRHOty8JbwPoTchTSyg3ihxvtUP6slZsgJlsZuvEwDFZ42nB/U4oWD2i2o7smzB6T5fBIYmNgM2bzWLqAS+xHo+k8SsxOaimDmmxSuA+qhHkK9fdgfuu0phZAKfo/5dBXcHNyRWsT6o81KNUXhlNYMSagt9IZEx204dt7m9SKZG6SzHslrEPqf+RETP4sQyh+u5YfgpVgww8AHvJcveKsNkegjbwVSyekbANwJlU54lxnKR9Td6G7kYFf/z+QQt3whGKJJ89KvvqxPccCQfd/Es8IYSXJEMu1OFEL7yOFggSicnoYCUq6ZZAzTnabjB7uRflfTAjmJrT78jbWMIiyY/U30zgJ8ak6Ijho9i+3dqDk2zOWwatJ7CfV6/izDzcPI4tqne7L0MKy2Z7vExJ9rWCdP58dBR0LewuCQAb9E5MVTKcPRxmRjcrKuzkgrvGxtbDG4tbxsQ1KNtRmYAlTiiIFDVVmM1vckuAqV/aaPFaGN9qUppUajl/Dz0BLqEK0WJcQ3ZX6ChQeNOXZQrOQaofMwcQlGu+YSz+Xvus1a3Ygb1zoJvUukxYUU3KSomtx6Vvs1f3+sm4kJgFXOgL5Qmw== betongsuggan@desktop";
         syncthing.id = "EWXRMC7-KQBWYJQ-ARRMUO5-WIB3ABU-62ZI35X-RPYASGJ-WYPGZTI-OZLN5AD";
       };
@@ -134,7 +165,7 @@ let
     };
   };
 in
-{
+rec {
   inherit accounts hosts devices;
 
   # For the NixOS half of a module whose switch lives in Home Manager: true
@@ -172,6 +203,40 @@ in
       )
     ) hosts
   );
+
+  # Fleet identities allowed to SSH into `user` on `host`, from the
+  # registry's sshFrom / sshFromFleet.
+  sshFrom =
+    host: user:
+    let
+      u = hosts.${host}.users.${user} or { };
+    in
+    if u.sshFromFleet or false then allUserPeers else u.sshFrom or [ ];
+
+  # The reverse view: every { host, user } that `user`@`host` may SSH into.
+  sshTargetsOf =
+    host: user:
+    lib.concatLists (
+      lib.mapAttrsToList (
+        targetHost: h:
+        lib.concatMap (
+          targetUser:
+          lib.optional (targetHost != host && lib.elem { inherit host user; } (sshFrom targetHost targetUser))
+            {
+              host = targetHost;
+              user = targetUser;
+            }
+        ) (lib.attrNames (h.users or { }))
+      ) hosts
+    );
+
+  # Key files (under ~/.ssh) that `user`@`host` authenticates to the fleet with
+  sshIdentities =
+    host: user:
+    let
+      u = hosts.${host}.users.${user} or { };
+    in
+    u.sshIdentities or (lib.attrNames (u.ssh or { }));
 
   allSyncthingDevices =
     let

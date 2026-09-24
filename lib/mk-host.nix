@@ -40,7 +40,10 @@ lib.nixosSystem {
     (dir + "/system.nix")
     {
       networking.hostName = host.hostName;
-      my.common.accounts = accounts;
+      my.common = {
+        host = name;
+        inherit accounts;
+      };
       nixpkgs = {
         inherit overlays;
         config.allowUnfree = true;

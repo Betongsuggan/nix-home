@@ -36,6 +36,23 @@ in
     # the canonical place to ensure that key exists.
     services.openssh.enable = true;
 
+    # Every registry SSH key of this host's accounts, decrypted to
+    # ~/.ssh/<key> from users/<user>/ssh/<key> in the host's secrets file
+    sops.secrets = listToAttrs (
+      concatMap (
+        user:
+        map (
+          key:
+          nameValuePair "ssh-${user}-${key}" {
+            key = mkDefault "users/${user}/ssh/${key}";
+            owner = user;
+            mode = "0600";
+            path = "${config.users.users.${user}.home}/.ssh/${key}";
+          }
+        ) (attrNames (inputs.self.lib.hosts.${config.my.common.host}.users.${user}.ssh or { }))
+      ) config.my.common.accounts
+    );
+
     # PC/SC daemon for smartcard access — needed when editing sops secrets on
     # this host via age-plugin-yubikey. Cheap to leave on for non-editing hosts.
     services.pcscd.enable = true;

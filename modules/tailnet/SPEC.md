@@ -5,13 +5,11 @@ Membership in the headscale tailnet for a host: tailscale client, SSH on `tailsc
 ## Usage
 
 ```nix
-my.tailnet = {
-  enable = true;
-  # Local user -> fleet identities whose SSH keys may log in as that user
-  authorizeSshFor.betongsuggan = [
-    { host = "bits"; user = "birgerrydback"; }
-  ];
-};
+my.tailnet.enable = true;
+
+# Who may log in is declared in the registry, next to the account:
+#   hosts.desktop.users.betongsuggan.sshFrom = [ { host = "bits"; user = "birgerrydback"; } ];
+#   hosts.controller.users.betongsuggan.sshFromFleet = true;   # every fleet identity
 ```
 
 ## Options
@@ -19,7 +17,7 @@ my.tailnet = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Join the tailnet with the bundled SSH server/client defaults |
-| authorizeSshFor | attrs of list of `{ host, user }` | `{ }` | Per local user, the peers whose keys under `lib.hosts.<host>.users.<user>.ssh.*` are added to `authorized_keys` |
+| authorizeSshFor | attrs of list of `{ host, user }` | the host's accounts' `sshFrom` / `sshFromFleet` from `lib.hosts` | Per local user, the peers whose keys under `lib.hosts.<host>.users.<user>.ssh.*` are added to `authorized_keys`. Normally left at the default. |
 
 ## Behaviour
 

@@ -13,6 +13,7 @@ with lib;
         general.enable = mkDefault true;
         git.enable = mkDefault true;
         shell.enable = mkDefault true;
+        ssh.enable = mkDefault true;
         starship.enable = mkDefault true;
         terminal.enable = mkDefault true;
         theming.enable = mkDefault true;

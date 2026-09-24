@@ -20,7 +20,7 @@ Exactly one mode applies per host. Set `my.home-network.mode` explicitly — the
 |------|------------------|-----------------|
 | `controller` | headscale + DERP + preauth-key rotator (mints `--ephemeral` keys) + tailscale client + SSH-on-`tailscale0` + reverse-proxy contributions | The single coordinator host (`controller`) |
 | `bootstrap` | The `home-network-bootstrap` helper + its runtime tooling (`age`, `age-plugin-yubikey`, `tailscale`, `curl`, `git`, `ssh-to-age`, `sops`) + pcscd + kernel-mode `tailscaled` (not yet joined) + `services.openssh.enable` so `/etc/ssh/ssh_host_ed25519_key` exists for the upcoming sops enrollment (firewall closed) | A new host on its first install pass, before it has been registered in `nix-vault` |
-| `onboarded` | tailscale client (sops-decrypted authkey) + SSH-on-`tailscale0` + `authorizeSshFor` peer keys | Steady state for every member after enrollment |
+| `onboarded` | tailscale client (sops-decrypted authkey) + SSH-on-`tailscale0` + peer keys from the registry (`sshFrom`) | Steady state for every member after enrollment |
 
 ## Options
 
@@ -28,7 +28,6 @@ Exactly one mode applies per host. Set `my.home-network.mode` explicitly — the
 |--------|------|---------|-------------|
 | `enable` | bool | false | Master switch |
 | `mode` | enum | (required) | `controller` \| `bootstrap` \| `onboarded` |
-| `authorizeSshFor` | attrs | `{ }` | Map `local-user → [{host, user}]`; pulls peer SSH keys from `lib.hosts` into `authorized_keys`. Honoured in `controller`/`onboarded` only. Pass `inputs.self.lib.allUserPeers` to authorize every user key in the fleet (used by controller). |
 | `bootstrap.blobUrl` | string | `https://rydback.net/.well-known/tailnet-bootstrap.age` | URL the helper fetches |
 | `bootstrap.loginServer` | string | `https://vpn.rydback.net` | Headscale URL passed to `tailscale up` |
 | `controller.yubikeyAgeRecipient` | string | `""` | Public age recipient for operator's YubiKey (required in `controller` mode) |
@@ -108,7 +107,7 @@ cd ~/nix-home && git pull && sudo nixos-rebuild switch --flake .#controller
 sudo headscale preauthkeys create --user birger --reusable --expiration 8760h
 ```
 
-The rebuild pulls in the lib changes from step 2 — controller now trusts the new host's user keys for SSH (via `authorizeSshFor.betongsuggan = lib.allUserPeers`) and for git access to `nix-vault.git` (via `git-server.authorizedKeys = lib.allSshKeys`). Copy the printed preauth key string. **One-time cleanup** of any zombie installer nodes left over from before the rotator was switched to ephemeral keys:
+The rebuild pulls in the lib changes from step 2 — controller now trusts the new host's user keys for SSH (controller's account has `sshFromFleet = true` in lib) and for git access to `nix-vault.git` (via `git-server.authorizedKeys = lib.allSshKeys`). Copy the printed preauth key string. **One-time cleanup** of any zombie installer nodes left over from before the rotator was switched to ephemeral keys:
 
 ```bash
 sudo headscale nodes list --output json \

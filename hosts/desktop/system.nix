@@ -116,21 +116,13 @@
     secretsFile = "${inputs.nix-vault}/secrets/desktop.yaml";
   };
 
-  sops.secrets = {
-    "ssh-id-rsa" = {
-      key = "users/betongsuggan/ssh/id_rsa";
-      owner = "betongsuggan";
-      mode = "0600";
-      path = "/home/betongsuggan/.ssh/id_rsa";
-    };
-  }
   # Shared across hosts via the vault's common.yaml (encrypted to all host
-  # keys), unlike the per-host secrets above. Consumed by
+  # keys), unlike the per-host secrets. Consumed by
   # switch-apply-shortcuts (gamer) to fetch Steam grid artwork. Guarded on
   # existence so the host still evaluates before common.yaml lands in the
   # vault (sops-nix asserts the sopsFile path at eval time); until then
   # switch-apply-shortcuts just warns and skips artwork.
-  // lib.optionalAttrs (builtins.pathExists "${inputs.nix-vault}/secrets/common.yaml") {
+  sops.secrets = lib.optionalAttrs (builtins.pathExists "${inputs.nix-vault}/secrets/common.yaml") {
     "steamgriddb-api-key" = {
       sopsFile = "${inputs.nix-vault}/secrets/common.yaml";
       key = "accounts/steamgriddb/apikey";
@@ -142,16 +134,6 @@
   my.home-network = {
     enable = true;
     mode = "onboarded";
-    authorizeSshFor.betongsuggan = [
-      {
-        host = "controller";
-        user = "betongsuggan";
-      }
-      {
-        host = "bits";
-        user = "birgerrydback";
-      }
-    ];
   };
 
   # Auto-mount controller's ROM/BIOS shares for each user that uses the

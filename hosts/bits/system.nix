@@ -74,30 +74,12 @@
     secretsFile = "${inputs.nix-vault}/secrets/bits.yaml";
   };
 
-  sops.secrets = {
-    "ssh-bits" = {
-      key = "users/birgerrydback/ssh/bits";
-      owner = "birgerrydback";
-      mode = "0600";
-      path = "/home/birgerrydback/.ssh/bits";
-    };
-    "ssh-id-rsa" = {
-      key = "users/birgerrydback/ssh/github";
-      owner = "birgerrydback";
-      mode = "0600";
-      path = "/home/birgerrydback/.ssh/id_rsa";
-    };
-  };
+  # The id_rsa (GitHub) key is stored under a different name in the vault
+  sops.secrets."ssh-birgerrydback-id_rsa".key = "users/birgerrydback/ssh/github";
 
   my.home-network = {
     enable = true;
     mode = "onboarded";
-    authorizeSshFor.birgerrydback = [
-      {
-        host = "controller";
-        user = "betongsuggan";
-      }
-    ];
   };
 
   systemd.services.fwupd = {

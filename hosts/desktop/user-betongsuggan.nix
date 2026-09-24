@@ -62,27 +62,4 @@
 
   my.sops.enable = true;
 
-  services.ssh-agent = {
-    enable = true;
-  };
-
-  systemd.user.sessionVariables = {
-    SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
-  };
-
-  programs.ssh = {
-    enable = true;
-    # The legacy implicit defaults ("*" block) match OpenSSH's own defaults;
-    # nothing needs preserving.
-    enableDefaultConfig = false;
-    settings = {
-      "controller ${inputs.self.lib.tailnet.fqdn "controller"}" = {
-        HostName = inputs.self.lib.tailnet.fqdn "controller";
-        User = "betongsuggan";
-        IdentityFile = "/home/betongsuggan/.ssh/id_rsa";
-        IdentitiesOnly = true;
-      };
-    };
-  };
-
 }

@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   inputs,
   ...
@@ -6,9 +7,6 @@
 
 {
   home.stateVersion = "24.05";
-
-  home.file.".ssh/bits.pub".text = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.bits + "\n";
-  home.file.".ssh/id_rsa.pub".text = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.id_rsa + "\n";
 
   my.development = {
     enable = true;
@@ -75,47 +73,23 @@
   #  ];
   #};
 
-  services.ssh-agent = {
-    enable = true;
-  };
-
   my.emulation-client = {
     enable = true;
     server.address = inputs.self.lib.tailnet.fqdn "controller";
   };
 
-  programs.ssh = {
-    enable = true;
-    # The legacy implicit defaults ("*" block) match OpenSSH's own defaults;
-    # nothing needs preserving.
-    enableDefaultConfig = false;
-    settings = {
-      "controller ${inputs.self.lib.tailnet.fqdn "controller"}" = {
-        HostName = inputs.self.lib.tailnet.fqdn "controller";
-        User = "betongsuggan";
-        IdentityFile = "/home/birgerrydback/.ssh/bits";
-        IdentitiesOnly = true;
-      };
-      "desktop ${inputs.self.lib.tailnet.fqdn "desktop"}" = {
-        HostName = inputs.self.lib.tailnet.fqdn "desktop";
-        User = "betongsuggan";
-        IdentityFile = "/home/birgerrydback/.ssh/bits";
-        IdentitiesOnly = true;
-      };
-      "github.com-betongsuggan" = {
-        HostName = "github.com";
-        User = "git";
-        IdentityFile = "/home/birgerrydback/.ssh/id_rsa";
-      };
-      "github.com" = {
-        HostName = "github.com";
-        User = "git";
-        IdentityFile = "/home/birgerrydback/.ssh/bits";
-      };
+  # GitHub identities; fleet Host blocks come from the ssh module
+  programs.ssh.settings = {
+    "github.com-betongsuggan" = {
+      HostName = "github.com";
+      User = "git";
+      IdentityFile = "${config.home.homeDirectory}/.ssh/id_rsa";
+    };
+    "github.com" = {
+      HostName = "github.com";
+      User = "git";
+      IdentityFile = "${config.home.homeDirectory}/.ssh/bits";
     };
   };
 
-  systemd.user.sessionVariables = {
-    SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
-  };
 }

@@ -64,15 +64,6 @@
     secretsFile = "${inputs.nix-vault}/secrets/island.yaml";
   };
 
-  sops.secrets = {
-    "ssh-id-rsa" = {
-      key = "users/betongsuggan/ssh/id_rsa";
-      owner = "betongsuggan";
-      mode = "0600";
-      path = "/home/betongsuggan/.ssh/id_rsa";
-    };
-  };
-
   programs.steam = {
     enable = true;
     gamescopeSession.enable = true;
@@ -86,12 +77,6 @@
   my.home-network = {
     enable = true;
     mode = "onboarded";
-    authorizeSshFor.betongsuggan = [
-      {
-        host = "controller";
-        user = "betongsuggan";
-      }
-    ];
   };
 
   # Wake-on-LAN from island-pi (the always-on relay at the summer place):

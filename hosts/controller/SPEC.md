@@ -45,7 +45,7 @@ The operator's YubiKey SSH key (FIDO `ed25519-sk` resident, touch-only) is autho
 
 One credential, all access. The YubiKey lives in the drawer until the next new-host enrollment.
 
-For everyday admin from any tailnet peer, peers' SSH keys are pulled in via `my.home-network.authorizeSshFor.betongsuggan` (currently only `birgerrydback@bits`). No YubiKey touch required for routine work.
+For everyday admin from any tailnet peer, every fleet identity's SSH key is authorized on `betongsuggan` (`sshFromFleet = true` on this account in `lib/default.nix`). No YubiKey touch required for routine work.
 
 ## Onboarding new hosts
 
