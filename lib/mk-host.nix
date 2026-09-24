@@ -29,8 +29,8 @@ lib.nixosSystem {
   system = host.system or "x86_64-linux";
   specialArgs = { inherit inputs; };
   modules = [
-    ../modules/common
-    ../modules/system.nix
+    ../modules/common/nixos.nix
+    ../modules/nixos.nix
     (dir + "/system.nix")
     {
       nixpkgs = {
@@ -47,7 +47,7 @@ lib.nixosSystem {
         useUserPackages = true;
         backupFileExtension = "hm-backup";
         extraSpecialArgs = { inherit inputs; };
-        sharedModules = [ ../modules/user.nix ];
+        sharedModules = [ ../modules/home.nix ];
         users = homeUsers;
       };
     }

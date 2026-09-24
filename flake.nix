@@ -129,7 +129,7 @@
       };
 
       # Bootable SD-card image for island-pi with the host config baked in.
-      # Built on any x86 host via binfmt (see modules/common); the full
+      # Built on any x86 host via binfmt (see modules/common/nixos.nix); the full
       # attribute path is required since `nix build .#<name>` only searches
       # the invoking system's packages:
       #   nix build .#packages.aarch64-linux.island-pi-sd-image
