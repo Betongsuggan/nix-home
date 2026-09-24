@@ -1,16 +1,16 @@
 # Mail
 
-Headless Hetzner Cloud VPS hosting the self-hosted email trial for `rydback.net` (Option A in `de-googling.md`). The host's job is to be the receiving and sending MTA for `@rydback.net` addresses, run in parallel with Gmail until the documented cutover criterion is met.
+Headless Hetzner Cloud VPS hosting the self-hosted email trial for `rydback.net` (Option A in `docs/de-googling.md`). The host's job is to be the receiving and sending MTA for `@rydback.net` addresses, run in parallel with Gmail until the documented cutover criterion is met.
 
 ## Status
 
-**Scaffold only.** Files exist, flake evaluates, nothing is deployed. Bringing this online is tracked in `de-googling.md` Phase 2.
+**Scaffold only.** Files exist, flake evaluates, nothing is deployed. Bringing this online is tracked in `docs/de-googling.md` Phase 2.
 
 ## Provider & shape
 
 - **Hetzner Cloud**, CX22 in Falkenstein (Germany) or Helsinki (Finland) — EU jurisdiction, ~€4/mo.
 - **Cloud resources declared in `terraform.nix`** via [terranix](https://github.com/terranix/terranix): server, firewall, rDNS, SSH key. Generated `config.tf.json` is consumed by OpenTofu.
-- **DNS records managed manually in AWS Route 53** during the trial. Route-53-as-code is deferred until the trial proves Option A is viable; see `de-googling.md`.
+- **DNS records managed manually in AWS Route 53** during the trial. Route-53-as-code is deferred until the trial proves Option A is viable; see `docs/de-googling.md`.
 - **OS installed via [nixos-anywhere](https://github.com/nix-community/nixos-anywhere)** over SSH on the freshly-provisioned VM. Disk layout declared via [disko](https://github.com/nix-community/disko) in `hardware.nix`.
 
 ## Co-location rationale
@@ -49,6 +49,6 @@ nixos-rebuild switch --flake .#mail --target-host root@mail.rydback.net
 - [ ] Route 53: A/AAAA/MX/SPF/DKIM/DMARC/MTA-STS/TLS-RPT records (manual for trial phase).
 - [ ] Tighten SSH to tailnet-only after tailscale is up (currently public, key-only).
 
-## Cutover criterion (per `de-googling.md`)
+## Cutover criterion (per `docs/de-googling.md`)
 
-Two weeks of clean delivery to Gmail / Outlook / Fastmail recipients with no spam-foldering, before any real account changes email-of-record from Gmail to `@rydback.net`. If the trial fails on deliverability or babysitting cost, fallback path is Proton with `rydback.net` MX repointed — see `de-googling.md`.
+Two weeks of clean delivery to Gmail / Outlook / Fastmail recipients with no spam-foldering, before any real account changes email-of-record from Gmail to `@rydback.net`. If the trial fails on deliverability or babysitting cost, fallback path is Proton with `rydback.net` MX repointed — see `docs/de-googling.md`.

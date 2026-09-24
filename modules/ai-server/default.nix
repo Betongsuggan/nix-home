@@ -217,7 +217,7 @@ in {
         default = true;
         description = ''
           Enable message rating (thumbs up/down) and the model-comparison
-          arena. Useful for the scorecard at `assets/ai-scorecard.md`.
+          arena. Useful for the scorecard at `docs/ai-scorecard.md`.
         '';
       };
     };

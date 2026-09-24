@@ -192,6 +192,18 @@
     {
       lib = selfLib;
 
+      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt;
+
+      # One check per host: its system toplevel, grouped by the host's own
+      # platform. `nix flake check --no-build --all-systems` evaluates every host
+      # without building; drop `--no-build` to build them.
+      checks = nixpkgs.lib.foldlAttrs (
+        acc: name: host:
+        nixpkgs.lib.recursiveUpdate acc {
+          ${host.pkgs.stdenv.hostPlatform.system}.${name} = host.config.system.build.toplevel;
+        }
+      ) { } inputs.self.nixosConfigurations;
+
       nixosConfigurations = {
         bits = import ./hosts/bits/default.nix { inherit inputs overlays; };
         private-laptop = import ./hosts/private-laptop/default.nix {
