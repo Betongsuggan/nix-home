@@ -38,12 +38,67 @@ let
       venv/bin/python3 main.py install libndk
 
       systemctl start waydroid-container
-      echo "Widevine + libndk installed. Start a session with: waydroid session start"
+      echo "Widevine + libndk installed. Start a session with: waydroid-up"
+    '';
+  };
+
+  # `waydroid session start` talks to an already-running container service and
+  # fails outright if it isn't up, so leaving the container off at boot would
+  # otherwise turn every launch into a two-step dance. This is the on-demand
+  # entry point: bring the container up, then the session.
+  waydroidUp = pkgs.writeShellApplication {
+    name = "waydroid-up";
+    runtimeInputs = with pkgs; [
+      systemd
+      gnugrep
+      coreutils
+      config.virtualisation.waydroid.package
+    ];
+    text = ''
+      # `waydroid status` exits non-zero when nothing is up, and this script runs
+      # under `set -euo pipefail`, so every probe is wrapped rather than used bare.
+      session_running() {
+        waydroid status 2>/dev/null | grep -q "Session:.*RUNNING"
+      }
+
+      if ! systemctl is-active --quiet waydroid-container; then
+        systemctl start waydroid-container
+      fi
+
+      if ! session_running; then
+        waydroid session start &
+
+        # show-full-ui against a half-started session silently does nothing, so
+        # wait for the session to report RUNNING rather than racing it.
+        for _ in $(seq 30); do
+          if session_running; then
+            break
+          fi
+          sleep 1
+        done
+
+        if ! session_running; then
+          echo "waydroid session did not come up within 30s" >&2
+          exit 1
+        fi
+      fi
+
+      waydroid show-full-ui
     '';
   };
 in {
   options.waydroid = {
     enable = mkEnableOption "Enable Waydroid Android container";
+
+    startOnBoot = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Start the Android container at boot. The container is a full Android
+        userspace that is only useful while a session is open, so the default
+        leaves it stopped and `waydroid-up` starts it on demand.
+      '';
+    };
 
     drmSetup = mkOption {
       type = types.bool;
@@ -64,7 +119,11 @@ in {
       package = pkgs.waydroid-nftables;
     };
 
+    # The upstream module pins the container to multi-user.target; drop that so
+    # it stays stopped until `waydroid-up` (or the DRM setup helper) asks for it.
+    systemd.services.waydroid-container.wantedBy = mkIf (!cfg.startOnBoot) (mkForce [ ]);
+
     environment.systemPackages = with pkgs;
-      [ wl-clipboard ] ++ optional cfg.drmSetup drmSetup;
+      [ wl-clipboard waydroidUp ] ++ optional cfg.drmSetup drmSetup;
   };
 }

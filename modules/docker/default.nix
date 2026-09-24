@@ -16,6 +16,14 @@ with lib;
     virtualisation.docker = {
       enable = true;
       package = pkgs.docker_29;
+
+      # Everything here talks to the rootless socket via DOCKER_HOST, so the
+      # rootful daemon has no clients -- it was starting at boot and sitting at
+      # zero connections, holding open dockerd + containerd for nothing. Keep it
+      # configured (the `docker` group and the socket unit come with it) but let
+      # socket activation bring it up on the rare occasion something wants it.
+      enableOnBoot = false;
+
       rootless = {
         enable = true;
         setSocketVariable = true;

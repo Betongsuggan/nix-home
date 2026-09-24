@@ -151,9 +151,19 @@
   networking.nameservers = [ "1.1.1.1" ];
 
   docker.enable = true;
+  # Disabled 2026-09-17: Waydroid's gralloc allocates on the discrete Navi 24
+  # (`gralloc.gbm.device=/dev/dri/renderD128`) while Hyprland composites on the
+  # Rembrandt iGPU, so every Android surface crosses GPUs as a DCC-compressed
+  # dmabuf. That wedged the iGPU twice in three hours, and Hyprland aborts on
+  # GL_UNKNOWN_CONTEXT_RESET because it has no reset-recovery path. Re-enable
+  # only after pinning gralloc to the iGPU render node -- see
+  # `modules/waydroid/SPEC.md` step 6.
   waydroid = {
-    enable = true;
+    enable = false;
     drmSetup = true;
+    # Container stays stopped until `waydroid-up`; it only exists for occasional
+    # offline Netflix downloads.
+    startOnBoot = false;
   };
   bluetooth.enable = true;
   fingerprint = {
@@ -162,20 +172,23 @@
     lidStatePath = "/proc/acpi/button/lid/LID/state";
   };
   wayland-security.enable = true;
-  printers.enable = true;
+  printers = {
+    enable = true;
+    # Nothing on this network shares a printer; dropping browsed lets cupsd stay
+    # socket-activated instead of running from boot.
+    remoteDiscovery = false;
+  };
   power-management = {
     enable = true;
     cpuVendor = "amd";
     gpuVendor = "amd";
 
-    # Diagnostic posture while chasing unexplained hard power-offs (BIOS 1.63,
-    # battery pack down to ~10% of design capacity). Capping the AC power
-    # budget shrinks the transient spikes the pack has to absorb alongside the
-    # charger; the forensics log records the seconds a hard cut would otherwise
-    # erase. Revert both once the battery and firmware are sorted.
-    platformProfiles.ac = "low-power";
-    amdgpuPerfLevel.ac = "low";
-    forensics.enable = true;
+    # The AC caps and forensics logging that chased the hard power-offs are
+    # retired: the telemetry they produced identified the cause (a pack that
+    # reports "empty" at 0.5 Wh and then runs for another 100 minutes -- a
+    # degraded cell stack plus a fuel gauge that has lost calibration), so the
+    # performance cost on AC and the 5-second fdatasync of the telemetry loop
+    # no longer buy anything.
   };
   firewall = {
     enable = true;

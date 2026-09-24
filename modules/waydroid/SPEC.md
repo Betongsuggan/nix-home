@@ -17,11 +17,18 @@ waydroid = {
 };
 ```
 
+Start Android on demand:
+
+```bash
+waydroid-up      # starts the container if needed, waits for the session, opens the UI
+```
+
 ## Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable Waydroid Android container |
+| startOnBoot | bool | false | Start `waydroid-container` at boot instead of on demand |
 | drmSetup | bool | false | Install the `waydroid-drm-setup` helper (Widevine CDM + libndk ARM translation) |
 
 ## What actually works
@@ -46,9 +53,7 @@ survives rebuilds.
 
    ```bash
    sudo waydroid init -s GAPPS -f
-   sudo systemctl start waydroid-container
-   waydroid session start      # separate terminal
-   waydroid show-full-ui
+   waydroid-up
    ```
 
 2. Sign into Google inside the container. It will report the device as not Play Protect
@@ -92,6 +97,14 @@ survives rebuilds.
 ## Notes
 
 - Requires a Wayland compositor (Hyprland, Sway, niri).
+- The container does **not** start at boot by default. It is a full Android userspace and
+  is useless without an open session, so `startOnBoot` defaults to `false` and
+  `waydroid-up` brings it up when wanted. The upstream NixOS module pins the unit to
+  `multi-user.target`; this module overrides that with `mkForce [ ]`.
+- `waydroid session start` fails outright against a stopped container rather than
+  activating it, which is why `waydroid-up` exists: it starts the unit (prompting through
+  polkit), polls `waydroid status` until the session reports `RUNNING`, then opens the UI.
+  Calling `show-full-ui` before the session is ready silently does nothing.
 - **Re-run `sudo waydroid-drm-setup` after every `waydroid upgrade`** — upgrading replaces
   `system.img`/`vendor.img` and discards the blobs in `/var/lib/waydroid/overlay/vendor/`.
 - Uses `pkgs.waydroid-nftables`, not `pkgs.waydroid`: kernel 6.16.9 dropped the `ip_tables`

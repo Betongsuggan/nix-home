@@ -87,15 +87,9 @@
     backend = "hyprland";
     composeKey = "ralt";
     monitors = [ ",preferred,auto,1" ];
-    autostartApps = {
-      chromium = {
-        command = "chromium";
-      };
-
-      slack = {
-        command = "slack";
-      };
-    };
+    # No autostart: Chromium and Slack are both Electron apps that cost ~1-1.5 W
+    # idle and were the top CPU consumers at every login. Launch them from the
+    # Vicinae launcher when they're actually wanted.
   };
 
   theme = {
