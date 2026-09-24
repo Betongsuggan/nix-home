@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -18,17 +19,15 @@ let
   # host's WAN IP; headscale's `extraDnsRecords` rewrites it to the host's
   # tailnet IP for tailnet members, so they reach nginx from a 100.x source
   # IP and pass the allow.
-  tailnetOnlySnippet = ''
-    # Loopback covers any same-host service that needs to reach Nextcloud
-    # (e.g. OnlyOffice's callback to Nextcloud's WebDAV when saving a doc).
-    # Linux routes connections to locally-assigned addresses over lo, so the
-    # source IP nginx sees is 127.0.0.1 / ::1, not the tailnet IP.
-    allow 127.0.0.1;
-    allow ::1;
-    allow 100.64.0.0/10;
-    allow fd7a:115c:a1e0::/48;
-    deny all;
-  '';
+  #
+  # Loopback covers any same-host service that needs to reach Nextcloud
+  # (e.g. OnlyOffice's callback to Nextcloud's WebDAV when saving a doc).
+  # Linux routes connections to locally-assigned addresses over lo, so the
+  # source IP nginx sees is 127.0.0.1 / ::1, not the tailnet IP.
+  tailnetOnlySnippet = inputs.self.lib.tailnet.nginxAllowOnly [
+    "127.0.0.1"
+    "::1"
+  ];
 in
 {
   options.my.nextcloud = {

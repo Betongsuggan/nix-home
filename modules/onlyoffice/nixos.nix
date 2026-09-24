@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -16,16 +17,14 @@ let
   # assets (web-apps/sdkjs/fonts/...) are deliberately left open — they're
   # plain UI JavaScript with no privileged behavior, and headscale's DNS
   # rewrite gives the layered defence regardless.
-  tailnetOnlySnippet = ''
-    # Loopback covers Nextcloud's server-side JWT handshake — its PHP-FPM
-    # runs on the same host and Linux routes the local connection over lo,
-    # so the source IP nginx sees is 127.0.0.1 / ::1, not the tailnet IP.
-    allow 127.0.0.1;
-    allow ::1;
-    allow 100.64.0.0/10;
-    allow fd7a:115c:a1e0::/48;
-    deny all;
-  '';
+  #
+  # Loopback covers Nextcloud's server-side JWT handshake — its PHP-FPM
+  # runs on the same host and Linux routes the local connection over lo,
+  # so the source IP nginx sees is 127.0.0.1 / ::1, not the tailnet IP.
+  tailnetOnlySnippet = inputs.self.lib.tailnet.nginxAllowOnly [
+    "127.0.0.1"
+    "::1"
+  ];
 in
 {
   options.my.onlyoffice = {

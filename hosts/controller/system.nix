@@ -260,15 +260,10 @@ in
 
   my.reverse-proxy =
     let
-      # Tailnet-only at the nginx layer. Headscale's default prefixes are
-      # 100.64.0.0/10 (IPv4) and fd7a:115c:a1e0::/48 (IPv6). ACME HTTP-01
-      # challenges still work because NixOS places /.well-known/acme-challenge
-      # at a higher-precedence location than `/`.
-      tailnetOnly = ''
-        allow 100.64.0.0/10;
-        allow fd7a:115c:a1e0::/48;
-        deny all;
-      '';
+      # Tailnet-only at the nginx layer. ACME HTTP-01 challenges still work
+      # because NixOS places /.well-known/acme-challenge at a
+      # higher-precedence location than `/`.
+      tailnetOnly = inputs.self.lib.tailnet.nginxAllowOnly [ ];
     in
     {
       enable = true;

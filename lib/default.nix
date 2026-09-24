@@ -202,6 +202,14 @@ rec {
     # headscale, served by controller
     controlDomain = "vpn.${domain}";
     loginServer = "https://vpn.${domain}";
+    # Headscale's default address prefixes
+    sources = [
+      "100.64.0.0/10"
+      "fd7a:115c:a1e0::/48"
+    ];
+    # nginx `allow` rules for the tailnet (plus `extra` sources), then deny
+    nginxAllowOnly =
+      extra: lib.concatMapStrings (s: "allow ${s};\n") (extra ++ tailnet.sources) + "deny all;\n";
     fqdn = host: "${hosts.${host}.hostName}.${baseDomain}";
   };
 
