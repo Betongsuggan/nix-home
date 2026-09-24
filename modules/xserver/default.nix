@@ -12,18 +12,30 @@ with lib;
 
     displayManager = mkOption {
       description = "Display manager to use";
-      type = types.str;
+      type = types.enum [
+        "lightdm"
+        "none"
+      ];
       default = "lightdm";
     };
-    videoDrivers = [
-      "displaylink"
-      "modesetting"
-    ];
+
+    videoDrivers = mkOption {
+      description = ''
+        X video drivers. Add "displaylink" for DisplayLink docks; its driver is
+        unfree and has to be fetched manually (see the nixpkgs displaylink
+        package).
+      '';
+      type = types.listOf types.str;
+      default = [ "modesetting" ];
+    };
   };
 
   config = mkIf config.xserver.enable {
     services.xserver = {
       enable = true;
+      videoDrivers = config.xserver.videoDrivers;
+
+      displayManager.lightdm.enable = config.xserver.displayManager == "lightdm";
 
       displayManager = {
         defaultSession = "nixsession";
@@ -34,7 +46,8 @@ with lib;
             start = "";
           }
         ];
-        sessionCommands = ''
+        # Route DisplayLink outputs through the primary GPU
+        sessionCommands = mkIf (elem "displaylink" config.xserver.videoDrivers) ''
           ${lib.getBin pkgs.xorg.xrandr}/bin/xrandr --setprovideroutputsource 2 0
         '';
       };

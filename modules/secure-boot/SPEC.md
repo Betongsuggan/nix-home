@@ -17,7 +17,7 @@ secure-boot.enable = true;
 ## Notes
 
 - Requires `boot.loader.efi.canTouchEfiVariables = true` and a valid EFI system partition mount point.
-- Disables both systemd-boot and GRUB; Lanzaboote manages boot entries instead.
+- Disables both systemd-boot and GRUB; Lanzaboote manages boot entries instead. The host's `boot.loader.systemd-boot.configurationLimit` is carried over to `boot.lanzaboote.configurationLimit`.
 - PKI bundle is stored at `/var/lib/sbctl`.
 - After first build, complete one-time setup:
   1. `sudo sbctl create-keys`

@@ -53,5 +53,5 @@ game-streaming.client.enable = true;
 - LAN encryption is disabled for lower latency; WAN encryption remains on. Tailscale's CGNAT range (`100.64.0.0/10`) is classified as WAN by Sunshine — `origin_pin_allowed` and `origin_web_ui_allowed` are set to `wan` so tailnet clients (Moonlight on Android handhelds, etc.) can pair and access the admin UI.
 - The `uinput` kernel module is loaded automatically for virtual input device support.
 - After enabling the server, pair clients by visiting the Sunshine web UI at `https://localhost:47990` (or `https://<host>.ts.rydback.net:47990` over tailnet).
-- The client configuration file is written to `~/.config/Moonlight Game Streaming Project/Moonlight.conf`.
+- The client settings are merged into the `[General]` section of `~/.config/Moonlight Game Streaming Project/Moonlight.conf` on every Home Manager activation. The file stays writable, so pairing data and other settings Moonlight saves are kept; only the declared keys are overwritten.
 - HDR streaming requires HEVC or AV1 codec support on both host and client.

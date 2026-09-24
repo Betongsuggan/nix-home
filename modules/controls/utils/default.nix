@@ -201,11 +201,8 @@ let
 
       memUsedPercent=$(echo "scale=1; $usedMem * 100 / $totalMem" | ${pkgs.bc}/bin/bc)
 
-      rootDevice=$(${pkgs.util-linux}/bin/lsblk -o NAME,MOUNTPOINT | grep '/$' | awk '{print($1)}' | sed 's/[^a-z0-9]*//')
-      deviceCapacity=$(${pkgs.coreutils}/bin/df -h | grep nvme0n1p7 | awk '{print($2)}' | sed 's/[^0-9]//')
-      deviceUsed=$(${pkgs.coreutils}/bin/df -h | grep nvme0n1p7 | awk '{print($3)}' | sed 's/[^0-9]//')
-
-      deviceUsedPercent=$(echo "scale=1; $deviceUsed * 100 / $deviceCapacity" | ${pkgs.bc}/bin/bc)
+      # Usage of the filesystem mounted at /, whatever device backs it
+      deviceUsedPercent=$(${pkgs.coreutils}/bin/df --output=pcent / | tail -n 1 | tr -dc '0-9')
 
       ${notifySystem}
     ''

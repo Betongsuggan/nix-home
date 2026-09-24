@@ -136,10 +136,15 @@ in
   config = mkIf cfg.client.enable {
     home.packages = [ pkgs.moonlight-qt ];
 
-    # Write Moonlight configuration
-    # Path: ~/.config/Moonlight Game Streaming Project/Moonlight.conf
-    xdg.configFile."Moonlight Game Streaming Project/Moonlight.conf" = {
-      text = moonlightConfig;
-    };
+    # Moonlight keeps pairing data and its own settings in the same file, so it
+    # must stay writable: merge the declared [General] keys into it on every
+    # activation instead of symlinking a read-only copy from the store.
+    home.activation.moonlightConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      conf="${config.xdg.configHome}/Moonlight Game Streaming Project/Moonlight.conf"
+      run mkdir -p "$(dirname "$conf")"
+      if [ -L "$conf" ]; then run rm "$conf"; fi
+      run ${pkgs.crudini}/bin/crudini --ini-options=nospace --merge "$conf" \
+        < ${pkgs.writeText "moonlight-general.conf" moonlightConfig}
+    '';
   };
 }

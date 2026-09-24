@@ -40,10 +40,6 @@ with lib;
         enable = true;
         wifi.backend = "iwd";
       };
-
-      extraHosts = ''
-        127.0.0.1 bits.execute-api.localhost.localstack.cloud
-      '';
     };
   };
 }

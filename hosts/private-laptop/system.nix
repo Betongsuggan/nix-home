@@ -29,8 +29,6 @@
 
       efi.efiSysMountPoint = "/boot";
       efi.canTouchEfiVariables = true;
-      grub.useOSProber = true;
-      grub.configurationLimit = 10;
     };
 
     kernelModules = [

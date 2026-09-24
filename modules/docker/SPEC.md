@@ -16,7 +16,7 @@ docker.enable = true;
 
 ## Notes
 
-- Runs in rootless mode with the socket at `/run/user/1000/docker.sock`.
+- Runs in rootless mode with a per-user socket at `$XDG_RUNTIME_DIR/docker.sock`.
 - The rootful daemon is configured but **not started at boot** (`enableOnBoot = false`).
   Because `DOCKER_HOST` points every client at the rootless socket, the rootful daemon had
   no clients and was holding open `dockerd` + `containerd` (~180 MB) at zero connections.
@@ -24,6 +24,6 @@ docker.enable = true;
   case that something needs it, and the `docker` group is still created.
 - Containers with a restart policy are only resurrected by the daemon that owns them, so a
   rootless container set to `--restart=unless-stopped` comes back at login, not at boot.
-- Sets `DOCKER_HOST` session variable and `net.ipv4.ip_unprivileged_port_start = 0` to allow binding privileged ports.
+- `rootless.setSocketVariable` points `DOCKER_HOST` at each user's own rootless socket (`$XDG_RUNTIME_DIR/docker.sock`) in login shells. Sets `net.ipv4.ip_unprivileged_port_start = 0` to allow binding privileged ports.
 - BuildKit is enabled by default in the daemon configuration.
 - Installs `docker-compose` system-wide.

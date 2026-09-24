@@ -53,8 +53,6 @@
 
       efi.efiSysMountPoint = "/boot";
       efi.canTouchEfiVariables = true;
-      grub.useOSProber = true;
-      grub.configurationLimit = 10;
     };
   };
 
@@ -69,7 +67,6 @@
 
   nixpkgs.config = {
     allowUnfree = true;
-    allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "claude-code" ];
     permittedInsecurePackages = [
       "electron-25.9.0"
       "nexusmods-app-0.21.1"
@@ -149,6 +146,10 @@
     hostName = "bits-nixos";
   };
   networking.nameservers = [ "1.1.1.1" ];
+  # LocalStack API Gateway endpoint used by local development
+  networking.extraHosts = ''
+    127.0.0.1 bits.execute-api.localhost.localstack.cloud
+  '';
 
   docker.enable = true;
   # Disabled 2026-09-17: Waydroid's gralloc allocates on the discrete Navi 24

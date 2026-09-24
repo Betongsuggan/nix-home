@@ -68,8 +68,6 @@
       systemd-boot.configurationLimit = 10;
       efi.efiSysMountPoint = "/boot";
       efi.canTouchEfiVariables = true;
-      grub.useOSProber = true;
-      grub.configurationLimit = 10;
     };
 
     kernelModules = [
@@ -161,7 +159,7 @@
     enableRenice = true;
     settings = {
       general = {
-        renice = -10;
+        renice = 10;
         softrealtime = "auto";
         ioprio = 0;
         inhibit_screensaver = 1;

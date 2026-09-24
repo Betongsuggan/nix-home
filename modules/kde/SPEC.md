@@ -1,6 +1,6 @@
 # KDE
 
-Enables the KDE Plasma 5 desktop environment with SDDM display manager and GVFS for virtual filesystem support.
+Enables the KDE Plasma 6 desktop environment with the SDDM display manager (Wayland greeter) and GVFS for virtual filesystem support.
 
 ## Usage
 

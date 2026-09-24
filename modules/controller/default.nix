@@ -346,7 +346,6 @@ with lib;
         {
           Unit = {
             Description = "Controller MangoHud Toggle Service";
-            After = [ "multi-user.target" ];
           };
 
           Service = {
@@ -354,9 +353,6 @@ with lib;
             ExecStart = "%h/bin/controller-mangohud-toggle.sh";
             Restart = "always";
             RestartSec = "5s";
-            Environment = [
-              "XDG_RUNTIME_DIR=/run/user/%i"
-            ];
           };
 
           Install = {

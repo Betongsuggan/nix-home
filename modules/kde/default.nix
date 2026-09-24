@@ -13,11 +13,10 @@ with lib;
 
   config = mkIf config.kde.enable {
     services.gvfs.enable = true;
-    services.xserver = {
+    services.displayManager.sddm = {
       enable = true;
-
-      displayManager.sddm.enable = true;
-      desktopManager.plasma5.enable = true;
+      wayland.enable = true;
     };
+    services.desktopManager.plasma6.enable = true;
   };
 }

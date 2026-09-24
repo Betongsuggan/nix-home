@@ -17,12 +17,15 @@ with lib;
     boot.lanzaboote = {
       enable = true;
       pkiBundle = "/var/lib/sbctl";
+      # Carry over the host's systemd-boot generation limit, which is otherwise
+      # dropped along with systemd-boot itself
+      configurationLimit = mkIf (
+        config.boot.loader.systemd-boot.configurationLimit != null
+      ) config.boot.loader.systemd-boot.configurationLimit;
     };
 
-    # Ensure GRUB is disabled when Secure Boot is enabled
     # Lanzaboote only works with systemd-boot, not GRUB
     boot.loader.grub.enable = mkForce false;
-    boot.loader.grub.useOSProber = mkForce false;
 
     # Install sbctl for managing Secure Boot keys
     environment.systemPackages = with pkgs; [

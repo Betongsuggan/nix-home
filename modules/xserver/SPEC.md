@@ -1,6 +1,6 @@
 # X Server
 
-Enables the X11 display server with a configurable display manager and DisplayLink support. Sets up a custom session that configures multi-monitor output via xrandr.
+Enables the X11 display server with a configurable display manager and optional DisplayLink support. Sets up a custom session; with DisplayLink it also routes outputs via xrandr.
 
 ## Usage
 
@@ -16,9 +16,10 @@ xserver = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable X server |
-| displayManager | str | "lightdm" | Display manager to use |
+| displayManager | enum: "lightdm", "none" | "lightdm" | Display manager to use |
+| videoDrivers | list of str | ["modesetting"] | X video drivers; add "displaylink" for DisplayLink docks |
 
 ## Notes
 
-- Video drivers are hardcoded to `["displaylink" "modesetting"]`.
-- A custom session named `nixsession` is created that runs `xrandr --setprovideroutputsource 2 0` for DisplayLink multi-monitor support.
+- A custom session named `nixsession` is created. When `videoDrivers` contains "displaylink", it runs `xrandr --setprovideroutputsource 2 0` for DisplayLink multi-monitor support.
+- The DisplayLink driver is unfree and must be fetched manually before it builds (see the nixpkgs `displaylink` package).

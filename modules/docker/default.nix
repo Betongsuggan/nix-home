@@ -18,13 +18,12 @@ with lib;
     # Allow rootless Docker to bind to privileged ports (< 1024)
     boot.kernel.sysctl."net.ipv4.ip_unprivileged_port_start" = 0;
 
-    # Set DOCKER_HOST environment variable for rootless mode
-    environment.sessionVariables.DOCKER_HOST = "unix:///run/user/1000/docker.sock";
     virtualisation.docker = {
       enable = true;
       package = pkgs.docker_29;
 
-      # Everything here talks to the rootless socket via DOCKER_HOST, so the
+      # Everything here talks to the rootless socket (rootless.setSocketVariable
+      # points DOCKER_HOST at $XDG_RUNTIME_DIR/docker.sock per user), so the
       # rootful daemon has no clients -- it was starting at boot and sitting at
       # zero connections, holding open dockerd + containerd for nothing. Keep it
       # configured (the `docker` group and the socket unit come with it) but let

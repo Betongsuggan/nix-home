@@ -19,12 +19,12 @@ autologin = {
 |--------|------|---------|-------------|
 | enable | bool | false | Enable autologin functionality |
 | user | string | (required) | Username to automatically login |
-| session | string | "hyprland" | Desktop session to start automatically |
+| session | string | "hyprland" | Desktop session to start automatically (gdm method only) |
 | method | enum: "gdm", "getty" | "gdm" | Autologin method (gdm for display manager, getty for console) |
 | tty | string | "tty1" | TTY to use for getty autologin |
 
 ## Notes
 
-- The GDM method requires the `wayland` module to be enabled (`config.wayland.enable`).
+- The GDM method enables GDM and uses `services.displayManager.autoLogin` with `session` as the default session.
 - Sets an empty hashed password on the autologin user and grants passwordless sudo for all commands.
 - The getty method overrides the `getty@ttyN` systemd service to pass `--autologin` to `agetty`.

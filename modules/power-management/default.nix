@@ -155,8 +155,8 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Prioritize performance over efficiency
-    powerManagement.cpuFreqGovernor = "powersave";
+    # The CPU governor is owned by TLP (powerModes below); a boot-time
+    # powerManagement.cpuFreqGovernor would only race it.
 
     services.upower.enable = true;
 

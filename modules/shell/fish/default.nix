@@ -20,7 +20,6 @@ with lib;
 
         shellInit = ''
           export EDITOR="${config.shell.editor}"
-          export ANTHROPIC_API_KEY="$(ai_key_provider)"
 
           ${optionalString config.shell.viMode "fish_vi_key_bindings"}
 

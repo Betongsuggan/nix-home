@@ -9,6 +9,9 @@ with lib;
 let
   cfg = config.niri;
 
+  # "1" / "1.5" / "239.96" -> float (nixpkgs lib has no toFloat)
+  toFloat = str: builtins.fromJSON str * 1.0;
+
   # Convert Hyprland monitor format to Niri output format
   # Hyprland: "name,resolution@refresh,position,scale"
   # Niri: outputs."name" = { mode = { width = W; height = H; refresh = R; }; scale = S; }
@@ -41,7 +44,7 @@ let
           {
             width = lib.toInt (builtins.elemAt dimParts 0);
             height = lib.toInt (builtins.elemAt dimParts 1);
-            refresh = lib.toFloat (builtins.elemAt resParts 1);
+            refresh = toFloat (builtins.elemAt resParts 1);
           };
 
       # Parse position (e.g., "0x0" or "auto")
@@ -61,7 +64,7 @@ let
       inherit name;
       mode = resolutionParsed;
       position = positionParsed;
-      scale = lib.toFloat scale;
+      scale = toFloat scale;
     };
 
   # Generate outputs configuration for Niri
@@ -73,7 +76,7 @@ let
           parsed = parseMonitor monitorStr;
         in
         {
-          name = if parsed.name == "" then null else parsed.name;
+          inherit (parsed) name;
           value = {
             scale = parsed.scale;
           }

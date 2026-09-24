@@ -6,11 +6,6 @@
 }:
 
 {
-  nixpkgs.overlays = [
-    (final: prev: {
-      mesa = prev.unstable.mesa;
-    })
-  ];
   users.users.gamer = {
     isNormalUser = true;
     description = "Gaming User";
@@ -68,8 +63,6 @@
       systemd-boot.configurationLimit = 10;
       efi.efiSysMountPoint = "/boot";
       efi.canTouchEfiVariables = true;
-      grub.useOSProber = true;
-      grub.configurationLimit = 10;
     };
 
     # Add ryzen-smu module for Ryzen CPU monitoring and control

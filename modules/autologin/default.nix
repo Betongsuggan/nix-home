@@ -19,7 +19,7 @@ with lib;
     session = mkOption {
       type = types.str;
       default = "hyprland";
-      description = "Desktop session to start automatically";
+      description = "Desktop session to start automatically (gdm method only)";
     };
 
     method = mkOption {
@@ -39,17 +39,17 @@ with lib;
   };
 
   config = mkIf config.autologin.enable {
-    # Configure autologin based on method
-    services.xserver.displayManager = mkIf (config.autologin.method == "gdm" && config.wayland.enable) {
+    # GDM autologin straight into the configured Wayland session
+    services.displayManager = mkIf (config.autologin.method == "gdm") {
       gdm = {
+        enable = true;
         autoSuspend = false;
-        settings = {
-          daemon = {
-            AutomaticLoginEnable = true;
-            AutomaticLogin = config.autologin.user;
-          };
-        };
       };
+      autoLogin = {
+        enable = true;
+        user = config.autologin.user;
+      };
+      defaultSession = config.autologin.session;
     };
 
     # Getty-based autologin for console/minimal setups

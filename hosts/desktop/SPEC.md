@@ -49,6 +49,6 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - Remote streaming (Moonlight over the tailnet from outside the LAN): tailscaled listens on its NixOS-default fixed port UDP 41641. The home connection is double-NATed (ISP box → ASUS router, both hard NAT: `MappingVariesByDestIP: true`), so clients behind CGNAT (phone hotspots) can't hole-punch and fall back to the controller's DERP relay — TCP, too slow for the video stream. For direct paths, forward UDP 41641 through *both* NAT layers to this host (or bridge/DMZ the ISP box so the ASUS UPnP mapping is actually reachable). Moonlight's "metered connection" warning on the client is informational only.
 - NTFS filesystem support enabled for accessing Windows drives
 - Custom udev rules for NVMe scheduler and USB autosuspend on KVM switch and Realtek ethernet adapter
-- Unstable Mesa overlay applied for latest GPU driver support on gamer user
+- Mesa comes from stable nixpkgs (26.05 ships full RDNA4 support), so the graphics stack substitutes from the binary cache
 - Timezone: Europe/Stockholm
 - Colemak keyboard layout

@@ -5,19 +5,6 @@
   ...
 }:
 {
-  options = {
-    unfreePackages = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      description = "List of unfree packages to allow.";
-      default = [ ];
-    };
-    stateVersion = lib.mkOption {
-      type = lib.types.str;
-      description = "Applied state version for Nix packages";
-      default = "24.11";
-    };
-  };
-
   config = {
     # aarch64 builder support: island-pi is deployed with `nixos-rebuild
     # --target-host` from whatever fleet machine is at hand; evaluation and
