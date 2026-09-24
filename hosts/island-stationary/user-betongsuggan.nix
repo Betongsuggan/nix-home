@@ -1,13 +1,7 @@
 { pkgs, inputs, ... }:
 
 {
-  home.username = "betongsuggan";
-  home.homeDirectory = "/home/betongsuggan";
   home.stateVersion = "25.05";
-
-  imports = [
-    ../../modules/user.nix
-  ];
 
   general.enable = true;
   games.enable = true;
@@ -133,5 +127,4 @@
     ];
   };
 
-  programs.home-manager.enable = true;
 }

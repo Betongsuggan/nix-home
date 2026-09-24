@@ -47,16 +47,10 @@
     };
   };
 
-  nixpkgs.config = {
-    allowUnfree = true;
-  };
-
   hardware = {
     cpu.intel.updateMicrocode = true;
     enableRedistributableFirmware = true;
   };
-
-  environment.systemPackages = with pkgs; [ home-manager ];
 
   time.timeZone = "Europe/Stockholm";
 

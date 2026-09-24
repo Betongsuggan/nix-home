@@ -1,14 +1,6 @@
 { pkgs, inputs, ... }:
 {
-  home = {
-    username = "betongsuggan";
-    homeDirectory = "/home/betongsuggan";
-    stateVersion = "24.05";
-  };
-
-  imports = [
-    ../../modules/user.nix
-  ];
+  home.stateVersion = "24.05";
 
   general.enable = true;
   chromium.enable = true;
@@ -146,5 +138,4 @@
     ];
   };
 
-  programs.home-manager.enable = true;
 }

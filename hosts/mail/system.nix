@@ -7,6 +7,11 @@
 }:
 
 {
+  imports = [
+    inputs.disko.nixosModules.disko
+    ./hardware.nix
+  ];
+
   system.stateVersion = "25.11";
 
   networking.hostName = "mail";
@@ -29,8 +34,6 @@
   # Wheel group can sudo without re-typing password — pragmatic for a single
   # operator over SSH; protected by SSH key + sudo prompt.
   security.sudo.wheelNeedsPassword = false;
-
-  environment.systemPackages = with pkgs; [ home-manager ];
 
   openssh = {
     enable = true;

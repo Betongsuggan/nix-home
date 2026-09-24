@@ -1,12 +1,7 @@
 { pkgs, inputs, ... }:
 
 {
-  imports = [
-    ../../modules/user.nix
-  ];
 
-  home.username = "gamer";
-  home.homeDirectory = "/home/gamer";
   home.stateVersion = "25.05";
 
   games = {
@@ -210,5 +205,4 @@
     PROTON_ENABLE_WAYLAND = "1";
   };
 
-  programs.home-manager.enable = true;
 }

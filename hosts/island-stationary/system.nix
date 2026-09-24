@@ -42,7 +42,6 @@
   };
 
   nixpkgs.config = {
-    allowUnfree = true;
     permittedInsecurePackages = [ "freeimage-3.18.0-unstable-2024-04-18" ];
   };
 
@@ -168,7 +167,6 @@
   };
 
   environment.systemPackages = with pkgs; [
-    home-manager
     gamemode
     mangohud
   ];

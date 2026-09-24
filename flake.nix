@@ -102,27 +102,9 @@
         }
       ) { } inputs.self.nixosConfigurations;
 
-      nixosConfigurations = {
-        bits = import ./hosts/bits/default.nix { inherit inputs overlays; };
-        private-laptop = import ./hosts/private-laptop/default.nix {
-          inherit inputs overlays;
-        };
-        desktop = import ./hosts/desktop/default.nix {
-          inherit inputs overlays;
-        };
-        island-stationary = import ./hosts/island-stationary/default.nix {
-          inherit inputs overlays;
-        };
-        controller = import ./hosts/controller/default.nix {
-          inherit inputs overlays;
-        };
-        mail = import ./hosts/mail/default.nix {
-          inherit inputs overlays;
-        };
-        island-pi = import ./hosts/island-pi/default.nix {
-          inherit inputs overlays;
-        };
-      };
+      nixosConfigurations = nixpkgs.lib.mapAttrs (import ./lib/mk-host.nix {
+        inherit inputs overlays;
+      }) selfLib.hosts;
 
       packages.x86_64-linux.terraform-mail = inputs.terranix.lib.terranixConfiguration {
         system = "x86_64-linux";

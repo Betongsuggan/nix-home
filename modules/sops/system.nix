@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  inputs,
+  ...
+}:
 
 with lib;
 
@@ -6,6 +11,8 @@ let
   cfg = config.sops-secrets;
 in
 {
+  imports = [ inputs.sops-nix.nixosModules.sops ];
+
   options.sops-secrets = {
     enable = mkEnableOption "sops-nix-managed secrets for this host";
 

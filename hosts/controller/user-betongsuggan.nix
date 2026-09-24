@@ -1,16 +1,10 @@
 { pkgs, inputs, ... }:
 
 {
-  home.username = "betongsuggan";
-  home.homeDirectory = "/home/betongsuggan";
   home.stateVersion = "25.11";
 
   home.file.".ssh/id_ed25519.pub".text =
     inputs.self.lib.hosts.controller.users.betongsuggan.ssh.ssh_ed25519 + "\n";
-
-  imports = [
-    ../../modules/user.nix
-  ];
 
   general.enable = true;
   starship.enable = true;
@@ -75,5 +69,4 @@
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent";
   };
 
-  programs.home-manager.enable = true;
 }

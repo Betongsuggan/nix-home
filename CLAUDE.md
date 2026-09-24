@@ -9,6 +9,13 @@ is referred to as a "host". Each host will have one or many users associated wit
 folder, with the name of the sub-folder defining the host name. Within each specific host, we will define both system wide
 and user specific configuration. Most configuration for each host and user SHOULD be done by referencing one or many `modules`.
 
+Hosts are registered in `lib/default.nix` (`hosts.<name>`, with an optional `system`, default `x86_64-linux`), and
+`lib/mk-host.nix` builds each one from its folder by convention: `hosts/<name>/system.nix` is the host's NixOS config,
+and every `hosts/<name>/user-<user>.nix` becomes that user's Home Manager config (Home Manager runs only as a NixOS
+module). Shared wiring (module aggregators, overlays from `overlays/`, unfree policy, Home Manager settings) lives in
+`mk-host.nix` once; hosts never repeat it. Upstream flake modules (lanzaboote, sops-nix, stylix, niri, ...) are imported
+by the modules that use them.
+
 The modules are defined in the `modules/` folder. System modules configure host-wide settings (graphics, cpu, bluetooth,
 networking, etc.) and are aggregated via `modules/system.nix`. User modules configure per-user settings (window managers,
 browsers, development setups, etc.) and are aggregated via `modules/user.nix`. Some modules (file-manager, emulation-server,

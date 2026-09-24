@@ -3,6 +3,9 @@
 let
   baseDomain = "ts.rydback.net";
 
+  # One entry per directory under hosts/; flake.nix builds a
+  # nixosConfiguration for each (lib/mk-host.nix). `system` defaults to
+  # x86_64-linux.
   hosts = {
     bits = {
       tailnetName = "bits-nixos";
@@ -49,6 +52,7 @@ let
     };
 
     island-pi = {
+      system = "aarch64-linux";
       tailnetName = "island-pi";
       addresses = [ "island-pi" ];
       # FIXME: fill in after first boot (onboarding step 2 in
@@ -75,6 +79,10 @@ let
         syncthing.id = "RCIVKBJ-RJW3JSL-YHAJQP3-UAF3O32-VMNCGVC-DUI5KTB-X3JFY6M-ML2BAQV";
       };
     };
+
+    # Not on the tailnet (yet): no tailnetName, keys or Syncthing IDs.
+    private-laptop = { };
+    mail = { };
   };
 
   devices = {

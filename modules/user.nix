@@ -1,5 +1,13 @@
-{ ... }: {
+{ inputs, ... }:
+{
   imports = [
+    # Upstream Home Manager modules the fleet's modules build on
+    inputs.console-mode.homeManagerModules.default
+    inputs.niri.homeModules.niri
+    inputs.stylix.homeModules.stylix
+    inputs.vicinae.homeManagerModules.default
+    inputs.walker.homeManagerModules.default
+
     ./3d-printing
     ./autorandr
     ./battery-monitor
@@ -37,4 +45,6 @@
     ./x11
     ./zellij
   ];
+  # useGlobalPkgs: stylix must not try to add overlays to the shared pkgs
+  stylix.overlays.enable = false;
 }

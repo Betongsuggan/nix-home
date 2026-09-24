@@ -33,14 +33,7 @@ The module has two halves:
 }
 ```
 
-The host's `default.nix` must also include the sops-nix module:
-```nix
-modules = [
-  ...
-  inputs.sops-nix.nixosModules.sops
-  ...
-];
-```
+The sops-nix NixOS module is imported by this module itself, so hosts need no extra wiring.
 
 ### User (per editor)
 

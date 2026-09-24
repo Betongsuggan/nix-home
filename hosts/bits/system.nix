@@ -63,10 +63,7 @@
     i2c.enable = true;
   };
 
-  environment.systemPackages = with pkgs; [ home-manager ];
-
   nixpkgs.config = {
-    allowUnfree = true;
     permittedInsecurePackages = [
       "electron-25.9.0"
       "nexusmods-app-0.21.1"

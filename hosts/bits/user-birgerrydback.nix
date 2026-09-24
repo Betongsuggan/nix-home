@@ -5,13 +5,7 @@
 }:
 
 {
-  home.username = "birgerrydback";
-  home.homeDirectory = "/home/birgerrydback";
   home.stateVersion = "24.05";
-
-  imports = [
-    ../../modules/user.nix
-  ];
 
   home.file.".ssh/bits.pub".text = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.bits + "\n";
   home.file.".ssh/id_rsa.pub".text = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.id_rsa + "\n";
@@ -127,8 +121,6 @@
   #    }
   #  ];
   #};
-
-  programs.home-manager.enable = true;
 
   services.ssh-agent = {
     enable = true;

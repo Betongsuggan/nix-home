@@ -2,11 +2,14 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 with lib;
 
 {
+  imports = [ inputs.lanzaboote.nixosModules.lanzaboote ];
+
   options.secure-boot = {
     enable = mkEnableOption "Enable Secure Boot using lanzaboote";
   };
