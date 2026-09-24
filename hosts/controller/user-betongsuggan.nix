@@ -33,12 +33,6 @@
   #  monitors = [ ",preferred,auto,1" ];
   #};
 
-  my.git = {
-    enable = true;
-    userName = "Betongsuggan";
-    userEmail = "birger.rydback@gmail.com";
-  };
-
   services.ssh-agent = {
     enable = true;
   };

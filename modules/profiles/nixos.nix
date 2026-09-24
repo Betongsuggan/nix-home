@@ -69,19 +69,26 @@ in
     (mkIf cfg.gaming-station.enable {
       my.profiles.workstation.enable = mkDefault true;
 
-      # The couch session: an unprivileged `gamer` logged in on tty1 at boot
-      users.users.gamer = {
-        isNormalUser = true;
-        description = "Gaming User";
-        extraGroups = [
-          "networkmanager"
-          "video"
-          "audio"
-          "input"
-          "uinput"
-          "gamemode"
-        ];
-      };
+      # Admins can drive the virtual input devices (remappers, streaming)
+      users.users =
+        genAttrs config.my.common.admins (_: {
+          extraGroups = [
+            "uinput"
+            "input"
+          ];
+        })
+        // {
+          # The couch session: an unprivileged `gamer` logged in on tty1 at boot
+          # (the account itself comes from lib.accounts)
+          gamer.extraGroups = [
+            "networkmanager"
+            "video"
+            "audio"
+            "input"
+            "uinput"
+            "gamemode"
+          ];
+        };
       my.autologin = {
         enable = true;
         user = "gamer";

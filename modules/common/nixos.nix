@@ -8,13 +8,43 @@
 with lib;
 
 {
-  options.my.common.systemd-boot = mkOption {
-    type = types.bool;
-    default = true;
-    description = "Boot through systemd-boot on UEFI (off for e.g. the Pi's extlinux).";
+  options.my.common = {
+    systemd-boot = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Boot through systemd-boot on UEFI (off for e.g. the Pi's extlinux).";
+    };
+
+    accounts = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
+      description = "Login accounts on this host (names in lib.accounts); set by lib/mk-host.nix.";
+    };
+
+    admins = mkOption {
+      type = types.listOf types.str;
+      readOnly = true;
+      default = filter (u: inputs.self.lib.accounts.${u}.admin) config.my.common.accounts;
+      description = "The admin accounts on this host; modules add their groups to these.";
+    };
   };
 
   config = {
+    users.users = genAttrs config.my.common.accounts (
+      u:
+      let
+        account = inputs.self.lib.accounts.${u};
+      in
+      {
+        isNormalUser = true;
+        inherit (account) description;
+        extraGroups = optionals account.admin [
+          "wheel"
+          "video"
+        ];
+      }
+    );
+
     time.timeZone = mkDefault "Europe/Stockholm";
     console.keyMap = mkDefault "colemak";
     hardware.enableRedistributableFirmware = mkDefault true;

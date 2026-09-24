@@ -8,9 +8,13 @@ Nothing to enable. The one option:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
+| my.common.accounts | list of str | set by `lib/mk-host.nix` | Login accounts on this host: registry users that exist in `lib.accounts`, plus every Home Manager user |
+| my.common.admins | list of str (read-only) | accounts with `admin = true` | Modules add their groups to these (networkmanager, docker, uinput/input) |
 | my.common.systemd-boot | bool | true | Boot via systemd-boot on UEFI (generation limit 10, may touch EFI variables). island-pi turns it off for extlinux. |
 
 ## What it sets
+
+- One `users.users.<name>` per account, with its description from `lib.accounts`; admins get `wheel` and `video`. Hosts only add what is specific to them (e.g. `authorizedKeys`, an extra group).
 
 - Base host defaults (all `mkDefault`): timezone Europe/Stockholm, colemak console keymap, redistributable firmware.
 

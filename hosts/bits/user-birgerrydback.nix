@@ -52,12 +52,6 @@
     # Vicinae launcher when they're actually wanted.
   };
 
-  my.git = {
-    enable = true;
-    userName = "BirgerRydback";
-    userEmail = "birger.rydback@bits.bi";
-  };
-
   my.sops.enable = true;
 
   #sops-secrets = {

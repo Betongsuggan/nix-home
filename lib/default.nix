@@ -52,6 +52,7 @@ let
 
     island-pi = {
       system = "aarch64-linux";
+      users.betongsuggan = { };
       addresses = [ "island-pi" ];
       # FIXME: fill in after first boot (onboarding step 2 in
       # hosts/island-pi/SPEC.md): /etc/ssh/ssh_host_ed25519_key.pub. Feeds
@@ -79,7 +80,34 @@ let
 
     # Not on the tailnet (yet): no keys or Syncthing IDs.
     private-laptop = { };
-    mail = { };
+    mail.users.betongsuggan = { };
+  };
+
+  # People's login accounts, independent of host. A host gets an account when
+  # its registry entry lists the user under `users` or it has a
+  # hosts/<host>/user-<name>.nix Home Manager file.
+  accounts = {
+    betongsuggan = {
+      description = "Birger Rydback";
+      admin = true;
+      git = {
+        name = "Betongsuggan";
+        email = "rydback@gmail.com";
+      };
+    };
+    birgerrydback = {
+      description = "Birger Rydback";
+      admin = true;
+      git = {
+        name = "BirgerRydback";
+        email = "birger.rydback@bits.bi";
+      };
+    };
+    gamer = {
+      description = "Gaming User";
+      admin = false;
+      git = accounts.betongsuggan.git;
+    };
   };
 
   hosts = lib.mapAttrs (
@@ -107,7 +135,7 @@ let
   };
 in
 {
-  inherit hosts devices;
+  inherit accounts hosts devices;
 
   # For the NixOS half of a module whose switch lives in Home Manager: true
   # if `pred` holds for any Home Manager user's config on this host. Hosts
@@ -152,9 +180,12 @@ in
         lib.mapAttrs (_: x: {
           id = x.syncthing.id;
           tailnetFqdn =
-            if x ? tailnetName then "${x.tailnetName}.${baseDomain}"
-            else if x ? hostName then "${x.hostName}.${baseDomain}"
-            else null;
+            if x ? tailnetName then
+              "${x.tailnetName}.${baseDomain}"
+            else if x ? hostName then
+              "${x.hostName}.${baseDomain}"
+            else
+              null;
         }) (lib.filterAttrs (_: x: x ? syncthing && x.syncthing ? id) src);
       hostUserIds = lib.listToAttrs (
         lib.concatMap (

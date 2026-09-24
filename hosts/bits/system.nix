@@ -7,20 +7,6 @@
 }:
 
 {
-  users.users.birgerrydback = {
-    isNormalUser = true;
-    description = "Birger Rydback";
-    extraGroups = [
-      "wheel"
-      "networkmanager"
-      "network"
-      "video"
-      "docker"
-      "storage"
-    ];
-    # Peer SSH keys supplied by `tailnet.authorizeSshFor` below.
-  };
-
   system.stateVersion = "24.05";
   boot = {
     extraModprobeConfig = ''

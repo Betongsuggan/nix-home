@@ -12,6 +12,10 @@ with lib;
   };
 
   config = mkIf config.my.network-manager.enable {
+    users.users = genAttrs config.my.common.admins (_: {
+      extraGroups = [ "networkmanager" ];
+    });
+
     environment.systemPackages = [ pkgs.networkmanager ];
     networking = {
       # iwd with settings to create the interface

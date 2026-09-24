@@ -24,6 +24,13 @@ let
           file: type: type == "regular" && lib.hasPrefix "user-" file && lib.hasSuffix ".nix" file
         ) (builtins.readDir dir)
       );
+
+  # Registry users that are real accounts (not service identities such as
+  # controller's `restic` key), plus every Home Manager user
+  accounts = lib.unique (
+    lib.filter (u: inputs.self.lib.accounts ? ${u}) (lib.attrNames (host.users or { }))
+    ++ lib.attrNames homeUsers
+  );
 in
 lib.nixosSystem {
   inherit (host) system;
@@ -33,6 +40,7 @@ lib.nixosSystem {
     (dir + "/system.nix")
     {
       networking.hostName = host.hostName;
+      my.common.accounts = accounts;
       nixpkgs = {
         inherit overlays;
         config.allowUnfree = true;

@@ -12,6 +12,9 @@ with lib;
   };
 
   config = mkIf config.my.docker.enable {
+    users.users = genAttrs config.my.common.admins (_: {
+      extraGroups = [ "docker" ];
+    });
 
     environment.systemPackages = [ pkgs.docker-compose ];
 

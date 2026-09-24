@@ -7,20 +7,6 @@
 }:
 
 {
-  users.users.betongsuggan = {
-    isNormalUser = true;
-    description = "Betongsuggan user";
-    extraGroups = [
-      "wheel"
-      "networkmanager"
-      "network"
-      "video"
-      "docker"
-      "uinput"
-      "input"
-    ];
-  };
-
   # openssh is enabled by home-network/tailnet in onboarded mode, with the
   # firewall closed so sshd is reachable on tailscale0 only.
 

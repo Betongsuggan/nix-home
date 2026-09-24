@@ -11,6 +11,7 @@ with lib;
     {
       my = {
         general.enable = mkDefault true;
+        git.enable = mkDefault true;
         shell.enable = mkDefault true;
         starship.enable = mkDefault true;
         terminal.enable = mkDefault true;

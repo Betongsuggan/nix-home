@@ -20,7 +20,6 @@ in
 {
   system.stateVersion = "26.05";
 
-
   i18n.defaultLocale = "en_GB.UTF-8";
 
   # --- Raspberry Pi 3 Model B boot & hardware ---------------------------------
@@ -69,12 +68,7 @@ in
   networking.useDHCP = lib.mkDefault true;
 
   # --- Access ----------------------------------------------------------------
-  users.users.betongsuggan = {
-    isNormalUser = true;
-    description = "Birger Rydback";
-    extraGroups = [ "wheel" ];
-    openssh.authorizedKeys.keys = deployKeys;
-  };
+  users.users.betongsuggan.openssh.authorizedKeys.keys = deployKeys;
 
   # Wheel group can sudo without re-typing password — pragmatic for a single
   # operator over SSH; protected by SSH key auth.

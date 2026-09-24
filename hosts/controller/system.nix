@@ -8,14 +8,6 @@
 
 {
   users.users.betongsuggan = {
-    isNormalUser = true;
-    description = "Birger Rydback";
-    extraGroups = [
-      "wheel"
-      "networkmanager"
-      "network"
-      "video"
-    ];
     openssh.authorizedKeys.keys = [
       # Operator's YubiKey (FIDO resident, touch-only). Used during new-host
       # enrollment to SSH in, edit nix-home / nix-vault, and rebuild controller.

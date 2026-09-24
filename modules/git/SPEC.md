@@ -17,8 +17,8 @@ my.git = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable git |
-| userName | str | "Birger Rydback" | Name for git |
-| userEmail | str | "birger@humla.io" | Email for git |
+| userName | str | `lib.accounts.<user>.git.name` | Name for git |
+| userEmail | str | `lib.accounts.<user>.git.email` | Email for git |
 
 ## Notes
 

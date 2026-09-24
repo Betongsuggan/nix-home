@@ -94,12 +94,6 @@
     };
   };
 
-  my.git = {
-    enable = true;
-    userName = "Betongsuggan";
-    userEmail = "rydback@gmail.com";
-  };
-
   programs.console-mode = {
     enable = true;
 

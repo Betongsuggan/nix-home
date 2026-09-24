@@ -6,20 +6,8 @@
 }:
 
 {
-  users.users.betongsuggan = {
-    isNormalUser = true;
-    description = "Betongsuggan user";
-    extraGroups = [
-      "wheel"
-      "networkmanager"
-      "network"
-      "video"
-      "render"
-      "docker"
-      "uinput"
-      "input"
-    ];
-  };
+  # ROCm access for the AI workloads (the account comes from lib.accounts)
+  users.users.betongsuggan.extraGroups = [ "render" ];
 
   my.profiles.gaming-station.enable = true;
 

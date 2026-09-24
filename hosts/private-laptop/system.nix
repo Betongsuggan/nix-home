@@ -1,18 +1,6 @@
 { pkgs, inputs, ... }:
 
 {
-  users.users.betongsuggan = {
-    isNormalUser = true;
-    description = "Betongsuggan user";
-    extraGroups = [
-      "wheel"
-      "networkmanager"
-      "network"
-      "video"
-      "docker"
-    ];
-  };
-
   boot = {
     kernelPackages = pkgs.linuxPackages_latest;
     supportedFilesystems = [ "ntfs" ];

@@ -2,6 +2,7 @@
   pkgs,
   config,
   lib,
+  inputs,
   ...
 }:
 with lib;
@@ -17,13 +18,15 @@ with lib;
     userName = mkOption {
       description = "Name for git";
       type = types.str;
-      default = "Birger Rydback";
+      default = inputs.self.lib.accounts.${config.home.username}.git.name;
+      defaultText = literalExpression "lib.accounts.<user>.git.name";
     };
 
     userEmail = mkOption {
       description = "Email for git";
       type = types.str;
-      default = "birger@humla.io";
+      default = inputs.self.lib.accounts.${config.home.username}.git.email;
+      defaultText = literalExpression "lib.accounts.<user>.git.email";
     };
   };
 

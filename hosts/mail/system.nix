@@ -20,9 +20,6 @@
   hardware.enableRedistributableFirmware = false;
 
   users.users.betongsuggan = {
-    isNormalUser = true;
-    description = "Birger Rydback";
-    extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [
       # Daily-driver identity: birgerrydback@bits. Used to SSH in from the
       # laptop for nixos-rebuild and inspection. Once tailscale is up on this

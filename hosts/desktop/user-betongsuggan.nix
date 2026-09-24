@@ -49,11 +49,6 @@
       };
     };
   };
-  my.git = {
-    enable = true;
-    userName = "Betongsuggan";
-    userEmail = "rydback@gmail.com";
-  };
   my.secrets = {
     enable = true;
     keyProviders = [
