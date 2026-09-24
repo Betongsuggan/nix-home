@@ -12,7 +12,10 @@
     # + its own closure here makes it *substitute* instead of compiling. Drop
     # this input + its overlay once 26.05 ships a working onlyoffice build.
     nixpkgs-onlyoffice.url = "github:NixOS/nixpkgs/e8210c649915deed7080033cdbabcc19e40bb899";
-    nur.url = "github:nix-community/NUR";
+    nur = {
+      url = "github:nix-community/NUR";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
@@ -24,7 +27,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    awscli-local.url = "github:Betongsuggan/awscli-local";
+    # Own flakes and NUR build against the fleet's nixpkgs. walker/elephant
+    # and niri keep their own pins so their Cachix caches keep hitting;
+    # audiomenu/monitormenu keep theirs because their locked rust-overlay
+    # toolchains don't unpack on nixpkgs 26.05 (bump rust-overlay upstream first).
+    awscli-local = {
+      url = "github:Betongsuggan/awscli-local";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     audiomenu.url = "github:Betongsuggan/audiomenu";
     monitormenu.url = "github:Betongsuggan/monitormenu";
     elephant.url = "github:abenz1267/elephant/v2.16.1";
@@ -44,8 +54,14 @@
       flake = false;
     };
 
-    console-mode.url = "github:Betongsuggan/console-mode";
-    d2.url = "github:Betongsuggan/terrastruct-d2-nix";
+    console-mode = {
+      url = "github:Betongsuggan/console-mode";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    d2 = {
+      url = "github:Betongsuggan/terrastruct-d2-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v1.0.0";
