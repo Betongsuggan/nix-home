@@ -78,109 +78,14 @@
     # Bootstrap an installer via `--override-input nix-vault path:...` if the
     # host hasn't joined the tailnet yet.
     nix-vault.url = "git+ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git?ref=main";
-
-    #nix-vault.url = "git+ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git?ref=main";
-    # once you want hosts/installers to fetch over SSH instead of relying on a
-    # local clone. Bootstrap an installer via `--override-input nix-vault path:...`
-    # if the host's SSH key isn't yet authorized on controller.
-    #nix-vault.url = "path:/home/birgerrydback/nix-vault";
   };
 
   outputs =
-    {
-      nixpkgs,
-      nixpkgs-unstable,
-      awscli-local,
-      nur,
-      ...
-    }@inputs:
+    { nixpkgs, ... }@inputs:
     let
       selfLib = import ./lib { inherit (nixpkgs) lib; };
 
-      overlays = [
-        nur.overlays.default
-        (
-          self: super:
-          let
-            mkVicinaeExtension = inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.mkVicinaeExtension;
-          in
-          {
-            awscli-local = awscli-local.packages.${self.stdenv.hostPlatform.system}.default;
-            walker = inputs.walker.packages.${self.stdenv.hostPlatform.system}.default;
-            elephant = inputs.elephant.packages.${self.stdenv.hostPlatform.system}.default;
-            audiomenu = inputs.audiomenu.packages.${self.stdenv.hostPlatform.system}.default;
-            monitormenu = inputs.monitormenu.packages.${self.stdenv.hostPlatform.system}.default;
-            console-mode = inputs.console-mode.packages.${self.stdenv.hostPlatform.system}.default;
-            d2 = inputs.d2.packages.${self.stdenv.hostPlatform.system}.default;
-            # nixpkgs 26.05 ships a newer LayerShellQt whose <LayerShellQt/Shell>
-            # header no longer transitively declares LayerShellQt::Window.
-            # native-file-chooser.cpp uses Shell::Window (= LayerShellQt::Window)
-            # but only includes <LayerShellQt/Shell>, so it fails to compile.
-            # Add the missing include until the fix lands in vicinae-fork.
-            vicinae = (inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.default).overrideAttrs (old: {
-              postPatch = (old.postPatch or "") + ''
-                cpp="$(find . -path '*services/file-chooser/native/native-file-chooser.cpp' | head -1)"
-                if [ -n "$cpp" ]; then
-                  sed -i '/#include <LayerShellQt\/Shell>/a #include <LayerShellQt/Window>' "$cpp"
-                fi
-              '';
-            });
-
-            # Vicinae extensions
-            vicinae-wifi-commander = mkVicinaeExtension {
-              pname = "wifi-commander";
-              src = "${inputs.vicinae-extensions}/extensions/wifi-commander";
-            };
-            vicinae-bluetooth = mkVicinaeExtension {
-              pname = "bluetooth";
-              src = "${inputs.vicinae-extensions}/extensions/bluetooth";
-            };
-            vicinae-monitor = mkVicinaeExtension {
-              pname = "hyprland-monitors";
-              src = "${inputs.vicinae-extensions}/extensions/hyprland-monitors";
-            };
-          }
-        )
-        (final: prev: {
-          unstable = import nixpkgs-unstable {
-            system = prev.stdenv.hostPlatform.system;
-            config.allowUnfree = true;
-          };
-        })
-        # See the nixpkgs-onlyoffice input comment. The upstream NixOS module
-        # derives x2t and x2t-with-fonts-and-themes from this package's
-        # passthru, so overriding onlyoffice-documentserver alone swaps the
-        # whole closure to the pinned (cached, working) build.
-        (final: prev: {
-          onlyoffice-documentserver =
-            (import inputs.nixpkgs-onlyoffice {
-              system = prev.stdenv.hostPlatform.system;
-              config.allowUnfree = true;
-            }).onlyoffice-documentserver;
-        })
-        (import ./overrides/aws-cdk.nix)
-        (import ./overrides/niri.nix { inherit inputs; })
-      ];
-
-      mkHomeConfiguration =
-        userModule:
-        inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = import inputs.nixpkgs {
-            system = "x86_64-linux";
-            inherit overlays;
-            config.allowUnfree = true;
-          };
-
-          modules = [
-            userModule
-            inputs.walker.homeManagerModules.default
-            inputs.vicinae.homeManagerModules.default
-            inputs.stylix.homeModules.stylix
-            inputs.console-mode.homeManagerModules.default
-            inputs.niri.homeModules.niri
-          ];
-          extraSpecialArgs = { inherit inputs overlays; };
-        };
+      overlays = import ./overlays inputs;
     in
     {
       lib = selfLib;
@@ -239,16 +144,5 @@
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
           ];
         }).config.system.build.sdImage;
-
-      homeConfigurations = {
-        "betongsuggan@desktop" = mkHomeConfiguration ./hosts/desktop/user-betongsuggan.nix;
-        "gamer@desktop" = mkHomeConfiguration ./hosts/desktop/user-gamer.nix;
-        "betongsuggan@private-laptop" = mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
-        "birgerrydback@bits" = mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;
-        "betongsuggan@island-stationary" =
-          mkHomeConfiguration ./hosts/island-stationary/user-betongsuggan.nix;
-        "gamer@island-stationary" = mkHomeConfiguration ./hosts/island-stationary/user-gamer.nix;
-        "betongsuggan@controller" = mkHomeConfiguration ./hosts/controller/user-betongsuggan.nix;
-      };
     };
 }
