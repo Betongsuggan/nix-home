@@ -5,7 +5,7 @@ Sets the Linux console (TTY) keyboard layout to Colemak.
 ## Usage
 
 ```nix
-colemak.enable = true;
+my.colemak.enable = true;
 ```
 
 ## Options

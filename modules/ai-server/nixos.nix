@@ -8,10 +8,10 @@
 with lib;
 
 let
-  cfg = config.ai-server;
+  cfg = config.my.ai-server;
 in
 {
-  options.ai-server = {
+  options.my.ai-server = {
     enable = mkEnableOption "Local AI inference server (Ollama on AMD ROCm)";
 
     ollamaPort = mkOption {

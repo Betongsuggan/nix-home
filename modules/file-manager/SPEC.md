@@ -16,7 +16,7 @@ Configurable graphical file manager with backend selection, sidebar bookmarks, a
 
 ```nix
 # In user config only — system services are auto-enabled
-fileManager = {
+my.file-manager = {
   enable = true;
   backend = "thunar";
 
@@ -36,7 +36,7 @@ fileManager = {
 | backend | enum: "thunar", "nautilus", "dolphin", "pcmanfm" | "thunar" | File manager backend to use |
 | networkShares.enable | bool | false | Browse SMB/Samba network shares; auto-enables Avahi (mDNS) on the system |
 | bookmarks | list of string | [] | Bookmark paths for the sidebar (format: `file:///path` or `file:///path Label`) |
-| terminalOverride | function or null | null | Override for terminal command with working directory; if null, uses `config.terminal.commandWithCwd` |
+| terminalOverride | function or null | null | Override for terminal command with working directory; if null, uses `config.my.terminal.commandWithCwd` |
 
 ### Thunar sub-options
 

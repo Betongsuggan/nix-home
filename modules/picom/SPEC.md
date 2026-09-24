@@ -5,7 +5,7 @@ Enables the Picom compositor for X11 with GLX backend, fade animations, and VSyn
 ## Usage
 
 ```nix
-picom.enable = true;
+my.picom.enable = true;
 ```
 
 ## Options

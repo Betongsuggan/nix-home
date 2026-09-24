@@ -7,7 +7,7 @@
 with lib;
 
 let
-  cfg = config.game-streaming.server;
+  cfg = config.my.game-streaming.server;
 
   # Script to prepare streaming session
   # Creates virtual monitor, disables physical monitors, and sets up Steam
@@ -109,7 +109,7 @@ let
 
 in
 {
-  options.game-streaming = {
+  options.my.game-streaming = {
     server = {
       enable = mkOption {
         description = "Enable game streaming server (Sunshine)";
@@ -174,7 +174,7 @@ in
     };
   };
 
-  config = mkIf config.game-streaming.server.enable {
+  config = mkIf config.my.game-streaming.server.enable {
     # Sunshine requires uinput for virtual input devices (keyboard, mouse, gamepad injection)
     boot.kernelModules = [ "uinput" ];
     hardware.uinput.enable = true;

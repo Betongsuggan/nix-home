@@ -49,7 +49,7 @@ The standard runbook (`modules/home-network/SPEC.md`) uses `mode = "bootstrap"` 
 2. **Register in `lib/default.nix`:** fill in the island-pi `ssh.host` entry. Commit, push.
 3. **Controller:** `git pull && sudo nixos-rebuild switch --flake .#controller` (trusts the new key via `allSshKeys`), then mint a preauth key: `sudo headscale preauthkeys create --user birger --reusable --expiration 8760h`.
 4. **nix-vault:** convert the host key (`ssh-to-age`), add the `age1…` recipient to `.sops.yaml`, create `secrets/island-pi.yaml` with `services.headscale-preauthkey`, `sops updatekeys`, commit, push.
-5. **Stage 2 flip in `system.nix`:** uncomment `home-network` (onboarded), `sops-secrets`, and `tailscale-client.advertiseRoutes` (fill the real summer-place subnet); remove `openssh.openFirewall = true`. Then `nix flake update nix-vault` and deploy over LAN:
+5. **Stage 2 flip in `system.nix`:** uncomment `home-network` (onboarded), `sops-secrets`, and `my.tailscale-client.advertiseRoutes` (fill the real summer-place subnet); remove `openssh.openFirewall = true`. Then `nix flake update nix-vault` and deploy over LAN:
    `nixos-rebuild switch --flake .#island-pi --target-host root@<lan-ip>`
 6. **Approve routes on controller** (headscale ≥0.26 syntax; verify with `--help`):
    ```bash
@@ -60,7 +60,7 @@ The standard runbook (`modules/home-network/SPEC.md`) uses `mode = "bootstrap"` 
 
 ## Subnet router
 
-`tailscale-client.advertiseRoutes` (option added to `modules/tailscale-client`) advertises the summer-place LAN and enables IP forwarding. Caveats:
+`my.tailscale-client.advertiseRoutes` (option added to `modules/tailscale-client`) advertises the summer-place LAN and enables IP forwarding. Caveats:
 
 - Flags apply at **registration only**. Changing routes later: `sudo tailscale set --advertise-routes=…` on the Pi.
 - Routes need headscale-side approval (step 6 above).

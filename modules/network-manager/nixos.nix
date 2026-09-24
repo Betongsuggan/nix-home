@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.networkmanager = {
+  options.my.network-manager = {
     enable = mkEnableOption "Enable network management";
 
     hostName = mkOption {
@@ -17,10 +17,10 @@ with lib;
     };
   };
 
-  config = mkIf config.networkmanager.enable {
+  config = mkIf config.my.network-manager.enable {
     environment.systemPackages = [ pkgs.networkmanager ];
     networking = {
-      inherit (config.networkmanager) hostName;
+      inherit (config.my.network-manager) hostName;
 
       # iwd with settings to create the interface
       wireless.iwd = {

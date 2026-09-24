@@ -4,7 +4,7 @@
 
   home.stateVersion = "25.05";
 
-  games = {
+  my.games = {
     enable = true;
     mangohud = {
       enable = true;
@@ -18,22 +18,22 @@
     tools.enable = true;
   };
 
-  general.enable = true;
-  chromium.enable = true;
-  fileManager = {
+  my.general.enable = true;
+  my.chromium.enable = true;
+  my.file-manager = {
     enable = true;
     backend = "thunar";
   };
 
-  communication.enable = true;
-  localsend.enable = true;
-  starship.enable = true;
-  terminal = {
+  my.communication.enable = true;
+  my.localsend.enable = true;
+  my.starship.enable = true;
+  my.terminal = {
     enable = true;
     backend = "alacritty";
   };
 
-  launcher = {
+  my.launcher = {
     enable = true;
     backend = "vicinae";
     vicinae = {
@@ -45,7 +45,7 @@
     };
   };
 
-  controller = {
+  my.controller = {
     enable = true;
     type = "ps5";
     mangohudToggle = {
@@ -60,17 +60,17 @@
   };
 
   # Enable Hyprland for gaming session
-  hyprland.lockscreen.enable = false; # Gaming user doesn't need lockscreen
-  hyprland.windowRules = [
+  my.window-manager.hyprland.lockscreen.enable = false; # Gaming user doesn't need lockscreen
+  my.window-manager.hyprland.windowRules = [
     "fullscreen_state 1 2, match:class ^(steam)$"
     "border_size 0, match:class ^(steam)$"
     "rounding 0, match:class ^(steam)$"
   ];
-  hyprland.workspaceRules = [
+  my.window-manager.hyprland.workspaceRules = [
     "1, gapsin:0, gapsout:0" # No gaps on Steam workspace so maximize fills entire screen
   ];
 
-  windowManager = {
+  my.window-manager = {
     enable = true;
     backend = "hyprland";
     monitors = [
@@ -85,12 +85,12 @@
     };
   };
 
-  shell = {
+  my.shell = {
     enable = true;
     backend = "bash";
   };
 
-  theme = {
+  my.theming = {
     enable = true;
     wallpaper = ../../assets/wallpaper/zeal.jpg;
     cursor = {
@@ -99,7 +99,7 @@
     };
   };
 
-  git = {
+  my.git = {
     enable = true;
     userName = "Betongsuggan";
     userEmail = "rydback@gmail.com";

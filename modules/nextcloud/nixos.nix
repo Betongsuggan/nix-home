@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.nextcloud;
+  cfg = config.my.nextcloud;
 
   # Layered tailnet-only defence. Applied at *location* level (not server
   # level) so the auto-generated `^~ /.well-known/acme-challenge/` location
@@ -31,7 +31,7 @@ let
   '';
 in
 {
-  options.nextcloud = {
+  options.my.nextcloud = {
     enable = mkEnableOption "Nextcloud (file sync + collaboration suite)";
 
     domain = mkOption {

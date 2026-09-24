@@ -8,7 +8,7 @@
 with lib;
 
 {
-  options.autologin = {
+  options.my.autologin = {
     enable = mkEnableOption "Enable autologin functionality";
 
     user = mkOption {
@@ -38,27 +38,27 @@ with lib;
     };
   };
 
-  config = mkIf config.autologin.enable {
+  config = mkIf config.my.autologin.enable {
     # GDM autologin straight into the configured Wayland session
-    services.displayManager = mkIf (config.autologin.method == "gdm") {
+    services.displayManager = mkIf (config.my.autologin.method == "gdm") {
       gdm = {
         enable = true;
         autoSuspend = false;
       };
       autoLogin = {
         enable = true;
-        user = config.autologin.user;
+        user = config.my.autologin.user;
       };
-      defaultSession = config.autologin.session;
+      defaultSession = config.my.autologin.session;
     };
 
     # Getty-based autologin for console/minimal setups
-    systemd.services."getty@${config.autologin.tty}" = mkIf (config.autologin.method == "getty") {
+    systemd.services."getty@${config.my.autologin.tty}" = mkIf (config.my.autologin.method == "getty") {
       overrideStrategy = "asDropin";
       serviceConfig = {
         ExecStart = [
           ""
-          "${pkgs.util-linux}/sbin/agetty --autologin ${config.autologin.user} --noclear --keep-baud ${config.autologin.tty} 115200,38400,9600 $TERM"
+          "${pkgs.util-linux}/sbin/agetty --autologin ${config.my.autologin.user} --noclear --keep-baud ${config.my.autologin.tty} 115200,38400,9600 $TERM"
         ];
         # Don't restart so quickly if the session exits
         RestartSec = "5";
@@ -67,7 +67,7 @@ with lib;
 
     # Empty password so the unprivileged autologin user can unlock its own
     # session; it is deliberately granted no sudo rights
-    users.users.${config.autologin.user} = {
+    users.users.${config.my.autologin.user} = {
       hashedPassword = mkDefault "";
     };
   };

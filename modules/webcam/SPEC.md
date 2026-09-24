@@ -7,7 +7,7 @@ Also installs `cameractrls-gtk4` for interactive discovery and adjustment of con
 ## Usage
 
 ```nix
-webcam = {
+my.webcam = {
   enable = true;
   cameras = [
     {

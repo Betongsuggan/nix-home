@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.diskEncryption = {
+  options.my.disk-encryption = {
     enable = mkEnableOption "Enable Disk Encryption";
 
     diskId = mkOption {
@@ -21,11 +21,11 @@ with lib;
     };
   };
 
-  config = mkIf config.diskEncryption.enable {
+  config = mkIf config.my.disk-encryption.enable {
     boot.initrd.luks.devices = {
       crypted = {
-        device = "/dev/disk/by-partuuid/${config.diskEncryption.diskId}";
-        header = "/dev/disk/by-partuuid/${config.diskEncryption.headerId}";
+        device = "/dev/disk/by-partuuid/${config.my.disk-encryption.diskId}";
+        header = "/dev/disk/by-partuuid/${config.my.disk-encryption.headerId}";
         allowDiscards = true;
         preLVM = true;
       };

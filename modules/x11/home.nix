@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.x11 = {
+  options.my.x11 = {
     enable = mkEnableOption "Enable X11";
   };
 
-  config = mkIf config.x11.enable {
+  config = mkIf config.my.x11.enable {
     xsession.enable = true;
     xresources.extraConfig = ''
       ! -----------------------------------------------------------------------------

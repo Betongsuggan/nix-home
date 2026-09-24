@@ -5,7 +5,7 @@ Configures system power management using TLP, with vendor-specific tuning for AM
 ## Usage
 
 ```nix
-power-management = {
+my.power-management = {
   enable = true;
   cpuVendor = "amd";
   gpuVendor = "amd";
@@ -19,7 +19,7 @@ power-management = {
 Capping peak draw on AC and recording power telemetry (see *Power-loss forensics*):
 
 ```nix
-power-management = {
+my.power-management = {
   enable = true;
   cpuVendor = "amd";
   gpuVendor = "amd";

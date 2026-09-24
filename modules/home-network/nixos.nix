@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.home-network;
+  cfg = config.my.home-network;
 
   isController = cfg.mode == "controller";
   isBootstrap = cfg.mode == "bootstrap";
@@ -111,7 +111,7 @@ let
   };
 in
 {
-  options.home-network = {
+  options.my.home-network = {
     enable = mkEnableOption ''
       Membership of the home tailnet. Wraps headscale (controller mode),
       tailscale client, SSH-on-tailscale0 firewall + authorized_keys, and
@@ -291,7 +291,7 @@ in
       # tailscale-client wiring to the existing `tailnet` module. `home-network`
       # is the host-facing aggregator; `tailnet` remains the low-level
       # building block.
-      tailnet = {
+      my.tailnet = {
         enable = true;
         inherit (cfg) authorizeSshFor;
       };
@@ -313,7 +313,7 @@ in
         }
       ];
 
-      headscale = {
+      my.headscale = {
         enable = true;
         inherit (cfg.controller.headscale)
           domain
@@ -401,7 +401,7 @@ in
         };
       };
 
-      reverse-proxy = {
+      my.reverse-proxy = {
         domains = [
           cfg.controller.headscale.domain
           cfg.controller.bootstrap.publicDomain
@@ -450,7 +450,7 @@ in
       # `cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age` during the
       # nix-vault enrollment step. Firewall stays closed (sshd is effectively
       # unreachable) — we just need the key on disk.
-      openssh.enable = true;
+      my.openssh.enable = true;
 
       # Kernel-mode tailscaled with no auto-join key. The bootstrap helper
       # drives the join manually via `tailscale up` with the YubiKey-decrypted

@@ -5,7 +5,7 @@ Configures network file sharing via Samba (SMB). Supports defining multiple shar
 ## Usage
 
 ```nix
-file-sharing = {
+my.file-sharing = {
   enable = true;
   samba = {
     enable = true;

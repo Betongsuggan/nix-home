@@ -2,17 +2,16 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
 with lib;
 
 let
-  hmUsers = config.home-manager.users or { };
-  anyUserEnabled = any (u: (u.fileManager.enable or false)) (attrValues hmUsers);
-  anyNetworkShares = any (
-    u: (u.fileManager.enable or false) && (u.fileManager.networkShares.enable or false)
-  ) (attrValues hmUsers);
+  anyUser = inputs.self.lib.anyHomeUser config;
+  anyUserEnabled = anyUser (u: u.my.file-manager.enable);
+  anyNetworkShares = anyUser (u: u.my.file-manager.enable && u.my.file-manager.networkShares.enable);
 in
 {
   config = mkMerge [

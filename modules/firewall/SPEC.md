@@ -5,7 +5,7 @@ Enables the NixOS firewall and allows specifying open TCP and UDP ports for inco
 ## Usage
 
 ```nix
-firewall = {
+my.firewall = {
   enable = true;
   tcpPorts = [ 22 80 443 ];
   udpPorts = [ 53 ];

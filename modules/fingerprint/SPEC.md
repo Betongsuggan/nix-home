@@ -5,7 +5,7 @@ Enables fingerprint authentication via fprintd with support for multiple sensor 
 ## Usage
 
 ```nix
-fingerprint = {
+my.fingerprint = {
   enable = true;
   driver = "goodix";
 };
@@ -35,7 +35,7 @@ A oneshot systemd service (`fprintd-lid-check`) also runs at boot to stop fprint
 If your hardware uses a different lid state path (e.g. `LID` instead of `LID0`), override `lidStatePath`:
 
 ```nix
-fingerprint = {
+my.fingerprint = {
   enable = true;
   clamshellAware = true;
   lidStatePath = "/proc/acpi/button/lid/LID/state";

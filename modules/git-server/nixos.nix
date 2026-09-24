@@ -8,10 +8,10 @@
 with lib;
 
 let
-  cfg = config.git-server;
+  cfg = config.my.git-server;
 in
 {
-  options.git-server = {
+  options.my.git-server = {
     enable = mkEnableOption "Minimal SSH-based git server (git-shell, no web UI)";
 
     user = mkOption {

@@ -35,14 +35,14 @@
   # operator over SSH; protected by SSH key + sudo prompt.
   security.sudo.wheelNeedsPassword = false;
 
-  openssh = {
+  my.openssh = {
     enable = true;
     openFirewall = true;
     permitRootLogin = "prohibit-password";
     passwordAuthentication = false;
   };
 
-  firewall = {
+  my.firewall = {
     enable = true;
     tcpPorts = [
       22 # SSH (TODO: restrict to tailnet interface once enrolled)

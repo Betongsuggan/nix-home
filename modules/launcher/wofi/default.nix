@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.launcher;
+  cfg = config.my.launcher;
 
   # Helper to build wofi dmenu command
   buildDmenuCmd =
@@ -64,7 +64,7 @@ let
 
 in
 {
-  options.launcher.wofi = {
+  options.my.launcher.wofi = {
     settings = mkOption {
       type = types.attrs;
       default = {
@@ -110,10 +110,10 @@ in
   };
 
   config = mkIf (cfg.enable && cfg.backend == "wofi") {
-    launcher.wofi.buildDmenuCmd = buildDmenuCmd;
-    launcher.wofi.buildShowCmd = buildShowCmd;
-    launcher.wofi.wifi = wifiControl;
-    launcher.wofi.bluetooth = bluetoothControl;
+    my.launcher.wofi.buildDmenuCmd = buildDmenuCmd;
+    my.launcher.wofi.buildShowCmd = buildShowCmd;
+    my.launcher.wofi.wifi = wifiControl;
+    my.launcher.wofi.bluetooth = bluetoothControl;
 
     home.packages = with pkgs; [
       wofi
@@ -132,10 +132,10 @@ in
           ''
             window {
               font-size: 18px;
-              border-radius: ${config.theme.cornerRadius};
-              border-color: ${config.theme.colors.orange-light};
-              background-color: ${config.theme.colors.background-dark};
-              color: ${config.theme.colors.text-light};
+              border-radius: ${config.my.theming.cornerRadius};
+              border-color: ${config.my.theming.colors.orange-light};
+              background-color: ${config.my.theming.colors.background-dark};
+              color: ${config.my.theming.colors.text-light};
             }
 
             #entry {
@@ -143,16 +143,16 @@ in
             }
 
             #entry:selected {
-              background-color: ${config.theme.colors.red-dark};
+              background-color: ${config.my.theming.colors.red-dark};
             }
 
             #text:selected {
-              color: ${config.theme.colors.text-light};
+              color: ${config.my.theming.colors.text-light};
             }
 
             #input {
-              background-color: ${config.theme.colors.background-light};
-              color: ${config.theme.colors.text-light};
+              background-color: ${config.my.theming.colors.background-light};
+              color: ${config.my.theming.colors.text-light};
               padding: 0.50em;
             }
 

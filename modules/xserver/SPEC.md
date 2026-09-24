@@ -5,7 +5,7 @@ Enables the X11 display server with a configurable display manager and optional 
 ## Usage
 
 ```nix
-xserver = {
+my.xserver = {
   enable = true;
   displayManager = "lightdm";
 };

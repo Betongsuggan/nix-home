@@ -7,10 +7,10 @@
 with lib;
 
 let
-  cfg = config.printers;
+  cfg = config.my.printers;
 in
 {
-  options.printers = {
+  options.my.printers = {
     enable = mkEnableOption "Enable Printers";
 
     remoteDiscovery = mkOption {

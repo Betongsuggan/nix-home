@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.inputRemapper;
+  cfg = config.my.input-remapper;
 
   sanitizeDeviceName =
     name:
@@ -141,7 +141,7 @@ let
 
 in
 {
-  options.inputRemapper = {
+  options.my.input-remapper = {
     enable = mkEnableOption "input-remapper declarative key remapping";
 
     devices = mkOption {

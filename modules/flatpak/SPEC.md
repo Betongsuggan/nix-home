@@ -5,7 +5,7 @@ Enables Flatpak support by configuring the necessary XDG data directories so tha
 ## Usage
 
 ```nix
-flatpak.enable = true;
+my.flatpak.enable = true;
 ```
 
 ## Options

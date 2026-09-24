@@ -16,11 +16,12 @@ module). Shared wiring (module aggregators, overlays from `overlays/`, unfree po
 `mk-host.nix` once; hosts never repeat it. Upstream flake modules (lanzaboote, sops-nix, stylix, niri, ...) are imported
 by the modules that use them.
 
-The modules are defined in the `modules/` folder. System modules configure host-wide settings (graphics, cpu, bluetooth,
-networking, etc.) and are aggregated via `modules/system.nix`. User modules configure per-user settings (window managers,
-browsers, development setups, etc.) and are aggregated via `modules/user.nix`. Some modules (file-manager, emulation-server,
-game-streaming) have both a `system.nix` and `user.nix` inside a single directory, with auto-enable logic so users only
-need to enable the module in one place.
+The modules are defined in the `modules/` folder, one directory per module. A module's NixOS half lives in
+`modules/<name>/nixos.nix` and its Home Manager half in `modules/<name>/home.nix` (either may be absent);
+`modules/nixos.nix` and `modules/home.nix` import them. Every custom option lives under `my.<name>`, where `<name>` is
+the module's directory (e.g. `my.window-manager.hyprland`, `my.file-manager`). When a feature is switched on per user in
+Home Manager but needs system-side support, the `nixos.nix` half derives its enable from the users with
+`inputs.self.lib.anyHomeUser config (u: u.my.<name>.enable)`, so the user only enables it in one place.
 
 When we're creating new modules, it is importand that TO AS BIG EXTENT POSSIBLE use the nix programming language to define it.
 

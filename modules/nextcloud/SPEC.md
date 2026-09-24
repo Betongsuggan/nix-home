@@ -5,7 +5,7 @@ Self-hosted file sync + collaboration suite. Backend for Google Workspace replac
 ## Usage
 
 ```nix
-nextcloud = {
+my.nextcloud = {
   enable        = true;
   domain        = "cloud.example.com";
   adminUser     = "betongsuggan";

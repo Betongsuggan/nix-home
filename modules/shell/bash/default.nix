@@ -2,19 +2,19 @@
 with lib;
 
 {
-  config = mkIf config.shell.bash.enable {
+  config = mkIf config.my.shell.bash.enable {
     programs.bash = {
       enable = true;
-      shellAliases = config.shell.aliases;
+      shellAliases = config.my.shell.aliases;
 
       initExtra = ''
         # Include .profile if it exists
         [[ -f ~/.profile ]] && . ~/.profile
 
-        ${optionalString config.shell.viMode "set -o vi"}
-        export EDITOR="${config.shell.editor}"
+        ${optionalString config.my.shell.viMode "set -o vi"}
+        export EDITOR="${config.my.shell.editor}"
 
-        ${config.shell.bash.extraInit}
+        ${config.my.shell.bash.extraInit}
       '';
     };
   };

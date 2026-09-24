@@ -15,7 +15,7 @@ with lib;
     ./utils
   ];
 
-  options.controls = {
+  options.my.controls = {
     enable = mkEnableOption "Enable system controls";
 
     windowManager = mkOption {
@@ -148,11 +148,11 @@ with lib;
     };
   };
 
-  config = mkIf config.controls.enable {
+  config = mkIf config.my.controls.enable {
     # Auto-enable notifications when controls are enabled
-    notifications.enable = mkDefault true;
+    my.notifications.enable = mkDefault true;
 
-    # Provide access to individual control modules through config.controls
+    # Provide access to individual control modules through config.my.controls
     home.packages = with pkgs; [
       # Common dependencies for all controls
       coreutils

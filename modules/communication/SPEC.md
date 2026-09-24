@@ -5,7 +5,7 @@ Installs communication applications (currently Slack).
 ## Usage
 
 ```nix
-communication.enable = true;
+my.communication.enable = true;
 ```
 
 ## Options

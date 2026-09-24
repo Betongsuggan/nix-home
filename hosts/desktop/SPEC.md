@@ -18,7 +18,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - Vulkan environment uses Mesa/RADV defaults (only HDR + present-mode vars); RDNA2-era tuning vars (`RADV_PERFTEST`, `VKD3D_CONFIG=dxr*`, etc.) were removed after they caused severe UE5 performance regressions — see `modules/graphics/SPEC.md`
 - RetroArch with 10 libretro cores (SNES, NES, GB/GBC/GBA, N64, NDS, PSX, Mega Drive, Dreamcast, Saturn, Arcade), saves/states declaratively inside the synced `~/emulation/saves/retroarch/{saves,states}` tree, a baked udev autoconfig for the Sunshine virtual pad (locally-connected pads like the DualSense come from the upstream autoconfig DB), and a controller-independent Start+Select quit combo (menu opens via each pad's Guide/PS button)
 - Standalone emulators: PCSX2 (PS2), Dolphin (GameCube/Wii), PPSSPP (PSP); PSX is covered by the beetle-psx-hw core (Duckstation left nixpkgs 26.05)
-- Per-ROM Steam tiles (gamer user, `games.emulators.steamShortcuts`): every ROM on the controller shares — SNES/NES/GB/GBC/GBA/N64/PSX/Mega Drive/Master System plus Switch — becomes a Steam Big Picture tile (streamable over Moonlight), written directly into `shortcuts.vdf` by `emulation-apply-shortcuts`. Tile artwork is fetched from SteamGridDB using an API key from the vault's shared `common.yaml` (sops → `/run/secrets/steamgriddb-api-key`, owner `gamer`; the sops entry is skipped while `common.yaml` doesn't exist in nix-vault yet). See `modules/games/SPEC.md`.
+- Per-ROM Steam tiles (gamer user, `my.games.emulators.steamShortcuts`): every ROM on the controller shares — SNES/NES/GB/GBC/GBA/N64/PSX/Mega Drive/Master System plus Switch — becomes a Steam Big Picture tile (streamable over Moonlight), written directly into `shortcuts.vdf` by `emulation-apply-shortcuts`. Tile artwork is fetched from SteamGridDB using an API key from the vault's shared `common.yaml` (sops → `/run/secrets/steamgriddb-api-key`, owner `gamer`; the sops entry is skipped while `common.yaml` doesn't exist in nix-vault yet). See `modules/games/SPEC.md`.
 - Nintendo Switch (gamer user) via Ryubing (Ryujinx fork, from unstable). Keys/firmware are uploaded to the controller `bios/switch` Samba share and copied into Ryujinx's data dir; Switch is one `steamShortcuts` system entry (folder layout, `.xci`). See `modules/games/SPEC.md`.
 - BoilR for store-launcher (Heroic/Lutris) Steam library integration; Steam ROM Manager is installed but unused (headless CLI hangs — the direct writer replaces it)
 - Emulation mounts: controller's `emulation-roms` + `emulation-bios` shares auto-mount for both `betongsuggan` and `gamer` at `~/emulation/{roms,bios}`
@@ -30,7 +30,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - Development environment on betongsuggan user with Docker support
 - Vicinae launcher with wifi, bluetooth, and monitor extensions on both users
 - Firefox, communication apps, and LocalSend on both users
-- PrusaSlicer on `betongsuggan` only (`printing3d.enable`, see `modules/3d-printing/SPEC.md`)
+- PrusaSlicer on `betongsuggan` only (`my.printing-3d.enable`, see `modules/3d-printing/SPEC.md`)
 - Alacritty terminal with Bash shell and Starship prompt
 - Bluetooth with wake support for DualSense controller
 - Secure boot via Lanzaboote

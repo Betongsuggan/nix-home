@@ -5,7 +5,7 @@ Configures Waybar, a status bar for Wayland compositors. Includes built-in modul
 ## Usage
 
 ```nix
-waybar.enable = true;
+my.waybar.enable = true;
 ```
 
 ## Options
@@ -16,7 +16,7 @@ waybar.enable = true;
 
 ## Notes
 
-- Requires the `theme` module to be enabled, as the bar styling references `config.theme.colors` and `config.theme.font`.
+- Requires the `theme` module to be enabled, as the bar styling references `config.my.theming.colors` and `config.my.theming.font`.
 - The bar is positioned at the bottom of the screen in dock mode.
 - Left modules: app menu (wofi launcher), clock, CPU, GPU, memory, audio volume, and media player info.
 - Right modules: Sway workspaces, network status, battery, system tray, and hostname.

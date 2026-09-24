@@ -5,7 +5,7 @@ Configures GPU drivers and hardware acceleration for AMD, NVIDIA, and Intel grap
 ## Usage
 
 ```nix
-graphics = {
+my.graphics = {
   enable = true;
   amd = true;
   nvidia = false;

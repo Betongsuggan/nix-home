@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.general = {
+  options.my.general = {
     enable = mkEnableOption "Enable general desktop programs";
   };
 
-  config = mkIf config.general.enable {
+  config = mkIf config.my.general.enable {
     dconf.enable = true;
 
     home.sessionVariables = {

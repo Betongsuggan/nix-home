@@ -7,7 +7,7 @@ Designed to front a sleepable host that runs heavy services (in this repo: the `
 ## Usage
 
 ```nix
-wake-proxy = {
+my.wake-proxy = {
   enable = true;
   targetMac = "aa:bb:cc:dd:ee:ff";
   targetHost = "100.64.0.5";       # tailnet IP of the sleepy host

@@ -9,10 +9,10 @@
 with lib;
 
 let
-  cfg = config.restic-backup;
+  cfg = config.my.restic-backup;
 in
 {
-  options.restic-backup = {
+  options.my.restic-backup = {
     enable = mkEnableOption "Push-mode restic backups to one or more SFTP targets";
 
     paths = mkOption {

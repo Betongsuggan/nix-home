@@ -26,7 +26,7 @@ Each is a tailnet-only nginx vhost on controller (`allow 100.64.0.0/10; deny all
 ## Usage
 
 ```nix
-ai-server = {
+my.ai-server = {
   enable = true;
   comfyui.enable = true;   # optional, off by default
 };
@@ -74,14 +74,14 @@ ai-server = {
 - ComfyUI and Speaches run with `--network=host` rather than publishing ports with `-p`. Docker-published ports are DNAT'd past the NixOS firewall and would be reachable on every interface; host-network listeners are filtered by it, so the `tailscale0`-only rule actually holds.
 - **SearXNG, Tika, Jupyter** follow the same containerised pattern as ComfyUI / Speaches: systemd-managed `docker run --rm`, loopback-only ports, persistent state under `/var/lib/<name>` where applicable. None are exposed on `tailscale0` — Open WebUI is the only consumer and calls them over `127.0.0.1`.
 - **Secrets**: `ai-server-secrets.service` is a one-shot that runs on first boot, generates random Jupyter and SearXNG tokens via `openssl rand`, and writes them to `/var/lib/ai-server/secrets/env` (root:root 0600). Open WebUI, Jupyter and SearXNG all read this file via systemd `EnvironmentFile`, so the values are shared without ever appearing in the Nix store. To rotate, delete the file and `systemctl restart ai-server-secrets`.
-- **`nomic-embed-text`** is added to `ai-server.models` so RAG/memory/search reranking work out of the box. ~270 MB pull, runs efficiently on either CPU or GPU.
+- **`nomic-embed-text`** is added to `my.ai-server.models` so RAG/memory/search reranking work out of the box. ~270 MB pull, runs efficiently on either CPU or GPU.
 - `ENABLE_PERSISTENT_CONFIG = "False"` is set on Open WebUI so env vars are authoritative on every boot. Without it, Open WebUI seeds env-var values into its DB the first time and then the DB wins — meaning UI edits silently override anything we declare here. With it disabled, this module is the single source of truth for admin/system settings; per-user preferences (each user's personal Audio overrides etc.) still persist normally.
 - When `comfyui.enable = true`, Open WebUI is automatically wired to it via env vars (`ENABLE_IMAGE_GENERATION`, `IMAGE_GENERATION_ENGINE=comfyui`, `COMFYUI_BASE_URL=http://127.0.0.1:<port>`, `IMAGE_GENERATION_MODEL=sd_xl_base_1.0.safetensors`, `IMAGE_SIZE=1024x1024`, `IMAGE_STEPS=25`). To use a different default checkpoint, drop it into `${comfyui.dataDir}/models/checkpoints/` and edit the `IMAGE_GENERATION_MODEL` value in the module.
 - **Custom workflows** are declarative via `comfyui.workflow` (path to a JSON file in ComfyUI's *API format*) and `comfyui.workflowNodes` (which nodes correspond to which generation parameters). A starter SDXL txt2img workflow ships at `modules/ai-server/comfyui/workflows/sdxl-base.json`; the matching node-mapping for it is shown below. Author new workflows by building the graph in ComfyUI, then **menu → Save (API Format)**; commit the JSON next to `sdxl-base.json` and reference it from your host config.
 
 ```nix
 # in hosts/<host>/system.nix
-ai-server.comfyui = {
+my.ai-server.comfyui = {
   enable = true;
   workflow = ../../modules/ai-server/comfyui/workflows/sdxl-base.json;
   workflowNodes = [

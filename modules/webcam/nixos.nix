@@ -7,7 +7,7 @@
 with lib;
 
 let
-  cfg = config.webcam;
+  cfg = config.my.webcam;
 
   cameraType = types.submodule {
     options = {
@@ -71,7 +71,7 @@ let
 
 in
 {
-  options.webcam = {
+  options.my.webcam = {
     enable = mkEnableOption "webcam settings management";
 
     cameras = mkOption {

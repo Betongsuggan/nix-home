@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.emulation-client;
+  cfg = config.my.emulation-client;
   controllerSyncthingId = inputs.self.lib.hosts.controller.users.betongsuggan.syncthing.id;
   controllerTailnetFqdn = inputs.self.lib.tailnet.fqdn "controller";
 
@@ -33,7 +33,7 @@ let
 
 in
 {
-  options.emulation-client = {
+  options.my.emulation-client = {
     enable = mkEnableOption "Emulation client (save sync + ROM access)";
 
     savesDir = mkOption {

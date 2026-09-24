@@ -6,24 +6,24 @@
   home.file.".ssh/id_ed25519.pub".text =
     inputs.self.lib.hosts.controller.users.betongsuggan.ssh.ssh_ed25519 + "\n";
 
-  general.enable = true;
-  starship.enable = true;
+  my.general.enable = true;
+  my.starship.enable = true;
 
   home.packages = with pkgs; [
     unstable.claude-code
   ];
 
-  terminal = {
+  my.terminal = {
     enable = true;
     backend = "alacritty";
   };
 
-  shell = {
+  my.shell = {
     enable = true;
     backend = "bash";
   };
 
-  sops-edit.enable = true;
+  my.sops.enable = true;
   #chromium.enable = true;
   #notifications.enable = true;
 
@@ -46,7 +46,7 @@
   #  monitors = [ ",preferred,auto,1" ];
   #};
 
-  theme = {
+  my.theming = {
     enable = true;
     wallpaper = ../../assets/wallpaper/zeal.jpg;
     #cursor = {
@@ -55,7 +55,7 @@
     #};
   };
 
-  git = {
+  my.git = {
     enable = true;
     userName = "Betongsuggan";
     userEmail = "birger.rydback@gmail.com";

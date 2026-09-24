@@ -8,27 +8,27 @@
 with lib;
 
 let
-  cfg = config.battery-monitor;
+  cfg = config.my.battery-monitor;
 
   # Notification commands using the notifications module. All share the
   # battery category's icon and a charge progress bar; severity is signaled
   # by urgency (frame color) alone. The state-specific battery-* icons only
   # exist in Papirus' panel/ context, which dunst's icon path doesn't cover.
-  notifyChargerConnected = config.notifications.send {
+  notifyChargerConnected = config.my.notifications.send {
     category = "battery";
     summary = "Charger connected";
     body = "\$PERCENT% · \$POWER_DRAW";
     progress = "\$PERCENT";
   };
 
-  notifyChargerDisconnected = config.notifications.send {
+  notifyChargerDisconnected = config.my.notifications.send {
     category = "battery";
     summary = "Charger disconnected";
     body = "\$PERCENT% · \$POWER_DRAW";
     progress = "\$PERCENT";
   };
 
-  notifyCritical = config.notifications.send {
+  notifyCritical = config.my.notifications.send {
     category = "battery";
     urgency = "critical";
     summary = "Battery critical";
@@ -36,7 +36,7 @@ let
     progress = "\$PERCENT";
   };
 
-  notifyLow = config.notifications.send {
+  notifyLow = config.my.notifications.send {
     category = "battery";
     urgency = "normal";
     summary = "Battery low";
@@ -120,7 +120,7 @@ let
 
 in
 {
-  options.battery-monitor = {
+  options.my.battery-monitor = {
     enable = mkEnableOption "Enable battery monitoring with notifications";
 
     lowThreshold = mkOption {
@@ -144,7 +144,7 @@ in
 
   config = mkIf cfg.enable {
     # Auto-enable notifications when battery-monitor is enabled
-    notifications.enable = mkDefault true;
+    my.notifications.enable = mkDefault true;
 
     home.packages = [ batteryMonitorScript ];
 

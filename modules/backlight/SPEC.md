@@ -5,7 +5,7 @@ Adds udev rules to allow members of the `video` group to control screen backligh
 ## Usage
 
 ```nix
-backlight.enable = true;
+my.backlight.enable = true;
 ```
 
 ## Options

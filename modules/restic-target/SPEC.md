@@ -5,7 +5,7 @@ Receive restic backups from one or more source hosts. Pairs with the `restic-bac
 ## Usage
 
 ```nix
-restic-target = {
+my.restic-target = {
   enable = true;
   sources.controller = {
     sshKey = inputs.self.lib.hosts.controller.users.restic.ssh.id_ed25519;
@@ -18,7 +18,7 @@ restic-target = {
 Adding a second source is one attribute:
 
 ```nix
-restic-target.sources.bits = {
+my.restic-target.sources.bits = {
   sshKey = inputs.self.lib.hosts.bits.users.restic.ssh.id_ed25519;
 };
 ```
@@ -41,7 +41,7 @@ Why this matters:
 
 - One canonical place for any host's identities. Cross-host references stay consistent.
 - Adding a new source = one edit to `lib/default.nix`, not edits in every receiver that should accept it.
-- The existing `allSshKeys` collector picks up restic keys automatically, so anything that already iterates over the fleet's pubkeys (like `git-server.authorizedKeys`) keeps working without further changes.
+- The existing `allSshKeys` collector picks up restic keys automatically, so anything that already iterates over the fleet's pubkeys (like `my.git-server.authorizedKeys`) keeps working without further changes.
 
 The source itself (the `restic-backup` module) consumes the **private** half from sops — that one's a per-host secret, not a shared key.
 

@@ -7,7 +7,7 @@ Declarative key remapping via input-remapper. This is a system-level module that
 In your host's `system.nix`:
 
 ```nix
-inputRemapper = {
+my.input-remapper = {
   enable = true;
   devices."Logitech G13 Gaming Keypad" = {
     preset = "gaming";

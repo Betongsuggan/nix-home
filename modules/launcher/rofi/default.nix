@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.launcher;
+  cfg = config.my.launcher;
 
   # Helper to build rofi dmenu command
   buildDmenuCmd =
@@ -66,11 +66,11 @@ let
 
 in
 {
-  options.launcher.rofi = {
+  options.my.launcher.rofi = {
     terminal = mkOption {
       type = types.str;
-      default = config.terminal.command;
-      description = "Terminal to use with rofi (defaults to config.terminal.command)";
+      default = config.my.terminal.command;
+      description = "Terminal to use with rofi (defaults to config.my.terminal.command)";
     };
 
     theme = mkOption {
@@ -109,10 +109,10 @@ in
   };
 
   config = mkIf (cfg.enable && cfg.backend == "rofi") {
-    launcher.rofi.buildDmenuCmd = buildDmenuCmd;
-    launcher.rofi.buildShowCmd = buildShowCmd;
-    launcher.rofi.wifi = wifiControl;
-    launcher.rofi.bluetooth = bluetoothControl;
+    my.launcher.rofi.buildDmenuCmd = buildDmenuCmd;
+    my.launcher.rofi.buildShowCmd = buildShowCmd;
+    my.launcher.rofi.wifi = wifiControl;
+    my.launcher.rofi.bluetooth = bluetoothControl;
 
     programs.rofi = {
       enable = true;

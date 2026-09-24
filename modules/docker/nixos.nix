@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.docker = {
+  options.my.docker = {
     enable = mkEnableOption "Enable Docker";
   };
 
-  config = mkIf config.docker.enable {
+  config = mkIf config.my.docker.enable {
 
     environment.systemPackages = [ pkgs.docker-compose ];
 

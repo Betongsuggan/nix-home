@@ -5,7 +5,7 @@ Enables the Kanshi dynamic display configuration daemon for Wayland, which autom
 ## Usage
 
 ```nix
-kanshi.enable = true;
+my.kanshi.enable = true;
 ```
 
 ## Options

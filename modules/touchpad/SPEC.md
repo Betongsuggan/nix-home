@@ -5,7 +5,7 @@ Enables touchpad support via libinput with tap-to-click, flat acceleration profi
 ## Usage
 
 ```nix
-touchpad.enable = true;
+my.touchpad.enable = true;
 ```
 
 ## Options

@@ -1,11 +1,11 @@
 # Notifications
 
-A backend-agnostic notification system that supports dunst and mako as notification daemons. Exposes a unified `notifications.send` function that other modules can use to send notifications without knowing which backend is active.
+A backend-agnostic notification system that supports dunst and mako as notification daemons. Exposes a unified `my.notifications.send` function that other modules can use to send notifications without knowing which backend is active.
 
 ## Usage
 
 ```nix
-notifications = {
+my.notifications = {
   enable = true;
   backend = "dunst";
   windowManager = "hyprland";

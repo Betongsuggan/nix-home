@@ -5,7 +5,7 @@ Configures git with user identity, diff-so-fancy pager, SSH-based GitHub URLs, c
 ## Usage
 
 ```nix
-git = {
+my.git = {
   enable = true;
   userName = "Your Name";
   userEmail = "you@example.com";

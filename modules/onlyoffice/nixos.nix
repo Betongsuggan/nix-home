@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.onlyoffice;
+  cfg = config.my.onlyoffice;
 
   # Same per-location tailnet-only pattern as [[nextcloud]]. Applied to the
   # catch-all `/` (proxies to docservice), the document `(doc|downloadas)`
@@ -28,7 +28,7 @@ let
   '';
 in
 {
-  options.onlyoffice = {
+  options.my.onlyoffice = {
     enable = mkEnableOption "OnlyOffice Document Server (collaborative editing backend)";
 
     domain = mkOption {

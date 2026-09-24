@@ -7,10 +7,10 @@
 with lib;
 
 let
-  cfg = config.terminal;
+  cfg = config.my.terminal;
 
   # Use terminal font family or fall back to theme font
-  fontFamily = if cfg.font.family != null then cfg.font.family else config.theme.font.name;
+  fontFamily = if cfg.font.family != null then cfg.font.family else config.my.theming.font.name;
 
   # Build font strings for urxvt (xft format)
   fontSize = cfg.font.size;
@@ -23,7 +23,7 @@ let
 
 in
 {
-  config = mkIf config.terminal.urxvt.enable {
+  config = mkIf config.my.terminal.urxvt.enable {
     home.sessionVariables = {
       TERMINFO_DIRS = "${pkgs.rxvt-unicode-unwrapped.terminfo.outPath}/share/terminfo";
     };

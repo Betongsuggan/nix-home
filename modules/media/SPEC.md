@@ -11,7 +11,7 @@ This module deliberately covers only DRM-free sources. Services that require Wid
 ## Usage
 
 ```nix
-media.enable = true;
+my.media.enable = true;
 ```
 
 ## Options

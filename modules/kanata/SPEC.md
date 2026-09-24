@@ -5,7 +5,7 @@ Enables keyboard customization using Kanata. Configures home row modifiers with 
 ## Usage
 
 ```nix
-keyboard.enable = true;
+my.kanata.enable = true;
 ```
 
 ## Options

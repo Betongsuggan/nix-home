@@ -44,12 +44,12 @@ let
 
   # Generate output configurations for all monitors
   monitorOutputs = lib.concatStringsSep "\n" (
-    map convertMonitorToSwayOutput config.windowManager.monitors
+    map convertMonitorToSwayOutput config.my.window-manager.monitors
   );
 
 in
 {
-  options.sway = {
+  options.my.window-manager.sway = {
     enable = mkEnableOption "Enable Sway";
     lockscreen.enable = mkOption {
       type = types.bool;
@@ -58,7 +58,7 @@ in
     };
   };
 
-  config = mkIf config.sway.enable {
+  config = mkIf config.my.window-manager.sway.enable {
 
     home.packages =
       with pkgs;
@@ -69,7 +69,7 @@ in
         #mako
         networkmanager_dmenu
       ]
-      ++ optionals config.sway.lockscreen.enable [
+      ++ optionals config.my.window-manager.sway.lockscreen.enable [
         swaylock-effects
       ];
 
@@ -78,10 +78,10 @@ in
       wrapperFeatures.gtk = true;
       config = rec {
         inherit modifier;
-        terminal = config.terminal.command;
-        menu = config.launcher.show { mode = "drun"; };
+        terminal = config.my.terminal.command;
+        menu = config.my.launcher.show { mode = "drun"; };
 
-        fonts = with config.theme.font; {
+        fonts = with config.my.theming.font; {
           inherit style size;
           names = [ name ];
         };
@@ -99,7 +99,7 @@ in
             else
               app.command;
           always = false;
-        }) (builtins.filter (app: app != null) (builtins.attrValues config.windowManager.autostartApps)));
+        }) (builtins.filter (app: app != null) (builtins.attrValues config.my.window-manager.autostartApps)));
 
         gaps = {
           top = 6;
@@ -120,12 +120,12 @@ in
 
         keybindings = lib.mkOptionDefault (
           {
-            "${modifier}+o" = "exec ${config.launcher.show { mode = "drun"; }}";
+            "${modifier}+o" = "exec ${config.my.launcher.show { mode = "drun"; }}";
 
             "${modifier}+Shift+p" =
               "exec ${pkgs.sway-contrib.grimshot}/bin/grimshot save area ~/Pictures/$(date -Iseconds)";
           }
-          // optionalAttrs config.sway.lockscreen.enable {
+          // optionalAttrs config.my.window-manager.sway.lockscreen.enable {
             "${modifier}+Shift+x" = "exec ${pkgs.swaylock-effects}/bin/swaylock -f";
           }
         );
@@ -136,7 +136,7 @@ in
           };
         };
 
-        colors = with config.theme.colors; {
+        colors = with config.my.theming.colors; {
           background = "${background}";
 
           focused = {
@@ -180,7 +180,7 @@ in
 
         input * xkb_layout "us,us"
         input * xkb_variant "colemak,"
-        input * xkb_options "caps:escape,compose:${config.windowManager.composeKey},grp:shifts_toggle"
+        input * xkb_options "caps:escape,compose:${config.my.window-manager.composeKey},grp:shifts_toggle"
 
         # Brightness (light was removed in nixpkgs 26.05; use brightnessctl)
         bindsym XF86MonBrightnessDown exec ${pkgs.brightnessctl}/bin/brightnessctl set 10%-
@@ -199,12 +199,12 @@ in
     };
 
     # Swaylock configuration (styled to match hyprlock)
-    programs.swaylock = mkIf config.sway.lockscreen.enable {
+    programs.swaylock = mkIf config.my.window-manager.sway.lockscreen.enable {
       enable = true;
       package = pkgs.swaylock-effects;
       settings = {
         # Background with blur (like hyprlock blur_passes=2, blur_size=4)
-        image = "${config.theme.wallpaper}";
+        image = "${config.my.theming.wallpaper}";
         scaling = "fill";
         effect-blur = "7x5";
         effect-vignette = "0.5:0.5";
@@ -220,24 +220,24 @@ in
         indicator-thickness = 7;
 
         # Colors matching theme
-        color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
-        inside-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
-        inside-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
-        inside-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
-        inside-wrong-color = lib.strings.removePrefix "#" config.theme.colors.primary.background;
-        key-hl-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        ring-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        ring-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        ring-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        ring-wrong-color = lib.strings.removePrefix "#" config.theme.colors.normal.red;
+        color = lib.strings.removePrefix "#" config.my.theming.colors.primary.background;
+        inside-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.background;
+        inside-clear-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.background;
+        inside-ver-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.background;
+        inside-wrong-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.background;
+        key-hl-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
+        ring-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
+        ring-clear-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
+        ring-ver-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
+        ring-wrong-color = lib.strings.removePrefix "#" config.my.theming.colors.normal.red;
         line-color = "00000000";
-        text-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        text-clear-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        text-ver-color = lib.strings.removePrefix "#" config.theme.colors.primary.foreground;
-        text-wrong-color = lib.strings.removePrefix "#" config.theme.colors.normal.red;
+        text-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
+        text-clear-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
+        text-ver-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
+        text-wrong-color = lib.strings.removePrefix "#" config.my.theming.colors.normal.red;
 
         # Font settings
-        font = config.theme.font.name;
+        font = config.my.theming.font.name;
         font-size = 24;
 
         # Behavior (matching hyprlock's no_fade_in/out)

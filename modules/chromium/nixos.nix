@@ -2,14 +2,14 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
 with lib;
 
 let
-  hmUsers = config.home-manager.users or { };
-  anyUserEnabled = any (u: (u.chromium.enable or false)) (attrValues hmUsers);
+  anyUserEnabled = inputs.self.lib.anyHomeUser config (u: u.my.chromium.enable);
 in
 {
   config = mkIf anyUserEnabled {

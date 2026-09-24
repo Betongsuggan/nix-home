@@ -5,7 +5,7 @@ Installs LocalSend for LAN-based file sharing between devices. Optionally auto-s
 ## Usage
 
 ```nix
-localsend = {
+my.localsend = {
   enable = true;
   autostart = true;
   cli = false;

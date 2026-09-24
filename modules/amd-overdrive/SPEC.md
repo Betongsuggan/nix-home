@@ -5,7 +5,7 @@ Enables AMD GPU undervolting and overclocking tools. Installs CoreCtrl for GUI-b
 ## Usage
 
 ```nix
-undervolting.enable = true;
+my.amd-overdrive.enable = true;
 ```
 
 ## Options

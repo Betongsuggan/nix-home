@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.xserver = {
+  options.my.xserver = {
     enable = mkEnableOption "Enable X server";
 
     displayManager = mkOption {
@@ -30,12 +30,12 @@ with lib;
     };
   };
 
-  config = mkIf config.xserver.enable {
+  config = mkIf config.my.xserver.enable {
     services.xserver = {
       enable = true;
-      videoDrivers = config.xserver.videoDrivers;
+      videoDrivers = config.my.xserver.videoDrivers;
 
-      displayManager.lightdm.enable = config.xserver.displayManager == "lightdm";
+      displayManager.lightdm.enable = config.my.xserver.displayManager == "lightdm";
 
       displayManager = {
         defaultSession = "nixsession";
@@ -47,7 +47,7 @@ with lib;
           }
         ];
         # Route DisplayLink outputs through the primary GPU
-        sessionCommands = mkIf (elem "displaylink" config.xserver.videoDrivers) ''
+        sessionCommands = mkIf (elem "displaylink" config.my.xserver.videoDrivers) ''
           ${lib.getBin pkgs.xorg.xrandr}/bin/xrandr --setprovideroutputsource 2 0
         '';
       };

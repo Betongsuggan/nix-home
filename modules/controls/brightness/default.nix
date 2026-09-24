@@ -7,11 +7,11 @@
 with lib;
 
 let
-  cfg = config.controls.brightness;
+  cfg = config.my.controls.brightness;
 
   # Build notification command using the notifications module
   notifyBrightness = optionalString cfg.notifications (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "brightness";
       summary = "\$brightness%";
       progress = "\$brightness";
@@ -46,7 +46,7 @@ let
   '';
 in
 {
-  config = mkIf (config.controls.enable && cfg.enable) {
+  config = mkIf (config.my.controls.enable && cfg.enable) {
     home.packages = [
       brightnessControl
       brightnessBackend

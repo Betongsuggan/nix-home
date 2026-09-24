@@ -6,7 +6,7 @@
 }:
 with lib;
 {
-  options.secrets = {
+  options.my.secrets = {
     enable = mkOption {
       description = "Enable secrets provider";
       type = types.bool;
@@ -39,7 +39,7 @@ with lib;
     };
   };
 
-  config = mkIf config.secrets.enable {
+  config = mkIf config.my.secrets.enable {
 
     home = {
       packages = map (
@@ -48,13 +48,13 @@ with lib;
           inherit pkgs;
           providerConfig = provider;
         }
-      ) config.secrets.keyProviders;
+      ) config.my.secrets.keyProviders;
 
       sessionVariables = builtins.listToAttrs (
         map (provider: {
           name = provider.envVarName;
           value = "$(${provider.path})";
-        }) config.secrets.keyProviders
+        }) config.my.secrets.keyProviders
       );
     };
   };

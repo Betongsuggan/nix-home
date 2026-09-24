@@ -5,7 +5,7 @@ Enables the Zellij terminal multiplexer with a simplified UI, custom default lay
 ## Usage
 
 ```nix
-zellij.enable = true;
+my.zellij.enable = true;
 ```
 
 ## Options
@@ -16,6 +16,6 @@ zellij.enable = true;
 
 ## Notes
 
-- Requires the `theme` module to be enabled, as the Gruvbox theme colors reference `config.theme.colors`.
+- Requires the `theme` module to be enabled, as the Gruvbox theme colors reference `config.my.theming.colors`.
 - Uses a custom default layout from `layouts/default.kdl`.
 - Configured with `simplified_ui = true`, `pane_frames = false`, and rounded corners.

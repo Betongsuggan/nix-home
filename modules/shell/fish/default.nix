@@ -7,23 +7,23 @@
 with lib;
 
 {
-  config = mkIf config.shell.fish.enable {
+  config = mkIf config.my.shell.fish.enable {
     programs = {
-      nix-index = mkIf config.shell.fish.enableNixIndex {
+      nix-index = mkIf config.my.shell.fish.enableNixIndex {
         enable = true;
         enableFishIntegration = true;
       };
 
       fish = {
         enable = true;
-        shellAliases = config.shell.aliases;
+        shellAliases = config.my.shell.aliases;
 
         shellInit = ''
-          export EDITOR="${config.shell.editor}"
+          export EDITOR="${config.my.shell.editor}"
 
-          ${optionalString config.shell.viMode "fish_vi_key_bindings"}
+          ${optionalString config.my.shell.viMode "fish_vi_key_bindings"}
 
-          ${config.shell.fish.extraInit}
+          ${config.my.shell.fish.extraInit}
         '';
       };
     };

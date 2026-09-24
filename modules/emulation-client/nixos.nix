@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.emulation-mounts;
+  cfg = config.my.emulation-client;
 
   # Common CIFS mount options.
   #
@@ -90,7 +90,7 @@ let
     ];
 in
 {
-  options.emulation-mounts = {
+  options.my.emulation-client = {
     enable = mkEnableOption "Auto-mount emulation-server Samba shares into users' home directories";
 
     server = mkOption {

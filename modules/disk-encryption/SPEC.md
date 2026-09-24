@@ -5,7 +5,7 @@ Configures LUKS disk encryption with a detached header for the root partition. T
 ## Usage
 
 ```nix
-diskEncryption = {
+my.disk-encryption = {
   enable = true;
   diskId = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
   headerId = "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy";

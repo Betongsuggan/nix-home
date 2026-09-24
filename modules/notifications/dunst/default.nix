@@ -8,11 +8,11 @@
 with lib;
 
 let
-  cfg = config.notifications;
+  cfg = config.my.notifications;
 
 in
 {
-  options.notifications.dunst = {
+  options.my.notifications.dunst = {
     settings = mkOption {
       type = types.attrs;
       default = { };
@@ -25,7 +25,7 @@ in
     stylix.targets.dunst.enable = true;
 
     # Auto-enable launcher for dmenu functionality
-    launcher.enable = mkDefault true;
+    my.launcher.enable = mkDefault true;
 
     # Dunst uses systemd (graphical-session.target) for all window managers
     services.dunst = {
@@ -41,7 +41,7 @@ in
             layer = "overlay";
             follow = "keyboard";
             markup = "full";
-            dmenu = if config.launcher.enable then config.launcher.dmenu { } else "${pkgs.coreutils}/bin/true";
+            dmenu = if config.my.launcher.enable then config.my.launcher.dmenu { } else "${pkgs.coreutils}/bin/true";
             show_indicators = false;
             format = "<b>%a</b>\\n%s\\n%b";
             width = "(0,400)";

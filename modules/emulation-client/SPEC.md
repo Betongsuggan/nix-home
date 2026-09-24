@@ -5,7 +5,7 @@ User-level module for NixOS machines that connect to the emulation server. Enabl
 ## Usage
 
 ```nix
-emulation-client = {
+my.emulation-client = {
   enable = true;
   # Use the tailnet FQDN: controller runs `emulation-server.tailnetOnly = true`,
   # so Samba/Syncthing are NOT reachable via its LAN IP.
@@ -54,7 +54,7 @@ There are two ways: declarative automount (recommended) or the manual helper scr
 **Automount via the `emulation-mounts` system module** (see `modules/emulation-client/system.nix`). Enable it in the host's `system.nix` listing each user that should get the shares under their home:
 
 ```nix
-emulation-mounts = {
+my.emulation-client = {
   enable = true;
   server = inputs.self.lib.tailnet.fqdn "controller";
   users = [ "betongsuggan" "gamer" ];
@@ -94,7 +94,7 @@ Configure each emulator to use `~/emulation/saves/<emulator>/` for saves:
   Savefile = `~/emulation/saves/retroarch/saves` and Savestate =
   `~/emulation/saves/retroarch/states` (see `modules/games/default.nix`); no
   manual step
-- **Switch (Ryubing)**: declarative — `games.emulators.switch.dataDir` defaults
+- **Switch (Ryubing)**: declarative — `my.games.emulators.switch.dataDir` defaults
   to `~/emulation/saves/switch`
 - **PPSSPP**: Settings > System > Save path = `~/emulation/saves/ppsspp`
 - **Dolphin**: Config > Paths > Wii NAND Root / GC Memory Cards = `~/emulation/saves/dolphin`

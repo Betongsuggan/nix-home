@@ -5,7 +5,7 @@ Enables direnv for automatic per-directory environment management with nix-diren
 ## Usage
 
 ```nix
-direnv.enable = true;
+my.direnv.enable = true;
 ```
 
 ## Options

@@ -5,7 +5,7 @@ Enables Docker in rootless mode with BuildKit and docker-compose. Configures unp
 ## Usage
 
 ```nix
-docker.enable = true;
+my.docker.enable = true;
 ```
 
 ## Options

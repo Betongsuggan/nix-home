@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.git = {
+  options.my.git = {
     enable = mkOption {
       description = "Enable git";
       type = types.bool;
@@ -27,15 +27,15 @@ with lib;
     };
   };
 
-  config = mkIf config.git.enable {
+  config = mkIf config.my.git.enable {
 
     home.packages = [ pkgs.diff-so-fancy ];
     programs.git = {
       enable = true;
       settings = {
         user = {
-          name = config.git.userName;
-          email = config.git.userEmail;
+          name = config.my.git.userName;
+          email = config.my.git.userEmail;
         };
         core.pager = "diff-so-fancy | less --tabs=4 -RFX";
         init.defaultBranch = "main";

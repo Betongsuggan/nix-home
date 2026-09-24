@@ -6,10 +6,10 @@
 }:
 with lib;
 let
-  cfg = config.media;
+  cfg = config.my.media;
 in
 {
-  options.media = {
+  options.my.media = {
     enable = mkEnableOption "Enable media playback and offline downloading";
 
     downloader = mkOption {

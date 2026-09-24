@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.launcher;
+  cfg = config.my.launcher;
 
   buildDmenuCmd =
     {
@@ -56,7 +56,7 @@ let
 
 in
 {
-  options.launcher.vicinae = {
+  options.my.launcher.vicinae = {
     config = mkOption {
       type = types.attrs;
       default = { };
@@ -116,8 +116,8 @@ in
   };
 
   config = mkIf (cfg.enable && cfg.backend == "vicinae") {
-    launcher.vicinae.buildDmenuCmd = buildDmenuCmd;
-    launcher.vicinae.buildShowCmd = buildShowCmd;
+    my.launcher.vicinae.buildDmenuCmd = buildDmenuCmd;
+    my.launcher.vicinae.buildShowCmd = buildShowCmd;
 
     # Theme vicinae from the base16 scheme (adds a "stylix" theme and
     # selects it in services.vicinae.settings)

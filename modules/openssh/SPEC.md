@@ -6,13 +6,13 @@ Thin wrapper around `services.openssh` with safe defaults: firewall closed, pass
 
 ```nix
 # In hosts/<host>/system.nix
-openssh = {
+my.openssh = {
   enable = true;
   openFirewall = true;      # only if you actually want to accept connections
 };
 ```
 
-For a host that only needs sshd as a means to generate host keys (e.g. so sops-nix has something to decrypt with), you can leave everything at defaults — `sops-secrets.enable = true` flips `openssh.enable` on, the firewall stays closed, and sshd is effectively unreachable.
+For a host that only needs sshd as a means to generate host keys (e.g. so sops-nix has something to decrypt with), you can leave everything at defaults — `sops-secrets.enable = true` flips `my.openssh.enable` on, the firewall stays closed, and sshd is effectively unreachable.
 
 ## Options
 

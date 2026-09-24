@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.launcher;
+  cfg = config.my.launcher;
 
   buildDmenuCmd =
     {
@@ -36,7 +36,7 @@ let
 
 in
 {
-  options.launcher.walker = {
+  options.my.launcher.walker = {
     config = mkOption {
       type = types.attrs;
       default = { };
@@ -65,8 +65,8 @@ in
   };
 
   config = mkIf (cfg.enable && cfg.backend == "walker") {
-    launcher.walker.buildDmenuCmd = buildDmenuCmd;
-    launcher.walker.buildShowCmd = buildShowCmd;
+    my.launcher.walker.buildDmenuCmd = buildDmenuCmd;
+    my.launcher.walker.buildShowCmd = buildShowCmd;
 
     # Walker uses external tools (iwmenu, bzmenu) so we ensure they're available
     # app2unit is needed by elephant's desktopapplications provider to launch apps

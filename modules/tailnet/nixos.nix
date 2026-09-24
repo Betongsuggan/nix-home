@@ -8,11 +8,11 @@
 with lib;
 
 let
-  cfg = config.tailnet;
+  cfg = config.my.tailnet;
   selfLib = inputs.self.lib;
 in
 {
-  options.tailnet = {
+  options.my.tailnet = {
     enable = mkEnableOption "Tailnet membership with bundled SSH server + client defaults";
 
     authorizeSshFor = mkOption {
@@ -55,7 +55,7 @@ in
 
   config = mkIf cfg.enable (mkMerge [
     {
-      tailscale-client = {
+      my.tailscale-client = {
         enable = true;
         loginServer = "https://vpn.rydback.net";
         extraUpFlags = [
@@ -64,7 +64,7 @@ in
         ];
       };
 
-      openssh = {
+      my.openssh = {
         enable = true;
         openFirewall = false;
       };
@@ -91,8 +91,8 @@ in
       }) cfg.authorizeSshFor;
     }
 
-    (mkIf config.sops-secrets.enable {
-      tailscale-client.authKeyFile = config.sops.secrets."headscale-preauthkey".path;
+    (mkIf config.my.sops.enable {
+      my.tailscale-client.authKeyFile = config.sops.secrets."headscale-preauthkey".path;
 
       sops.secrets."headscale-preauthkey" = {
         key = "services/headscale-preauthkey";

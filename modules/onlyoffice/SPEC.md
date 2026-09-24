@@ -5,7 +5,7 @@ ONLYOFFICE Document Server — the in-browser editing backend that [[nextcloud]]
 ## Usage
 
 ```nix
-onlyoffice = {
+my.onlyoffice = {
   enable        = true;
   domain        = "office.example.com";
   jwtSecretFile = config.sops.secrets."onlyoffice-jwt".path;

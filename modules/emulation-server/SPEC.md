@@ -5,7 +5,7 @@ Single-file system module for hosting ROMs, BIOS files, and save data. Runs Samb
 ## Usage
 
 ```nix
-emulation-server = {
+my.emulation-server = {
   enable = true;
   user = "betongsuggan";
   dataDir = "/var/lib/emulation";
@@ -17,7 +17,7 @@ emulation-server = {
 Override the system/emulator lists if the defaults don't fit:
 
 ```nix
-emulation-server = {
+my.emulation-server = {
   enable = true;
   systems = [ "snes" "nes" "gba" "nds" "psx" "psp" ];
   standaloneEmulators = [ "retroarch" "ppsspp" ];
@@ -51,7 +51,7 @@ retroarch (with `saves/` and `states/` subdirs), ppsspp, dolphin, switch
 
 ### Prerequisites
 
-- The `file-sharing` system module must be available (this module sets `file-sharing.samba` options).
+- The `file-sharing` system module must be available (this module sets `my.file-sharing.samba` options).
 - The configured user must exist on the host.
 - A Tailscale client (`tailscale-client` module) should be enabled on the host if you want off-LAN access; the module opens its ports on `tailscale0` regardless, but the interface only exists once Tailscale is up.
 - ROMs and BIOS files need to be copied into the directories after setup.

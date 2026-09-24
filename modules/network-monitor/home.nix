@@ -8,12 +8,12 @@
 with lib;
 
 let
-  cfg = config.network-monitor;
+  cfg = config.my.network-monitor;
 
   nmcli = "${pkgs.networkmanager}/bin/nmcli";
 
   # Notification commands using the notifications module
-  notifyWifiConnected = config.notifications.send {
+  notifyWifiConnected = config.my.notifications.send {
     category = "network";
     summary = "Connected to \$ssid";
   };
@@ -21,43 +21,43 @@ let
   # State-specific *-disconnected/-offline icons only exist in Papirus'
   # panel/ context, which dunst's icon path doesn't cover — stick to
   # resolvable icons and let the headline convey the state.
-  notifyWifiDisconnected = config.notifications.send {
+  notifyWifiDisconnected = config.my.notifications.send {
     category = "network";
     summary = "Wi-Fi disconnected";
   };
 
-  notifyEthernetConnected = config.notifications.send {
+  notifyEthernetConnected = config.my.notifications.send {
     category = "network";
     icon = "network-wired";
     summary = "Ethernet connected";
   };
 
-  notifyEthernetDisconnected = config.notifications.send {
+  notifyEthernetDisconnected = config.my.notifications.send {
     category = "network";
     icon = "network-wired";
     summary = "Ethernet disconnected";
   };
 
-  notifyConnectivityLost = config.notifications.send {
+  notifyConnectivityLost = config.my.notifications.send {
     category = "network";
     icon = "network-disconnect";
     urgency = "normal";
     summary = "No internet connection";
   };
 
-  notifyConnectivityRestored = config.notifications.send {
+  notifyConnectivityRestored = config.my.notifications.send {
     category = "network";
     icon = "network-connect";
     summary = "Internet connection restored";
   };
 
-  notifyTailscaleUp = config.notifications.send {
+  notifyTailscaleUp = config.my.notifications.send {
     category = "network";
     icon = "network-vpn";
     summary = "Tailscale connected";
   };
 
-  notifyTailscaleDown = config.notifications.send {
+  notifyTailscaleDown = config.my.notifications.send {
     category = "network";
     icon = "network-vpn";
     urgency = "normal";
@@ -145,13 +145,13 @@ let
 
 in
 {
-  options.network-monitor = {
+  options.my.network-monitor = {
     enable = mkEnableOption "desktop notifications for network events";
   };
 
   config = mkIf cfg.enable {
     # Auto-enable notifications when network-monitor is enabled
-    notifications.enable = mkDefault true;
+    my.notifications.enable = mkDefault true;
 
     home.packages = [ networkMonitorScript ];
 

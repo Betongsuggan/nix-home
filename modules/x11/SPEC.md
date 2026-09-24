@@ -5,7 +5,7 @@ Enables X11 session support with Gruvbox Dark xresources color configuration and
 ## Usage
 
 ```nix
-x11.enable = true;
+my.x11.enable = true;
 ```
 
 ## Options

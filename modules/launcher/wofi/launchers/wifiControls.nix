@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 let
   # Build notification command using the notifications module
-  notifyWifiConnected = config.notifications.send {
+  notifyWifiConnected = config.my.notifications.send {
     category = "network";
     summary = "Connected to \$chosen_id";
   };

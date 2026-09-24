@@ -8,10 +8,10 @@
 with lib;
 
 let
-  cfg = config.vaultwarden;
+  cfg = config.my.vaultwarden;
 in
 {
-  options.vaultwarden = {
+  options.my.vaultwarden = {
     enable = mkEnableOption "Vaultwarden (Bitwarden-compatible password manager)";
 
     domain = mkOption {

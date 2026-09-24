@@ -7,12 +7,12 @@
 with lib;
 
 {
-  options.audio = {
+  options.my.audio = {
     enable = mkEnableOption "Enable sound hardware";
     lowLatency = mkEnableOption "Low-latency mode for gaming";
   };
 
-  config = mkIf config.audio.enable {
+  config = mkIf config.my.audio.enable {
     security.rtkit.enable = true;
 
     services.pipewire = {
@@ -44,7 +44,7 @@ with lib;
       };
       pulse.enable = true;
 
-      extraConfig.pipewire = mkIf config.audio.lowLatency {
+      extraConfig.pipewire = mkIf config.my.audio.lowLatency {
         "99-low-latency" = {
           "context.properties" = {
             "default.clock.rate" = 48000;

@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.firefox = {
+  options.my.firefox = {
     enable = mkEnableOption "Enable Firefox browser for user";
   };
 
-  config = mkIf config.firefox.enable {
+  config = mkIf config.my.firefox.enable {
 
     home.sessionVariables = {
       MOZ_ENABLE_WAYLAND = "1";

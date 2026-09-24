@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.kanshi = {
+  options.my.kanshi = {
     enable = mkOption {
       description = "Enable Kanshi";
       type = types.bool;
@@ -15,7 +15,7 @@ with lib;
     };
   };
 
-  config = mkIf config.kanshi.enable {
+  config = mkIf config.my.kanshi.enable {
     services.kanshi = {
       enable = true;
       settings = [

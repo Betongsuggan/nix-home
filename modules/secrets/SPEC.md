@@ -5,7 +5,7 @@ Manages secret provider scripts that expose API keys and tokens as environment v
 ## Usage
 
 ```nix
-secrets = {
+my.secrets = {
   enable = true;
   keyProviders = [
     {

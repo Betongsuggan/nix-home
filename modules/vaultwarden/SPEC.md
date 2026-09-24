@@ -5,7 +5,7 @@ Self-hosted Bitwarden-compatible password manager. Backend for the Bitwarden cli
 ## Usage
 
 ```nix
-vaultwarden = {
+my.vaultwarden = {
   enable = true;
   domain = "vault.example.com";
   environmentFile = config.sops.secrets."vaultwarden-env".path;
@@ -13,8 +13,8 @@ vaultwarden = {
 };
 
 # Reverse proxy terminates TLS and restricts access to the tailnet:
-reverse-proxy.domains = [ "vault.example.com" ];
-reverse-proxy.vhosts.vaultwarden = {
+my.reverse-proxy.domains = [ "vault.example.com" ];
+my.reverse-proxy.vhosts.vaultwarden = {
   domain = "vault.example.com";
   upstream = "http://127.0.0.1:8222";
   extraConfig = ''

@@ -8,7 +8,7 @@
 with lib;
 
 {
-  options.controller = {
+  options.my.controller = {
     enable = mkEnableOption "Enable controller support and custom mappings";
 
     type = mkOption {
@@ -152,7 +152,7 @@ with lib;
     };
   };
 
-  config = mkIf config.controller.enable {
+  config = mkIf config.my.controller.enable {
     home.packages =
       with pkgs;
       [
@@ -162,16 +162,16 @@ with lib;
         wtype
         procps
       ]
-      ++ optionals config.controller.customMappings.enable [
+      ++ optionals config.my.controller.customMappings.enable [
         # Add additional packages for custom mappings if needed
       ];
 
     # MangoHud toggle script
-    home.file."bin/controller-mangohud-toggle.sh" = mkIf config.controller.mangohudToggle.enable {
+    home.file."bin/controller-mangohud-toggle.sh" = mkIf config.my.controller.mangohudToggle.enable {
       text =
         let
-          controllerType = config.controller.type;
-          buttons = config.controller.mangohudToggle.buttons;
+          controllerType = config.my.controller.type;
+          buttons = config.my.controller.mangohudToggle.buttons;
 
           buttonMappings = {
             ps5 = {
@@ -342,7 +342,7 @@ with lib;
 
     # SystemD service for MangoHud toggle
     systemd.user.services.controller-mangohud-toggle =
-      mkIf (config.controller.mangohudToggle.enable && config.controller.mangohudToggle.autoStart)
+      mkIf (config.my.controller.mangohudToggle.enable && config.my.controller.mangohudToggle.autoStart)
         {
           Unit = {
             Description = "Controller MangoHud Toggle Service";
@@ -366,9 +366,9 @@ with lib;
     # evdev node and inject the overlay hotkey (Shift+Tab) via hyprctl on the
     # chord. Same listener pattern as modules/games switch-quit-listener; both
     # open the pad read-only (no grab) and use distinct chords, so they coexist.
-    systemd.user.services.controller-steam-overlay = mkIf config.controller.steamOverlay.enable (
+    systemd.user.services.controller-steam-overlay = mkIf config.my.controller.steamOverlay.enable (
       let
-        so = config.controller.steamOverlay;
+        so = config.my.controller.steamOverlay;
         # evdev key codes (Linux input-event-codes.h), Xbox pad layout.
         btnCodes = {
           a = 304;
@@ -498,7 +498,7 @@ with lib;
     );
 
     # Custom controller mappings script (future expansion)
-    home.file."bin/controller-custom-mappings.sh" = mkIf config.controller.customMappings.enable {
+    home.file."bin/controller-custom-mappings.sh" = mkIf config.my.controller.customMappings.enable {
       text = ''
         #!${pkgs.bash}/bin/bash
         # Custom controller mappings
@@ -514,17 +514,17 @@ with lib;
         # Controller Configuration
 
         ## Current Setup
-        - Controller Type: ${config.controller.type}
-        - MangoHud Toggle: ${if config.controller.mangohudToggle.enable then "Enabled" else "Disabled"}
-        ${optionalString config.controller.mangohudToggle.enable "- Toggle Buttons: ${concatStringsSep ", " config.controller.mangohudToggle.buttons}"}
+        - Controller Type: ${config.my.controller.type}
+        - MangoHud Toggle: ${if config.my.controller.mangohudToggle.enable then "Enabled" else "Disabled"}
+        ${optionalString config.my.controller.mangohudToggle.enable "- Toggle Buttons: ${concatStringsSep ", " config.my.controller.mangohudToggle.buttons}"}
         - Auto-start Service: ${
-          if config.controller.mangohudToggle.autoStart then "Enabled" else "Disabled"
+          if config.my.controller.mangohudToggle.autoStart then "Enabled" else "Disabled"
         }
 
         ## Usage
-        ${optionalString config.controller.mangohudToggle.enable ''
+        ${optionalString config.my.controller.mangohudToggle.enable ''
           ### MangoHud Toggle
-          Press any of the configured buttons (${concatStringsSep ", " config.controller.mangohudToggle.buttons}) to toggle MangoHud on/off while gaming.
+          Press any of the configured buttons (${concatStringsSep ", " config.my.controller.mangohudToggle.buttons}) to toggle MangoHud on/off while gaming.
         ''}
 
         ## Manual Control

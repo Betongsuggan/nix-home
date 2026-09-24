@@ -5,7 +5,7 @@ Configures NetworkManager with iwd as the Wi-Fi backend. Sets up automatic wirel
 ## Usage
 
 ```nix
-networkmanager = {
+my.network-manager = {
   enable = true;
   hostName = "my-machine";
 };

@@ -57,7 +57,7 @@
 with lib;
 
 {
-  options.games = {
+  options.my.games = {
     enable = mkEnableOption "Enable gaming setup";
 
     mangohud = {
@@ -249,7 +249,7 @@ with lib;
 
         dataDir = mkOption {
           type = types.str;
-          default = "${config.home.homeDirectory}/${config.games.emulators.dataDir}/saves/switch";
+          default = "${config.home.homeDirectory}/${config.my.games.emulators.dataDir}/saves/switch";
           defaultText = "\${home}/\${emulators.dataDir}/saves/switch";
           description = ''
             Ryujinx `--root-data-dir`. Holds `system/` (keys) and `bis/`
@@ -315,7 +315,7 @@ with lib;
 
                   romDir = mkOption {
                     type = types.str;
-                    default = "${config.home.homeDirectory}/${config.games.emulators.dataDir}/roms/${name}";
+                    default = "${config.home.homeDirectory}/${config.my.games.emulators.dataDir}/roms/${name}";
                     defaultText = "\${home}/\${emulators.dataDir}/roms/<system>";
                     description = "Directory scanned for this system's ROMs";
                   };
@@ -403,7 +403,7 @@ with lib;
 
   config =
     let
-      cfg = config.games;
+      cfg = config.my.games;
       sw = cfg.emulators.switch;
       switchEnabled = cfg.emulators.enable && sw.enable;
       isRyujinx = sw.emulator == "ryubing";
@@ -1080,7 +1080,7 @@ with lib;
       # RetroArch cores when steamShortcuts is on; Switch whenever it's enabled,
       # matching the pre-manifest behavior). Every field is mkDefault'd so hosts
       # can override piecemeal via emulators.steamShortcuts.systems.<name>.
-      games.emulators.steamShortcuts.systems = mapAttrs (_: s: mapAttrs (_: mkDefault) s) (
+      my.games.emulators.steamShortcuts.systems = mapAttrs (_: s: mapAttrs (_: mkDefault) s) (
         (optionalAttrs shortcutsEnabled retroSystemDefaults) // switchSystemDefault
       );
 

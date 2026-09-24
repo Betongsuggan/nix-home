@@ -5,7 +5,7 @@ Enables the Starship cross-shell prompt with integrations for bash, fish, and nu
 ## Usage
 
 ```nix
-starship.enable = true;
+my.starship.enable = true;
 ```
 
 ## Options

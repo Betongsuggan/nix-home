@@ -34,7 +34,7 @@
     ];
   };
 
-  autologin = {
+  my.autologin = {
     enable = true;
     user = "gamer";
     method = "getty";
@@ -45,7 +45,7 @@
     permittedInsecurePackages = [ "freeimage-3.18.0-unstable-2024-04-18" ];
   };
 
-  secure-boot.enable = true;
+  my.secure-boot.enable = true;
   boot = {
     # Zen kernel optimized for desktop/gaming performance on Ryzen CPUs
     kernelPackages = pkgs.linuxPackages_zen;
@@ -186,7 +186,7 @@
       };
     };
   };
-  game-streaming.server = {
+  my.game-streaming.server = {
     enable = true;
     display = "SUNSHINE";
     workspace = 10;
@@ -196,7 +196,7 @@
     user = "gamer";
   };
 
-  sops-secrets = {
+  my.sops = {
     enable = true;
     secretsFile = "${inputs.nix-vault}/secrets/desktop.yaml";
   };
@@ -224,7 +224,7 @@
     };
   };
 
-  home-network = {
+  my.home-network = {
     enable = true;
     mode = "onboarded";
     authorizeSshFor.betongsuggan = [
@@ -242,7 +242,7 @@
   # Auto-mount controller's ROM/BIOS shares for each user that uses the
   # emulation client. Lazy mounts via x-systemd.automount, so unreachable
   # controller is harmless (just an empty dir until access).
-  emulation-mounts = {
+  my.emulation-client = {
     enable = true;
     server = inputs.self.lib.tailnet.fqdn "controller";
     # gamer needs the shares too: it runs the streamed Big Picture session and
@@ -257,7 +257,7 @@
   # 3-2-1-ish topology. Pubkey sourced from lib (never as a literal); the
   # `restic-controller` system user is chrooted to /var/lib/restic-repos/controller
   # via internal-sftp. See modules/restic-target/SPEC.md.
-  restic-target = {
+  my.restic-target = {
     enable = true;
     sources.controller = {
       sshKey = inputs.self.lib.hosts.controller.users.restic.ssh.id_ed25519;
@@ -269,15 +269,15 @@
     gamemode
     mangohud
   ];
-  graphics = {
+  my.graphics = {
     enable = true;
     amd = true;
   };
-  audio = {
+  my.audio = {
     enable = true;
     lowLatency = true;
   };
-  bluetooth = {
+  my.bluetooth = {
     enable = true;
     wake = {
       enable = true;
@@ -287,7 +287,7 @@
     };
   };
   console.keyMap = "colemak";
-  printers.enable = true;
+  my.printers.enable = true;
 
   xdg.portal = {
     enable = true;
@@ -298,14 +298,14 @@
     config.common.default = "*";
   };
 
-  wayland-security.enable = true;
-  networkmanager = {
+  my.wayland-security.enable = true;
+  my.network-manager = {
     enable = true;
     hostName = "desktop";
   };
   networking.interfaces.enp12s0f3u3u2.wakeOnLan.enable = true;
   networking.interfaces.enp4s0.wakeOnLan.enable = true;
-  ai-server = {
+  my.ai-server = {
     enable = true;
     models = [
       "qwen3:8b"
@@ -368,8 +368,8 @@
     IdleActionSec = "30min";
   };
 
-  docker.enable = true;
-  firewall = {
+  my.docker.enable = true;
+  my.firewall = {
     enable = true;
     tcpPorts = [
       8080
@@ -387,12 +387,12 @@
       53317
     ];
   };
-  undervolting.enable = true;
+  my.amd-overdrive.enable = true;
 
   # The G13 keypad + thumbstick are grouped by input-remapper under a single
   # device group named "Logitech G13 Thumbstick". All mappings (G-keys and
   # thumbstick) go in one preset.
-  inputRemapper = {
+  my.input-remapper = {
     enable = true;
     devices."Logitech G13 Thumbstick" = {
       preset = "g13";

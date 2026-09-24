@@ -6,10 +6,10 @@
 }:
 with lib;
 let
-  cfg = config.localsend;
+  cfg = config.my.localsend;
 in
 {
-  options.localsend = {
+  options.my.localsend = {
     enable = mkEnableOption "Enable Localsend for LAN file transfer";
 
     autostart = mkOption {

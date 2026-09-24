@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.starship = {
+  options.my.starship = {
     enable = mkOption {
       description = "Enable starship";
       type = types.bool;
@@ -15,7 +15,7 @@ with lib;
     };
   };
 
-  config = mkIf config.starship.enable {
+  config = mkIf config.my.starship.enable {
     programs.starship = {
       enable = true;
       enableNushellIntegration = true;

@@ -4,7 +4,7 @@
 
   home.stateVersion = "25.05";
 
-  games = {
+  my.games = {
     enable = true;
     mangohud = {
       enable = true;
@@ -37,29 +37,29 @@
   # Re-enabled for Switch save sync: Ryujinx writes saves under
   # ~/emulation/saves/switch, which Syncthing mirrors to the controller.
   # (ROM/BIOS mounts come from the emulation-mounts system module, not this.)
-  emulation-client = {
+  my.emulation-client = {
     enable = true;
     # Controller runs tailnetOnly (Samba/Syncthing closed on the LAN), so the
     # share address must be the tailnet FQDN — the old LAN IP was dead.
     server.address = inputs.self.lib.tailnet.fqdn "controller";
   };
 
-  general.enable = true;
-  chromium.enable = true;
-  fileManager = {
+  my.general.enable = true;
+  my.chromium.enable = true;
+  my.file-manager = {
     enable = true;
     backend = "thunar";
   };
 
-  communication.enable = true;
-  localsend.enable = true;
-  starship.enable = true;
-  terminal = {
+  my.communication.enable = true;
+  my.localsend.enable = true;
+  my.starship.enable = true;
+  my.terminal = {
     enable = true;
     backend = "alacritty";
   };
 
-  launcher = {
+  my.launcher = {
     enable = true;
     backend = "vicinae";
     vicinae = {
@@ -71,7 +71,7 @@
     };
   };
 
-  controller = {
+  my.controller = {
     enable = true;
     type = "ps5";
     mangohudToggle = {
@@ -87,20 +87,20 @@
 
   # Enable Hyprland for gaming session
   # Steam Big Picture is managed by Sunshine when streaming clients connect
-  hyprland.lockscreen.enable = false; # Gaming user doesn't need lockscreen
-  hyprland.cmFsPassthrough = 1; # Always passthrough in fullscreen for HDR gaming
+  my.window-manager.hyprland.lockscreen.enable = false; # Gaming user doesn't need lockscreen
+  my.window-manager.hyprland.cmFsPassthrough = 1; # Always passthrough in fullscreen for HDR gaming
   # No window rules: Hyprland 0.55's new `windowrule` parser rejects the old
   # `class:^()$` matcher, and `windowrulev2` (still functional) emits a
   # persistent on-screen deprecation warning. The old Steam tweaks are obsolete
   # on 0.55 — Big Picture self-fullscreens and HDR/CM fullscreen passthrough is
   # automatic now (cm_auto_hdr replaced cm_fs_passthrough). Ryujinx is brought
   # fullscreen by its per-game launcher (hyprctl dispatch fullscreen 0).
-  hyprland.windowRules = [ ];
-  hyprland.workspaceRules = [
+  my.window-manager.hyprland.windowRules = [ ];
+  my.window-manager.hyprland.workspaceRules = [
     "1, gapsin:0, gapsout:0" # No gaps on Steam workspace so maximize fills entire screen
   ];
 
-  windowManager = {
+  my.window-manager = {
     enable = true;
     backend = "hyprland";
     monitors = [
@@ -121,12 +121,12 @@
     };
   };
 
-  shell = {
+  my.shell = {
     enable = true;
     backend = "bash";
   };
 
-  theme = {
+  my.theming = {
     enable = true;
     wallpaper = ../../assets/wallpaper/zeal.jpg;
     cursor = {
@@ -135,7 +135,7 @@
     };
   };
 
-  git = {
+  my.git = {
     enable = true;
     userName = "Betongsuggan";
     userEmail = "rydback@gmail.com";

@@ -8,10 +8,10 @@
 with lib;
 
 let
-  cfg = config.tailscale-client;
+  cfg = config.my.tailscale-client;
 in
 {
-  options.tailscale-client = {
+  options.my.tailscale-client = {
     enable = mkEnableOption "Tailscale client joined to a headscale coordination server";
 
     loginServer = mkOption {

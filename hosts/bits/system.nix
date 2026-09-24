@@ -84,7 +84,7 @@
     };
   };
 
-  diskEncryption = {
+  my.disk-encryption = {
     enable = true;
     diskId = "f3fd4fdf-b8ef-45c7-8e96-2ca5bfe32cd9";
     headerId = "ccbec134-bf84-41ad-a903-c99989071e6b";
@@ -96,7 +96,7 @@
 
   services.fwupd.enable = true;
 
-  sops-secrets = {
+  my.sops = {
     enable = true;
     secretsFile = "${inputs.nix-vault}/secrets/bits.yaml";
   };
@@ -116,7 +116,7 @@
     };
   };
 
-  home-network = {
+  my.home-network = {
     enable = true;
     mode = "onboarded";
     authorizeSshFor.birgerrydback = [
@@ -131,14 +131,14 @@
     wantedBy = lib.mkForce [ ];
   };
   console.keyMap = "colemak";
-  touchpad.enable = true;
-  backlight.enable = true;
-  graphics = {
+  my.touchpad.enable = true;
+  my.backlight.enable = true;
+  my.graphics = {
     enable = true;
     amd = true;
   };
-  audio.enable = true;
-  networkmanager = {
+  my.audio.enable = true;
+  my.network-manager = {
     enable = true;
     hostName = "bits-nixos";
   };
@@ -148,7 +148,7 @@
     127.0.0.1 bits.execute-api.localhost.localstack.cloud
   '';
 
-  docker.enable = true;
+  my.docker.enable = true;
   # Disabled 2026-09-17: Waydroid's gralloc allocates on the discrete Navi 24
   # (`gralloc.gbm.device=/dev/dri/renderD128`) while Hyprland composites on the
   # Rembrandt iGPU, so every Android surface crosses GPUs as a DCC-compressed
@@ -156,27 +156,27 @@
   # GL_UNKNOWN_CONTEXT_RESET because it has no reset-recovery path. Re-enable
   # only after pinning gralloc to the iGPU render node -- see
   # `modules/waydroid/SPEC.md` step 6.
-  waydroid = {
+  my.waydroid = {
     enable = false;
     drmSetup = true;
     # Container stays stopped until `waydroid-up`; it only exists for occasional
     # offline Netflix downloads.
     startOnBoot = false;
   };
-  bluetooth.enable = true;
-  fingerprint = {
+  my.bluetooth.enable = true;
+  my.fingerprint = {
     enable = false;
     clamshellAware = true;
     lidStatePath = "/proc/acpi/button/lid/LID/state";
   };
-  wayland-security.enable = true;
-  printers = {
+  my.wayland-security.enable = true;
+  my.printers = {
     enable = true;
     # Nothing on this network shares a printer; dropping browsed lets cupsd stay
     # socket-activated instead of running from boot.
     remoteDiscovery = false;
   };
-  power-management = {
+  my.power-management = {
     enable = true;
     cpuVendor = "amd";
     gpuVendor = "amd";
@@ -188,7 +188,7 @@
     # performance cost on AC and the 5-second fdatasync of the telemetry loop
     # no longer buy anything.
   };
-  firewall = {
+  my.firewall = {
     enable = true;
     tcpPorts = [
       8080
@@ -198,7 +198,7 @@
     udpPorts = [ 53317 ];
   };
 
-  webcam = {
+  my.webcam = {
     enable = true;
     cameras = [
       {

@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.launcher;
+  cfg = config.my.launcher;
 
   # Main launcher dmenu function - delegates to backend
   launcherDmenuCmd =
@@ -127,7 +127,7 @@ in
     ./vicinae
   ];
 
-  options.launcher = {
+  options.my.launcher = {
     enable = mkEnableOption "launcher system";
 
     backend = mkOption {
@@ -161,7 +161,7 @@ in
         Function to generate dmenu-style launcher commands.
 
         Usage:
-          config.launcher.dmenu {
+          config.my.launcher.dmenu {
             prompt = "Select an option";
             password = false;
             insensitive = true;
@@ -182,7 +182,7 @@ in
         Function to generate application launcher commands.
 
         Usage:
-          config.launcher.show {
+          config.my.launcher.show {
             mode = "drun";  # or "run", "applications", etc.
             additionalArgs = [];
           }
@@ -199,7 +199,7 @@ in
         Function to generate WiFi network selection launcher.
 
         Usage:
-          config.launcher.wifi {
+          config.my.launcher.wifi {
             additionalArgs = [];
           }
 
@@ -215,7 +215,7 @@ in
         Function to generate Bluetooth device selection launcher.
 
         Usage:
-          config.launcher.bluetooth {
+          config.my.launcher.bluetooth {
             additionalArgs = [];
           }
 
@@ -231,7 +231,7 @@ in
         Function to generate audio output device selection launcher.
 
         Usage:
-          config.launcher.audioOutput {
+          config.my.launcher.audioOutput {
             additionalArgs = [];
           }
 
@@ -247,7 +247,7 @@ in
         Function to generate audio input device selection launcher.
 
         Usage:
-          config.launcher.audioInput {
+          config.my.launcher.audioInput {
             additionalArgs = [];
           }
 
@@ -263,7 +263,7 @@ in
         Function to generate monitor configuration launcher.
 
         Usage:
-          config.launcher.monitor {
+          config.my.launcher.monitor {
             additionalArgs = [];
           }
 
@@ -274,12 +274,12 @@ in
 
   config = mkIf cfg.enable {
     # Set the launcher functions
-    launcher.dmenu = launcherDmenuCmd;
-    launcher.show = launcherShowCmd;
-    launcher.wifi = launcherWifiCmd;
-    launcher.bluetooth = launcherBluetoothCmd;
-    launcher.audioOutput = launcherAudioOutputCmd;
-    launcher.audioInput = launcherAudioInputCmd;
-    launcher.monitor = launcherMonitorCmd;
+    my.launcher.dmenu = launcherDmenuCmd;
+    my.launcher.show = launcherShowCmd;
+    my.launcher.wifi = launcherWifiCmd;
+    my.launcher.bluetooth = launcherBluetoothCmd;
+    my.launcher.audioOutput = launcherAudioOutputCmd;
+    my.launcher.audioInput = launcherAudioInputCmd;
+    my.launcher.monitor = launcherMonitorCmd;
   };
 }

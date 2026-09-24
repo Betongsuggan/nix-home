@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.fileManager;
+  cfg = config.my.file-manager;
   thunarCfg = cfg.thunar;
 
   # Build custom actions XML
@@ -145,7 +145,7 @@ let
 
 in
 {
-  options.fileManager.thunar = {
+  options.my.file-manager.thunar = {
     enable = mkOption {
       type = types.bool;
       default = false;

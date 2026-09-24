@@ -5,7 +5,7 @@ Configures a Polybar status bar for i3 with modules for workspaces, date/time, P
 ## Usage
 
 ```nix
-polybar = {
+my.polybar = {
   enable = true;
   monitor = "eDP-1";
   battery.device = "BAT0";

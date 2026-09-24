@@ -86,7 +86,7 @@
     { device = "/dev/disk/by-uuid/2aa51e50-2e51-46e9-a67c-4d75a5f3c9ad"; }
   ];
 
-  sops-secrets = {
+  my.sops = {
     enable = true;
     secretsFile = "${inputs.nix-vault}/secrets/controller.yaml";
   };
@@ -145,7 +145,7 @@
     };
   };
 
-  home-network = {
+  my.home-network = {
     enable = true;
     mode = "controller";
 
@@ -227,9 +227,9 @@
   # Subnet router: expose the home LAN to tailnet peers. Advertised via
   # `tailscale set` on every daemon start and auto-approved by the headscale
   # policy (autoApprovedRoutes above), so a rebuild is all it takes.
-  tailscale-client.advertiseRoutes = [ "192.168.50.0/24" ];
+  my.tailscale-client.advertiseRoutes = [ "192.168.50.0/24" ];
 
-  emulation-server = {
+  my.emulation-server = {
     enable = true;
     user = "betongsuggan";
     dataDir = "/var/lib/emulation";
@@ -255,18 +255,18 @@
   #  configPackages = [ pkgs.niri-stable ];
   #};
 
-  wayland-security.enable = true;
+  my.wayland-security.enable = true;
 
   console.keyMap = "colemak";
 
-  graphics = {
+  my.graphics = {
     enable = true;
     intel.enable = true;
   };
 
-  audio.enable = true;
+  my.audio.enable = true;
 
-  networkmanager = {
+  my.network-manager = {
     enable = true;
     hostName = "controller";
   };
@@ -289,13 +289,13 @@
     };
   };
 
-  firewall = {
+  my.firewall = {
     enable = true;
     tcpPorts = [ ];
     udpPorts = [ ];
   };
 
-  wake-proxy = {
+  my.wake-proxy = {
     enable = true;
     targetMac = inputs.self.lib.hosts.desktop.wol.mac;
     targetHost = inputs.self.lib.hosts.desktop.tailnetIp;
@@ -307,7 +307,7 @@
     ];
   };
 
-  git-server = {
+  my.git-server = {
     enable = true;
     repositories = [ "nix-vault" ];
     authorizedKeys = inputs.self.lib.allSshKeys ++ [
@@ -318,7 +318,7 @@
     ];
   };
 
-  reverse-proxy =
+  my.reverse-proxy =
     let
       # Tailnet-only at the nginx layer. Headscale's default prefixes are
       # 100.64.0.0/10 (IPv4) and fd7a:115c:a1e0::/48 (IPv6). ACME HTTP-01
@@ -373,7 +373,7 @@
       };
     };
 
-  vaultwarden = {
+  my.vaultwarden = {
     enable = true;
     domain = "vault.rydback.net";
     environmentFile = config.sops.secrets."vaultwarden-env".path;
@@ -387,7 +387,7 @@
 
   # Browser office suite — file storage shell + collaborative editing
   # backend. See modules/nextcloud/SPEC.md and modules/onlyoffice/SPEC.md.
-  nextcloud = {
+  my.nextcloud = {
     enable = true;
     domain = "cloud.rydback.net";
     adminUser = "betongsuggan";
@@ -396,7 +396,7 @@
     tailnetOnly = true;
   };
 
-  onlyoffice = {
+  my.onlyoffice = {
     enable = true;
     domain = "office.rydback.net";
     jwtSecretFile = config.sops.secrets."onlyoffice-jwt".path;
@@ -427,7 +427,7 @@
   # snapshots over SFTP-on-tailnet to desktop (on-site copy) and
   # island-stationary (off-site, summer house). Each target is an independent
   # repo. See modules/restic-backup/SPEC.md for the secrets model and DR plan.
-  restic-backup = {
+  my.restic-backup = {
     enable = true;
     paths = [
       "/var/lib/vaultwarden"

@@ -5,7 +5,7 @@ Installs a baseline of development tooling (GitHub CLI, infrastructure/cloud, AI
 ## Usage
 
 ```nix
-development = {
+my.development = {
   enable = true;
   python.enable = true;
   node.enable = true;

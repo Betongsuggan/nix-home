@@ -7,7 +7,7 @@
 with lib;
 
 let
-  cfg = config.niri;
+  cfg = config.my.window-manager.niri;
 
   # "1" / "1.5" / "239.96" -> float (nixpkgs lib has no toFloat)
   toFloat = str: builtins.fromJSON str * 1.0;
@@ -87,18 +87,18 @@ let
             position = parsed.position;
           };
         }
-      ) config.windowManager.monitors
+      ) config.my.window-manager.monitors
     )
   );
 
   # Check if we have any named monitors
   hasNamedMonitors = builtins.any (
     m: (builtins.elemAt (lib.splitString "," m) 0) != ""
-  ) config.windowManager.monitors;
+  ) config.my.window-manager.monitors;
 
 in
 {
-  options.niri = {
+  options.my.window-manager.niri = {
     enable = mkEnableOption "Enable Niri scrollable-tiling compositor";
     lockscreen.enable = mkOption {
       type = types.bool;
@@ -109,16 +109,16 @@ in
 
   config = mkIf cfg.enable {
     # Auto-enable notifications when niri is enabled
-    notifications.enable = mkDefault true;
-    notifications.windowManager = "niri";
+    my.notifications.enable = mkDefault true;
+    my.notifications.windowManager = "niri";
 
     # Auto-enable launcher when niri is enabled
-    launcher.enable = mkDefault true;
-    launcher.windowManager = "niri";
+    my.launcher.enable = mkDefault true;
+    my.launcher.windowManager = "niri";
 
     # Auto-enable controls when niri is enabled
-    controls.enable = mkDefault true;
-    controls.windowManager = "niri";
+    my.controls.enable = mkDefault true;
+    my.controls.windowManager = "niri";
 
     # home.pointerCursor is provided by stylix (stylix.cursor in the theming
     # module), including the x11/gtk integration the old block lacked.
@@ -203,7 +203,7 @@ in
         indicator-thickness = 7;
 
         # Font settings
-        font = config.theme.font.name;
+        font = config.my.theming.font.name;
         font-size = 24;
 
         # Behavior (matching hyprlock's no_fade_in/out)
@@ -266,7 +266,7 @@ in
             xkb = {
               layout = "us";
               variant = "colemak";
-              options = "caps:escape,compose:${config.windowManager.composeKey}";
+              options = "caps:escape,compose:${config.my.window-manager.composeKey}";
             };
           };
 
@@ -281,8 +281,8 @@ in
           };
 
           # Map touchscreen to specific output if configured
-          touch = optionalAttrs (config.windowManager.touchOutput != null) {
-            map-to-output = config.windowManager.touchOutput;
+          touch = optionalAttrs (config.my.window-manager.touchOutput != null) {
+            map-to-output = config.my.window-manager.touchOutput;
           };
         };
 
@@ -309,8 +309,8 @@ in
           focus-ring = {
             enable = true;
             width = 2;
-            active.color = config.theme.colors.primary.foreground;
-            inactive.color = config.theme.colors.primary.background;
+            active.color = config.my.theming.colors.primary.foreground;
+            inactive.color = config.my.theming.colors.primary.background;
           };
 
           border = {
@@ -326,7 +326,7 @@ in
             command = [
               "${pkgs.swaybg}/bin/swaybg"
               "-i"
-              "${config.theme.wallpaper}"
+              "${config.my.theming.wallpaper}"
               "-m"
               "fill"
             ];
@@ -351,14 +351,14 @@ in
                     ];
                   }
                 ]
-            ) config.windowManager.autostartApps
+            ) config.my.window-manager.autostartApps
           )
         );
 
         # Cursor configuration
         cursor = {
-          theme = config.theme.cursor.name;
-          size = config.theme.cursor.size;
+          theme = config.my.theming.cursor.name;
+          size = config.my.theming.cursor.size;
         };
 
         # Hotkey inhibitor (for nested compositors, games, etc.)
@@ -422,7 +422,7 @@ in
           ];
 
           # Terminal
-          "Mod+Return".action.spawn = [ config.terminal.command ];
+          "Mod+Return".action.spawn = [ config.my.terminal.command ];
 
           # Lock screen
           "Mod+Shift+X".action =
@@ -448,7 +448,7 @@ in
             "-c"
             ''
               if ${pkgs.procps}/bin/pkill -SIGINT wf-recorder; then
-                ${config.notifications.send {
+                ${config.my.notifications.send {
                   category = "recording";
                   icon = "media-playback-stop";
                   summary = "Recording stopped";
@@ -456,7 +456,7 @@ in
               else
                 GEOMETRY=$(${pkgs.slurp}/bin/slurp)
                 if [ -n "$GEOMETRY" ]; then
-                  ${config.notifications.send {
+                  ${config.my.notifications.send {
                     category = "recording";
                     summary = "Recording started";
                     body = "Selected region";
@@ -473,13 +473,13 @@ in
             "-c"
             ''
               if ${pkgs.procps}/bin/pkill -SIGINT wf-recorder; then
-                ${config.notifications.send {
+                ${config.my.notifications.send {
                   category = "recording";
                   icon = "media-playback-stop";
                   summary = "Recording stopped";
                 }}
               else
-                ${config.notifications.send {
+                ${config.my.notifications.send {
                   category = "recording";
                   summary = "Recording started";
                 }}
@@ -647,54 +647,54 @@ in
           };
         }
         // (
-          if config.launcher.enable then
+          if config.my.launcher.enable then
             {
               # Launcher bindings
               "Mod+E".action.spawn = [
                 "sh"
                 "-c"
-                (config.launcher.show { mode = "symbols"; })
+                (config.my.launcher.show { mode = "symbols"; })
               ];
               "Mod+U".action.spawn = [
                 "sh"
                 "-c"
-                (config.launcher.wifi { })
+                (config.my.launcher.wifi { })
               ];
               "Mod+M".action.spawn = [
                 "sh"
                 "-c"
-                (config.launcher.monitor { })
+                (config.my.launcher.monitor { })
               ];
               "Mod+Z".action.spawn = [
                 "sh"
                 "-c"
-                (config.launcher.bluetooth { })
+                (config.my.launcher.bluetooth { })
               ];
               # Note: Monitor keybinding removed - uses Hyprland-specific extension
               "Mod+D".action.spawn = [
                 "sh"
                 "-c"
-                (config.launcher.show { mode = "websearch"; })
+                (config.my.launcher.show { mode = "websearch"; })
               ];
               "Mod+O".action.spawn = [
                 "sh"
                 "-c"
-                (config.launcher.show { mode = "desktopapplications"; })
+                (config.my.launcher.show { mode = "desktopapplications"; })
               ];
               "Mod+C".action.spawn = [
                 "sh"
                 "-c"
-                (config.launcher.show { mode = "clipboard"; })
+                (config.my.launcher.show { mode = "clipboard"; })
               ];
               "Mod+A".action.spawn = [
                 "sh"
                 "-c"
-                (config.launcher.audioOutput { })
+                (config.my.launcher.audioOutput { })
               ];
               "Mod+Shift+A".action.spawn = [
                 "sh"
                 "-c"
-                (config.launcher.audioInput { })
+                (config.my.launcher.audioInput { })
               ];
             }
           else

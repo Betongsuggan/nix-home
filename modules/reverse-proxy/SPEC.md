@@ -5,7 +5,7 @@ Nginx with HTTP-01 Let's Encrypt certs. You list the domains you want certs for;
 ## Usage
 
 ```nix
-reverse-proxy = {
+my.reverse-proxy = {
   enable = true;
   acmeEmail = "you@example.com";
   domains = [ "example.com" "vpn.example.com" ];

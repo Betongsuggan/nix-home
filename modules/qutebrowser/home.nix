@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.qutebrowser = {
+  options.my.qutebrowser = {
     enable = mkEnableOption "Enable qutebrowser";
   };
 
-  config = mkIf config.qutebrowser.enable {
+  config = mkIf config.my.qutebrowser.enable {
     programs = {
       qutebrowser = {
         enable = true;

@@ -7,7 +7,7 @@ Configures Ungoogled Chromium, a privacy-focused Chromium fork with all Google t
 ## Usage
 
 ```nix
-chromium.enable = true;
+my.chromium.enable = true;
 ```
 
 ## Options

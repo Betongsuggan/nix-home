@@ -103,6 +103,11 @@ in
 {
   inherit hosts devices;
 
+  # For the NixOS half of a module whose switch lives in Home Manager: true
+  # if `pred` holds for any Home Manager user's config on this host. Hosts
+  # without Home Manager (no user-*.nix) have no users, so it is false there.
+  anyHomeUser = config: pred: lib.any pred (lib.attrValues (config.home-manager.users or { }));
+
   tailnet = {
     inherit baseDomain;
     fqdn = host: "${hosts.${host}.tailnetName}.${baseDomain}";

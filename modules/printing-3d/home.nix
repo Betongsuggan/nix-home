@@ -8,12 +8,12 @@
 with lib;
 
 let
-  cfg = config.printing3d;
+  cfg = config.my.printing-3d;
 in
 {
   # Named printing3d rather than 3d-printing: Nix identifiers can't start
   # with a digit, and a quoted option name would infect every usage site.
-  options.printing3d = {
+  options.my.printing-3d = {
     enable = mkEnableOption "3D printing tooling (PrusaSlicer)";
 
     cad.enable = mkEnableOption "CAD modelling tools (OpenSCAD, FreeCAD)";

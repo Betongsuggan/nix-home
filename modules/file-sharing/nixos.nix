@@ -7,7 +7,7 @@
 with lib;
 
 let
-  cfg = config.file-sharing;
+  cfg = config.my.file-sharing;
 
   shareType = types.submodule {
     options = {
@@ -115,7 +115,7 @@ let
 
 in
 {
-  options.file-sharing = {
+  options.my.file-sharing = {
     enable = mkEnableOption "Enable file sharing";
 
     samba = {

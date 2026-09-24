@@ -40,7 +40,7 @@ Secure Boot is available as an opt-in feature for any host. To enable:
 Add to your host's `system.nix`:
 
 ```nix
-secure-boot.enable = true;
+my.secure-boot.enable = true;
 ```
 
 ### 2. Build and Switch

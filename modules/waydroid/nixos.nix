@@ -6,7 +6,7 @@
 }:
 with lib;
 let
-  cfg = config.waydroid;
+  cfg = config.my.waydroid;
 
   # The Widevine CDM and the ARM translation layer are proprietary blobs that have to be
   # fetched at runtime and unpacked into the container's mutable overlay, so they can't be
@@ -97,7 +97,7 @@ let
   };
 in
 {
-  options.waydroid = {
+  options.my.waydroid = {
     enable = mkEnableOption "Enable Waydroid Android container";
 
     startOnBoot = mkOption {

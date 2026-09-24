@@ -7,7 +7,7 @@
 with lib;
 
 let
-  cfg = config.emulation-server;
+  cfg = config.my.emulation-server;
 
   deviceType = types.submodule {
     options = {
@@ -61,7 +61,7 @@ let
 
 in
 {
-  options.emulation-server = {
+  options.my.emulation-server = {
     enable = mkEnableOption "Emulation server with ROM sharing and save sync";
 
     user = mkOption {
@@ -211,7 +211,7 @@ in
         };
       };
 
-      file-sharing = {
+      my.file-sharing = {
         enable = true;
         samba = {
           enable = true;

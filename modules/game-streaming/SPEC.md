@@ -6,7 +6,7 @@ Unified module with independent server and client halves. The server (`system.ni
 
 ```nix
 # Server (in system config — host games to other devices)
-game-streaming.server = {
+my.game-streaming.server = {
   enable = true;
   display = "SUNSHINE";
   workspace = 10;
@@ -15,7 +15,7 @@ game-streaming.server = {
 };
 
 # Client (in user config — connect to a Sunshine server)
-game-streaming.client.enable = true;
+my.game-streaming.client.enable = true;
 ```
 
 ## Options (server — system.nix)

@@ -7,7 +7,7 @@
 with lib;
 
 let
-  cfg = config.terminal;
+  cfg = config.my.terminal;
 
   # Build the terminal command based on backend
   terminalCommand =
@@ -40,7 +40,7 @@ in
     ./ghostty
   ];
 
-  options.terminal = {
+  options.my.terminal = {
     enable = mkEnableOption "Enable terminal configuration";
 
     backend = mkOption {
@@ -67,7 +67,7 @@ in
       readOnly = true;
       description = ''
         Function to launch terminal in a specific directory.
-        Usage: config.terminal.commandWithCwd { cwd = "/path/to/dir"; }
+        Usage: config.my.terminal.commandWithCwd { cwd = "/path/to/dir"; }
       '';
     };
 
@@ -159,7 +159,7 @@ in
 
   config = mkIf cfg.enable {
     # Set the internal API options
-    terminal.command = terminalCommand;
-    terminal.commandWithCwd = terminalCommandWithCwd;
+    my.terminal.command = terminalCommand;
+    my.terminal.commandWithCwd = terminalCommandWithCwd;
   };
 }

@@ -6,13 +6,13 @@
 }:
 with lib;
 let
-  cfg = config.development;
+  cfg = config.my.development;
   # Tailnet-only HTTPS vhost on controller fronting the wake-proxy → Ollama
   # on home-desktop. See modules/ai-server/SPEC.md.
   ollamaBase = "https://llm.rydback.net";
 in
 {
-  options.development = {
+  options.my.development = {
     enable = mkEnableOption "development tooling";
 
     python.enable = mkEnableOption "Python toolchain";

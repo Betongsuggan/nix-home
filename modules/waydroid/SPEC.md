@@ -11,7 +11,7 @@ translation layer.
 ## Usage
 
 ```nix
-waydroid = {
+my.waydroid = {
   enable = true;
   drmSetup = true;
 };

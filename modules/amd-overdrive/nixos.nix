@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.undervolting = {
+  options.my.amd-overdrive = {
     enable = mkOption {
       description = "Enable undervolting tools";
       type = types.bool;
@@ -15,7 +15,7 @@ with lib;
     };
   };
 
-  config = mkIf config.undervolting.enable {
+  config = mkIf config.my.amd-overdrive.enable {
     programs.corectrl.enable = true;
 
     hardware.amdgpu.overdrive = {

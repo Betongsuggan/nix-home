@@ -8,10 +8,10 @@
 with lib;
 
 let
-  cfg = config.reverse-proxy;
+  cfg = config.my.reverse-proxy;
 in
 {
-  options.reverse-proxy = {
+  options.my.reverse-proxy = {
     enable = mkEnableOption "Nginx reverse proxy with Let's Encrypt TLS";
 
     acmeEmail = mkOption {

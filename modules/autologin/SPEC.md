@@ -5,7 +5,7 @@ Automatically logs in a specified user at boot, using either GDM (display manage
 ## Usage
 
 ```nix
-autologin = {
+my.autologin = {
   enable = true;
   user = "gamer";
   method = "gdm";     # or "getty"

@@ -15,7 +15,7 @@ let
   };
 in
 {
-  options.fingerprint = {
+  options.my.fingerprint = {
     enable = mkEnableOption "Enable fingerprint reader";
 
     driver = mkOption {
@@ -47,7 +47,7 @@ in
     };
   };
 
-  config = mkIf config.fingerprint.enable (mkMerge [
+  config = mkIf config.my.fingerprint.enable (mkMerge [
     {
       environment.systemPackages = [
         pkgs.fprintd
@@ -57,11 +57,11 @@ in
         enable = true;
       }
       // (
-        if driverPackages.${config.fingerprint.driver} != null then
+        if driverPackages.${config.my.fingerprint.driver} != null then
           {
             tod = {
               enable = true;
-              driver = driverPackages.${config.fingerprint.driver};
+              driver = driverPackages.${config.my.fingerprint.driver};
             };
           }
         else
@@ -75,7 +75,7 @@ in
       # Note: hyprlock uses native D-Bus fprintd integration, not PAM
     }
 
-    (mkIf config.fingerprint.clamshellAware {
+    (mkIf config.my.fingerprint.clamshellAware {
       services.acpid = {
         enable = true;
         handlers = {
@@ -97,8 +97,8 @@ in
         serviceConfig = {
           Type = "oneshot";
           ExecStart = pkgs.writeShellScript "fprintd-lid-check" ''
-            if [ -f "${config.fingerprint.lidStatePath}" ] && \
-               grep -q "closed" "${config.fingerprint.lidStatePath}"; then
+            if [ -f "${config.my.fingerprint.lidStatePath}" ] && \
+               grep -q "closed" "${config.my.fingerprint.lidStatePath}"; then
               systemctl stop fprintd.service || true
             fi
           '';

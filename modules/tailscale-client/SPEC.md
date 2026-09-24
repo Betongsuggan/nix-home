@@ -11,7 +11,7 @@ sops.secrets."headscale-preauthkey" = {
   mode = "0400";
 };
 
-tailscale-client = {
+my.tailscale-client = {
   enable = true;
   loginServer = "https://headscale.example.com";
   authKeyFile = config.sops.secrets."headscale-preauthkey".path;
@@ -38,4 +38,4 @@ On first boot after enabling, tailscaled reads the preauth key from `authKeyFile
 - The preauth key is generated on the headscale server with `sudo headscale preauthkeys create -u <user> --reusable -e 8760h`, then encrypted into the `nix-vault` flake.
 - This module does not open the firewall. Tailscale handles its own UDP socket and works fine through a default-deny firewall on outbound connections.
 - `advertiseRoutes` is applied both as an up-flag (first registration) and via `services.tailscale.extraSetFlags`, which the nixpkgs `tailscaled-set` service runs on **every daemon start** — so route changes converge on rebuild without re-registering. Exception: emptying the list does not withdraw routes already in the node's prefs; run `sudo tailscale set --advertise-routes=` once for that.
-- Advertised routes also need approval on the headscale side. Declaratively: `headscale.autoApprovedRoutes` on the coordinator host. Manually: `sudo headscale nodes list-routes` then `sudo headscale nodes approve-routes --identifier <id> --routes <subnet>` (syntax for headscale ≥0.26).
+- Advertised routes also need approval on the headscale side. Declaratively: `my.headscale.autoApprovedRoutes` on the coordinator host. Manually: `sudo headscale nodes list-routes` then `sudo headscale nodes approve-routes --identifier <id> --routes <subnet>` (syntax for headscale ≥0.26).

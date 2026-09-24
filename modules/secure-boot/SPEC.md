@@ -5,7 +5,7 @@ Enables UEFI Secure Boot using Lanzaboote, which replaces systemd-boot with sign
 ## Usage
 
 ```nix
-secure-boot.enable = true;
+my.secure-boot.enable = true;
 ```
 
 ## Options

@@ -34,7 +34,7 @@
     ];
   };
 
-  autologin = {
+  my.autologin = {
     enable = true;
     user = "gamer";
     method = "getty";
@@ -48,7 +48,7 @@
   # openssh is enabled by home-network/tailnet in onboarded mode, with the
   # firewall closed so sshd is reachable on tailscale0 only.
 
-  secure-boot.enable = true;
+  my.secure-boot.enable = true;
   boot = {
     # Zen kernel optimized for desktop/gaming performance on Ryzen CPUs
     kernelPackages = pkgs.linuxPackages_zen;
@@ -139,7 +139,7 @@
 
   services.fwupd.enable = true;
 
-  sops-secrets = {
+  my.sops = {
     enable = true;
     secretsFile = "${inputs.nix-vault}/secrets/island.yaml";
   };
@@ -176,15 +176,15 @@
     gamescopeSession.enable = true;
   };
 
-  graphics = {
+  my.graphics = {
     enable = true;
     nvidia = true;
   };
-  audio = {
+  my.audio = {
     enable = true;
     lowLatency = true;
   };
-  bluetooth = {
+  my.bluetooth = {
     enable = true;
     wake = {
       enable = true;
@@ -194,7 +194,7 @@
     };
   };
   console.keyMap = "colemak";
-  printers.enable = true;
+  my.printers.enable = true;
 
   xdg.portal = {
     enable = true;
@@ -209,7 +209,7 @@
   # (`home-network.mode = "onboarded"`) before controller can actually reach
   # `island-stationary.ts.rydback.net`. The pubkey is pulled from lib so
   # onboarding can happen independently — no edits here.
-  restic-target = {
+  my.restic-target = {
     enable = true;
     sources.controller = {
       sshKey = inputs.self.lib.hosts.controller.users.restic.ssh.id_ed25519;
@@ -219,7 +219,7 @@
   # Tailnet membership. Start in `bootstrap` for the first pass; run
   # `home-network-bootstrap` on the host to join, follow the steps in
   # `modules/home-network/SPEC.md`, then flip to `onboarded` and rebuild.
-  home-network = {
+  my.home-network = {
     enable = true;
     mode = "onboarded";
     authorizeSshFor.betongsuggan = [
@@ -236,12 +236,12 @@
   # FIXME: placeholder — real NIC name from `ip -br link` on this machine.
   networking.interfaces."eth0".wakeOnLan.enable = true;
 
-  wayland-security.enable = true;
-  networkmanager = {
+  my.wayland-security.enable = true;
+  my.network-manager = {
     enable = true;
     hostName = "island-stationary";
   };
-  firewall = {
+  my.firewall = {
     enable = true;
     tcpPorts = [
       8080

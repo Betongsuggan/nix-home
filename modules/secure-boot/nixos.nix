@@ -10,11 +10,11 @@ with lib;
 {
   imports = [ inputs.lanzaboote.nixosModules.lanzaboote ];
 
-  options.secure-boot = {
+  options.my.secure-boot = {
     enable = mkEnableOption "Enable Secure Boot using lanzaboote";
   };
 
-  config = mkIf config.secure-boot.enable {
+  config = mkIf config.my.secure-boot.enable {
     # Lanzaboote replaces systemd-boot and handles Secure Boot
     boot.loader.systemd-boot.enable = mkForce false;
     boot.lanzaboote = {

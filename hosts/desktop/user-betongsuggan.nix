@@ -2,44 +2,44 @@
 {
   home.stateVersion = "25.05";
 
-  general.enable = true;
-  games.enable = true;
-  communication.enable = true;
-  localsend.enable = true;
-  printing3d.enable = true;
+  my.general.enable = true;
+  my.games.enable = true;
+  my.communication.enable = true;
+  my.localsend.enable = true;
+  my.printing-3d.enable = true;
 
-  emulation-client = {
+  my.emulation-client = {
     enable = true;
     server.address = inputs.self.lib.tailnet.fqdn "controller";
   };
 
-  development = {
+  my.development = {
     enable = true;
     python.enable = true;
     node.enable = true;
     go.enable = true;
   };
 
-  terminal = {
+  my.terminal = {
     enable = true;
     backend = "alacritty";
   };
 
-  starship.enable = true;
-  shell = {
+  my.starship.enable = true;
+  my.shell = {
     enable = true;
     backend = "bash";
   };
 
-  notifications.enable = true;
-  network-monitor.enable = true;
-  battery-monitor.enable = false;
-  fileManager = {
+  my.notifications.enable = true;
+  my.network-monitor.enable = true;
+  my.battery-monitor.enable = false;
+  my.file-manager = {
     enable = true;
     backend = "thunar";
   };
-  chromium.enable = true;
-  launcher = {
+  my.chromium.enable = true;
+  my.launcher = {
     enable = true;
     backend = "vicinae";
     vicinae = {
@@ -52,7 +52,7 @@
   };
 
   # Enable PS5 controller support with MangoHud toggle
-  controller = {
+  my.controller = {
     enable = true;
     type = "ps5";
     mangohudToggle = {
@@ -66,7 +66,7 @@
     rumble.enable = true;
   };
 
-  windowManager = {
+  my.window-manager = {
     enable = true;
     backend = "hyprland";
     monitors = [
@@ -81,7 +81,7 @@
       };
     };
   };
-  theme = {
+  my.theming = {
     enable = true;
     wallpaper = ../../assets/wallpaper/zeal.jpg;
     cursor = {
@@ -89,12 +89,12 @@
       name = "Banana";
     };
   };
-  git = {
+  my.git = {
     enable = true;
     userName = "Betongsuggan";
     userEmail = "rydback@gmail.com";
   };
-  secrets = {
+  my.secrets = {
     enable = true;
     keyProviders = [
       {
@@ -105,7 +105,7 @@
     ];
   };
 
-  sops-edit.enable = true;
+  my.sops.enable = true;
 
   services.ssh-agent = {
     enable = true;

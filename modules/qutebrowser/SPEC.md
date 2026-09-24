@@ -5,7 +5,7 @@ Enables the qutebrowser keyboard-driven web browser via home-manager.
 ## Usage
 
 ```nix
-qutebrowser.enable = true;
+my.qutebrowser.enable = true;
 ```
 
 ## Options

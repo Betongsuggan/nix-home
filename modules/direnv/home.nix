@@ -2,11 +2,11 @@
 with lib;
 
 {
-  options.direnv = {
+  options.my.direnv = {
     enable = mkEnableOption "Enable direnv for per-directory environment management";
   };
 
-  config = mkIf config.direnv.enable {
+  config = mkIf config.my.direnv.enable {
     programs.direnv = {
       enable = true;
       nix-direnv.enable = true; # Better nix integration with caching

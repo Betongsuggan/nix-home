@@ -6,7 +6,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 
 - Hyprland compositor using the built-in scrolling layout configured to mimic niri's scrollable tiling (see `modules/window-manager/SPEC.md` for the niri-equivalent keybinds), with Vicinae launcher (wifi, bluetooth, monitor extensions)
 - Development tooling with direnv, git, and SSH agent
-- Firefox browser (home-manager managed, `firefox.enable`) with Slack and other communication apps
+- Firefox browser (home-manager managed, `my.firefox.enable`) with Slack and other communication apps
 - Alacritty terminal with Bash shell and Starship prompt
 - Disk encryption enabled for security
 - Fingerprint reader authentication
@@ -20,7 +20,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - 3D printing toolchain: PrusaSlicer, OpenSCAD (dev snapshot), FreeCAD (`printing3d` with `cad.enable`, see `modules/3d-printing/SPEC.md`)
 - SMB network share browsing in Thunar (GVFS + Avahi/mDNS discovery); the controller's `emulation-roms` share is bookmarked directly since tailnet shares can't be mDNS-discovered
 - Colemak keyboard layout
-- Stylix theming (gruvbox dark via the theming module's `theme.*` picker) with Banana cursor
+- Stylix theming (gruvbox dark via the theming module's `my.theming.*` picker) with Banana cursor
 - Secret management for Tavily and LocalStack API keys
 - sops-nix integration: SSH keys delivered from the external `nix-vault` flake input; OpenSSH and pcscd auto-enabled by the `sops-secrets` module
 - Declarative SSH client config for `controller` (Host stanza in `~/.ssh/config`, using the bits-host key) so `ssh controller` connects as `betongsuggan` without YubiKey touch

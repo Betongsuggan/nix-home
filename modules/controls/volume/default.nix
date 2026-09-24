@@ -7,11 +7,11 @@
 with lib;
 
 let
-  cfg = config.controls.volume;
+  cfg = config.my.controls.volume;
 
   # Build notification commands using the notifications module
   notifyMuted = optionalString cfg.notifications (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "volume";
       icon = "audio-volume-muted";
       summary = "Muted";
@@ -19,7 +19,7 @@ let
   );
 
   notifyVolume = optionalString cfg.notifications (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "volume";
       summary = "\$volume%";
       progress = "\$volume";
@@ -71,7 +71,7 @@ let
   '';
 in
 {
-  config = mkIf (config.controls.enable && cfg.enable) {
+  config = mkIf (config.my.controls.enable && cfg.enable) {
     home.packages = [
       volumeControl
       volumeBackend

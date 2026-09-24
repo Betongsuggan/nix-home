@@ -5,7 +5,7 @@ Enables the KDE Plasma 6 desktop environment with the SDDM display manager (Wayl
 ## Usage
 
 ```nix
-kde.enable = true;
+my.kde.enable = true;
 ```
 
 ## Options

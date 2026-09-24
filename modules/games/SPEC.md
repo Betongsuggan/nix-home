@@ -5,7 +5,7 @@ Provides a full Linux gaming setup including Steam, Lutris, MangoHud performance
 ## Usage
 
 ```nix
-games = {
+my.games = {
   enable = true;
   mangohud = {
     enable = true;

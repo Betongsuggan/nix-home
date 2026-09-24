@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.fileManager;
+  cfg = config.my.file-manager;
 
   # Build the file manager open command based on backend
   fileManagerOpenCmd =
@@ -40,7 +40,7 @@ let
 
   # Get the terminal command - use override or fall back to terminal module
   terminalCmd =
-    if cfg.terminalOverride != null then cfg.terminalOverride else config.terminal.commandWithCwd;
+    if cfg.terminalOverride != null then cfg.terminalOverride else config.my.terminal.commandWithCwd;
 
 in
 {
@@ -48,7 +48,7 @@ in
     ./thunar
   ];
 
-  options.fileManager = {
+  options.my.file-manager = {
     enable = mkEnableOption "file manager";
 
     backend = mkOption {
@@ -89,7 +89,7 @@ in
       default = null;
       description = ''
         Optional override for terminal command with working directory.
-        If null, uses config.terminal.commandWithCwd from the terminal module.
+        If null, uses config.my.terminal.commandWithCwd from the terminal module.
         Usage: { cwd }: "terminal-command --dir \${cwd}"
       '';
     };
@@ -101,7 +101,7 @@ in
       readOnly = true;
       description = ''
         Function to open a path in the file manager.
-        Usage: config.fileManager.open { path = "/path/to/dir"; }
+        Usage: config.my.file-manager.open { path = "/path/to/dir"; }
       '';
     };
 
@@ -111,7 +111,7 @@ in
       readOnly = true;
       description = ''
         Function to open file manager and select a specific file.
-        Usage: config.fileManager.select { file = "/path/to/file"; }
+        Usage: config.my.file-manager.select { file = "/path/to/file"; }
       '';
     };
 
@@ -121,20 +121,20 @@ in
       readOnly = true;
       description = ''
         Terminal command with working directory for file manager actions.
-        This uses terminalOverride if set, otherwise falls back to config.terminal.commandWithCwd.
-        Usage: config.fileManager.terminal { cwd = "/path/to/dir"; }
+        This uses terminalOverride if set, otherwise falls back to config.my.terminal.commandWithCwd.
+        Usage: config.my.file-manager.terminal { cwd = "/path/to/dir"; }
       '';
     };
   };
 
   config = mkIf cfg.enable {
     # Set the internal API options
-    fileManager.open = fileManagerOpenCmd;
-    fileManager.select = fileManagerSelectCmd;
-    fileManager.terminal = terminalCmd;
+    my.file-manager.open = fileManagerOpenCmd;
+    my.file-manager.select = fileManagerSelectCmd;
+    my.file-manager.terminal = terminalCmd;
 
     # Automatically enable the selected file manager backend
-    fileManager.thunar.enable = mkIf (cfg.backend == "thunar") (mkDefault true);
+    my.file-manager.thunar.enable = mkIf (cfg.backend == "thunar") (mkDefault true);
 
     # Generate GTK bookmarks file if bookmarks are specified
     home.file.".config/gtk-3.0/bookmarks" = mkIf (cfg.bookmarks != [ ]) {

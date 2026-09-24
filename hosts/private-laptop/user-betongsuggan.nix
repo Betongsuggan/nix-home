@@ -2,33 +2,33 @@
 {
   home.stateVersion = "24.05";
 
-  general.enable = true;
-  chromium.enable = true;
-  game-streaming.client.enable = true;
-  games.enable = true;
-  communication.enable = true;
-  starship.enable = true;
-  notifications.enable = true;
-  network-monitor.enable = true;
-  battery-monitor.enable = true;
-  kanshi.enable = true;
-  development = {
+  my.general.enable = true;
+  my.chromium.enable = true;
+  my.game-streaming.client.enable = true;
+  my.games.enable = true;
+  my.communication.enable = true;
+  my.starship.enable = true;
+  my.notifications.enable = true;
+  my.network-monitor.enable = true;
+  my.battery-monitor.enable = true;
+  my.kanshi.enable = true;
+  my.development = {
     enable = true;
     python.enable = true;
     node.enable = true;
     go.enable = true;
   };
-  fileManager = {
+  my.file-manager = {
     enable = true;
     backend = "thunar";
   };
 
-  shell = {
+  my.shell = {
     enable = true;
     backend = "bash";
   };
 
-  terminal = {
+  my.terminal = {
     enable = true;
     backend = "ghostty";
     colors.useTheme = true;
@@ -80,7 +80,7 @@
     ];
   };
 
-  launcher = {
+  my.launcher = {
     enable = true;
     backend = "vicinae";
     vicinae = {
@@ -91,7 +91,7 @@
     };
   };
 
-  theme = {
+  my.theming = {
     enable = true;
     wallpaper = ../../assets/wallpaper/zeal.jpg;
     cursor = {
@@ -100,7 +100,7 @@
     };
   };
 
-  windowManager = {
+  my.window-manager = {
     enable = true;
     backend = "niri";
     autostartApps = {
@@ -116,13 +116,13 @@
     };
   };
 
-  git = {
+  my.git = {
     enable = true;
     userName = "Betongsuggan";
     userEmail = "rydback@gmail.com";
   };
 
-  secrets = {
+  my.secrets = {
     enable = true;
     keyProviders = [
       {

@@ -5,7 +5,7 @@ Sends desktop notifications for network events: Wi-Fi connect/disconnect (with S
 ## Usage
 
 ```nix
-network-monitor.enable = true;
+my.network-monitor.enable = true;
 ```
 
 ## Options

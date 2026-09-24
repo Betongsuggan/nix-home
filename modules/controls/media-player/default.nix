@@ -7,11 +7,11 @@
 with lib;
 
 let
-  cfg = config.controls.mediaPlayer;
+  cfg = config.my.controls.mediaPlayer;
 
   # Build notification command using the notifications module
   notifyMedia = optionalString cfg.notifications (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "media";
       icon = "\$icon";
       summary = "\$title";
@@ -84,7 +84,7 @@ let
   '';
 in
 {
-  config = mkIf (config.controls.enable && cfg.enable) {
+  config = mkIf (config.my.controls.enable && cfg.enable) {
     home.packages = [
       mediaPlayerControl
       pkgs.playerctl

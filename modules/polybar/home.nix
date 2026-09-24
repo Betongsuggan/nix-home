@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.polybar = {
+  options.my.polybar = {
     enable = mkEnableOption "Enable Polybar";
 
     monitor = mkOption {
@@ -54,7 +54,7 @@ with lib;
     };
   };
 
-  config = mkIf config.polybar.enable {
+  config = mkIf config.my.polybar.enable {
     services.polybar = {
       enable = true;
       package = pkgs.polybar.override {
@@ -63,7 +63,7 @@ with lib;
       };
       config = with builtins; {
         "bar/bottom" = {
-          monitor = config.polybar.monitor;
+          monitor = config.my.polybar.monitor;
           bottom = true;
           width = "100%";
           height = "2%";
@@ -74,12 +74,12 @@ with lib;
           modules-center = "i3";
           modules-right = "date pulseaudio battery backlight";
           modules-left = "cpu memory";
-          background = config.theme.colors.primary.background;
-          foreground = config.theme.colors.normal.white;
+          background = config.my.theming.colors.primary.background;
+          foreground = config.my.theming.colors.normal.white;
 
-          font-0 = "${config.theme.font.name},${theme.font.style}:size=10";
-          font-1 = "${config.theme.font.name},${theme.font.style}:size=20";
-          font-2 = "${config.theme.font.name},${theme.font.style}:size=18;1";
+          font-0 = "${config.my.theming.font.name},${theme.font.style}:size=10";
+          font-1 = "${config.my.theming.font.name},${theme.font.style}:size=20";
+          font-2 = "${config.my.theming.font.name},${theme.font.style}:size=18;1";
 
           tray-position = "right";
           tray-padding = 1;
@@ -87,14 +87,14 @@ with lib;
         "module/i3" = {
           type = "internal/i3";
           label-focused = "%index%";
-          label-focused-background = "${config.theme.colors.normal.white}";
-          label-focused-foreground = "${config.theme.colors.primary.background}";
+          label-focused-background = "${config.my.theming.colors.normal.white}";
+          label-focused-foreground = "${config.my.theming.colors.primary.background}";
           label-focused-alignment = "center";
           label-focused-padding = 1;
 
           label-unfocused = "%index%";
-          label-unfocused-background = "${config.theme.colors.primary.background}";
-          label-unfocused-foreground = "${config.theme.colors.normal.white}";
+          label-unfocused-background = "${config.my.theming.colors.primary.background}";
+          label-unfocused-foreground = "${config.my.theming.colors.normal.white}";
           label-unfocused-alignment = "center";
           label-unfocused-padding = 1;
         };
@@ -114,13 +114,13 @@ with lib;
           ramp-volume-1 = "";
           ramp-volume-2 = "";
         }
-        // optionalAttrs (config.polybar.audioSink != null) {
-          sink = config.polybar.audioSink;
+        // optionalAttrs (config.my.polybar.audioSink != null) {
+          sink = config.my.polybar.audioSink;
         };
         "module/battery" = {
           type = "internal/battery";
-          battery = config.polybar.battery.device;
-          adapter = config.polybar.battery.adapter;
+          battery = config.my.polybar.battery.device;
+          adapter = config.my.polybar.battery.adapter;
           full-at = "98";
 
           format-full-font = 2;
@@ -129,13 +129,13 @@ with lib;
           format-discharging = "<ramp-capacity>";
           format-discharging-font = 2;
           ramp-capacity-0 = "";
-          ramp-capacity-0-foreground = "${config.theme.colors.normal.red}";
+          ramp-capacity-0-foreground = "${config.my.theming.colors.normal.red}";
           ramp-capacity-1 = "";
-          ramp-capacity-1-foreground = "${config.theme.colors.normal.white}";
+          ramp-capacity-1-foreground = "${config.my.theming.colors.normal.white}";
           ramp-capacity-2 = "";
           ramp-capacity-3 = "";
           ramp-capacity-4 = "";
-          ramp-capacity-foreground = "${config.theme.colors.bright.white}";
+          ramp-capacity-foreground = "${config.my.theming.colors.bright.white}";
 
           format-charging = "<animation-charging>";
           format-charging-font = 2;
@@ -144,12 +144,12 @@ with lib;
           animation-charging-2 = "";
           animation-charging-3 = "";
           animation-charging-4 = "";
-          animation-charging-foreground = "${config.theme.colors.bright.white}";
+          animation-charging-foreground = "${config.my.theming.colors.bright.white}";
           animation-charging-framerate = "750";
         };
         "module/backlight" = {
           type = "internal/backlight";
-          card = config.polybar.backlight.card;
+          card = config.my.polybar.backlight.card;
           use-actual-backlight = true;
           format = "<ramp>";
           format-font = 3;

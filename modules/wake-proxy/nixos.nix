@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.wake-proxy;
+  cfg = config.my.wake-proxy;
 
   wake-proxy-pkg = pkgs.buildGoModule {
     pname = "wake-proxy";
@@ -18,7 +18,7 @@ let
   };
 in
 {
-  options.wake-proxy = {
+  options.my.wake-proxy = {
     enable = mkEnableOption "Wake-on-LAN reverse proxy (sends a magic packet on demand)";
 
     targetMac = mkOption {

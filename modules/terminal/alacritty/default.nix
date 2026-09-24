@@ -2,11 +2,11 @@
 with lib;
 
 let
-  cfg = config.terminal;
+  cfg = config.my.terminal;
 in
 {
   config = mkIf cfg.alacritty.enable {
-    # Colors, font, and opacity are applied by stylix from config.theme.*
+    # Colors, font, and opacity are applied by stylix from config.my.theming.*
     stylix.targets.alacritty.enable = cfg.colors.useTheme;
     stylix.fonts.sizes.terminal = cfg.font.size;
     stylix.opacity.terminal = cfg.opacity;

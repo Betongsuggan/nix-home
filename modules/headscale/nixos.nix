@@ -8,10 +8,10 @@
 with lib;
 
 let
-  cfg = config.headscale;
+  cfg = config.my.headscale;
 in
 {
-  options.headscale = {
+  options.my.headscale = {
     enable = mkEnableOption "Headscale Tailscale coordination server";
 
     domain = mkOption {

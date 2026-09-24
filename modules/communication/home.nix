@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.communication = {
+  options.my.communication = {
     enable = mkEnableOption "Enable communication tooling";
   };
 
-  config = mkIf config.communication.enable {
+  config = mkIf config.my.communication.enable {
     home.packages = with pkgs; [
       slack
     ];

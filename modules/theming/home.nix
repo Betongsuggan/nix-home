@@ -8,10 +8,10 @@
 with lib;
 
 let
-  cfg = config.theme;
+  cfg = config.my.theming;
 in
 {
-  options.theme = {
+  options.my.theming = {
     enable = mkEnableOption "Enable theme";
 
     wallpaper = mkOption {

@@ -5,7 +5,7 @@ Push-mode restic backups from this host to one or more SFTP receivers. Pairs wit
 ## Usage
 
 ```nix
-restic-backup = {
+my.restic-backup = {
   enable = true;
 
   paths = [

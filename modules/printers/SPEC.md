@@ -5,7 +5,7 @@ Enables CUPS printing support with drivers for common printer brands (HP, Brothe
 ## Usage
 
 ```nix
-printers.enable = true;
+my.printers.enable = true;
 ```
 
 ## Options

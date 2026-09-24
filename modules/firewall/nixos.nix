@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.firewall = {
+  options.my.firewall = {
     enable = mkEnableOption "Enable Firewall";
     tcpPorts = mkOption {
       description = "Allowed incoming TCP port traffic";
@@ -21,11 +21,11 @@ with lib;
     };
   };
 
-  config = mkIf config.firewall.enable {
+  config = mkIf config.my.firewall.enable {
     networking.firewall = {
       enable = true;
-      allowedTCPPorts = config.firewall.tcpPorts;
-      allowedUDPPorts = config.firewall.udpPorts;
+      allowedTCPPorts = config.my.firewall.tcpPorts;
+      allowedUDPPorts = config.my.firewall.udpPorts;
     };
   };
 }

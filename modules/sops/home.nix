@@ -8,10 +8,10 @@
 with lib;
 
 let
-  cfg = config.sops-edit;
+  cfg = config.my.sops;
 in
 {
-  options.sops-edit = {
+  options.my.sops = {
     enable = mkEnableOption "tools for editing the nix-vault repository";
   };
 

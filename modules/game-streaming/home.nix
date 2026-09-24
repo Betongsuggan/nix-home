@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.game-streaming;
+  cfg = config.my.game-streaming;
 
   # Moonlight codec enum values (from streamingpreferences.h)
   # VCC_AUTO = 0, VCC_FORCE_H264 = 1, VCC_FORCE_HEVC = 2, VCC_FORCE_AV1 = 4
@@ -45,7 +45,7 @@ let
 
 in
 {
-  options.game-streaming = {
+  options.my.game-streaming = {
     client = {
       enable = mkEnableOption "Enable Moonlight game streaming client with optimized settings";
 

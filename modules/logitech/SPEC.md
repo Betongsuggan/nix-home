@@ -5,7 +5,7 @@ Enables support for Logitech wireless peripherals, including the graphical Solaa
 ## Usage
 
 ```nix
-logitech.enable = true;
+my.logitech.enable = true;
 ```
 
 ## Options

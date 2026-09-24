@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.picom = {
+  options.my.picom = {
     enable = mkEnableOption "Enable Picom service";
   };
 
-  config = mkIf config.picom.enable {
+  config = mkIf config.my.picom.enable {
     services.picom = {
       enable = true;
       backend = "glx";

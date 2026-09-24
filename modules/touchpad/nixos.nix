@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.touchpad = {
+  options.my.touchpad = {
     enable = mkEnableOption "Enable touchpad support";
   };
 
-  config = mkIf config.touchpad.enable {
+  config = mkIf config.my.touchpad.enable {
     services.libinput.enable = true;
     services.libinput.touchpad = {
       tapping = true;

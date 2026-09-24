@@ -7,11 +7,11 @@
 with lib;
 
 let
-  cfg = config.controls.utils;
+  cfg = config.my.controls.utils;
 
   # Build notification commands using the notifications module
   notifyTime = optionalString cfg.time (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "time";
       summary = "\$(date '+%H:%M')";
       body = "\$(date '+%A %-d %B %Y')";
@@ -19,7 +19,7 @@ let
   );
 
   notifyWorkspace = optionalString cfg.workspaces (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "workspace";
       summary = "Workspace \$currentWorkspace";
       body = "\$notification";
@@ -27,7 +27,7 @@ let
   );
 
   notifyBattery = optionalString cfg.battery (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "battery";
       summary = "\$headline";
       body = "\$percent%\$time_info";
@@ -36,7 +36,7 @@ let
   );
 
   notifySystem = optionalString cfg.system (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "system";
       summary = "System load";
       body = "CPU \$cpu · Mem \$memUsedPercent% · Disk \$deviceUsedPercent%";
@@ -114,7 +114,7 @@ let
   };
 
   autoScreenRotationCommand =
-    optionalString (cfg.autoScreenRotation && config.controls.windowManager == "hyprland")
+    optionalString (cfg.autoScreenRotation && config.my.controls.windowManager == "hyprland")
       ''
         ${pkgs.iio-sensor-proxy}/bin/monitor-sensor |
         while read -r line; do
@@ -149,7 +149,7 @@ let
   workspaceNotifier = mkIf cfg.workspaces (
     pkgs.writeShellScriptBin "workspace-notifier" ''
       #!/usr/bin/env bash
-      ${workspaceCommands.${config.controls.windowManager}}
+      ${workspaceCommands.${config.my.controls.windowManager}}
       ${notifyWorkspace}
     ''
   );
@@ -217,7 +217,7 @@ let
 
 in
 {
-  config = mkIf (config.controls.enable && cfg.enable) {
+  config = mkIf (config.my.controls.enable && cfg.enable) {
     home.packages =
       with pkgs;
       [
@@ -247,9 +247,9 @@ in
           (
             cfg.workspaces
             && (
-              config.controls.windowManager == "i3"
-              || config.controls.windowManager == "sway"
-              || config.controls.windowManager == "niri"
+              config.my.controls.windowManager == "i3"
+              || config.my.controls.windowManager == "sway"
+              || config.my.controls.windowManager == "niri"
             )
           )
           [

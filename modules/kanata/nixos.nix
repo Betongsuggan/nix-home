@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.keyboard = {
+  options.my.kanata = {
     enable = mkOption {
       description = "Enable keyboard customization";
       type = types.bool;
@@ -15,7 +15,7 @@ with lib;
     };
   };
 
-  config = mkIf config.keyboard.enable {
+  config = mkIf config.my.kanata.enable {
     boot.kernelModules = [ "uinput" ];
     hardware.uinput.enable = true;
 

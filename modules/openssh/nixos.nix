@@ -3,10 +3,10 @@
 with lib;
 
 let
-  cfg = config.openssh;
+  cfg = config.my.openssh;
 in
 {
-  options.openssh = {
+  options.my.openssh = {
     enable = mkEnableOption "OpenSSH server (sshd)";
 
     openFirewall = mkOption {

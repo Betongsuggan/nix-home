@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.backlight = {
+  options.my.backlight = {
     enable = mkEnableOption "Enable backlight control with proper permissions";
   };
 
-  config = mkIf config.backlight.enable {
+  config = mkIf config.my.backlight.enable {
     # Add udev rules to allow video group to control backlight
     services.udev.extraRules = ''
       ACTION=="add", SUBSYSTEM=="backlight", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/class/backlight/%k/brightness"

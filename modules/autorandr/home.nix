@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.autorandr = {
+  options.my.autorandr = {
     enable = mkEnableOption "Enable Autorandr";
 
     monitors = mkOption {
@@ -111,7 +111,7 @@ with lib;
     };
   };
 
-  config = mkIf (config.autorandr.enable) {
+  config = mkIf (config.my.autorandr.enable) {
     programs.autorandr = {
       enable = true;
       profiles = mapAttrs (name: profile: {
@@ -133,7 +133,7 @@ with lib;
             inherit (cfg) rate;
           }
         ) profile.config;
-      }) config.autorandr.profiles;
+      }) config.my.autorandr.profiles;
     };
   };
 }

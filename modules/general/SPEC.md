@@ -5,7 +5,7 @@ Installs a collection of general-purpose desktop utilities and tools for everyda
 ## Usage
 
 ```nix
-general.enable = true;
+my.general.enable = true;
 ```
 
 ## Options

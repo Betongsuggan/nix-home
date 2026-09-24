@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.notifications;
+  cfg = config.my.notifications;
 
   # Category presets: one visual identity per kind of notification.
   # Senders pick a category and supply the text; any field can still be
@@ -168,7 +168,7 @@ in
     ./mako
   ];
 
-  options.notifications = {
+  options.my.notifications = {
     enable = mkEnableOption "notification system";
 
     backend = mkOption {
@@ -201,7 +201,7 @@ in
         Function to generate notification commands.
 
         Usage:
-          config.notifications.send {
+          config.my.notifications.send {
             category = "battery";   # preset: appName, icon, urgency,
                                     # replaceTag, timeout (any overridable)
             summary = "Battery low";
@@ -222,7 +222,7 @@ in
 
   config = mkIf cfg.enable {
     # Set the notification function
-    notifications.send = notifyCmd;
+    my.notifications.send = notifyCmd;
 
     # Add papirus icons for better notification visuals
     home.packages = [ pkgs.papirus-icon-theme ];

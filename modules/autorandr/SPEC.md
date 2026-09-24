@@ -5,7 +5,7 @@ Automatic display profile switching using autorandr. Defines monitor EDID finger
 ## Usage
 
 ```nix
-autorandr = {
+my.autorandr = {
   enable = true;
 
   monitors.laptop.edid = "00ffffffffffff004d10...";

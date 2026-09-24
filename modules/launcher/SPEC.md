@@ -5,7 +5,7 @@ A backend-agnostic application launcher system that provides a unified interface
 ## Usage
 
 ```nix
-launcher = {
+my.launcher = {
   enable = true;
   backend = "walker";
   windowManager = "hyprland";
@@ -54,7 +54,7 @@ launcher = {
 
 ## Notes
 
-- Other modules can use the exposed functions (`config.launcher.dmenu`, `config.launcher.show`, `config.launcher.wifi`, `config.launcher.bluetooth`, `config.launcher.audioOutput`, `config.launcher.audioInput`, `config.launcher.monitor`) to invoke the launcher without knowing which backend is active.
+- Other modules can use the exposed functions (`config.my.launcher.dmenu`, `config.my.launcher.show`, `config.my.launcher.wifi`, `config.my.launcher.bluetooth`, `config.my.launcher.audioOutput`, `config.my.launcher.audioInput`, `config.my.launcher.monitor`) to invoke the launcher without knowing which backend is active.
 - Not all features are implemented for all backends. WiFi and Bluetooth menus are not yet implemented for rofi. Audio and monitor menus are only available on walker and vicinae.
 - The walker backend runs as a systemd service with elephant as a dependency. The vicinae backend also runs as a systemd service.
 - The vicinae backend is themed by stylix (`stylix.targets.vicinae`), which adds a "stylix" theme from the base16 palette and selects it. Walker keeps its hardcoded gruvbox CSS (no stylix target exists).

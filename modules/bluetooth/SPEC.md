@@ -5,7 +5,7 @@ Enables Bluetooth with Blueman applet support. Optionally configures Bluetooth w
 ## Usage
 
 ```nix
-bluetooth = {
+my.bluetooth = {
   enable = true;
   wake = {
     enable = true;

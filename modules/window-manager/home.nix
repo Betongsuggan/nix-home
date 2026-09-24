@@ -14,7 +14,7 @@ with lib;
     ./sway
   ];
 
-  options.windowManager = {
+  options.my.window-manager = {
     enable = mkEnableOption "Enable window manager configuration";
 
     backend = mkOption {
@@ -156,12 +156,12 @@ with lib;
     };
   };
 
-  config = mkIf config.windowManager.enable {
+  config = mkIf config.my.window-manager.enable {
     # Automatically enable the selected window manager
-    hyprland.enable = mkIf (config.windowManager.backend == "hyprland") (mkDefault true);
-    i3.enable = mkIf (config.windowManager.backend == "i3") (mkDefault true);
-    niri.enable = mkIf (config.windowManager.backend == "niri") (mkDefault true);
-    sway.enable = mkIf (config.windowManager.backend == "sway") (mkDefault true);
+    my.window-manager.hyprland.enable = mkIf (config.my.window-manager.backend == "hyprland") (mkDefault true);
+    my.window-manager.i3.enable = mkIf (config.my.window-manager.backend == "i3") (mkDefault true);
+    my.window-manager.niri.enable = mkIf (config.my.window-manager.backend == "niri") (mkDefault true);
+    my.window-manager.sway.enable = mkIf (config.my.window-manager.backend == "sway") (mkDefault true);
 
     # Custom compose sequences for special characters (works across all window managers)
     home.file.".XCompose".text = ''

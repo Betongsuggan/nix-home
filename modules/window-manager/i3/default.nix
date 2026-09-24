@@ -45,15 +45,15 @@ let
   # Generate full xrandr command for all monitors
   xrandrCommand =
     "${pkgs.xorg.xrandr}/bin/xrandr "
-    + (lib.concatStringsSep " " (map convertMonitorToXrandr config.windowManager.monitors));
+    + (lib.concatStringsSep " " (map convertMonitorToXrandr config.my.window-manager.monitors));
 
 in
 {
-  options.i3 = {
+  options.my.window-manager.i3 = {
     enable = mkEnableOption "Enable I3 window manager";
   };
 
-  config = mkIf config.i3.enable {
+  config = mkIf config.my.window-manager.i3.enable {
 
     services.network-manager-applet.enable = true;
 
@@ -69,7 +69,7 @@ in
       variant = "colemak";
       options = [
         "caps:escape"
-        "compose:${config.windowManager.composeKey}"
+        "compose:${config.my.window-manager.composeKey}"
       ];
     };
 
@@ -104,7 +104,7 @@ in
             notification = false;
           }
           {
-            command = "feh --bg-center ${config.theme.wallpaper}";
+            command = "feh --bg-center ${config.my.theming.wallpaper}";
             always = false;
             notification = false;
           }
@@ -117,19 +117,19 @@ in
               app.command;
           always = false;
           notification = false;
-        }) (builtins.filter (app: app != null) (builtins.attrValues config.windowManager.autostartApps)));
+        }) (builtins.filter (app: app != null) (builtins.attrValues config.my.window-manager.autostartApps)));
 
         modifier = mod;
 
-        fonts = with config.theme.font; {
+        fonts = with config.my.theming.font; {
           inherit style size;
           names = [ name ];
         };
 
         keybindings = lib.mkOptionDefault {
-          "${mod}+Return" = "exec ${config.terminal.command}";
+          "${mod}+Return" = "exec ${config.my.terminal.command}";
           "${mod}+x" = "exec sh -c '${pkgs.maim}/bin/maim -s | xclip -selection clipboard -t image/png'";
-          "${mod}+o" = "exec ${config.launcher.show { mode = "run"; }}";
+          "${mod}+o" = "exec ${config.my.launcher.show { mode = "run"; }}";
           "${mod}+Shift+x" = "exec sh -c '${pkgs.i3lock-fancy-rapid}/bin/i3lock-fancy-rapid 15 8'";
 
           # Focus
@@ -145,7 +145,7 @@ in
           "${mod}+Shift+l" = "move right";
 
           # Multi monitors
-          "${mod}+p" = "exec autorandr --change && feh --bg-center ${config.theme.wallpaper}";
+          "${mod}+p" = "exec autorandr --change && feh --bg-center ${config.my.theming.wallpaper}";
 
           # Multimedia Keys
 
@@ -174,7 +174,7 @@ in
           smartGaps = true;
         };
 
-        colors = with config.theme.colors; {
+        colors = with config.my.theming.colors; {
           background = "${primary.background}";
 
           focused = {

@@ -5,7 +5,7 @@ Configures PipeWire-based audio with ALSA, PulseAudio compatibility, and WirePlu
 ## Usage
 
 ```nix
-audio = {
+my.audio = {
   enable = true;
   lowLatency = true;
 };

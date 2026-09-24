@@ -7,10 +7,10 @@
 with lib;
 
 let
-  cfg = config.terminal;
+  cfg = config.my.terminal;
 
   # Use terminal font family or fall back to theme font
-  fontFamily = if cfg.font.family != null then cfg.font.family else config.theme.font.name;
+  fontFamily = if cfg.font.family != null then cfg.font.family else config.my.theming.font.name;
 
   # Unicode emoji ranges - route these to color emoji font
   # This is needed because Ghostty doesn't use fontconfig fallback
@@ -26,22 +26,22 @@ let
 
   # Build color palette for Ghostty (indices 0-15)
   colorPalette = optionals cfg.colors.useTheme [
-    "0=${config.theme.colors.normal.black}"
-    "1=${config.theme.colors.normal.red}"
-    "2=${config.theme.colors.normal.green}"
-    "3=${config.theme.colors.normal.yellow}"
-    "4=${config.theme.colors.normal.blue}"
-    "5=${config.theme.colors.normal.magenta}"
-    "6=${config.theme.colors.normal.cyan}"
-    "7=${config.theme.colors.normal.white}"
-    "8=${config.theme.colors.bright.black}"
-    "9=${config.theme.colors.bright.red}"
-    "10=${config.theme.colors.bright.green}"
-    "11=${config.theme.colors.bright.yellow}"
-    "12=${config.theme.colors.bright.blue}"
-    "13=${config.theme.colors.bright.magenta}"
-    "14=${config.theme.colors.bright.cyan}"
-    "15=${config.theme.colors.bright.white}"
+    "0=${config.my.theming.colors.normal.black}"
+    "1=${config.my.theming.colors.normal.red}"
+    "2=${config.my.theming.colors.normal.green}"
+    "3=${config.my.theming.colors.normal.yellow}"
+    "4=${config.my.theming.colors.normal.blue}"
+    "5=${config.my.theming.colors.normal.magenta}"
+    "6=${config.my.theming.colors.normal.cyan}"
+    "7=${config.my.theming.colors.normal.white}"
+    "8=${config.my.theming.colors.bright.black}"
+    "9=${config.my.theming.colors.bright.red}"
+    "10=${config.my.theming.colors.bright.green}"
+    "11=${config.my.theming.colors.bright.yellow}"
+    "12=${config.my.theming.colors.bright.blue}"
+    "13=${config.my.theming.colors.bright.magenta}"
+    "14=${config.my.theming.colors.bright.cyan}"
+    "15=${config.my.theming.colors.bright.white}"
   ];
 
   # Base settings for Ghostty
@@ -63,10 +63,10 @@ let
     background-opacity = cfg.opacity;
   }
   // optionalAttrs cfg.colors.useTheme {
-    background = config.theme.colors.primary.background;
-    foreground = config.theme.colors.primary.foreground;
-    selection-background = config.theme.colors.normal.white;
-    selection-foreground = config.theme.colors.bright.black;
+    background = config.my.theming.colors.primary.background;
+    foreground = config.my.theming.colors.primary.foreground;
+    selection-background = config.my.theming.colors.normal.white;
+    selection-foreground = config.my.theming.colors.bright.black;
   };
 
   # Merge base settings with extra settings
@@ -98,7 +98,7 @@ let
 
 in
 {
-  config = mkIf config.terminal.ghostty.enable {
+  config = mkIf config.my.terminal.ghostty.enable {
     home.packages = [ pkgs.ghostty ];
 
     xdg.configFile."ghostty/config".text = configText;

@@ -6,7 +6,7 @@
 }:
 with lib;
 let
-  cfg = config.power-management;
+  cfg = config.my.power-management;
 
   # Samples the battery/AC sysfs nodes to a log that is fdatasync'd after every
   # write. Buffered writers (journald included) lose the final seconds on a hard
@@ -54,7 +54,7 @@ let
   };
 in
 {
-  options.power-management = {
+  options.my.power-management = {
     enable = mkEnableOption "Enable power management";
 
     cpuVendor = mkOption {

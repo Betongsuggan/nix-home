@@ -5,7 +5,7 @@ Configures shell environments with support for bash, fish, and nushell backends.
 ## Usage
 
 ```nix
-shell = {
+my.shell = {
   enable = true;
   backend = "fish";
   aliases = {

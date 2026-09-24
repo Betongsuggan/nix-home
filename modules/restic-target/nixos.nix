@@ -8,11 +8,11 @@
 with lib;
 
 let
-  cfg = config.restic-target;
+  cfg = config.my.restic-target;
   sourceNames = attrNames cfg.sources;
 in
 {
-  options.restic-target = {
+  options.my.restic-target = {
     enable = mkEnableOption "Receive restic backups from one or more sources over chrooted SFTP";
 
     sources = mkOption {

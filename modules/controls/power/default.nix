@@ -7,17 +7,17 @@
 with lib;
 
 let
-  cfg = config.controls.power;
+  cfg = config.my.controls.power;
 
   # Build dmenu commands with specific prompts
-  dmenuLogout = config.launcher.dmenu { prompt = "Logout? (y/N)"; };
-  dmenuReboot = config.launcher.dmenu { prompt = "Reboot? (y/N)"; };
-  dmenuShutdown = config.launcher.dmenu { prompt = "Shutdown? (y/N)"; };
-  dmenuPowerMenu = config.launcher.dmenu { prompt = "Power Options"; };
+  dmenuLogout = config.my.launcher.dmenu { prompt = "Logout? (y/N)"; };
+  dmenuReboot = config.my.launcher.dmenu { prompt = "Reboot? (y/N)"; };
+  dmenuShutdown = config.my.launcher.dmenu { prompt = "Shutdown? (y/N)"; };
+  dmenuPowerMenu = config.my.launcher.dmenu { prompt = "Power Options"; };
 
   # Build notification commands using the notifications module
   notifySuspend = optionalString cfg.notifications (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "power";
       icon = "system-suspend";
       summary = "Suspending";
@@ -25,7 +25,7 @@ let
   );
 
   notifyHibernate = optionalString cfg.notifications (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "power";
       icon = "system-hibernate";
       summary = "Hibernating";
@@ -33,7 +33,7 @@ let
   );
 
   notifyLogout = optionalString cfg.notifications (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "power";
       icon = "system-log-out";
       summary = "Logging out";
@@ -41,7 +41,7 @@ let
   );
 
   notifyReboot = optionalString cfg.notifications (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "power";
       icon = "system-reboot";
       summary = "Rebooting";
@@ -49,14 +49,14 @@ let
   );
 
   notifyShutdown = optionalString cfg.notifications (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "power";
       summary = "Shutting down";
     }
   );
 
   notifyStatus = optionalString cfg.notifications (
-    config.notifications.send {
+    config.my.notifications.send {
       category = "system";
       summary = "\$uptime_info";
       body = "Load \$load_avg\$battery_detail";
@@ -82,7 +82,7 @@ let
     };
   };
 
-  wm = wmCommands.${config.controls.windowManager};
+  wm = wmCommands.${config.my.controls.windowManager};
 
   powerControl = pkgs.writeShellScriptBin "power-control" ''
     #!/usr/bin/env bash
@@ -201,19 +201,19 @@ let
   '';
 in
 {
-  config = mkIf (config.controls.enable && cfg.enable) {
+  config = mkIf (config.my.controls.enable && cfg.enable) {
     home.packages = [
       powerControl
       pkgs.systemd
       pkgs.upower
     ]
-    ++ optionals (config.controls.windowManager == "hyprland") [
+    ++ optionals (config.my.controls.windowManager == "hyprland") [
       pkgs.hyprland
     ]
-    ++ optionals (config.controls.windowManager == "i3") [
+    ++ optionals (config.my.controls.windowManager == "i3") [
       pkgs.i3
     ]
-    ++ optionals (config.controls.windowManager == "sway") [
+    ++ optionals (config.my.controls.windowManager == "sway") [
       pkgs.sway
     ];
   };

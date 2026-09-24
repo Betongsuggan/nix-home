@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.kde = {
+  options.my.kde = {
     enable = mkEnableOption "Enable KDE desktop environment";
   };
 
-  config = mkIf config.kde.enable {
+  config = mkIf config.my.kde.enable {
     services.gvfs.enable = true;
     services.displayManager.sddm = {
       enable = true;

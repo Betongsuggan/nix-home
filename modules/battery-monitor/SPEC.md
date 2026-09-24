@@ -5,7 +5,7 @@ Periodically monitors battery status via a systemd timer and sends desktop notif
 ## Usage
 
 ```nix
-battery-monitor = {
+my.battery-monitor = {
   enable = true;
   lowThreshold = 20;
   criticalThreshold = 10;

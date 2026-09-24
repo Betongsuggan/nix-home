@@ -101,7 +101,7 @@ let
   '';
 in
 {
-  options.hyprland = {
+  options.my.window-manager.hyprland = {
     enable = mkEnableOption "Enable Hyprland";
     lockscreen.enable = mkOption {
       type = types.bool;
@@ -125,16 +125,16 @@ in
     };
   };
 
-  config = mkIf config.hyprland.enable {
+  config = mkIf config.my.window-manager.hyprland.enable {
     # Auto-enable notifications when hyprland is enabled (for util notifiers)
-    notifications.enable = mkDefault true;
+    my.notifications.enable = mkDefault true;
 
     # Auto-enable launcher when hyprland is enabled
-    launcher.enable = mkDefault true;
-    launcher.windowManager = "hyprland";
+    my.launcher.enable = mkDefault true;
+    my.launcher.windowManager = "hyprland";
     # Auto-enable controls when hyprland is enabled
-    controls.enable = mkDefault true;
-    controls.windowManager = "hyprland";
+    my.controls.enable = mkDefault true;
+    my.controls.windowManager = "hyprland";
 
     # Multi-gestures
     # services.touchegg.enable = true;  # TODO: Move to system level
@@ -144,7 +144,7 @@ in
       # module); hyprcursor is the only part stylix doesn't manage.
       pointerCursor.hyprcursor = {
         enable = true;
-        inherit (config.theme.cursor) size;
+        inherit (config.my.theming.cursor) size;
       };
       packages = with pkgs; [
         hyprlock
@@ -179,7 +179,7 @@ in
         splash = false;
         wallpaper = {
           monitor = "";
-          path = "${config.theme.wallpaper}";
+          path = "${config.my.theming.wallpaper}";
         };
       };
     };
@@ -192,7 +192,7 @@ in
           ignore_dbus_inhibit = false;
         }
         // (
-          if config.hyprland.lockscreen.enable then
+          if config.my.window-manager.hyprland.lockscreen.enable then
             {
               lock_cmd = "${pkgs.procps}/bin/pgrep -x hyprlock || ${pkgs.hyprlock}/bin/hyprlock";
               before_sleep_cmd = "${pkgs.systemd}/bin/loginctl lock-session";
@@ -209,7 +209,7 @@ in
           }
         ]
         ++ (
-          if config.hyprland.lockscreen.enable then
+          if config.my.window-manager.hyprland.lockscreen.enable then
             [
               {
                 timeout = 300; # 5 minutes
@@ -257,7 +257,7 @@ in
       Install.WantedBy = [ "hyprland-session.target" ];
     };
 
-    programs.hyprlock = mkIf config.hyprland.lockscreen.enable {
+    programs.hyprlock = mkIf config.my.window-manager.hyprland.lockscreen.enable {
       enable = true;
       settings = {
         general = {
@@ -279,7 +279,7 @@ in
 
         background = [
           {
-            path = "${config.theme.wallpaper}";
+            path = "${config.my.theming.wallpaper}";
             blur_passes = 2;
             blur_size = 4;
           }
@@ -291,9 +291,9 @@ in
             outline_thickness = 2;
             dots_size = 0.2;
             dots_spacing = 0.5;
-            outer_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
-            inner_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.background})";
-            font_color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
+            outer_color = "rgb(${lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground})";
+            inner_color = "rgb(${lib.strings.removePrefix "#" config.my.theming.colors.primary.background})";
+            font_color = "rgb(${lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground})";
             fade_on_empty = false;
             placeholder_text = "<i>$FPRINTPROMPT</i>";
             hide_input = false;
@@ -306,7 +306,7 @@ in
         label = [
           {
             text = "$TIME";
-            color = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
+            color = "rgb(${lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground})";
             font_size = 64;
             font_family = "monospace";
             position = "0, 150";
@@ -325,15 +325,15 @@ in
       configType = "hyprlang";
       systemd.variables = [ "--all" ];
       settings = {
-        monitor = config.windowManager.monitors;
+        monitor = config.my.window-manager.monitors;
 
         # Workspace to monitor bindings + user workspace rules
         workspace =
           (map (
             wb:
             "${toString wb.workspace}, monitor:${wb.monitor}" + (if wb.default then ", default:true" else "")
-          ) config.windowManager.workspaceBindings)
-          ++ config.hyprland.workspaceRules;
+          ) config.my.window-manager.workspaceBindings)
+          ++ config.my.window-manager.hyprland.workspaceRules;
 
         cursor = {
           enable_hyprcursor = false;
@@ -354,7 +354,7 @@ in
         # case where Hyprland's IPC comes up immediately.
         ++ (map (
           name: "${pkgs.hyprland}/bin/hyprctl output create headless ${name}"
-        ) config.windowManager.virtualMonitors)
+        ) config.my.window-manager.virtualMonitors)
         # Autostart applications
         ++ builtins.concatLists (
           builtins.attrValues (
@@ -368,12 +368,12 @@ in
                   workspacePrefix = if app.workspace != null then "[workspace ${toString app.workspace}] " else "";
                 in
                 [ "${workspacePrefix}${app.command}" ]
-            ) config.windowManager.autostartApps
+            ) config.my.window-manager.autostartApps
           )
         );
 
         general = {
-          "col.active_border" = "rgb(${lib.strings.removePrefix "#" config.theme.colors.primary.foreground})";
+          "col.active_border" = "rgb(${lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground})";
           # Built-in scrollable-tiling layout (Hyprland ≥0.55), mimicking niri:
           # windows are columns on an infinite horizontal strip.
           layout = "scrolling";
@@ -417,9 +417,9 @@ in
 
           ### Applications
           # Terminal
-          "$mod, RETURN, exec, ${config.terminal.command}"
+          "$mod, RETURN, exec, ${config.my.terminal.command}"
         ]
-        ++ (lib.optionals config.hyprland.lockscreen.enable [
+        ++ (lib.optionals config.my.window-manager.hyprland.lockscreen.enable [
           # Lock screen
           "$modShift, x, exec, ${pkgs.hyprlock}/bin/hyprlock"
         ])
@@ -431,13 +431,13 @@ in
           # Record screen (toggle: press to start, press again to stop)
           # Records the currently focused monitor using H.264 in MKV container (more resilient)
           ''$mod, v, exec, ${pkgs.procps}/bin/pkill -SIGINT wf-recorder && ${
-            config.notifications.send {
+            config.my.notifications.send {
               category = "recording";
               icon = "media-playback-stop";
               summary = "Recording stopped";
             }
           } || { ${
-            config.notifications.send {
+            config.my.notifications.send {
               category = "recording";
               summary = "Recording started";
             }
@@ -538,31 +538,31 @@ in
           ", XF86AudioPrev, exec, media-player previous"
           "$mod, p, exec, media-player previous"
         ]
-        ++ (lib.optionals config.launcher.enable [
+        ++ (lib.optionals config.my.launcher.enable [
           ### Launchers
           # Emojis
-          "$mod, e, exec, ${config.launcher.show { mode = "symbols"; }}"
+          "$mod, e, exec, ${config.my.launcher.show { mode = "symbols"; }}"
 
           # Wifi
-          "$mod, u, exec, ${config.launcher.wifi { }}"
+          "$mod, u, exec, ${config.my.launcher.wifi { }}"
 
           # Bluetooth
-          "$mod, z, exec, ${config.launcher.bluetooth { }}"
+          "$mod, z, exec, ${config.my.launcher.bluetooth { }}"
 
           # Monitors
-          "$mod, m, exec, ${config.launcher.monitor { }}"
+          "$mod, m, exec, ${config.my.launcher.monitor { }}"
 
           # Websearch
-          "$mod, d, exec, ${config.launcher.show { mode = "websearch"; }}"
+          "$mod, d, exec, ${config.my.launcher.show { mode = "websearch"; }}"
 
           # Applications
-          "$mod, o, exec, ${config.launcher.show { mode = "desktopapplications"; }}"
+          "$mod, o, exec, ${config.my.launcher.show { mode = "desktopapplications"; }}"
           # Clipboard
-          "$mod, c, exec, ${config.launcher.show { mode = "clipboard"; }}"
+          "$mod, c, exec, ${config.my.launcher.show { mode = "clipboard"; }}"
 
           # Audio sink/source launchers
-          "$mod, a, exec, ${config.launcher.audioOutput { }}"
-          "$modShift, a, exec, ${config.launcher.audioInput { }}"
+          "$mod, a, exec, ${config.my.launcher.audioOutput { }}"
+          "$modShift, a, exec, ${config.my.launcher.audioInput { }}"
         ])
         ++ (builtins.concatLists (
           builtins.genList (
@@ -601,7 +601,7 @@ in
         ];
 
         # Lid switch bindings: external-display-aware lock/panel handling
-        bindl = lib.optionals config.hyprland.lockscreen.enable [
+        bindl = lib.optionals config.my.window-manager.hyprland.lockscreen.enable [
           ", switch:on:Lid Switch, exec, ${lidSwitch}/bin/hypr-lid-switch close"
           ", switch:off:Lid Switch, exec, ${lidSwitch}/bin/hypr-lid-switch open"
         ];
@@ -626,7 +626,7 @@ in
           # into a column it can't be clicked or dismissed — float it instead.
           "float on, match:title ^(.* is sharing (your screen|a window|a tab)\\.?)$"
         ]
-        ++ config.hyprland.windowRules;
+        ++ config.my.window-manager.hyprland.windowRules;
 
         misc = {
           disable_splash_rendering = true;
@@ -660,7 +660,7 @@ in
         input = {
           kb_layout = "us";
           kb_variant = "colemak";
-          kb_options = "caps:escape,compose:${config.windowManager.composeKey}";
+          kb_options = "caps:escape,compose:${config.my.window-manager.composeKey}";
           resolve_binds_by_sym = 1;
 
           touchpad = {
@@ -672,9 +672,9 @@ in
           sensitivity = 0;
           accel_profile = "flat";
         }
-        // optionalAttrs (config.windowManager.touchOutput != null) {
+        // optionalAttrs (config.my.window-manager.touchOutput != null) {
           touchdevice = {
-            output = config.windowManager.touchOutput;
+            output = config.my.window-manager.touchOutput;
           };
         };
       };

@@ -8,11 +8,11 @@
 with lib;
 
 let
-  cfg = config.notifications;
+  cfg = config.my.notifications;
 
 in
 {
-  options.notifications.mako = {
+  options.my.notifications.mako = {
     settings = mkOption {
       type = types.attrs;
       default = { };

@@ -14,7 +14,7 @@ The module has two halves:
 ```nix
 # in hosts/<host>/system.nix
 { inputs, ... }: {
-  sops-secrets = {
+  my.sops = {
     enable = true;
     secretsFile = "${inputs.nix-vault}/secrets/<host>.yaml";
   };
@@ -39,7 +39,7 @@ The sops-nix NixOS module is imported by this module itself, so hosts need no ex
 
 ```nix
 # in hosts/<host>/user-<name>.nix
-sops-edit.enable = true;
+my.sops.enable = true;
 ```
 
 ## Options

@@ -5,7 +5,7 @@ Unified system controls module providing brightness, volume, media player, power
 ## Usage
 
 ```nix
-controls = {
+my.controls = {
   enable = true;
   windowManager = "hyprland";
 

@@ -1,11 +1,11 @@
 # Theming
 
-Provides a centralized theme configuration ("theme picker") for the entire desktop environment, including wallpaper, cursor, fonts, and a full 16-color palette. Stylix is the application mechanism: this module enables stylix, derives the base16 scheme, fonts, and cursor from the `theme.*` options, and enables the app-agnostic stylix targets. App modules enable their own stylix targets; manual theming from `config.theme.*` remains only where stylix has no target (e.g. niri focus ring).
+Provides a centralized theme configuration ("theme picker") for the entire desktop environment, including wallpaper, cursor, fonts, and a full 16-color palette. Stylix is the application mechanism: this module enables stylix, derives the base16 scheme, fonts, and cursor from the `my.theming.*` options, and enables the app-agnostic stylix targets. App modules enable their own stylix targets; manual theming from `config.my.theming.*` remains only where stylix has no target (e.g. niri focus ring).
 
 ## Usage
 
 ```nix
-theme = {
+my.theming = {
   enable = true;
   wallpaper = ./my-wallpaper.png;
   font = {
@@ -56,7 +56,7 @@ theme = {
   - `gtk` — GTK3 apps (thunar) get adw-gtk3 recolored with the base16 palette
   - `gnome` — sets dconf `color-scheme=prefer-dark`, which makes GTK4/libadwaita apps and Firefox follow dark mode (requires system-level `programs.dconf.enable`, set in `modules/common`)
   - `fontconfig` / `font-packages` — default font families and their packages
-- `theme.font` drives `stylix.fonts.monospace` and the application/desktop font sizes; `theme.cursor` drives `stylix.cursor` (which sets `home.pointerCursor` with x11+gtk integration). sansSerif/serif/emoji keep stylix defaults (DejaVu + Noto Color Emoji), matching the previous manual fontconfig defaults.
+- `my.theming.font` drives `stylix.fonts.monospace` and the application/desktop font sizes; `my.theming.cursor` drives `stylix.cursor` (which sets `home.pointerCursor` with x11+gtk integration). sansSerif/serif/emoji keep stylix defaults (DejaVu + Noto Color Emoji), matching the previous manual fontconfig defaults.
 - Installs Papirus icon theme (kept manual; `stylix.icons` unused), Nerd Font symbols as monospace fallback, and glibc locales. Font and cursor packages are installed via stylix.
 - The wallpaper is also written to `~/.background-image` for compatibility with tools that expect it there.
-- Modules for apps without a stylix target (niri focus ring, ghostty, walker, polybar) still reference `config.theme.*` directly.
+- Modules for apps without a stylix target (niri focus ring, ghostty, walker, polybar) still reference `config.my.theming.*` directly.

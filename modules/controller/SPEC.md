@@ -5,7 +5,7 @@ Provides game controller support with MangoHud toggle via controller buttons, cu
 ## Usage
 
 ```nix
-controller = {
+my.controller = {
   enable = true;
   type = "ps5";
 

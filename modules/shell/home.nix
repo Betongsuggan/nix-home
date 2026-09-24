@@ -13,7 +13,7 @@ with lib;
     ./nushell
   ];
 
-  options.shell = {
+  options.my.shell = {
     enable = mkEnableOption "Enable shell configuration";
 
     backend = mkOption {
@@ -64,7 +64,7 @@ with lib;
       enable = mkOption {
         description = "Enable bash shell";
         type = types.bool;
-        default = config.shell.backend == "bash";
+        default = config.my.shell.backend == "bash";
       };
 
       extraInit = mkOption {
@@ -78,7 +78,7 @@ with lib;
       enable = mkOption {
         description = "Enable fish shell";
         type = types.bool;
-        default = config.shell.backend == "fish";
+        default = config.my.shell.backend == "fish";
       };
 
       enableNixIndex = mkOption {
@@ -98,7 +98,7 @@ with lib;
       enable = mkOption {
         description = "Enable nushell";
         type = types.bool;
-        default = config.shell.backend == "nushell";
+        default = config.my.shell.backend == "nushell";
       };
 
       showBanner = mkOption {
@@ -115,7 +115,7 @@ with lib;
     };
   };
 
-  config = mkIf config.shell.enable {
-    home.sessionPath = config.shell.extraPaths;
+  config = mkIf config.my.shell.enable {
+    home.sessionPath = config.my.shell.extraPaths;
   };
 }

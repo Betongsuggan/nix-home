@@ -2,11 +2,11 @@
 with lib;
 
 {
-  options.wayland-security = {
+  options.my.wayland-security = {
     enable = mkEnableOption "Wayland security configuration";
   };
 
-  config = mkIf config.wayland-security.enable {
+  config = mkIf config.my.wayland-security.enable {
     security.polkit.enable = true;
     programs.hyprlock.enable = true;
     # PAM service for swaylock (used by niri/sway). The stock NixOS stack

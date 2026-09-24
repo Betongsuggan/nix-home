@@ -13,7 +13,7 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 - Minimal SSH git server (git-shell, single bare repo)
 - Nginx reverse proxy with per-domain Let's Encrypt certs (HTTP-01), auto-renewing; currently `rydback.net` (404 stub + the tailnet bootstrap blob endpoint), `vpn.rydback.net` (proxies to headscale), `vault.rydback.net` (vaultwarden, tailnet-only), `cloud.rydback.net` (Nextcloud, tailnet-only), `office.rydback.net` (OnlyOffice Document Server, tailnet-only), and the AI lab front doors — `chat.rydback.net` (Open WebUI), `llm.rydback.net` (Ollama API), `images.rydback.net` (ComfyUI), `voice.rydback.net` (Speaches), all tailnet-only and fronting the local wake-proxy
 - Wake-proxy: a small long-running Go TCP forwarder listening on `tailscale0` and loopback for the four AI ports (11434, 8081, 8188, 8000); sends WoL magic packets to `desktop` when the upstream is unreachable (cached "alive" flag so SPA bursts don't flood), then bridges the connection. See `modules/wake-proxy/SPEC.md`.
-- Tailnet subnet router: advertises the home LAN `192.168.50.0/24` so tailnet peers (which run `--accept-routes` via the `tailnet` module) can reach LAN devices from anywhere. LAN devices see incoming tailnet traffic SNATed to controller's LAN IP, so no return routes are needed on the router. Fully declarative: the route is applied via `tailscale set` on every daemon start (`tailscale-client.advertiseRoutes`) and auto-approved by the headscale policy (`autoApprovedRoutes."192.168.50.0/24" = [ "birger@" ]`, which installs an allow-all ACL policy — see `modules/headscale/SPEC.md`). Named LAN devices get `<name>.home.rydback.net` A records via `extraDnsRecords` (currently `router.home.rydback.net` → 192.168.50.1); only DHCP-reserved/static addresses should be added there.
+- Tailnet subnet router: advertises the home LAN `192.168.50.0/24` so tailnet peers (which run `--accept-routes` via the `tailnet` module) can reach LAN devices from anywhere. LAN devices see incoming tailnet traffic SNATed to controller's LAN IP, so no return routes are needed on the router. Fully declarative: the route is applied via `tailscale set` on every daemon start (`my.tailscale-client.advertiseRoutes`) and auto-approved by the headscale policy (`autoApprovedRoutes."192.168.50.0/24" = [ "birger@" ]`, which installs an allow-all ACL policy — see `modules/headscale/SPEC.md`). Named LAN devices get `<name>.home.rydback.net` A records via `extraDnsRecords` (currently `router.home.rydback.net` → 192.168.50.1); only DHCP-reserved/static addresses should be added there.
 - `home-network` module in `controller` mode: bundles the headscale coordinator at `vpn.rydback.net` (embedded DERP relay, declaratively provisioned users), the rotated YubiKey-encrypted preauth-blob endpoint, and tailscale client membership. See `modules/home-network/SPEC.md` for the full onboarding doctrine.
 - Emulation server: Syncthing for save sync, Samba for read-only ROM/BIOS shares, data at `/var/lib/emulation`; Syncthing/Samba ports exposed only on `enp1s0` (LAN) and `tailscale0` (off-LAN)
 - Nextcloud + OnlyOffice as a Google Workspace replacement: file storage / calendar / contacts / mail / notes / tasks at `cloud.rydback.net`, collaborative editing backend at `office.rydback.net`. Shared local PostgreSQL (socket auth), per-DB roles. `pkgs.nextcloud33`, pinned major (bump exactly one per upgrade). Admin user `betongsuggan`; first-run password and the JWT secret shared with the Nextcloud ONLYOFFICE app live in sops (`services/nextcloud-admin-pass`, `services/onlyoffice-jwt`, `services/onlyoffice-nonce`). OnlyOffice docservice moved off its default port 8000 to 8765 to avoid colliding with `wake-proxy`'s 0.0.0.0:8000 (voice tunnel).
@@ -34,18 +34,18 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 
 ## `nix-vault` enrollment role
 
-Controller is the single source of truth for the `nix-vault.git` bare repository (the `nix-vault` flake input). Access is gated by `git-server.authorizedKeys` — a flat SSH pubkey allowlist (see `modules/git-server/SPEC.md`). The allowlist is derived automatically from `lib/default.nix` (`inputs.self.lib.allSshKeys`), plus the operator's YubiKey appended in this host's `system.nix` for bootstrap.
+Controller is the single source of truth for the `nix-vault.git` bare repository (the `nix-vault` flake input). Access is gated by `my.git-server.authorizedKeys` — a flat SSH pubkey allowlist (see `modules/git-server/SPEC.md`). The allowlist is derived automatically from `lib/default.nix` (`inputs.self.lib.allSshKeys`), plus the operator's YubiKey appended in this host's `system.nix` for bootstrap.
 
 Port 22 is reachable only on `tailscale0` — `nix-vault.git` is cloned over the tailnet. New hosts that are not yet on the tailnet use the `home-network` bootstrap flow (see below) to join first, then proceed with the SSH-based clone.
 
 The operator's YubiKey SSH key (FIDO `ed25519-sk` resident, touch-only) is authorized in **two** places on controller:
 
-- `git-server.authorizedKeys` — to clone/push `nix-vault.git` from a fresh installer once it has joined the tailnet, *before* the new host's host SSH key has been added to `lib/default.nix`.
+- `my.git-server.authorizedKeys` — to clone/push `nix-vault.git` from a fresh installer once it has joined the tailnet, *before* the new host's host SSH key has been added to `lib/default.nix`.
 - `users.users.betongsuggan.openssh.authorizedKeys.keys` — to SSH in as `betongsuggan`, edit `nix-vault`, and `nixos-rebuild switch` controller.
 
 One credential, all access. The YubiKey lives in the drawer until the next new-host enrollment.
 
-For everyday admin from any tailnet peer, peers' SSH keys are pulled in via `home-network.authorizeSshFor.betongsuggan` (currently only `birgerrydback@bits`). No YubiKey touch required for routine work.
+For everyday admin from any tailnet peer, peers' SSH keys are pulled in via `my.home-network.authorizeSshFor.betongsuggan` (currently only `birgerrydback@bits`). No YubiKey touch required for routine work.
 
 ## Onboarding new hosts
 

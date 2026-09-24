@@ -9,7 +9,7 @@ with a digit, and quoting the attribute at every usage site isn't worth it.
 ## Usage
 
 ```nix
-printing3d = {
+my.printing-3d = {
   enable = true;
   cad.enable = true; # optional: OpenSCAD + FreeCAD
 };

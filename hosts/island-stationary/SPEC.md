@@ -37,7 +37,7 @@ here yet. To mirror it:
 
 1. **`system.nix`**: enable the mounts —
    `emulation-mounts = { enable = true; server = inputs.self.lib.tailnet.fqdn "controller"; users = [ "betongsuggan" "gamer" ]; };`
-2. **`user-gamer.nix`**: enable `games.emulators` (+ `games.emulators.steamShortcuts`,
+2. **`user-gamer.nix`**: enable `my.games.emulators` (+ `my.games.emulators.steamShortcuts`,
    and `switch` if wanted) and
    `emulation-client = { enable = true; server.address = inputs.self.lib.tailnet.fqdn "controller"; };`
 3. **Register the Syncthing ID**: after the first rebuild, run `syncthing --device-id`

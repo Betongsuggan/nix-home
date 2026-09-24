@@ -7,11 +7,11 @@
 with lib;
 
 {
-  options.chromium = {
+  options.my.chromium = {
     enable = mkEnableOption "Enable Ungoogled Chromium browser";
   };
 
-  config = mkIf config.chromium.enable {
+  config = mkIf config.my.chromium.enable {
     programs.chromium = {
       enable = true;
       # enableWideVine bundles Google's Widevine CDM (extracted from the

@@ -5,7 +5,7 @@ Self-hosted [headscale](https://github.com/juanfont/headscale) coordination serv
 ## Usage
 
 ```nix
-reverse-proxy = {
+my.reverse-proxy = {
   enable = true;
   acmeEmail = "you@example.com";
   vhosts.headscale = {
@@ -14,7 +14,7 @@ reverse-proxy = {
   };
 };
 
-headscale = {
+my.headscale = {
   enable = true;
   domain = "headscale.example.com";
   baseDomain = "tailnet.example.com";

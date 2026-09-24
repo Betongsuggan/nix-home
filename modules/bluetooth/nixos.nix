@@ -7,7 +7,7 @@
 with lib;
 
 {
-  options.bluetooth = {
+  options.my.bluetooth = {
     enable = mkEnableOption "Enable Bluetooth";
 
     wake = {
@@ -25,12 +25,12 @@ with lib;
     };
   };
 
-  config = mkIf config.bluetooth.enable {
+  config = mkIf config.my.bluetooth.enable {
     services.blueman.enable = true;
     hardware.bluetooth = {
       enable = true;
       powerOnBoot = true;
-      settings = mkIf config.bluetooth.wake.enable {
+      settings = mkIf config.my.bluetooth.wake.enable {
         General = {
           Enable = "Source,Sink,Media,Socket";
         };
@@ -38,7 +38,7 @@ with lib;
     };
 
     # Enable bluetooth wake support
-    services.udev.extraRules = mkIf config.bluetooth.wake.enable ''
+    services.udev.extraRules = mkIf config.my.bluetooth.wake.enable ''
       # Enable wake for bluetooth USB controller and disable autosuspend
       ACTION=="add", SUBSYSTEM=="usb", DRIVER=="btusb", ATTR{power/wakeup}="enabled", ATTR{power/autosuspend}="-1"
 
@@ -49,24 +49,24 @@ with lib;
       ${concatMapStringsSep "\n" (
         device:
         ''ACTION=="add", SUBSYSTEM=="bluetooth", ATTR{address}=="${device}", ATTR{power/wakeup}="enabled"''
-      ) config.bluetooth.wake.allowedDevices}
+      ) config.my.bluetooth.wake.allowedDevices}
     '';
 
     # Add power management configuration
-    boot.kernelParams = mkIf config.bluetooth.wake.enable [
+    boot.kernelParams = mkIf config.my.bluetooth.wake.enable [
       "btusb.enable_autosuspend=n"
       "usbcore.autosuspend=-1"
     ];
 
     # Configure bluetooth service to maintain connection during suspend
-    systemd.services.bluetooth = mkIf config.bluetooth.wake.enable {
+    systemd.services.bluetooth = mkIf config.my.bluetooth.wake.enable {
       serviceConfig = {
         ExecStartPost = "${pkgs.bash}/bin/bash -c 'sleep 2; echo enabled > /sys/class/bluetooth/hci0/power/wakeup || true'";
       };
     };
 
     # Add systemd sleep hook to keep bluetooth active
-    systemd.services.bluetooth-wake-setup = mkIf config.bluetooth.wake.enable {
+    systemd.services.bluetooth-wake-setup = mkIf config.my.bluetooth.wake.enable {
       description = "Setup Bluetooth for wake functionality";
       wantedBy = [ "sleep.target" ];
       before = [ "sleep.target" ];

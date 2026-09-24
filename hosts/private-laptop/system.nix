@@ -82,23 +82,23 @@
   };
 
   console.keyMap = "colemak";
-  touchpad.enable = true;
-  graphics = {
+  my.touchpad.enable = true;
+  my.graphics = {
     enable = true;
     intel.enable = true;
     # intel.generation = "modern"; # Set to "legacy" or "arc" if needed
   };
-  audio.enable = true;
-  docker.enable = true;
-  bluetooth.enable = true;
-  wayland-security.enable = true;
-  printers.enable = true;
-  power-management.enable = true;
-  networkmanager = {
+  my.audio.enable = true;
+  my.docker.enable = true;
+  my.bluetooth.enable = true;
+  my.wayland-security.enable = true;
+  my.printers.enable = true;
+  my.power-management.enable = true;
+  my.network-manager = {
     enable = true;
     hostName = "nixos";
   };
-  firewall = {
+  my.firewall = {
     enable = true;
     tcpPorts = [ 8080 ];
   };

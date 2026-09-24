@@ -10,29 +10,29 @@
   home.file.".ssh/bits.pub".text = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.bits + "\n";
   home.file.".ssh/id_rsa.pub".text = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.id_rsa + "\n";
 
-  general.enable = true;
-  development = {
+  my.general.enable = true;
+  my.development = {
     enable = true;
     python.enable = true;
     node.enable = true;
     go.enable = true;
     kotlin.enable = true;
   };
-  direnv.enable = true;
-  chromium.enable = true;
-  firefox.enable = true;
-  communication.enable = true;
-  media.enable = true;
-  localsend = {
+  my.direnv.enable = true;
+  my.chromium.enable = true;
+  my.firefox.enable = true;
+  my.communication.enable = true;
+  my.media.enable = true;
+  my.localsend = {
     enable = true;
     cli = true;
   };
-  printing3d = {
+  my.printing-3d = {
     enable = true;
     cad.enable = true;
   };
-  battery-monitor.enable = true;
-  fileManager = {
+  my.battery-monitor.enable = true;
+  my.file-manager = {
     enable = true;
     backend = "thunar";
     networkShares.enable = true;
@@ -42,27 +42,27 @@
       "smb://${inputs.self.lib.tailnet.fqdn "controller"}/emulation-roms ROMs (controller)"
     ];
   };
-  starship.enable = true;
+  my.starship.enable = true;
 
-  terminal = {
+  my.terminal = {
     enable = true;
     backend = "alacritty";
   };
 
-  shell = {
+  my.shell = {
     enable = true;
     backend = "bash";
   };
 
-  notifications.enable = true;
-  network-monitor.enable = true;
+  my.notifications.enable = true;
+  my.network-monitor.enable = true;
 
-  controls = {
+  my.controls = {
     enable = true;
     brightness.backend = "brightnessctl";
   };
 
-  launcher = {
+  my.launcher = {
     enable = true;
     backend = "vicinae";
     vicinae = {
@@ -74,7 +74,7 @@
     };
   };
 
-  windowManager = {
+  my.window-manager = {
     enable = true;
     backend = "hyprland";
     composeKey = "ralt";
@@ -84,7 +84,7 @@
     # Vicinae launcher when they're actually wanted.
   };
 
-  theme = {
+  my.theming = {
     enable = true;
     wallpaper = ../../assets/wallpaper/zeal.jpg;
     cursor = {
@@ -93,13 +93,13 @@
     };
   };
 
-  git = {
+  my.git = {
     enable = true;
     userName = "BirgerRydback";
     userEmail = "birger.rydback@bits.bi";
   };
 
-  sops-edit.enable = true;
+  my.sops.enable = true;
 
   #sops-secrets = {
   #  enable = true;
@@ -126,7 +126,7 @@
     enable = true;
   };
 
-  emulation-client = {
+  my.emulation-client = {
     enable = true;
     server.address = inputs.self.lib.tailnet.fqdn "controller";
   };

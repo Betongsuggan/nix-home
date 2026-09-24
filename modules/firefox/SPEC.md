@@ -5,7 +5,7 @@ Configures Firefox with privacy-focused settings, hardware video acceleration, p
 ## Usage
 
 ```nix
-firefox.enable = true;
+my.firefox.enable = true;
 ```
 
 ## Options
