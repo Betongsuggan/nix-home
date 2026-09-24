@@ -9,8 +9,8 @@
 let
   # Deploys run as root over SSH (nixos-rebuild --target-host root@…) and must
   # work from ANY fleet machine, so every human user key is authorized. This is
-  # the same expansion modules/tailnet does for authorizeSshFor — inlined here
-  # because it must also hold in stage 1, before the tailnet module is enabled.
+  # the same expansion modules/home-network does from sshFrom — inlined here
+  # because it must also hold in stage 1, before home-network is enabled.
   # Deliberately not allUserPeers: that would include service identities like
   # controller's restic user.
   deployKeys = lib.concatMap (
@@ -117,5 +117,5 @@ in
   #
   # # Subnet router: advertise the summer-place LAN to the tailnet. Applied at
   # # registration only; routes must be approved on controller (see SPEC.md).
-  # tailscale-client.advertiseRoutes = [ "192.168.0.0/24" ]; # FIXME: real summer-place subnet
+  # my.home-network.advertiseRoutes = [ "192.168.0.0/24" ]; # FIXME: real summer-place subnet
 }

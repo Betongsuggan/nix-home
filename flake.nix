@@ -90,7 +90,7 @@
 
     # nix-vault.git is served by controller's git-server module, reached via
     # the tailnet (no public SSH exposure). Each consuming host must be on the
-    # headscale tailnet (`tailscale-client` block) before it can fetch this.
+    # headscale tailnet (`my.home-network`, mode `onboarded`) before it can fetch this.
     # Bootstrap an installer via `--override-input nix-vault path:...` if the
     # host hasn't joined the tailnet yet.
     nix-vault.url = "git+ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git?ref=main";

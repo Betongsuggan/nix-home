@@ -178,7 +178,7 @@ in
   # Subnet router: expose the home LAN to tailnet peers. Advertised via
   # `tailscale set` on every daemon start and auto-approved by the headscale
   # policy (autoApprovedRoutes above), so a rebuild is all it takes.
-  my.tailscale-client.advertiseRoutes = [ self.lan.subnet ];
+  my.home-network.advertiseRoutes = [ self.lan.subnet ];
 
   my.emulation-server = {
     enable = true;

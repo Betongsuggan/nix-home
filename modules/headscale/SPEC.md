@@ -60,7 +60,7 @@ sudo headscale preauthkeys create -u <user> --reusable -e 8760h
 #   -> tskey-auth-XXXXXXXX...
 ```
 
-The resulting key is what a client passes to `tailscale up --auth-key=...`. For a fully declarative pipeline, encrypt it into the `nix-vault` flake and consume it on the client via the `tailscale-client` module.
+The resulting key is what a client passes to `tailscale up --auth-key=...`. For a fully declarative pipeline, encrypt it into the `nix-vault` flake and consume it on the client via `my.home-network` (it reads the sops secret `services/headscale-preauthkey`).
 
 ## Notes
 

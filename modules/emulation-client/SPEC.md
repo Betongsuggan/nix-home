@@ -84,7 +84,7 @@ sudo umount ~/emulation/roms ~/emulation/bios
 
 ### Off-LAN access
 
-The server exposes Syncthing and Samba on its `tailscale0` interface as well as the LAN. To use the server while away from home, enable the `tailscale-client` module on this host and pass the server's tailnet hostname as `server.address` (or run `mount-emulation-roms <tailnet-hostname>` ad-hoc).
+The server exposes Syncthing and Samba on its `tailscale0` interface as well as the LAN. To use the server while away from home, enable `my.home-network` (tailnet membership) on this host and pass the server's tailnet hostname as `server.address` (or run `mount-emulation-roms <tailnet-hostname>` ad-hoc).
 
 ### Pointing emulators at the save directory
 

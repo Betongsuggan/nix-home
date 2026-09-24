@@ -1,6 +1,6 @@
 # Home Network
 
-The single first-class module every host opts into to join the home tailnet. Bundles the headscale coordinator (controller side), the tailscale client + SSH-on-`tailscale0` (every member), and the bootstrap tooling new hosts use to join the tailnet for the very first time.
+The single module every host opts into to join the home tailnet (it absorbed the former `tailnet` and `tailscale-client` modules). Bundles the headscale coordinator (controller side), the tailscale client + SSH-on-`tailscale0` (every member), and the bootstrap tooling new hosts use to join the tailnet for the very first time.
 
 This is **the primary onboarding document** for the fleet. The bootstrapping doctrine — runbook humans follow + configuration surface the fleet exposes — lives here.
 
@@ -28,6 +28,7 @@ Exactly one mode applies per host. Set `my.home-network.mode` explicitly — the
 |--------|------|---------|-------------|
 | `enable` | bool | false | Master switch |
 | `mode` | enum | (required) | `controller` \| `bootstrap` \| `onboarded` |
+| `advertiseRoutes` | list str | `[ ]` | Subnets this member routes into the tailnet (applied on every tailscaled start via set-flags; approve them on headscale via `controller.headscale.autoApprovedRoutes`) |
 | `bootstrap.blobUrl` | string | `https://rydback.net/.well-known/tailnet-bootstrap.age` | URL the helper fetches |
 | `bootstrap.loginServer` | string | `lib.tailnet.loginServer` | Headscale URL passed to `tailscale up` |
 | `controller.yubikeyAgeRecipient` | string | `lib.operator.yubikey.ageRecipient` | Public age recipient for operator's YubiKey (must be non-empty in `controller` mode) |
@@ -83,7 +84,7 @@ On the new host, grab `/etc/ssh/ssh_host_ed25519_key.pub` (the `services.openssh
 
 Commit and push `nix-home`. (Controller hasn't been rebuilt yet, so these keys aren't trusted yet — that happens in step 4.)
 
-**`ssh.host` is mandatory, not decorative.** `lib.allSshKeys` feeds controller's `my.git-server.authorizedKeys`, and `modules/tailnet` gives root a `Match localuser root user git host controller.ts.rydback.net` block that authenticates with `/etc/ssh/ssh_host_ed25519_key`. That is the identity the nix-daemon/root uses when `sudo nixos-rebuild` has to fetch the `nix-vault` flake input. (`localuser` is the criterion for the local account running ssh; a plain `Match user root` matches the *remote* login name — the fetch logs in as `git@controller`, so such a block never applies and root offers no key at all. This bug shipped for a while, masked on hosts where the locked input was already fetched as a normal user and served from the store cache.) Omit `ssh.host` and every root-side fetch fails with `Permission denied (publickey)`, even though the same fetch works as your user.
+**`ssh.host` is mandatory, not decorative.** `lib.allSshKeys` feeds controller's `my.git-server.authorizedKeys`, and `modules/home-network` gives root a `Match localuser root user git host controller.ts.rydback.net` block that authenticates with `/etc/ssh/ssh_host_ed25519_key`. That is the identity the nix-daemon/root uses when `sudo nixos-rebuild` has to fetch the `nix-vault` flake input. (`localuser` is the criterion for the local account running ssh; a plain `Match user root` matches the *remote* login name — the fetch logs in as `git@controller`, so such a block never applies and root offers no key at all. This bug shipped for a while, masked on hosts where the locked input was already fetched as a normal user and served from the store cache.) Omit `ssh.host` and every root-side fetch fails with `Permission denied (publickey)`, even though the same fetch works as your user.
 
 ### 3. Run `home-network-bootstrap` on the new host
 
@@ -237,4 +238,11 @@ The `--ephemeral` flag is what makes the `installer-XXXXXXXX` nodes auto-clean: 
 - `controller` mode appends to `my.reverse-proxy.domains` and contributes `my.reverse-proxy.vhosts.headscale`. The host's own `reverse-proxy` block does not need to declare these.
 - `bootstrap` mode does **not** join the tailnet automatically. It runs `tailscaled` in kernel mode (so MagicDNS and `tailscale0` are wired into the system resolver) but does not configure an auth key. The operator drives the join via `home-network-bootstrap`.
 - The FIDO resident SSH key stub (`~/.ssh/id_ed25519_sk_rk_nix-vault{,.pub}`) is left on disk after onboarding — it's harmless (the actual private material lives on the YubiKey, the file is a slot reference). Remove it manually if you want to, or just leave it.
-- Cross-references: `modules/tailscale-client/SPEC.md`, `modules/headscale/SPEC.md`, `modules/sops/SPEC.md`.
+- Cross-references: `modules/headscale/SPEC.md`, `modules/sops/SPEC.md`.
+
+## Member wiring (controller and onboarded modes)
+
+- tailscaled logs in to `lib.tailnet.loginServer` with `--accept-routes --accept-dns`, using the sops secret `services/headscale-preauthkey` when sops is enabled.
+- sshd is enabled with the global firewall closed; port 22 is open on `tailscale0` only.
+- Each account's `authorized_keys` gets the peer keys its registry entry allows (`sshFrom`, or `sshFromFleet` on controller).
+- root (nix-daemon) fetches `nix-vault` from `git@controller` with the host SSH key (`Match localuser root user git`).

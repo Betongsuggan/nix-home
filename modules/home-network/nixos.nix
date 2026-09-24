@@ -22,7 +22,9 @@ let
   # authorized in hosts/controller/system.nix. Changing this only makes sense
   # if you also re-create the YubiKey resident key with a new application string.
   fidoBootstrapKeyName = "id_ed25519_sk_rk_nix-vault";
-  controllerFqdn = inputs.self.lib.tailnet.fqdn "controller";
+  selfLib = inputs.self.lib;
+  controllerFqdn = selfLib.tailnet.fqdn "controller";
+  advertiseRoutesFlag = "--advertise-routes=${concatStringsSep "," cfg.advertiseRoutes}";
   controllerAdminUser = "betongsuggan";
 
   # Single operator-facing command for the bootstrap-mode workflow. Idempotent
@@ -146,6 +148,16 @@ in
       '';
     };
 
+    advertiseRoutes = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
+      example = [ "192.168.50.0/24" ];
+      description = ''
+        Subnets this member routes into the tailnet (subnet router). They
+        also need approval on the headscale side (autoApprovedRoutes).
+      '';
+    };
+
     bootstrap = {
       blobUrl = mkOption {
         type = types.str;
@@ -263,13 +275,62 @@ in
   };
 
   config = mkMerge [
-    (mkIf (cfg.enable && isTailnetMember) {
-      # Delegate the actual SSH-on-tailscale0 + firewall + authorized_keys +
-      # tailscale-client wiring to the existing `tailnet` module. `home-network`
-      # is the host-facing aggregator; `tailnet` remains the low-level
-      # building block.
-      my.tailnet.enable = true;
-    })
+    # Tailnet membership: tailscale client, SSH on tailscale0 only, and the
+    # peer keys the registry allows in
+    (mkIf (cfg.enable && isTailnetMember) (mkMerge [
+      {
+        services.tailscale = {
+          enable = true;
+          useRoutingFeatures = mkIf (cfg.advertiseRoutes != [ ]) "server";
+          extraUpFlags = [
+            "--login-server=${selfLib.tailnet.loginServer}"
+          ]
+          ++ optional (cfg.advertiseRoutes != [ ]) advertiseRoutesFlag
+          ++ [
+            "--accept-routes"
+            "--accept-dns"
+          ];
+          # Unlike up-flags (registration only), set-flags are applied by the
+          # nixpkgs tailscaled-set service on every daemon start, so route
+          # changes converge on rebuild without re-registering the node.
+          extraSetFlags = optional (cfg.advertiseRoutes != [ ]) advertiseRoutesFlag;
+        };
+
+        # The global firewall stays closed (common's default); 22 is opened on
+        # tailscale0 only.
+        services.openssh.enable = true;
+        networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 ];
+
+        # nix-daemon (root) reaches nix-vault over the tailnet using the host SSH
+        # key. `localuser` (not `user`) is the criterion for the local account
+        # running ssh — `Match user` matches the *remote* login name, and these
+        # fetches log in as git@controller, so a `Match user root` block never
+        # applies and root falls back to nonexistent /root/.ssh keys. Scoped to
+        # localuser root + remote user git so neither user SSH configs nor root's
+        # admin logins to controller are affected.
+        programs.ssh.extraConfig = ''
+          Match localuser root user git host ${controllerFqdn}
+            IdentityFile /etc/ssh/ssh_host_ed25519_key
+            IdentitiesOnly yes
+        '';
+
+        # Peer keys for each account, from its sshFrom / sshFromFleet in lib
+        users.users = genAttrs config.my.common.accounts (user: {
+          openssh.authorizedKeys.keys = concatMap (
+            p: collect isString (selfLib.hosts.${p.host}.users.${p.user}.ssh or { })
+          ) (selfLib.sshFrom config.my.common.host user);
+        });
+      }
+
+      (mkIf config.my.sops.enable {
+        services.tailscale.authKeyFile = config.sops.secrets."headscale-preauthkey".path;
+        sops.secrets."headscale-preauthkey" = {
+          key = "services/headscale-preauthkey";
+          owner = "root";
+          mode = "0400";
+        };
+      })
+    ]))
 
     (mkIf (cfg.enable && isController) {
       assertions = [

@@ -53,7 +53,7 @@
   # TODO (Step 3): enroll in tailnet — requires `headscale-preauthkey` in
   # nix-vault/secrets/mail.yaml.
   #
-  # tailscale-client = {
+  # my.home-network = {  # mode = "onboarded" once enrolled
   #   enable = true;
   #   loginServer = "https://vpn.rydback.net";
   #   authKeyFile = config.sops.secrets."headscale-preauthkey".path;

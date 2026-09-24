@@ -80,7 +80,7 @@ in
         public hostname resolve to a tailnet IP for member devices, so a
         tailnet-only nginx vhost is reachable by its real (cert-bearing)
         name. Requires clients to accept pushed DNS (tailscale's
-        `--accept-dns`, set by the `tailnet` module).
+        `--accept-dns`, set by `my.home-network`).
       '';
     };
 

@@ -53,7 +53,7 @@ retroarch (with `saves/` and `states/` subdirs), ppsspp, dolphin, switch
 
 - The `file-sharing` system module must be available (this module sets `my.file-sharing.samba` options).
 - The configured user must exist on the host.
-- A Tailscale client (`tailscale-client` module) should be enabled on the host if you want off-LAN access; the module opens its ports on `tailscale0` regardless, but the interface only exists once Tailscale is up.
+- A Tailscale client (`my.home-network`) should be enabled on the host if you want off-LAN access; the module opens its ports on `tailscale0` regardless, but the interface only exists once Tailscale is up.
 - ROMs and BIOS files need to be copied into the directories after setup.
 
 ### Directory structure

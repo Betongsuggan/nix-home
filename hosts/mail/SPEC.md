@@ -41,7 +41,7 @@ nixos-rebuild switch --flake .#mail --target-host root@mail.rydback.net
 
 - [ ] `terraform.nix`: wire Hetzner API token from sops or env.
 - [ ] `terraform.nix`: confirm location (`fsn1` vs `hel1`) and server type after Hetzner port-25 unblock.
-- [ ] `system.nix`: enable `tailscale-client` once mail host is enrolled on the headscale tailnet.
+- [ ] `system.nix`: enable `my.home-network` (mode `onboarded`) once mail host is enrolled on the headscale tailnet.
 - [ ] `system.nix`: enable Stalwart with real domain config and DKIM key sourcing.
 - [ ] `system.nix`: enable `reverse-proxy` for ACME certs (HTTP-01 on 80/443) — Stalwart consumes the resulting cert.
 - [ ] `system.nix`: enable sops, point at `nix-vault/secrets/mail.yaml`.
