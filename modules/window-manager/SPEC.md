@@ -8,10 +8,18 @@ Configures a tiling window manager with support for Hyprland, i3, Niri, and Sway
 my.window-manager = {
   enable = true;
   backend = "hyprland";
-  monitors = [
-    "DP-1,3440x1440@100,0x0,1"
-    "HDMI-A-1,3840x2160@120,auto,2"
-  ];
+  monitors = {
+    DP-1 = {
+      mode = { width = 3440; height = 1440; refresh = 100; };
+      position = { x = 0; y = 0; };
+    };
+    HDMI-A-1 = {
+      mode = { width = 3840; height = 2160; refresh = 120; };
+      scale = 2;
+      hdr = true;      # Hyprland only, like bitdepth / sdrBrightness / sdrSaturation
+    };
+    DP-3.enable = false;
+  };
   autostartApps = {
     browser = { command = "firefox"; workspace = 1; };
     chat = { command = "slack"; workspace = 3; };
@@ -28,7 +36,7 @@ my.window-manager = {
 | autostartApps | attrsOf submodule | {} | Applications to autostart with optional workspace assignment |
 | autostartApps.\<name\>.command | str | (required) | Command to execute |
 | autostartApps.\<name\>.workspace | nullOr int | null | Workspace number to launch the application in |
-| monitors | listOf str | [",preferred,auto,1"] | Monitor configuration strings (Hyprland format: "name,resolution@refresh,position,scale") |
+| monitors | attrsOf submodule | {} | Outputs by connector name: `enable`, `mode` ({ width, height, refresh }; null = preferred), `position` ({ x, y }; null = auto), `scale`, `vrr`, and the Hyprland-only `hdr`, `bitdepth`, `sdrBrightness`, `sdrSaturation`. Unlisted outputs use their preferred mode at scale 1. Each backend renders this itself (Hyprland `monitor` rules, niri `outputs`, sway `output` lines, xrandr for i3). |
 | virtualMonitors | listOf str | [] | Virtual/headless monitor names to create at startup (e.g., for Sunshine streaming) |
 | workspaceBindings | listOf submodule | [] | Bind workspaces to specific monitors |
 | workspaceBindings.*.workspace | int | (required) | Workspace number |

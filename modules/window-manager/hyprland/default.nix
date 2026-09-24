@@ -7,6 +7,53 @@
 with lib;
 
 let
+  wmLib = import ../lib.nix { inherit lib; };
+
+  # my.window-manager.monitors in Hyprland's `monitor = name,mode,pos,scale,...`
+  # syntax, plus a catch-all rule for unlisted outputs
+  monitorRule =
+    m:
+    if !m.enable then
+      "${m.name},disable"
+    else
+      concatStringsSep "," (
+        [
+          m.name
+          (
+            if m.mode == null then
+              "preferred"
+            else
+              "${toString m.mode.width}x${toString m.mode.height}"
+              + optionalString (m.mode.refresh != null) "@${wmLib.fmtNum m.mode.refresh}"
+          )
+          (if m.position == null then "auto" else "${toString m.position.x}x${toString m.position.y}")
+          (wmLib.fmtNum m.scale)
+        ]
+        ++ optionals m.vrr [
+          "vrr"
+          "1"
+        ]
+        ++ optionals (m.bitdepth != null) [
+          "bitdepth"
+          (toString m.bitdepth)
+        ]
+        ++ optionals m.hdr [
+          "cm"
+          "hdr"
+        ]
+        ++ optionals (m.sdrBrightness != null) [
+          "sdrbrightness"
+          (wmLib.fmtNum m.sdrBrightness)
+        ]
+        ++ optionals (m.sdrSaturation != null) [
+          "sdrsaturation"
+          (wmLib.fmtNum m.sdrSaturation)
+        ]
+      );
+  monitorRules = map monitorRule (wmLib.outputList config.my.window-manager.monitors) ++ [
+    ",preferred,auto,1"
+  ];
+
   # Niri-style maximize-column toggle for the scrolling layout: full column
   # width <-> the 0.5 default, staying tiled (borders/gaps kept) — unlike
   # `fullscreen, 1`, which enters maximize mode. The layout has no native
@@ -315,7 +362,7 @@ in
       configType = "hyprlang";
       systemd.variables = [ "--all" ];
       settings = {
-        monitor = config.my.window-manager.monitors;
+        monitor = monitorRules;
 
         # Workspace to monitor bindings + user workspace rules
         workspace =

@@ -9,91 +9,23 @@ with lib;
 let
   cfg = config.my.window-manager.niri;
 
-  # "1" / "1.5" / "239.96" -> float (nixpkgs lib has no toFloat)
-  toFloat = str: builtins.fromJSON str * 1.0;
+  wmLib = import ../lib.nix { inherit lib; };
 
-  # Convert Hyprland monitor format to Niri output format
-  # Hyprland: "name,resolution@refresh,position,scale"
-  # Niri: outputs."name" = { mode = { width = W; height = H; refresh = R; }; scale = S; }
-  parseMonitor =
-    monitorStr:
-    let
-      parts = lib.splitString "," monitorStr;
-      name = builtins.elemAt parts 0;
-      resolution = builtins.elemAt parts 1;
-      position = builtins.elemAt parts 2;
-      scale = builtins.elemAt parts 3;
-
-      # Parse resolution (e.g., "3440x1440@240" or "preferred")
-      resolutionParsed =
-        if resolution == "preferred" then
-          null
-        else
-          let
-            hasRefresh = lib.hasInfix "@" resolution;
-            resParts =
-              if hasRefresh then
-                lib.splitString "@" resolution
-              else
-                [
-                  resolution
-                  "60"
-                ];
-            dimParts = lib.splitString "x" (builtins.elemAt resParts 0);
-          in
-          {
-            width = lib.toInt (builtins.elemAt dimParts 0);
-            height = lib.toInt (builtins.elemAt dimParts 1);
-            refresh = toFloat (builtins.elemAt resParts 1);
-          };
-
-      # Parse position (e.g., "0x0" or "auto")
-      positionParsed =
-        if position == "auto" then
-          null
-        else
-          let
-            posParts = lib.splitString "x" position;
-          in
-          {
-            x = lib.toInt (builtins.elemAt posParts 0);
-            y = lib.toInt (builtins.elemAt posParts 1);
-          };
-    in
+  # my.window-manager.monitors as niri outputs
+  monitorOutputs = mapAttrs (
+    _: m:
     {
-      inherit name;
-      mode = resolutionParsed;
-      position = positionParsed;
-      scale = toFloat scale;
-    };
-
-  # Generate outputs configuration for Niri
-  monitorOutputs = builtins.listToAttrs (
-    builtins.filter (x: x.name != "") (
-      map (
-        monitorStr:
-        let
-          parsed = parseMonitor monitorStr;
-        in
-        {
-          inherit (parsed) name;
-          value = {
-            scale = parsed.scale;
-          }
-          // optionalAttrs (parsed.mode != null) {
-            mode = parsed.mode;
-          }
-          // optionalAttrs (parsed.position != null) {
-            position = parsed.position;
-          };
-        }
-      ) config.my.window-manager.monitors
-    )
-  );
-
-  # Check if we have any named monitors
-  hasNamedMonitors = builtins.any (
-    m: (builtins.elemAt (lib.splitString "," m) 0) != ""
+      scale = wmLib.toFloat m.scale;
+    }
+    // optionalAttrs (!m.enable) { enable = false; }
+    // optionalAttrs m.vrr { variable-refresh-rate = true; }
+    // optionalAttrs (m.mode != null) {
+      mode = {
+        inherit (m.mode) width height;
+      }
+      // optionalAttrs (m.mode.refresh != null) { refresh = wmLib.toFloat m.mode.refresh; };
+    }
+    // optionalAttrs (m.position != null) { position = { inherit (m.position) x y; }; }
   ) config.my.window-manager.monitors;
 
 in
@@ -275,7 +207,7 @@ in
         };
 
         # Output/monitor configuration
-        outputs = if hasNamedMonitors then monitorOutputs else { };
+        outputs = monitorOutputs;
 
         # Layout configuration
         layout = {

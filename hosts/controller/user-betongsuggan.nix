@@ -27,7 +27,6 @@
   #  enable = true;
   #  backend = "niri";
   #  composeKey = "ralt";
-  #  monitors = [ ",preferred,auto,1" ];
   #};
 
 }

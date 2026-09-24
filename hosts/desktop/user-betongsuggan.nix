@@ -37,11 +37,20 @@
   };
 
   my.window-manager = {
-    monitors = [
-      "DP-2,3440x1440@240,auto,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,1.5"
-      "HDMI-A-1,disable"
-      ",preferred,auto,1"
-    ];
+    monitors = {
+      DP-2 = {
+        mode = {
+          width = 3440;
+          height = 1440;
+          refresh = 240;
+        };
+        bitdepth = 10;
+        hdr = true;
+        sdrBrightness = 1.0;
+        sdrSaturation = 1.5;
+      };
+      HDMI-A-1.enable = false;
+    };
     autostartApps = {
       chromium = {
         command = "chromium";

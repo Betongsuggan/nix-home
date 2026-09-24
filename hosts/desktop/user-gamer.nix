@@ -76,12 +76,45 @@
   ];
 
   my.window-manager = {
-    monitors = [
-      "SUNSHINE,1920x1080@120,auto,1,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,1.5"
-      "DP-2,3440x1440@240,auto,1,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,1.5"
-      "HDMI-A-1,3840x2160@120,auto,2,vrr,1,bitdepth,10,cm,hdr,sdrbrightness,1.0,sdrsaturation,1.5"
-      ",preferred,auto,1"
-    ];
+    monitors = {
+      SUNSHINE = {
+        mode = {
+          width = 1920;
+          height = 1080;
+          refresh = 120;
+        };
+        vrr = true;
+        bitdepth = 10;
+        hdr = true;
+        sdrBrightness = 1.0;
+        sdrSaturation = 1.5;
+      };
+      DP-2 = {
+        mode = {
+          width = 3440;
+          height = 1440;
+          refresh = 240;
+        };
+        vrr = true;
+        bitdepth = 10;
+        hdr = true;
+        sdrBrightness = 1.0;
+        sdrSaturation = 1.5;
+      };
+      HDMI-A-1 = {
+        mode = {
+          width = 3840;
+          height = 2160;
+          refresh = 120;
+        };
+        scale = 2;
+        vrr = true;
+        bitdepth = 10;
+        hdr = true;
+        sdrBrightness = 1.0;
+        sdrSaturation = 1.5;
+      };
+    };
 
     # Virtual monitor for headless streaming
     virtualMonitors = [ "SUNSHINE" ];

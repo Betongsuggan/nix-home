@@ -55,19 +55,90 @@ with lib;
 
     monitors = mkOption {
       description = ''
-        Monitor configuration strings (Hyprland format).
-        Format: "name,resolution@refresh,position,scale"
-        Examples:
-          - ",preferred,auto,1" - Use preferred resolution, auto position, scale 1
-          - "DP-1,3440x1440@100,0x0,1" - Specific monitor with custom settings
-          - "HDMI-A-1,3840x2160@120,auto,2" - 4K monitor with 2x scaling
+        Outputs by connector name (e.g. "DP-2", or a virtual monitor such as
+        "SUNSHINE"). Outputs not listed use their preferred mode, automatic
+        position and scale 1. Each backend renders this in its own format.
       '';
-      type = types.listOf types.str;
-      default = [ ",preferred,auto,1" ];
-      example = [
-        "DP-1,3440x1440@100,auto,1"
-        "HDMI-A-1,3840x2160@120,auto,2"
-      ];
+      type = types.attrsOf (
+        types.submodule {
+          options = {
+            enable = mkOption {
+              type = types.bool;
+              default = true;
+              description = "Whether to use this output at all.";
+            };
+            mode = mkOption {
+              type = types.nullOr (
+                types.submodule {
+                  options = {
+                    width = mkOption { type = types.int; };
+                    height = mkOption { type = types.int; };
+                    refresh = mkOption {
+                      type = types.nullOr types.number;
+                      default = null;
+                      description = "Refresh rate in Hz (null: the mode's default).";
+                    };
+                  };
+                }
+              );
+              default = null;
+              description = "Resolution and refresh rate; null uses the preferred mode.";
+            };
+            position = mkOption {
+              type = types.nullOr (
+                types.submodule {
+                  options = {
+                    x = mkOption { type = types.int; };
+                    y = mkOption { type = types.int; };
+                  };
+                }
+              );
+              default = null;
+              description = "Position in the global layout; null places it automatically.";
+            };
+            scale = mkOption {
+              type = types.number;
+              default = 1;
+            };
+            vrr = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Variable refresh rate.";
+            };
+            hdr = mkOption {
+              type = types.bool;
+              default = false;
+              description = "HDR color management (Hyprland).";
+            };
+            bitdepth = mkOption {
+              type = types.nullOr types.int;
+              default = null;
+              description = "Output bit depth, e.g. 10 (Hyprland).";
+            };
+            sdrBrightness = mkOption {
+              type = types.nullOr types.number;
+              default = null;
+              description = "SDR content brightness in HDR mode (Hyprland).";
+            };
+            sdrSaturation = mkOption {
+              type = types.nullOr types.number;
+              default = null;
+              description = "SDR content saturation in HDR mode (Hyprland).";
+            };
+          };
+        }
+      );
+      default = { };
+      example = literalExpression ''
+        {
+          DP-2 = {
+            mode = { width = 3440; height = 1440; refresh = 240; };
+            hdr = true;
+            bitdepth = 10;
+          };
+          HDMI-A-1.enable = false;
+        }
+      '';
     };
 
     virtualMonitors = mkOption {
@@ -75,8 +146,8 @@ with lib;
         Virtual/headless monitor names to create at window manager startup.
         Useful for streaming (e.g., Sunshine) without a physical display connected.
 
-        Configure resolution in the regular 'monitors' option, e.g.:
-          monitors = [ "SUNSHINE,1920x1080@60,auto,1" ];
+        Configure its mode in the regular `monitors` option, e.g.:
+          monitors.SUNSHINE.mode = { width = 1920; height = 1080; refresh = 60; };
           virtualMonitors = [ "SUNSHINE" ];
       '';
       type = types.listOf types.str;

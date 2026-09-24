@@ -10,41 +10,27 @@ let
   inherit (pkgs) pamixer playerctl;
   modifier = "Mod4";
 
-  # Convert Hyprland monitor format to Sway output format
-  # Hyprland: "name,resolution@refresh,position,scale"
-  # Sway: "output name resolution WxH@RHz position X Y scale S"
-  convertMonitorToSwayOutput =
-    monitorStr:
-    let
-      parts = lib.splitString "," monitorStr;
-      name = if (builtins.elemAt parts 0) == "" then "*" else (builtins.elemAt parts 0);
-      resolution = builtins.elemAt parts 1;
-      position = builtins.elemAt parts 2;
-      scale = builtins.elemAt parts 3;
+  wmLib = import ../lib.nix { inherit lib; };
 
-      # Format resolution (add Hz if it contains @)
-      resolutionFormatted =
-        if resolution == "preferred" then
-          "preferred"
-        else if lib.hasInfix "@" resolution then
-          let
-            resParts = lib.splitString "@" resolution;
-            res = builtins.elemAt resParts 0;
-            refresh = builtins.elemAt resParts 1;
-          in
-          "${res}@${refresh}Hz"
-        else
-          resolution;
-
-      # Format position (convert "0x0" to "0 0" or keep "auto")
-      positionFormatted =
-        if position == "auto" then "auto" else lib.replaceStrings [ "x" ] [ " " ] position;
-    in
-    "output ${name} resolution ${resolutionFormatted} position ${positionFormatted} scale ${scale}";
-
-  # Generate output configurations for all monitors
-  monitorOutputs = lib.concatStringsSep "\n" (
-    map convertMonitorToSwayOutput config.my.window-manager.monitors
+  # my.window-manager.monitors as sway `output` lines (unlisted outputs keep
+  # sway's defaults)
+  swayOutput =
+    m:
+    if !m.enable then
+      "output ${m.name} disable"
+    else
+      concatStringsSep " " (
+        [ "output ${m.name}" ]
+        ++ optional (m.mode != null) (
+          "resolution ${toString m.mode.width}x${toString m.mode.height}"
+          + optionalString (m.mode.refresh != null) "@${wmLib.fmtNum m.mode.refresh}Hz"
+        )
+        ++ optional (m.position != null) "position ${toString m.position.x} ${toString m.position.y}"
+        ++ [ "scale ${wmLib.fmtNum m.scale}" ]
+        ++ optional m.vrr "adaptive_sync on"
+      );
+  monitorOutputs = concatMapStringsSep "\n" swayOutput (
+    wmLib.outputList config.my.window-manager.monitors
   );
 
 in
@@ -92,14 +78,17 @@ in
             always = false;
           }
         ]
-        ++ (builtins.map (app: {
-          command =
-            if app.workspace != null then
-              "swaymsg 'workspace ${toString app.workspace}; exec ${app.command}'"
-            else
-              app.command;
-          always = false;
-        }) (builtins.filter (app: app != null) (builtins.attrValues config.my.window-manager.autostartApps)));
+        ++ (builtins.map
+          (app: {
+            command =
+              if app.workspace != null then
+                "swaymsg 'workspace ${toString app.workspace}; exec ${app.command}'"
+              else
+                app.command;
+            always = false;
+          })
+          (builtins.filter (app: app != null) (builtins.attrValues config.my.window-manager.autostartApps))
+        );
 
         gaps = {
           top = 6;

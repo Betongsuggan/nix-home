@@ -48,7 +48,7 @@ with lib;
         ];
         # Route DisplayLink outputs through the primary GPU
         sessionCommands = mkIf (elem "displaylink" config.my.xserver.videoDrivers) ''
-          ${lib.getBin pkgs.xorg.xrandr}/bin/xrandr --setprovideroutputsource 2 0
+          ${lib.getBin pkgs.xrandr}/bin/xrandr --setprovideroutputsource 2 0
         '';
       };
     };
