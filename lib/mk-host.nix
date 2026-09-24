@@ -29,7 +29,6 @@ lib.nixosSystem {
   system = host.system or "x86_64-linux";
   specialArgs = { inherit inputs; };
   modules = [
-    ../modules/common/nixos.nix
     ../modules/nixos.nix
     (dir + "/system.nix")
     {
