@@ -9,28 +9,24 @@ with lib;
 let
   cfg = config.my.terminal;
 
-  # Build the terminal command based on backend
-  terminalCommand =
-    if cfg.backend == "alacritty" then
-      "${pkgs.alacritty}/bin/alacritty"
-    else if cfg.backend == "urxvt" then
-      "${pkgs.rxvt-unicode}/bin/urxvt"
-    else if cfg.backend == "ghostty" then
-      "${pkgs.ghostty}/bin/ghostty"
-    else
-      throw "Unsupported terminal backend: ${cfg.backend}";
-
-  # Build the terminal command with working directory
-  terminalCommandWithCwd =
-    { cwd }:
-    if cfg.backend == "alacritty" then
-      "${pkgs.alacritty}/bin/alacritty --working-directory \"${cwd}\""
-    else if cfg.backend == "urxvt" then
-      "${pkgs.rxvt-unicode}/bin/urxvt -cd \"${cwd}\""
-    else if cfg.backend == "ghostty" then
-      "${pkgs.ghostty}/bin/ghostty --working-directory=\"${cwd}\""
-    else
-      throw "Unsupported terminal backend: ${cfg.backend}";
+  # How to launch each backend, plain and in a given working directory
+  backends = {
+    alacritty = {
+      command = "${pkgs.alacritty}/bin/alacritty";
+      withCwd = cwd: "${pkgs.alacritty}/bin/alacritty --working-directory \"${cwd}\"";
+    };
+    urxvt = {
+      command = "${pkgs.rxvt-unicode}/bin/urxvt";
+      withCwd = cwd: "${pkgs.rxvt-unicode}/bin/urxvt -cd \"${cwd}\"";
+    };
+    ghostty = {
+      command = "${pkgs.ghostty}/bin/ghostty";
+      withCwd = cwd: "${pkgs.ghostty}/bin/ghostty --working-directory=\"${cwd}\"";
+    };
+  };
+  selected = backends.${cfg.backend};
+  terminalCommand = selected.command;
+  terminalCommandWithCwd = { cwd }: selected.withCwd cwd;
 
 in
 {
@@ -45,11 +41,7 @@ in
 
     backend = mkOption {
       description = "Terminal emulator backend to use";
-      type = types.enum [
-        "alacritty"
-        "urxvt"
-        "ghostty"
-      ];
+      type = types.enum (attrNames backends);
       default = "alacritty";
     };
 
@@ -103,7 +95,7 @@ in
       enable = mkOption {
         description = "Enable Alacritty terminal";
         type = types.bool;
-        default = cfg.backend == "alacritty";
+        default = cfg.enable && cfg.backend == "alacritty";
       };
 
       extraSettings = mkOption {
@@ -117,7 +109,7 @@ in
       enable = mkOption {
         description = "Enable urxvt terminal";
         type = types.bool;
-        default = cfg.backend == "urxvt";
+        default = cfg.enable && cfg.backend == "urxvt";
       };
 
       extraConfig = mkOption {
@@ -140,7 +132,7 @@ in
       enable = mkOption {
         description = "Enable Ghostty terminal";
         type = types.bool;
-        default = cfg.backend == "ghostty";
+        default = cfg.enable && cfg.backend == "ghostty";
       };
 
       extraSettings = mkOption {

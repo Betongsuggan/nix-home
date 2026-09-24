@@ -10,113 +10,92 @@ with lib;
 let
   cfg = config.my.launcher;
 
-  # Main launcher dmenu function - delegates to backend
-  launcherDmenuCmd =
-    args:
-    if cfg.backend == "wofi" then
-      cfg.wofi.buildDmenuCmd args
-    else if cfg.backend == "rofi" then
-      cfg.rofi.buildDmenuCmd args
-    else if cfg.backend == "walker" then
-      cfg.walker.buildDmenuCmd args
-    else if cfg.backend == "vicinae" then
-      cfg.vicinae.buildDmenuCmd args
-    else
-      throw "Unsupported launcher backend: ${cfg.backend}";
+  args = additionalArgs: concatStringsSep " " additionalArgs;
 
-  # Main launcher show function - delegates to backend
-  launcherShowCmd =
-    args:
-    if cfg.backend == "wofi" then
-      cfg.wofi.buildShowCmd args
-    else if cfg.backend == "rofi" then
-      cfg.rofi.buildShowCmd args
-    else if cfg.backend == "walker" then
-      cfg.walker.buildShowCmd args
-    else if cfg.backend == "vicinae" then
-      cfg.vicinae.buildShowCmd args
-    else
-      throw "Unsupported launcher backend: ${cfg.backend}";
+  # What each backend provides. A missing entry means the backend has no such
+  # menu, and the corresponding API function below is null.
+  backends = {
+    wofi = {
+      dmenu = cfg.wofi.buildDmenuCmd;
+      show = cfg.wofi.buildShowCmd;
+      wifi = _: "${cfg.wofi.wifi}/bin/wifi-control";
+      bluetooth = _: "${cfg.wofi.bluetooth}/bin/bluetooth-control";
+    };
+    rofi = {
+      dmenu = cfg.rofi.buildDmenuCmd;
+      show = cfg.rofi.buildShowCmd;
+      wifi = _: "${cfg.rofi.wifi}/bin/wifi-control";
+      bluetooth = _: "${cfg.rofi.bluetooth}/bin/bluetooth-control";
+    };
+    walker = {
+      dmenu = cfg.walker.buildDmenuCmd;
+      show = cfg.walker.buildShowCmd;
+      wifi =
+        {
+          additionalArgs ? [ ],
+        }:
+        "${pkgs.unstable.iwmenu}/bin/iwmenu --launcher walker --spaces 2 ${args additionalArgs}";
+      bluetooth =
+        {
+          additionalArgs ? [ ],
+        }:
+        "${pkgs.unstable.bzmenu}/bin/bzmenu --launcher walker --spaces 2 ${args additionalArgs}";
+      audioOutput =
+        {
+          additionalArgs ? [ ],
+        }:
+        "${pkgs.audiomenu}/bin/audiomenu sink --launcher walker ${args additionalArgs}";
+      audioInput =
+        {
+          additionalArgs ? [ ],
+        }:
+        "${pkgs.audiomenu}/bin/audiomenu source --launcher walker ${args additionalArgs}";
+      monitor =
+        {
+          additionalArgs ? [ ],
+        }:
+        "${pkgs.monitormenu}/bin/monitormenu --launcher walker ${args additionalArgs}";
+    };
+    vicinae = {
+      dmenu = cfg.vicinae.buildDmenuCmd;
+      show = cfg.vicinae.buildShowCmd;
+      wifi =
+        {
+          additionalArgs ? [ ],
+        }:
+        "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/dagimg-dot/wifi-commander/scan-wifi' ${args additionalArgs}";
+      bluetooth =
+        {
+          additionalArgs ? [ ],
+        }:
+        "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/Gelei/bluetooth/devices' ${args additionalArgs}";
+      audioOutput =
+        {
+          additionalArgs ? [ ],
+        }:
+        "${pkgs.audiomenu}/bin/audiomenu sink --launcher vicinae ${args additionalArgs}";
+      audioInput =
+        {
+          additionalArgs ? [ ],
+        }:
+        "${pkgs.audiomenu}/bin/audiomenu source --launcher vicinae ${args additionalArgs}";
+      monitor =
+        {
+          additionalArgs ? [ ],
+        }:
+        "${pkgs.monitormenu}/bin/monitormenu --launcher vicinae --backend ${cfg.windowManager} ${args additionalArgs}";
+    };
+  };
 
-  # WiFi launcher - delegates to backend-specific implementation
-  launcherWifiCmd =
-    {
-      additionalArgs ? [ ],
-    }:
-    if cfg.backend == "wofi" then
-      "${cfg.wofi.wifi}/bin/wifi-control"
-    else if cfg.backend == "rofi" then
-      "${cfg.rofi.wifi}/bin/wifi-control"
-    else if cfg.backend == "walker" then
-      "${pkgs.unstable.iwmenu}/bin/iwmenu --launcher walker --spaces 2 ${concatStringsSep " " additionalArgs}"
-    else if cfg.backend == "vicinae" then
-      "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/dagimg-dot/wifi-commander/scan-wifi' ${concatStringsSep " " additionalArgs}"
-    else
-      throw "Unsupported launcher backend: ${cfg.backend}";
-
-  # Bluetooth launcher - delegates to backend-specific implementation
-  launcherBluetoothCmd =
-    {
-      additionalArgs ? [ ],
-    }:
-    if cfg.backend == "wofi" then
-      "${cfg.wofi.bluetooth}/bin/bluetooth-control"
-    else if cfg.backend == "rofi" then
-      "${cfg.rofi.bluetooth}/bin/bluetooth-control"
-    else if cfg.backend == "walker" then
-      "${pkgs.unstable.bzmenu}/bin/bzmenu --launcher walker --spaces 2 ${concatStringsSep " " additionalArgs}"
-    else if cfg.backend == "vicinae" then
-      "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/Gelei/bluetooth/devices' ${concatStringsSep " " additionalArgs}"
-    else
-      throw "Unsupported launcher backend: ${cfg.backend}";
-
-  # Audio output launcher - delegates to backend-specific implementation
-  launcherAudioOutputCmd =
-    {
-      additionalArgs ? [ ],
-    }:
-    if cfg.backend == "wofi" then
-      throw "Audio menu not yet implemented for wofi"
-    else if cfg.backend == "rofi" then
-      throw "Audio menu not yet implemented for rofi"
-    else if cfg.backend == "walker" then
-      "${pkgs.audiomenu}/bin/audiomenu sink --launcher walker ${concatStringsSep " " additionalArgs}"
-    else if cfg.backend == "vicinae" then
-      "${pkgs.audiomenu}/bin/audiomenu sink --launcher vicinae ${concatStringsSep " " additionalArgs}"
-    else
-      throw "Unsupported launcher backend: ${cfg.backend}";
-
-  # Audio input launcher - delegates to backend-specific implementation
-  launcherAudioInputCmd =
-    {
-      additionalArgs ? [ ],
-    }:
-    if cfg.backend == "wofi" then
-      throw "Audio menu not yet implemented for wofi"
-    else if cfg.backend == "rofi" then
-      throw "Audio menu not yet implemented for rofi"
-    else if cfg.backend == "walker" then
-      "${pkgs.audiomenu}/bin/audiomenu source --launcher walker ${concatStringsSep " " additionalArgs}"
-    else if cfg.backend == "vicinae" then
-      "${pkgs.audiomenu}/bin/audiomenu source --launcher vicinae ${concatStringsSep " " additionalArgs}"
-    else
-      throw "Unsupported launcher backend: ${cfg.backend}";
-
-  # Monitor launcher - delegates to backend-specific implementation
-  launcherMonitorCmd =
-    {
-      additionalArgs ? [ ],
-    }:
-    if cfg.backend == "wofi" then
-      throw "Monitor menu not yet implemented for wofi"
-    else if cfg.backend == "rofi" then
-      throw "Monitor menu not yet implemented for rofi"
-    else if cfg.backend == "walker" then
-      "${pkgs.monitormenu}/bin/monitormenu --launcher walker ${concatStringsSep " " additionalArgs}"
-    else if cfg.backend == "vicinae" then
-      "${pkgs.monitormenu}/bin/monitormenu --launcher vicinae --backend ${cfg.windowManager} ${concatStringsSep " " additionalArgs}"
-    else
-      throw "Unsupported launcher backend: ${cfg.backend}";
+  features = [
+    "dmenu"
+    "show"
+    "wifi"
+    "bluetooth"
+    "audioOutput"
+    "audioInput"
+    "monitor"
+  ];
 
 in
 {
@@ -149,7 +128,8 @@ in
         "i3"
         "generic"
       ];
-      default = "generic";
+      default = if config.my.window-manager.enable then config.my.window-manager.backend else "generic";
+      defaultText = literalExpression "my.window-manager.backend, or \"generic\" without one";
       description = "Window manager for session integration.";
     };
 
@@ -192,7 +172,7 @@ in
     };
 
     wifi = mkOption {
-      type = types.functionTo types.str;
+      type = types.nullOr (types.functionTo types.str);
       internal = true;
       readOnly = true;
       description = ''
@@ -208,7 +188,7 @@ in
     };
 
     bluetooth = mkOption {
-      type = types.functionTo types.str;
+      type = types.nullOr (types.functionTo types.str);
       internal = true;
       readOnly = true;
       description = ''
@@ -224,7 +204,7 @@ in
     };
 
     audioOutput = mkOption {
-      type = types.functionTo types.str;
+      type = types.nullOr (types.functionTo types.str);
       internal = true;
       readOnly = true;
       description = ''
@@ -240,7 +220,7 @@ in
     };
 
     audioInput = mkOption {
-      type = types.functionTo types.str;
+      type = types.nullOr (types.functionTo types.str);
       internal = true;
       readOnly = true;
       description = ''
@@ -256,7 +236,7 @@ in
     };
 
     monitor = mkOption {
-      type = types.functionTo types.str;
+      type = types.nullOr (types.functionTo types.str);
       internal = true;
       readOnly = true;
       description = ''
@@ -272,14 +252,9 @@ in
     };
   };
 
+  # The API: each function comes from the selected backend, or is null when
+  # the backend has no such menu (callers skip their binding then)
   config = mkIf cfg.enable {
-    # Set the launcher functions
-    my.launcher.dmenu = launcherDmenuCmd;
-    my.launcher.show = launcherShowCmd;
-    my.launcher.wifi = launcherWifiCmd;
-    my.launcher.bluetooth = launcherBluetoothCmd;
-    my.launcher.audioOutput = launcherAudioOutputCmd;
-    my.launcher.audioInput = launcherAudioInputCmd;
-    my.launcher.monitor = launcherMonitorCmd;
+    my.launcher = genAttrs features (f: backends.${cfg.backend}.${f} or null);
   };
 }

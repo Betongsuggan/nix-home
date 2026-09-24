@@ -157,8 +157,15 @@ with lib;
   };
 
   config = mkIf config.my.window-manager.enable {
+    # Every backend's binds use these; each reads the backend itself
+    my.launcher.enable = mkDefault true;
+    my.controls.enable = mkDefault true;
+    my.notifications.enable = mkDefault true;
+
     # Automatically enable the selected window manager
-    my.window-manager.hyprland.enable = mkIf (config.my.window-manager.backend == "hyprland") (mkDefault true);
+    my.window-manager.hyprland.enable = mkIf (config.my.window-manager.backend == "hyprland") (
+      mkDefault true
+    );
     my.window-manager.i3.enable = mkIf (config.my.window-manager.backend == "i3") (mkDefault true);
     my.window-manager.niri.enable = mkIf (config.my.window-manager.backend == "niri") (mkDefault true);
     my.window-manager.sway.enable = mkIf (config.my.window-manager.backend == "sway") (mkDefault true);

@@ -64,7 +64,7 @@ with lib;
       enable = mkOption {
         description = "Enable bash shell";
         type = types.bool;
-        default = config.my.shell.backend == "bash";
+        default = config.my.shell.enable && config.my.shell.backend == "bash";
       };
 
       extraInit = mkOption {
@@ -78,7 +78,7 @@ with lib;
       enable = mkOption {
         description = "Enable fish shell";
         type = types.bool;
-        default = config.my.shell.backend == "fish";
+        default = config.my.shell.enable && config.my.shell.backend == "fish";
       };
 
       enableNixIndex = mkOption {
@@ -98,7 +98,7 @@ with lib;
       enable = mkOption {
         description = "Enable nushell";
         type = types.bool;
-        default = config.my.shell.backend == "nushell";
+        default = config.my.shell.enable && config.my.shell.backend == "nushell";
       };
 
       showBanner = mkOption {

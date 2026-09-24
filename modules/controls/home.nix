@@ -27,7 +27,8 @@ with lib;
         "sway"
         "generic"
       ];
-      default = "generic";
+      default = if config.my.window-manager.enable then config.my.window-manager.backend else "generic";
+      defaultText = literalExpression "my.window-manager.backend, or \"generic\" without one";
     };
 
     brightness = {

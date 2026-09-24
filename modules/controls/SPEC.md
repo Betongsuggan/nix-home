@@ -7,7 +7,6 @@ Unified system controls module providing brightness, volume, media player, power
 ```nix
 my.controls = {
   enable = true;
-  windowManager = "hyprland";
 
   brightness = {
     enable = true;
@@ -48,7 +47,7 @@ my.controls = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable system controls |
-| windowManager | enum: "hyprland", "i3", "niri", "sway", "generic" | "generic" | Window manager type for controls integration |
+| windowManager | enum: "hyprland", "i3", "niri", "sway", "generic" | `my.window-manager.backend` ("generic" without one) | Window manager type for controls integration |
 | brightness.enable | bool | true | Enable brightness controls |
 | brightness.backend | enum: "light", "brightnessctl" | "light" | Brightness control backend |
 | brightness.notifications | bool | true | Enable brightness change notifications |

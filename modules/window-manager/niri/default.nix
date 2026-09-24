@@ -108,18 +108,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Auto-enable notifications when niri is enabled
-    my.notifications.enable = mkDefault true;
-    my.notifications.windowManager = "niri";
-
-    # Auto-enable launcher when niri is enabled
-    my.launcher.enable = mkDefault true;
-    my.launcher.windowManager = "niri";
-
-    # Auto-enable controls when niri is enabled
-    my.controls.enable = mkDefault true;
-    my.controls.windowManager = "niri";
-
     # home.pointerCursor is provided by stylix (stylix.cursor in the theming
     # module), including the x11/gtk integration the old block lacked.
     home = {

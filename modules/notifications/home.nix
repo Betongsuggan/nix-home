@@ -154,12 +154,12 @@ let
       preset = if args ? category then categories.${args.category} else { };
       merged = preset // removeAttrs args [ "category" ];
     in
-    if cfg.backend == "dunst" then
-      buildDunstifyCmd merged
-    else if cfg.backend == "mako" then
-      buildNotifySendCmd merged
-    else
-      throw "Unsupported notification backend: ${cfg.backend}";
+    {
+      dunst = buildDunstifyCmd;
+      mako = buildNotifySendCmd;
+    }
+    .${cfg.backend}
+      merged;
 
 in
 {
@@ -178,18 +178,6 @@ in
       ];
       default = "dunst";
       description = "Which notification daemon to use";
-    };
-
-    windowManager = mkOption {
-      type = types.enum [
-        "hyprland"
-        "niri"
-        "sway"
-        "i3"
-        "generic"
-      ];
-      default = "generic";
-      description = "Window manager for session integration.";
     };
 
     # Expose the notification function for other modules to use

@@ -126,16 +126,6 @@ in
   };
 
   config = mkIf config.my.window-manager.hyprland.enable {
-    # Auto-enable notifications when hyprland is enabled (for util notifiers)
-    my.notifications.enable = mkDefault true;
-
-    # Auto-enable launcher when hyprland is enabled
-    my.launcher.enable = mkDefault true;
-    my.launcher.windowManager = "hyprland";
-    # Auto-enable controls when hyprland is enabled
-    my.controls.enable = mkDefault true;
-    my.controls.windowManager = "hyprland";
-
     # Multi-gestures
     # services.touchegg.enable = true;  # TODO: Move to system level
 
@@ -373,7 +363,8 @@ in
         );
 
         general = {
-          "col.active_border" = "rgb(${lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground})";
+          "col.active_border" =
+            "rgb(${lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground})";
           # Built-in scrollable-tiling layout (Hyprland ≥0.55), mimicking niri:
           # windows are columns on an infinite horizontal strip.
           layout = "scrolling";

@@ -8,7 +8,6 @@ A backend-agnostic notification system that supports dunst and mako as notificat
 my.notifications = {
   enable = true;
   backend = "dunst";
-  windowManager = "hyprland";
 };
 ```
 
@@ -18,7 +17,6 @@ my.notifications = {
 |--------|------|---------|-------------|
 | enable | bool | false | Enable notification system |
 | backend | enum | "dunst" | Which notification daemon to use: "dunst", "mako" |
-| windowManager | enum | "generic" | Window manager for session integration: "hyprland", "niri", "sway", "i3", "generic" |
 
 ### Backend-specific options
 

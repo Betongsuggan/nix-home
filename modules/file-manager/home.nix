@@ -10,33 +10,27 @@ with lib;
 let
   cfg = config.my.file-manager;
 
-  # Build the file manager open command based on backend
-  fileManagerOpenCmd =
-    { path }:
-    if cfg.backend == "thunar" then
-      "${pkgs.xfce.thunar}/bin/thunar \"${path}\""
-    else if cfg.backend == "nautilus" then
-      "${pkgs.gnome.nautilus}/bin/nautilus \"${path}\""
-    else if cfg.backend == "dolphin" then
-      "${pkgs.kdePackages.dolphin}/bin/dolphin \"${path}\""
-    else if cfg.backend == "pcmanfm" then
-      "${pkgs.pcmanfm}/bin/pcmanfm \"${path}\""
-    else
-      throw "Unsupported file manager backend: ${cfg.backend}";
-
-  # Build the file manager select command based on backend
-  fileManagerSelectCmd =
-    { file }:
-    if cfg.backend == "thunar" then
-      "${pkgs.xfce.thunar}/bin/thunar \"${file}\""
-    else if cfg.backend == "nautilus" then
-      "${pkgs.gnome.nautilus}/bin/nautilus --select \"${file}\""
-    else if cfg.backend == "dolphin" then
-      "${pkgs.kdePackages.dolphin}/bin/dolphin --select \"${file}\""
-    else if cfg.backend == "pcmanfm" then
-      "${pkgs.pcmanfm}/bin/pcmanfm \"${file}\""
-    else
-      throw "Unsupported file manager backend: ${cfg.backend}";
+  # How each backend opens a directory and reveals a file
+  backends = {
+    thunar = {
+      open = path: "${pkgs.xfce.thunar}/bin/thunar \"${path}\"";
+      select = file: "${pkgs.xfce.thunar}/bin/thunar \"${file}\"";
+    };
+    nautilus = {
+      open = path: "${pkgs.nautilus}/bin/nautilus \"${path}\"";
+      select = file: "${pkgs.nautilus}/bin/nautilus --select \"${file}\"";
+    };
+    dolphin = {
+      open = path: "${pkgs.kdePackages.dolphin}/bin/dolphin \"${path}\"";
+      select = file: "${pkgs.kdePackages.dolphin}/bin/dolphin --select \"${file}\"";
+    };
+    pcmanfm = {
+      open = path: "${pkgs.pcmanfm}/bin/pcmanfm \"${path}\"";
+      select = file: "${pkgs.pcmanfm}/bin/pcmanfm \"${file}\"";
+    };
+  };
+  fileManagerOpenCmd = { path }: backends.${cfg.backend}.open path;
+  fileManagerSelectCmd = { file }: backends.${cfg.backend}.select file;
 
   # Get the terminal command - use override or fall back to terminal module
   terminalCmd =
@@ -52,12 +46,7 @@ in
     enable = mkEnableOption "file manager";
 
     backend = mkOption {
-      type = types.enum [
-        "thunar"
-        "nautilus"
-        "dolphin"
-        "pcmanfm"
-      ];
+      type = types.enum (attrNames backends);
       default = "thunar";
       description = "File manager backend to use";
     };
