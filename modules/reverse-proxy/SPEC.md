@@ -23,7 +23,7 @@ my.reverse-proxy = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable nginx + ACME and any declared vhosts |
-| acmeEmail | string | (required) | Email for ACME registration |
+| acmeEmail | string | `lib.operator.email` | Email for ACME registration |
 | openFirewall | bool | true | Open TCP 80 and 443 |
 | domains | list of string | [ ] | Domains to issue HTTP-01 certs for. Each needs a public A record and TCP 80 reachable. |
 | vhosts | attrset | { } | Vhost definitions keyed by short label |

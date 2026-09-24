@@ -1,7 +1,20 @@
 { lib }:
 
 let
-  baseDomain = "ts.rydback.net";
+  domain = "rydback.net";
+  baseDomain = "ts.${domain}";
+
+  # The person operating the fleet
+  operator = {
+    email = "rydback@gmail.com";
+    yubikey = {
+      # FIDO resident SSH key (touch-only): the bootstrap credential used to
+      # reach controller before a new host has keys of its own
+      ssh = "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap";
+      # age recipient of the same YubiKey, the admin recipient in nix-vault
+      ageRecipient = "age1yubikey1qtzynkrvd7yxa8zvnx2jd036uvklyvzmsfmq8zhpqppr3g6phfvlwc6lyd3";
+    };
+  };
 
   # One entry per directory under hosts/; flake.nix builds a
   # nixosConfiguration for each (lib/mk-host.nix). Optional fields default to:
@@ -30,6 +43,11 @@ let
     };
 
     controller = {
+      tailnetIp = "100.64.0.2";
+      lan = {
+        subnet = "192.168.50.0/24";
+        gateway = "192.168.50.1";
+      };
       addresses = [
         "192.168.50.5"
         "rydback.net"
@@ -166,7 +184,13 @@ let
   };
 in
 rec {
-  inherit accounts hosts devices;
+  inherit
+    accounts
+    devices
+    domain
+    hosts
+    operator
+    ;
 
   # For the NixOS half of a module whose switch lives in Home Manager: true
   # if `pred` holds for any Home Manager user's config on this host. Hosts
@@ -175,6 +199,9 @@ rec {
 
   tailnet = {
     inherit baseDomain;
+    # headscale, served by controller
+    controlDomain = "vpn.${domain}";
+    loginServer = "https://vpn.${domain}";
     fqdn = host: "${hosts.${host}.hostName}.${baseDomain}";
   };
 

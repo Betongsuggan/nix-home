@@ -76,7 +76,8 @@ in
               };
               sftpHost = mkOption {
                 type = types.str;
-                example = "desktop.ts.rydback.net";
+                default = inputs.self.lib.tailnet.fqdn name;
+                defaultText = literalExpression "lib.tailnet.fqdn <name>";
                 description = "Hostname of the SFTP receiver (typically the tailnet FQDN).";
               };
               sftpUser = mkOption {

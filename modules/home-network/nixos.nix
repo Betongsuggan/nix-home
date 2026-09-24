@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -21,7 +22,7 @@ let
   # authorized in hosts/controller/system.nix. Changing this only makes sense
   # if you also re-create the YubiKey resident key with a new application string.
   fidoBootstrapKeyName = "id_ed25519_sk_rk_nix-vault";
-  controllerFqdn = "controller.ts.rydback.net";
+  controllerFqdn = inputs.self.lib.tailnet.fqdn "controller";
   controllerAdminUser = "betongsuggan";
 
   # Single operator-facing command for the bootstrap-mode workflow. Idempotent
@@ -158,7 +159,8 @@ in
 
       loginServer = mkOption {
         type = types.str;
-        default = "https://vpn.rydback.net";
+        default = inputs.self.lib.tailnet.loginServer;
+        defaultText = literalExpression "lib.tailnet.loginServer";
         description = "Headscale control-server URL passed to `tailscale up`.";
       };
     };
@@ -166,7 +168,8 @@ in
     controller = {
       yubikeyAgeRecipient = mkOption {
         type = types.str;
-        default = "";
+        default = inputs.self.lib.operator.yubikey.ageRecipient;
+        defaultText = literalExpression "lib.operator.yubikey.ageRecipient";
         example = "age1yubikey1q...";
         description = ''
           Public age recipient for the operator's YubiKey. The same identity used
@@ -185,14 +188,14 @@ in
       headscale = {
         domain = mkOption {
           type = types.str;
-          default = "";
-          example = "vpn.rydback.net";
+          default = inputs.self.lib.tailnet.controlDomain;
+          defaultText = literalExpression "lib.tailnet.controlDomain";
           description = "Public domain headscale is served under (proxied by nginx).";
         };
         baseDomain = mkOption {
           type = types.str;
-          default = "";
-          example = "ts.rydback.net";
+          default = inputs.self.lib.tailnet.baseDomain;
+          defaultText = literalExpression "lib.tailnet.baseDomain";
           description = "MagicDNS base domain. MUST differ from `domain`.";
         };
         users = mkOption {

@@ -29,11 +29,11 @@ Exactly one mode applies per host. Set `my.home-network.mode` explicitly — the
 | `enable` | bool | false | Master switch |
 | `mode` | enum | (required) | `controller` \| `bootstrap` \| `onboarded` |
 | `bootstrap.blobUrl` | string | `https://rydback.net/.well-known/tailnet-bootstrap.age` | URL the helper fetches |
-| `bootstrap.loginServer` | string | `https://vpn.rydback.net` | Headscale URL passed to `tailscale up` |
-| `controller.yubikeyAgeRecipient` | string | `""` | Public age recipient for operator's YubiKey (required in `controller` mode) |
+| `bootstrap.loginServer` | string | `lib.tailnet.loginServer` | Headscale URL passed to `tailscale up` |
+| `controller.yubikeyAgeRecipient` | string | `lib.operator.yubikey.ageRecipient` | Public age recipient for operator's YubiKey (must be non-empty in `controller` mode) |
 | `controller.headscaleUser` | string | `""` | Headscale user the rotated preauth keys are scoped to (required in `controller` mode) |
-| `controller.headscale.domain` | string | `""` | Public domain for headscale (`server_url` host) — required in `controller` mode |
-| `controller.headscale.baseDomain` | string | `""` | MagicDNS base domain — required, must differ from `domain` |
+| `controller.headscale.domain` | string | `lib.tailnet.controlDomain` | Public domain for headscale (`server_url` host) |
+| `controller.headscale.baseDomain` | string | `lib.tailnet.baseDomain` | MagicDNS base domain, must differ from `domain` |
 | `controller.headscale.users` | list str | `[ ]` | Headscale users to provision idempotently |
 | `controller.headscale.extraDnsRecords` | list submod | `[ ]` | MagicDNS overrides pushed to tailnet clients |
 | `controller.headscale.autoApprovedRoutes` | attrs of list str | `{ }` | Subnet routes to auto-approve, forwarded to `my.headscale.autoApprovedRoutes` (installs an allow-all ACL policy — see that module's SPEC) |

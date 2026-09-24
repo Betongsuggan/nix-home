@@ -6,6 +6,10 @@
   ...
 }:
 
+let
+  inherit (inputs.self.lib) domain;
+  self = inputs.self.lib.hosts.controller;
+in
 {
   users.users.betongsuggan = {
     openssh.authorizedKeys.keys = [
@@ -13,7 +17,7 @@
       # enrollment to SSH in, edit nix-home / nix-vault, and rebuild controller.
       # Kept inline because it's a bootstrap credential, not a tailnet peer.
       # See hosts/controller/SPEC.md for the full flow.
-      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
+      inputs.self.lib.operator.yubikey.ssh
       # Tailnet peer keys come from lib (sshFromFleet on this account).
     ];
   };
@@ -130,70 +134,43 @@
     # rebuilding controller, with no edit of this file.
 
     controller = {
-      # Public age recipient string for the operator's master YubiKey. Same
-      # identity used elsewhere for sops. Fill in with the value from
-      # `nix-vault/.sops.yaml` (the `age1yubikey1...` admin recipient). Empty
-      # string is rejected by an assertion in modules/home-network.
-      yubikeyAgeRecipient = "age1yubikey1qtzynkrvd7yxa8zvnx2jd036uvklyvzmsfmq8zhpqppr3g6phfvlwc6lyd3";
-
       headscaleUser = "birger";
 
       headscale = {
-        domain = "vpn.rydback.net";
-        baseDomain = "ts.rydback.net";
         users = [ "birger" ];
-        extraDnsRecords = [
+        extraDnsRecords =
           # Public A records point at controller's WAN IP so ACME HTTP-01 works.
           # For tailnet members these overrides resolve to controller's tailnet IP
           # instead, so requests reach nginx from a 100.x source and clear the
           # deny-all rule on each vhost.
-          {
-            name = "vault.rydback.net";
-            type = "A";
-            value = "100.64.0.2";
-          }
-          {
-            name = "chat.rydback.net";
-            type = "A";
-            value = "100.64.0.2";
-          }
-          {
-            name = "llm.rydback.net";
-            type = "A";
-            value = "100.64.0.2";
-          }
-          {
-            name = "images.rydback.net";
-            type = "A";
-            value = "100.64.0.2";
-          }
-          {
-            name = "voice.rydback.net";
-            type = "A";
-            value = "100.64.0.2";
-          }
-          {
-            name = "cloud.rydback.net";
-            type = "A";
-            value = "100.64.0.2";
-          }
-          {
-            name = "office.rydback.net";
-            type = "A";
-            value = "100.64.0.2";
-          }
-          # Home-LAN devices, reachable from tailnet peers via the subnet
-          # route advertised below. Only DHCP-reserved/static addresses belong
-          # here — records against dynamic leases rot silently.
-          {
-            name = "router.home.rydback.net";
-            type = "A";
-            value = "192.168.50.1";
-          }
-        ];
+          map
+            (name: {
+              name = "${name}.${domain}";
+              type = "A";
+              value = self.tailnetIp;
+            })
+            [
+              "vault"
+              "chat"
+              "llm"
+              "images"
+              "voice"
+              "cloud"
+              "office"
+            ]
+          ++ [
+            # Home-LAN devices, reachable from tailnet peers via the subnet
+            # route advertised below. Only DHCP-reserved/static addresses belong
+            # here — records against dynamic leases rot silently.
+            {
+              name = "router.home.${domain}";
+              type = "A";
+              value = self.lan.gateway;
+            }
+          ];
         # Auto-approve the LAN route advertised below. Trailing @ is
         # headscale policy-v2 username syntax.
-        autoApprovedRoutes."192.168.50.0/24" = [ "birger@" ];
+        autoApprovedRoutes.${self.lan.subnet} = [ "birger@" ];
       };
     };
   };
@@ -201,14 +178,14 @@
   # Subnet router: expose the home LAN to tailnet peers. Advertised via
   # `tailscale set` on every daemon start and auto-approved by the headscale
   # policy (autoApprovedRoutes above), so a rebuild is all it takes.
-  my.tailscale-client.advertiseRoutes = [ "192.168.50.0/24" ];
+  my.tailscale-client.advertiseRoutes = [ self.lan.subnet ];
 
   my.emulation-server = {
     enable = true;
     user = "betongsuggan";
     dataDir = "/var/lib/emulation";
     lanInterface = "enp1s0";
-    lanSubnet = "192.168.50.0/24";
+    lanSubnet = self.lan.subnet;
     tailnetOnly = true;
     syncthing = {
       devices = inputs.self.lib.allSyncthingDevices;
@@ -277,7 +254,7 @@
       # Operator's YubiKey (FIDO resident, touch-only). Kept inline because
       # it's the bootstrap credential used *before* a new host has its own
       # key registered in lib/default.nix. Portable admin credential.
-      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap"
+      inputs.self.lib.operator.yubikey.ssh
     ];
   };
 
@@ -295,42 +272,41 @@
     in
     {
       enable = true;
-      acmeEmail = "rydback@gmail.com";
       # `rydback.net` and `vpn.rydback.net` are contributed by `home-network` in
       # controller mode (the bootstrap blob endpoint and the headscale upstream
       # respectively); only domains not bundled there are listed here.
       domains = [
-        "vault.rydback.net"
+        "vault.${domain}"
         # AI lab front doors. Function-named so backend swaps (e.g. Ollama →
         # vLLM) don't force URL churn for clients. Each upstream is the local
         # wake-proxy port; wake-proxy then transparently WoLs home-desktop.
-        "chat.rydback.net"
-        "llm.rydback.net"
-        "images.rydback.net"
-        "voice.rydback.net"
+        "chat.${domain}"
+        "llm.${domain}"
+        "images.${domain}"
+        "voice.${domain}"
       ];
       vhosts.vaultwarden = {
-        domain = "vault.rydback.net";
+        domain = "vault.${domain}";
         upstream = "http://127.0.0.1:8222";
         extraConfig = tailnetOnly;
       };
       vhosts.chat = {
-        domain = "chat.rydback.net";
+        domain = "chat.${domain}";
         upstream = "http://127.0.0.1:8081";
         extraConfig = tailnetOnly;
       };
       vhosts.llm = {
-        domain = "llm.rydback.net";
+        domain = "llm.${domain}";
         upstream = "http://127.0.0.1:11434";
         extraConfig = tailnetOnly;
       };
       vhosts.images = {
-        domain = "images.rydback.net";
+        domain = "images.${domain}";
         upstream = "http://127.0.0.1:8188";
         extraConfig = tailnetOnly;
       };
       vhosts.voice = {
-        domain = "voice.rydback.net";
+        domain = "voice.${domain}";
         upstream = "http://127.0.0.1:8000";
         extraConfig = tailnetOnly;
       };
@@ -338,7 +314,7 @@
 
   my.vaultwarden = {
     enable = true;
-    domain = "vault.rydback.net";
+    domain = "vault.${domain}";
     environmentFile = config.sops.secrets."vaultwarden-env".path;
     # First-run bootstrap: flip to true, rebuild, register operator account at
     # https://vault.rydback.net from a tailnet-connected device, then flip back
@@ -352,7 +328,7 @@
   # backend. See modules/nextcloud/SPEC.md and modules/onlyoffice/SPEC.md.
   my.nextcloud = {
     enable = true;
-    domain = "cloud.rydback.net";
+    domain = "cloud.${domain}";
     adminUser = "betongsuggan";
     adminPassFile = config.sops.secrets."nextcloud-admin-pass".path;
     maxUploadSize = "10G";
@@ -361,7 +337,7 @@
 
   my.onlyoffice = {
     enable = true;
-    domain = "office.rydback.net";
+    domain = "office.${domain}";
     jwtSecretFile = config.sops.secrets."onlyoffice-jwt".path;
     nonceFile = config.sops.secrets."onlyoffice-nonce".path;
     tailnetOnly = true;
@@ -412,11 +388,9 @@
     sshKeyFile = config.sops.secrets."restic-ssh-key".path;
     targets = {
       desktop = {
-        sftpHost = "desktop.ts.rydback.net";
         sftpUser = "restic-controller";
       };
       island-stationary = {
-        sftpHost = "island-stationary.ts.rydback.net";
         sftpUser = "restic-controller";
       };
     };

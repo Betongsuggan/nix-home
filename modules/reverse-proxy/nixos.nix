@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -16,6 +17,8 @@ in
 
     acmeEmail = mkOption {
       type = types.str;
+      default = inputs.self.lib.operator.email;
+      defaultText = literalExpression "lib.operator.email";
       description = "Email for Let's Encrypt registration and expiry notices.";
     };
 

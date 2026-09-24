@@ -60,7 +60,7 @@ in
     {
       my.tailscale-client = {
         enable = true;
-        loginServer = "https://vpn.rydback.net";
+        inherit (selfLib.tailnet) loginServer;
         extraUpFlags = [
           "--accept-routes"
           "--accept-dns"

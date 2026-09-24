@@ -25,12 +25,10 @@ my.restic-backup = {
 
   targets = {
     desktop = {
-      sftpHost = "desktop.ts.rydback.net";
       sftpUser = "restic-controller";
       # sftpPath defaults to /repo (post-chroot path on the receiver)
     };
     island-stationary = {
-      sftpHost = "island-stationary.ts.rydback.net";
       sftpUser = "restic-controller";
     };
   };
@@ -48,7 +46,7 @@ my.restic-backup = {
 | sshKeyFile | path | (required) | Private SSH key for SFTP auth. Typically sops-decrypted. |
 | targets | attrset of submodule | `{ }` | Named targets; one `services.restic.backups.<name>` job each. |
 | targets.&lt;name&gt;.hostKey | null or string | `lib.hosts.<name>.ssh.host` or `null` | Receiver's SSH host key; connections are checked strictly against it. `null` falls back to trust-on-first-use (`accept-new`, remembered in `/var/lib/restic/known_hosts`). |
-| targets.&lt;name&gt;.sftpHost | string | (required) | Receiver hostname, typically `<host>.ts.rydback.net`. |
+| targets.&lt;name&gt;.sftpHost | string | `lib.tailnet.fqdn <name>` | Receiver hostname; defaults to the tailnet FQDN of the fleet host the target is named after. |
 | targets.&lt;name&gt;.sftpUser | string | (required) | Username on the receiver. Convention: `restic-<this-source>`. |
 | targets.&lt;name&gt;.sftpPath | path | `"/repo"` | Path *inside* the receiver's chroot. Default matches `restic-target`'s writable subdir. |
 | timerOnCalendar | string | `"daily"` | systemd OnCalendar expression. |
