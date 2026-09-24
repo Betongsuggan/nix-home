@@ -114,7 +114,6 @@
   # FIXME: placeholder — real NIC name from `ip -br link` on this machine.
   networking.interfaces."eth0".wakeOnLan.enable = true;
 
-  my.network-manager.hostName = "island-stationary";
   networking.firewall = {
     allowedTCPPorts = [
       8080

@@ -119,7 +119,6 @@
   };
   my.profiles.laptop.enable = true;
   my.graphics.amd = true;
-  my.network-manager.hostName = "bits-nixos";
   networking.nameservers = [ "1.1.1.1" ];
   # LocalStack API Gateway endpoint used by local development
   networking.extraHosts = ''

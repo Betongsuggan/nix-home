@@ -255,10 +255,7 @@
 
   my.audio.enable = true;
 
-  my.network-manager = {
-    enable = true;
-    hostName = "controller";
-  };
+  my.network-manager.enable = true;
 
   networking.networkmanager.ensureProfiles.profiles = {
     enp1s0-static = {

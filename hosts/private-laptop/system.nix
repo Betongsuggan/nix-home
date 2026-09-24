@@ -64,7 +64,6 @@
     # intel.generation = "modern"; # Set to "legacy" or "arc" if needed
   };
   my.docker.enable = true;
-  my.network-manager.hostName = "nixos";
   networking.firewall = {
     allowedTCPPorts = [ 8080 ];
   };

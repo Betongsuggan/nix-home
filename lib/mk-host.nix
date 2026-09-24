@@ -5,7 +5,7 @@
 #
 # Everything shared by the fleet lives here once: the module aggregators,
 # overlays, unfree policy and the Home Manager wiring. `host` is the host's
-# entry in lib.hosts; only `system` (default x86_64-linux) is read here.
+# entry in lib.hosts, which provides `system` and `hostName`.
 { inputs, overlays }:
 name: host:
 let
@@ -26,12 +26,13 @@ let
       );
 in
 lib.nixosSystem {
-  system = host.system or "x86_64-linux";
+  inherit (host) system;
   specialArgs = { inherit inputs; };
   modules = [
     ../modules/nixos.nix
     (dir + "/system.nix")
     {
+      networking.hostName = host.hostName;
       nixpkgs = {
         inherit overlays;
         config.allowUnfree = true;

@@ -20,7 +20,6 @@ in
 {
   system.stateVersion = "26.05";
 
-  networking.hostName = "island-pi";
 
   i18n.defaultLocale = "en_GB.UTF-8";
 

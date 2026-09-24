@@ -68,7 +68,8 @@ On the new host, grab `/etc/ssh/ssh_host_ed25519_key.pub` (the `services.openssh
 
 ```nix
 <host> = {
-  tailnetName = "<host>";      # MUST match the system hostname tailscaled will register as
+  # hostName = "<name>";      # only if it differs from the attribute name; it is both the
+  #                            # system hostname and the tailnet name
   addresses = [ "<host>" ];
   ssh = {
     host = "ssh-ed25519 AAAA… root@<host>";   # from /etc/ssh/ssh_host_ed25519_key.pub

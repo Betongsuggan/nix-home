@@ -4,11 +4,12 @@ let
   baseDomain = "ts.rydback.net";
 
   # One entry per directory under hosts/; flake.nix builds a
-  # nixosConfiguration for each (lib/mk-host.nix). `system` defaults to
-  # x86_64-linux.
-  hosts = {
+  # nixosConfiguration for each (lib/mk-host.nix). Optional fields default to:
+  #   system = "x86_64-linux";
+  #   hostName = <attribute name>;  (also the host's tailnet name)
+  hostEntries = {
     bits = {
-      tailnetName = "bits-nixos";
+      hostName = "bits-nixos";
       addresses = [ "bits" ];
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILcnHOXC9oIhImCClI4g+TpRtEUTf3l2V7U3JQOtId/i root@bits-nixos";
       users.birgerrydback = {
@@ -21,7 +22,6 @@ let
     };
 
     controller = {
-      tailnetName = "controller";
       addresses = [
         "192.168.50.5"
         "rydback.net"
@@ -40,7 +40,6 @@ let
     };
 
     island-stationary = {
-      tailnetName = "island-stationary";
       addresses = [ "island-stationary" ];
       # FIXME: placeholder — real MAC from `ip -br link` on island-stationary
       # (the wired NIC). Consumed by island-pi's wake-island-stationary script.
@@ -53,7 +52,6 @@ let
 
     island-pi = {
       system = "aarch64-linux";
-      tailnetName = "island-pi";
       addresses = [ "island-pi" ];
       # FIXME: fill in after first boot (onboarding step 2 in
       # hosts/island-pi/SPEC.md): /etc/ssh/ssh_host_ed25519_key.pub. Feeds
@@ -63,7 +61,6 @@ let
     };
 
     desktop = {
-      tailnetName = "desktop";
       tailnetIp = "100.64.0.5";
       addresses = [ "desktop" ];
       # USB-Ethernet adapter; reaches the host through the current KVM setup.
@@ -80,10 +77,19 @@ let
       };
     };
 
-    # Not on the tailnet (yet): no tailnetName, keys or Syncthing IDs.
+    # Not on the tailnet (yet): no keys or Syncthing IDs.
     private-laptop = { };
     mail = { };
   };
+
+  hosts = lib.mapAttrs (
+    name: h:
+    {
+      system = "x86_64-linux";
+      hostName = name;
+    }
+    // h
+  ) hostEntries;
 
   devices = {
     ayn-thor = {
@@ -110,7 +116,7 @@ in
 
   tailnet = {
     inherit baseDomain;
-    fqdn = host: "${hosts.${host}.tailnetName}.${baseDomain}";
+    fqdn = host: "${hosts.${host}.hostName}.${baseDomain}";
   };
 
   allSshKeys =
@@ -145,7 +151,10 @@ in
         src:
         lib.mapAttrs (_: x: {
           id = x.syncthing.id;
-          tailnetFqdn = if x ? tailnetName then "${x.tailnetName}.${baseDomain}" else null;
+          tailnetFqdn =
+            if x ? tailnetName then "${x.tailnetName}.${baseDomain}"
+            else if x ? hostName then "${x.hostName}.${baseDomain}"
+            else null;
         }) (lib.filterAttrs (_: x: x ? syncthing && x.syncthing ? id) src);
       hostUserIds = lib.listToAttrs (
         lib.concatMap (
@@ -157,7 +166,7 @@ in
             userName: u:
             lib.nameValuePair "${hostName}-${userName}" {
               id = u.syncthing.id;
-              tailnetFqdn = "${h.tailnetName}.${baseDomain}";
+              tailnetFqdn = "${h.hostName}.${baseDomain}";
             }
           ) (lib.filterAttrs (_: u: u ? syncthing && u.syncthing ? id) (h.users or { }))
         ) (lib.attrNames hosts)
