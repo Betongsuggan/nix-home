@@ -369,15 +369,14 @@
   };
 
   my.docker.enable = true;
-  my.firewall = {
-    enable = true;
-    tcpPorts = [
+  networking.firewall = {
+    allowedTCPPorts = [
       8080
       27036
       27037
       53317
     ];
-    udpPorts = [
+    allowedUDPPorts = [
       27031
       27032
       27033

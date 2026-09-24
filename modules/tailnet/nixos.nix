@@ -64,10 +64,9 @@ in
         ];
       };
 
-      my.openssh = {
-        enable = true;
-        openFirewall = false;
-      };
+      # Firewall stays closed (common's default); port 22 is opened on
+      # tailscale0 only, below.
+      services.openssh.enable = true;
 
       networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 ];
 

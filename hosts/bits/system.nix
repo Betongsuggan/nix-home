@@ -188,14 +188,13 @@
     # performance cost on AC and the 5-second fdatasync of the telemetry loop
     # no longer buy anything.
   };
-  my.firewall = {
-    enable = true;
-    tcpPorts = [
+  networking.firewall = {
+    allowedTCPPorts = [
       8080
       53317
       3010
     ];
-    udpPorts = [ 53317 ];
+    allowedUDPPorts = [ 53317 ];
   };
 
   my.webcam = {

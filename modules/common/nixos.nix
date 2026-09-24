@@ -64,6 +64,17 @@
     # stylix gtk/gnome targets' dark-mode preference to reach GTK apps
     programs.dconf.enable = true;
 
+    # sshd defaults for whichever host enables it (tailnet, sops, or the host
+    # itself): key-only logins, no root, and no firewall hole unless a host
+    # asks for one; tailnet opens 22 on tailscale0 only.
+    services.openssh = {
+      openFirewall = lib.mkDefault false;
+      settings = {
+        PasswordAuthentication = lib.mkDefault false;
+        PermitRootLogin = lib.mkDefault "no";
+      };
+    };
+
     # Controller's SSH host key, trusted on every host so new installs don't
     # hit a TOFU prompt when fetching nix-vault via the tailnet.
     programs.ssh.knownHosts."controller" = {

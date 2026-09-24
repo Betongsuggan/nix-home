@@ -35,16 +35,14 @@
   # operator over SSH; protected by SSH key + sudo prompt.
   security.sudo.wheelNeedsPassword = false;
 
-  my.openssh = {
+  services.openssh = {
     enable = true;
     openFirewall = true;
-    permitRootLogin = "prohibit-password";
-    passwordAuthentication = false;
+    settings.PermitRootLogin = "prohibit-password";
   };
 
-  my.firewall = {
-    enable = true;
-    tcpPorts = [
+  networking.firewall = {
+    allowedTCPPorts = [
       22 # SSH (TODO: restrict to tailnet interface once enrolled)
       25 # SMTP inbound (MX-to-MX)
       80 # HTTP — ACME HTTP-01 challenge
@@ -53,7 +51,6 @@
       587 # SMTP submission (STARTTLS)
       993 # IMAPS
     ];
-    udpPorts = [ ];
   };
 
   # TODO (Step 3): enroll in tailnet — requires `headscale-preauthkey` in

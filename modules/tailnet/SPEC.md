@@ -24,6 +24,6 @@ my.tailnet = {
 ## Behaviour
 
 - Enables `my.tailscale-client` against `https://vpn.rydback.net` with `--accept-routes --accept-dns`.
-- Enables `my.openssh` with the global firewall closed; port 22 is opened on `tailscale0` only.
+- Enables `services.openssh` with the global firewall closed (the key-only defaults come from `modules/common`); port 22 is opened on `tailscale0` only.
 - Lets root (nix-daemon) fetch the `nix-vault` input from `git@controller` over the tailnet with the host SSH key (`Match localuser root user git`), without affecting user SSH configs.
 - With `my.sops.enable`, the tailscale auth key comes from the sops secret `services/headscale-preauthkey`.

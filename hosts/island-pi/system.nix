@@ -84,21 +84,18 @@ in
 
   users.users.root.openssh.authorizedKeys.keys = deployKeys;
 
-  my.openssh = {
+  services.openssh = {
     enable = true;
-    # Stage 2: REMOVE this line — modules/tailnet sets openFirewall = false and
-    # unequal bool definitions conflict. LAN access is kept via firewall.tcpPorts.
+    # Stays open on the LAN even after tailnet enrollment (the recovery path
+    # when the tailnet is down; see the firewall rule below).
     openFirewall = true;
-    permitRootLogin = "prohibit-password";
-    passwordAuthentication = false;
+    settings.PermitRootLogin = "prohibit-password";
   };
 
-  my.firewall = {
-    enable = true;
+  networking.firewall = {
     # 22 stays open on the LAN permanently: the no-truck-roll recovery path at
     # the summer place if the tailnet is down. Key-only auth.
-    tcpPorts = [ 22 ];
-    udpPorts = [ ];
+    allowedTCPPorts = [ 22 ];
   };
 
   # --- Wake-on-LAN relay -------------------------------------------------------

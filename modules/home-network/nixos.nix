@@ -450,7 +450,7 @@ in
       # `cat /etc/ssh/ssh_host_ed25519_key.pub | ssh-to-age` during the
       # nix-vault enrollment step. Firewall stays closed (sshd is effectively
       # unreachable) — we just need the key on disk.
-      my.openssh.enable = true;
+      services.openssh.enable = true;
 
       # Kernel-mode tailscaled with no auto-join key. The bootstrap helper
       # drives the join manually via `tailscale up` with the YubiKey-decrypted

@@ -5,7 +5,7 @@ Minimal SSH-based git server. Creates a dedicated system user whose login shell 
 ## Usage
 
 ```nix
-my.openssh.enable = true; # required - this module piggy-backs on sshd
+services.openssh.enable = true; # required - this module piggy-backs on sshd
 
 my.git-server = {
   enable = true;

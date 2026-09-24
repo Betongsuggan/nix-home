@@ -241,13 +241,12 @@
     enable = true;
     hostName = "island-stationary";
   };
-  my.firewall = {
-    enable = true;
-    tcpPorts = [
+  networking.firewall = {
+    allowedTCPPorts = [
       8080
       53317 # LocalSend
     ];
-    udpPorts = [
+    allowedUDPPorts = [
       53317 # LocalSend
     ];
   };

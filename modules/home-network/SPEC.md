@@ -19,7 +19,7 @@ Exactly one mode applies per host. Set `my.home-network.mode` explicitly — the
 | Mode | What it wires up | When it applies |
 |------|------------------|-----------------|
 | `controller` | headscale + DERP + preauth-key rotator (mints `--ephemeral` keys) + tailscale client + SSH-on-`tailscale0` + reverse-proxy contributions | The single coordinator host (`controller`) |
-| `bootstrap` | The `home-network-bootstrap` helper + its runtime tooling (`age`, `age-plugin-yubikey`, `tailscale`, `curl`, `git`, `ssh-to-age`, `sops`) + pcscd + kernel-mode `tailscaled` (not yet joined) + `my.openssh.enable` so `/etc/ssh/ssh_host_ed25519_key` exists for the upcoming sops enrollment (firewall closed) | A new host on its first install pass, before it has been registered in `nix-vault` |
+| `bootstrap` | The `home-network-bootstrap` helper + its runtime tooling (`age`, `age-plugin-yubikey`, `tailscale`, `curl`, `git`, `ssh-to-age`, `sops`) + pcscd + kernel-mode `tailscaled` (not yet joined) + `services.openssh.enable` so `/etc/ssh/ssh_host_ed25519_key` exists for the upcoming sops enrollment (firewall closed) | A new host on its first install pass, before it has been registered in `nix-vault` |
 | `onboarded` | tailscale client (sops-decrypted authkey) + SSH-on-`tailscale0` + `authorizeSshFor` peer keys | Steady state for every member after enrollment |
 
 ## Options
@@ -64,7 +64,7 @@ Boot it. Insert the YubiKey.
 
 ### 2. Publish the host's SSH keys
 
-On the new host, grab `/etc/ssh/ssh_host_ed25519_key.pub` (the `my.openssh.enable` flipped on by bootstrap mode created it at activation). Add the host to `lib/default.nix`:
+On the new host, grab `/etc/ssh/ssh_host_ed25519_key.pub` (the `services.openssh.enable` flipped on by bootstrap mode created it at activation). Add the host to `lib/default.nix`:
 
 ```nix
 <host> = {

@@ -98,9 +98,8 @@
     enable = true;
     hostName = "nixos";
   };
-  my.firewall = {
-    enable = true;
-    tcpPorts = [ 8080 ];
+  networking.firewall = {
+    allowedTCPPorts = [ 8080 ];
   };
 
   system.stateVersion = "25.05";

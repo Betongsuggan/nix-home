@@ -289,11 +289,6 @@
     };
   };
 
-  my.firewall = {
-    enable = true;
-    tcpPorts = [ ];
-    udpPorts = [ ];
-  };
 
   my.wake-proxy = {
     enable = true;

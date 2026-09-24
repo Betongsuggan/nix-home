@@ -34,7 +34,7 @@ in
 
     # sops-nix decrypts using the host's SSH host key; the openssh module is
     # the canonical place to ensure that key exists.
-    my.openssh.enable = true;
+    services.openssh.enable = true;
 
     # PC/SC daemon for smartcard access — needed when editing sops secrets on
     # this host via age-plugin-yubikey. Cheap to leave on for non-editing hosts.
