@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -15,10 +20,15 @@ with lib;
 
     windowManager = mkOption {
       description = "Window manager type for controls integration";
-      type = types.enum [ "hyprland" "i3" "niri" "sway" "generic" ];
+      type = types.enum [
+        "hyprland"
+        "i3"
+        "niri"
+        "sway"
+        "generic"
+      ];
       default = "generic";
     };
-
 
     brightness = {
       enable = mkOption {
@@ -51,7 +61,10 @@ with lib;
 
       backend = mkOption {
         description = "Volume control backend";
-        type = types.enum [ "pamixer" "pactl" ];
+        type = types.enum [
+          "pamixer"
+          "pactl"
+        ];
         default = "pamixer";
       };
 

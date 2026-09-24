@@ -13,18 +13,9 @@ let
   # because it must also hold in stage 1, before the tailnet module is enabled.
   # Deliberately not allUserPeers: that would include service identities like
   # controller's restic user.
-  deployKeys =
-    lib.concatMap
-      (
-        p:
-        lib.collect lib.isString (
-          inputs.self.lib.hosts.${p.host}.users.${p.user}.ssh or { }
-        )
-      )
-      (
-        inputs.self.lib.allPeersFor "betongsuggan"
-        ++ inputs.self.lib.allPeersFor "birgerrydback"
-      );
+  deployKeys = lib.concatMap (
+    p: lib.collect lib.isString (inputs.self.lib.hosts.${p.host}.users.${p.user}.ssh or { })
+  ) (inputs.self.lib.allPeersFor "betongsuggan" ++ inputs.self.lib.allPeersFor "birgerrydback");
 in
 {
   system.stateVersion = "26.05";

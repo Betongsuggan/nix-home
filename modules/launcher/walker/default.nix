@@ -1,21 +1,41 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.launcher;
 
-  buildDmenuCmd = { prompt ? null, password ? false, insensitive ? false
-    , multiSelect ? false, allowImages ? null, additionalArgs ? [ ] }:
-    let additionalArgsStr = concatStringsSep " " additionalArgs;
-    in "${pkgs.walker}/bin/walker -m dmenu ${additionalArgsStr}";
+  buildDmenuCmd =
+    {
+      prompt ? null,
+      password ? false,
+      insensitive ? false,
+      multiSelect ? false,
+      allowImages ? null,
+      additionalArgs ? [ ],
+    }:
+    let
+      additionalArgsStr = concatStringsSep " " additionalArgs;
+    in
+    "${pkgs.walker}/bin/walker -m dmenu ${additionalArgsStr}";
 
-  buildShowCmd = { mode ? "applications" # applications, runner, websearch, etc.
-    , additionalArgs ? [ ] }:
-    let additionalArgsStr = concatStringsSep " " additionalArgs;
-    in "${pkgs.walker}/bin/walker -m ${mode}";
+  buildShowCmd =
+    {
+      mode ? "applications", # applications, runner, websearch, etc.
+      additionalArgs ? [ ],
+    }:
+    let
+      additionalArgsStr = concatStringsSep " " additionalArgs;
+    in
+    "${pkgs.walker}/bin/walker -m ${mode}";
 
-in {
+in
+{
   options.launcher.walker = {
     config = mkOption {
       type = types.attrs;
@@ -50,7 +70,11 @@ in {
 
     # Walker uses external tools (iwmenu, bzmenu) so we ensure they're available
     # app2unit is needed by elephant's desktopapplications provider to launch apps
-    home.packages = with pkgs; [ unstable.bzmenu unstable.iwmenu unstable.app2unit ];
+    home.packages = with pkgs; [
+      unstable.bzmenu
+      unstable.iwmenu
+      unstable.app2unit
+    ];
 
     programs.walker = {
       enable = true;
@@ -117,7 +141,9 @@ in {
             resume_last_query = false;
           };
 
-          activation_mode = { labels = ""; };
+          activation_mode = {
+            labels = "";
+          };
 
           builtins = {
             applications = {
@@ -165,14 +191,15 @@ in {
               switcher_only = true;
               show_sub_when_single = true;
               anthropic = {
-                prompts = [{
-                  model = "claude-3-7-sonnet-20250219";
-                  temperature = 1;
-                  max_tokens = 1000;
-                  label = "General Assistant";
-                  prompt =
-                    "You are a helpful general assistant. Keep your answers short and precise.";
-                }];
+                prompts = [
+                  {
+                    model = "claude-3-7-sonnet-20250219";
+                    temperature = 1;
+                    max_tokens = 1000;
+                    label = "General Assistant";
+                    prompt = "You are a helpful general assistant. Keep your answers short and precise.";
+                  }
+                ];
               };
             };
 
@@ -299,8 +326,7 @@ in {
                 }
                 {
                   name = "Home manager options";
-                  url =
-                    "https://home-manager-options.extranix.com/?query=%TERM%";
+                  url = "https://home-manager-options.extranix.com/?query=%TERM%";
                   switcher_only = true;
                 }
                 {
@@ -457,7 +483,10 @@ in {
     systemd.user.services.walker = {
       Unit = {
         Description = lib.mkForce "Walker application launcher";
-        After = lib.mkForce [ "graphical-session.target" "elephant.service" ];
+        After = lib.mkForce [
+          "graphical-session.target"
+          "elephant.service"
+        ];
         PartOf = lib.mkForce [ "graphical-session.target" ];
         Requires = lib.mkForce [ "elephant.service" ];
       };

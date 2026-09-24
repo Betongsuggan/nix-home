@@ -1,4 +1,4 @@
-{ pkgs, providerConfig, ... }: 
+{ pkgs, providerConfig, ... }:
 let
   keyProvider = pkgs.writeShellScriptBin providerConfig.name ''
     #!/usr/bin/env bash

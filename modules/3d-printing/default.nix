@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -15,11 +20,14 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [
-      unstable.prusa-slicer # stable channel lags several releases behind upstream
-    ] ++ optionals cfg.cad.enable [
-      unstable.openscad-unstable # dev snapshot; unstable channel is months fresher
-      freecad-wayland # Qt-Wayland build for the Hyprland session
-    ];
+    home.packages =
+      with pkgs;
+      [
+        unstable.prusa-slicer # stable channel lags several releases behind upstream
+      ]
+      ++ optionals cfg.cad.enable [
+        unstable.openscad-unstable # dev snapshot; unstable channel is months fresher
+        freecad-wayland # Qt-Wayland build for the Hyprland session
+      ];
   };
 }

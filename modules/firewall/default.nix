@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -7,12 +12,12 @@ with lib;
     tcpPorts = mkOption {
       description = "Allowed incoming TCP port traffic";
       type = types.listOf types.port;
-      default = [];
+      default = [ ];
     };
     udpPorts = mkOption {
       description = "Allowed incoming UDP port traffic";
       type = types.listOf types.port;
-      default = [];
+      default = [ ];
     };
   };
 

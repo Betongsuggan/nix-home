@@ -1,7 +1,14 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
-let defaultLayout = builtins.readFile ./layouts/default.kdl;
-in {
+let
+  defaultLayout = builtins.readFile ./layouts/default.kdl;
+in
+{
   options.zellij = {
     enable = mkOption {
       description = "Enable Zellij";
@@ -17,7 +24,11 @@ in {
       settings = {
         simplified_ui = true;
         pane_frames = false;
-        ui = { pane_frames = { rounded_corners = true; }; };
+        ui = {
+          pane_frames = {
+            rounded_corners = true;
+          };
+        };
         layout = "default";
         theme = "gruvbox";
         themes = {

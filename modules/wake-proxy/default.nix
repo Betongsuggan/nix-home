@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -74,7 +79,8 @@ in
         WAKE_PROXY_HOST = cfg.targetHost;
         WAKE_PROXY_PORTS = concatStringsSep "," (map toString cfg.ports);
         WAKE_PROXY_TIMEOUT_SEC = toString cfg.wakeTimeoutSec;
-      } // optionalAttrs (cfg.broadcastAddress != null) {
+      }
+      // optionalAttrs (cfg.broadcastAddress != null) {
         WAKE_PROXY_BROADCAST = cfg.broadcastAddress;
       };
 

@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.vaultwarden;
-in {
+let
+  cfg = config.vaultwarden;
+in
+{
   options.vaultwarden = {
     enable = mkEnableOption "Vaultwarden (Bitwarden-compatible password manager)";
 

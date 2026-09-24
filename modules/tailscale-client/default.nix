@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.tailscale-client;
-in {
+let
+  cfg = config.tailscale-client;
+in
+{
   options.tailscale-client = {
     enable = mkEnableOption "Tailscale client joined to a headscale coordination server";
 
@@ -24,7 +31,10 @@ in {
     extraUpFlags = mkOption {
       type = types.listOf types.str;
       default = [ ];
-      example = [ "--accept-routes" "--ssh" ];
+      example = [
+        "--accept-routes"
+        "--ssh"
+      ];
       description = "Extra flags passed to `tailscale up` on first registration.";
     };
 
@@ -49,16 +59,19 @@ in {
       enable = true;
       authKeyFile = cfg.authKeyFile;
       useRoutingFeatures = mkIf (cfg.advertiseRoutes != [ ]) "server";
-      extraUpFlags =
-        [ "--login-server=${cfg.loginServer}" ]
-        ++ optional (cfg.advertiseRoutes != [ ])
-          "--advertise-routes=${concatStringsSep "," cfg.advertiseRoutes}"
-        ++ cfg.extraUpFlags;
+      extraUpFlags = [
+        "--login-server=${cfg.loginServer}"
+      ]
+      ++ optional (
+        cfg.advertiseRoutes != [ ]
+      ) "--advertise-routes=${concatStringsSep "," cfg.advertiseRoutes}"
+      ++ cfg.extraUpFlags;
       # Unlike up-flags (registration only), set-flags are applied by the
       # nixpkgs tailscaled-set service on every daemon start, so route changes
       # converge on rebuild without re-registering the node.
-      extraSetFlags = optional (cfg.advertiseRoutes != [ ])
-        "--advertise-routes=${concatStringsSep "," cfg.advertiseRoutes}";
+      extraSetFlags = optional (
+        cfg.advertiseRoutes != [ ]
+      ) "--advertise-routes=${concatStringsSep "," cfg.advertiseRoutes}";
     };
   };
 }

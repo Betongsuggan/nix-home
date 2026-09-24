@@ -1,41 +1,61 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.launcher;
 
-  buildDmenuCmd = { prompt ? null, password ? false, insensitive ? false
-    , multiSelect ? false, allowImages ? null, additionalArgs ? [ ] }:
+  buildDmenuCmd =
+    {
+      prompt ? null,
+      password ? false,
+      insensitive ? false,
+      multiSelect ? false,
+      allowImages ? null,
+      additionalArgs ? [ ],
+    }:
     let
       promptArg = optionalString (prompt != null) "-p '${prompt}'";
       # Note: vicinae dmenu doesn't support password mode or case-insensitive search via CLI args
       # These are handled through the UI
       additionalArgsStr = concatStringsSep " " additionalArgs;
-    in "${pkgs.vicinae}/bin/vicinae dmenu ${promptArg} ${additionalArgsStr}";
+    in
+    "${pkgs.vicinae}/bin/vicinae dmenu ${promptArg} ${additionalArgsStr}";
 
-  buildShowCmd = { mode ? "applications", additionalArgs ? [ ] }:
+  buildShowCmd =
+    {
+      mode ? "applications",
+      additionalArgs ? [ ],
+    }:
     # Vicinae uses deeplinks for showing specific interfaces
     # The daemon must be running for this to work
     let
       additionalArgsStr = concatStringsSep " " additionalArgs;
       # Map mode names to vicinae deeplinks
-      deeplink = if mode == "clipboard" then
-        "vicinae://extensions/vicinae/clipboard/history"
-      else if mode == "symbols" || mode == "emoji" then
-        "vicinae://extensions/vicinae/vicinae/search-emojis"
-      else if mode == "websearch" then
-        # Vicinae doesn't have a built-in websearch, just open normally
-        "vicinae://open"
-      else if mode == "desktopapplications" || mode == "applications" || mode == "drun" then
-        # Just open the main launcher for applications
-        "vicinae://open"
-      else
-        # For any other mode, just open vicinae
-        "vicinae://open";
-    in "${pkgs.vicinae}/bin/vicinae deeplink ${deeplink} ${additionalArgsStr}";
+      deeplink =
+        if mode == "clipboard" then
+          "vicinae://extensions/vicinae/clipboard/history"
+        else if mode == "symbols" || mode == "emoji" then
+          "vicinae://extensions/vicinae/vicinae/search-emojis"
+        else if mode == "websearch" then
+          # Vicinae doesn't have a built-in websearch, just open normally
+          "vicinae://open"
+        else if mode == "desktopapplications" || mode == "applications" || mode == "drun" then
+          # Just open the main launcher for applications
+          "vicinae://open"
+        else
+          # For any other mode, just open vicinae
+          "vicinae://open";
+    in
+    "${pkgs.vicinae}/bin/vicinae deeplink ${deeplink} ${additionalArgsStr}";
 
-in {
+in
+{
   options.launcher.vicinae = {
     config = mkOption {
       type = types.attrs;
@@ -118,6 +138,9 @@ in {
     };
 
     # Vicinae uses external tools (iwmenu, bzmenu) so we ensure they're available
-    home.packages = with pkgs; [ unstable.bzmenu unstable.iwmenu ];
+    home.packages = with pkgs; [
+      unstable.bzmenu
+      unstable.iwmenu
+    ];
   };
 }

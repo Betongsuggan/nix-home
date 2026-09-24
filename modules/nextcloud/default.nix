@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -112,7 +117,14 @@ in
       };
 
       extraApps = with pkgs.nextcloud33Packages.apps; {
-        inherit onlyoffice calendar contacts mail notes tasks;
+        inherit
+          onlyoffice
+          calendar
+          contacts
+          mail
+          notes
+          tasks
+          ;
       };
       extraAppsEnable = true;
 

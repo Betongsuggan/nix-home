@@ -248,8 +248,7 @@
       # Filter the local instance out of the peer list. This host's syncthing
       # runs as `betongsuggan`, so its lib entry sits at
       # `hosts.controller.users.betongsuggan.syncthing.id`.
-      selfSyncthingId =
-        inputs.self.lib.hosts.controller.users.betongsuggan.syncthing.id;
+      selfSyncthingId = inputs.self.lib.hosts.controller.users.betongsuggan.syncthing.id;
     };
   };
 
@@ -308,10 +307,10 @@
     targetMac = inputs.self.lib.hosts.desktop.wol.mac;
     targetHost = inputs.self.lib.hosts.desktop.tailnetIp;
     ports = [
-      11434  # Ollama API
-      8081   # Open WebUI
-      8188   # ComfyUI
-      8000   # Speaches (voice STT + TTS)
+      11434 # Ollama API
+      8081 # Open WebUI
+      8188 # ComfyUI
+      8000 # Speaches (voice STT + TTS)
     ];
   };
 

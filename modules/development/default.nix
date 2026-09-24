@@ -81,19 +81,18 @@ in
 
     programs.go.enable = cfg.go.enable;
 
-    home.sessionVariables =
-      {
-        # Aider routes to llm.rydback.net (HTTPS, tailnet-only) which lands on
-        # controller's wake-proxy and wakes the AI host on demand. The ollama
-        # CLI isn't installed here — its `engine` binary collides with
-        # mesa-demos pulled in by the games module.
-        OLLAMA_API_BASE = ollamaBase;
-      }
-      // optionalAttrs cfg.node.enable {
-        PATH = "$HOME/node_modules/bin:$PATH";
-      }
-      // optionalAttrs cfg.kotlin.enable {
-        JAVA_HOME = "${pkgs.jdk25.home}";
-      };
+    home.sessionVariables = {
+      # Aider routes to llm.rydback.net (HTTPS, tailnet-only) which lands on
+      # controller's wake-proxy and wakes the AI host on demand. The ollama
+      # CLI isn't installed here — its `engine` binary collides with
+      # mesa-demos pulled in by the games module.
+      OLLAMA_API_BASE = ollamaBase;
+    }
+    // optionalAttrs cfg.node.enable {
+      PATH = "$HOME/node_modules/bin:$PATH";
+    }
+    // optionalAttrs cfg.kotlin.enable {
+      JAVA_HOME = "${pkgs.jdk25.home}";
+    };
   };
 }

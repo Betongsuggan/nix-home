@@ -1,24 +1,33 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
   cfg = config.controls.volume;
-  
-  # Build notification commands using the notifications module
-  notifyMuted = optionalString cfg.notifications (config.notifications.send {
-    category = "volume";
-    icon = "audio-volume-muted";
-    summary = "Muted";
-  });
 
-  notifyVolume = optionalString cfg.notifications (config.notifications.send {
-    category = "volume";
-    summary = "\$volume%";
-    progress = "\$volume";
-  });
+  # Build notification commands using the notifications module
+  notifyMuted = optionalString cfg.notifications (
+    config.notifications.send {
+      category = "volume";
+      icon = "audio-volume-muted";
+      summary = "Muted";
+    }
+  );
+
+  notifyVolume = optionalString cfg.notifications (
+    config.notifications.send {
+      category = "volume";
+      summary = "\$volume%";
+      progress = "\$volume";
+    }
+  );
 
   volumeBackend = if cfg.backend == "pamixer" then pkgs.pamixer else pkgs.pulseaudio;
-  
+
   volumeCommands = {
     pamixer = {
       increase = "${volumeBackend}/bin/pamixer -i";
@@ -35,7 +44,7 @@ let
   };
 
   cmds = volumeCommands.${cfg.backend};
-  
+
   volumeControl = pkgs.writeShellScriptBin "volume-control" ''
     #!/usr/bin/env bash
 

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 let
   cfg = config.power-management;
@@ -53,7 +58,12 @@ in
     enable = mkEnableOption "Enable power management";
 
     cpuVendor = mkOption {
-      type = types.nullOr (types.enum [ "amd" "intel" ]);
+      type = types.nullOr (
+        types.enum [
+          "amd"
+          "intel"
+        ]
+      );
       default = null;
       description = ''
         CPU vendor for vendor-specific power settings.
@@ -65,7 +75,13 @@ in
     };
 
     gpuVendor = mkOption {
-      type = types.nullOr (types.enum [ "amd" "intel" "nvidia" ]);
+      type = types.nullOr (
+        types.enum [
+          "amd"
+          "intel"
+          "nvidia"
+        ]
+      );
       default = null;
       description = ''
         GPU vendor for vendor-specific power settings.
@@ -151,9 +167,9 @@ in
     # and battery alike). Inactivity suspend is unaffected (hypridle).
     # Note: Hyprland handles locking via bindl on lid switch events
     services.logind.settings.Login = {
-      HandleLidSwitch = "suspend";              # No external display: suspend
+      HandleLidSwitch = "suspend"; # No external display: suspend
       HandleLidSwitchExternalPower = "suspend"; # Same on AC
-      HandleLidSwitchDocked = "ignore";         # External display connected: stay awake
+      HandleLidSwitchDocked = "ignore"; # External display connected: stay awake
     };
 
     services.tlp = {

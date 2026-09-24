@@ -106,14 +106,10 @@ in
       userSshKeys =
         h:
         lib.concatLists (
-          lib.mapAttrsToList (_: u: lib.collect lib.isString (u.ssh or { })) (
-            h.users or { }
-          )
+          lib.mapAttrsToList (_: u: lib.collect lib.isString (u.ssh or { })) (h.users or { })
         );
     in
-    lib.concatLists (
-      map (h: hostSshKeys h ++ userSshKeys h) (lib.attrValues hosts)
-    );
+    lib.concatLists (map (h: hostSshKeys h ++ userSshKeys h) (lib.attrValues hosts));
 
   allPeersFor =
     user:
@@ -136,8 +132,7 @@ in
         src:
         lib.mapAttrs (_: x: {
           id = x.syncthing.id;
-          tailnetFqdn =
-            if x ? tailnetName then "${x.tailnetName}.${baseDomain}" else null;
+          tailnetFqdn = if x ? tailnetName then "${x.tailnetName}.${baseDomain}" else null;
         }) (lib.filterAttrs (_: x: x ? syncthing && x.syncthing ? id) src);
       hostUserIds = lib.listToAttrs (
         lib.concatMap (

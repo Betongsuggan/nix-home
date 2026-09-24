@@ -115,12 +115,12 @@ in
     };
     windowRules = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
       description = "Additional Hyprland window rules (unified 0.55 windowrule format, e.g. \"float on, match:class ^(foo)$\")";
     };
     workspaceRules = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
       description = "Additional Hyprland workspace rules";
     };
   };
@@ -328,10 +328,12 @@ in
         monitor = config.windowManager.monitors;
 
         # Workspace to monitor bindings + user workspace rules
-        workspace = (map (
-          wb:
-          "${toString wb.workspace}, monitor:${wb.monitor}" + (if wb.default then ", default:true" else "")
-        ) config.windowManager.workspaceBindings) ++ config.hyprland.workspaceRules;
+        workspace =
+          (map (
+            wb:
+            "${toString wb.workspace}, monitor:${wb.monitor}" + (if wb.default then ", default:true" else "")
+          ) config.windowManager.workspaceBindings)
+          ++ config.hyprland.workspaceRules;
 
         cursor = {
           enable_hyprcursor = false;

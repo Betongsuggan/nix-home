@@ -13,10 +13,8 @@
     ../../modules/user.nix
   ];
 
-  home.file.".ssh/bits.pub".text =
-    inputs.self.lib.hosts.bits.users.birgerrydback.ssh.bits + "\n";
-  home.file.".ssh/id_rsa.pub".text =
-    inputs.self.lib.hosts.bits.users.birgerrydback.ssh.id_rsa + "\n";
+  home.file.".ssh/bits.pub".text = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.bits + "\n";
+  home.file.".ssh/id_rsa.pub".text = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.id_rsa + "\n";
 
   general.enable = true;
   development = {

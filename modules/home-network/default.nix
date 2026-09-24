@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -114,7 +119,11 @@ in
     '';
 
     mode = mkOption {
-      type = types.enum [ "controller" "bootstrap" "onboarded" ];
+      type = types.enum [
+        "controller"
+        "bootstrap"
+        "onboarded"
+      ];
       description = ''
         Which side of the home tailnet this host represents.
 
@@ -137,18 +146,22 @@ in
     };
 
     authorizeSshFor = mkOption {
-      type = types.attrsOf (types.listOf (types.submodule {
-        options = {
-          host = mkOption {
-            type = types.str;
-            description = "Tailnet host name (must be a key in flake.lib.hosts).";
-          };
-          user = mkOption {
-            type = types.str;
-            description = "Username on the peer host whose SSH keys to authorize.";
-          };
-        };
-      }));
+      type = types.attrsOf (
+        types.listOf (
+          types.submodule {
+            options = {
+              host = mkOption {
+                type = types.str;
+                description = "Tailnet host name (must be a key in flake.lib.hosts).";
+              };
+              user = mkOption {
+                type = types.str;
+                description = "Username on the peer host whose SSH keys to authorize.";
+              };
+            };
+          }
+        )
+      );
       default = { };
       description = ''
         Map of local user → list of `{host, user}` peer identities. All SSH
@@ -214,20 +227,27 @@ in
           description = "Headscale users to provision idempotently on startup.";
         };
         extraDnsRecords = mkOption {
-          type = types.listOf (types.submodule {
-            options = {
-              name = mkOption { type = types.str; };
-              type = mkOption { type = types.str; default = "A"; };
-              value = mkOption { type = types.str; };
-            };
-          });
+          type = types.listOf (
+            types.submodule {
+              options = {
+                name = mkOption { type = types.str; };
+                type = mkOption {
+                  type = types.str;
+                  default = "A";
+                };
+                value = mkOption { type = types.str; };
+              };
+            }
+          );
           default = [ ];
           description = "Extra DNS records pushed to tailnet clients via MagicDNS.";
         };
         autoApprovedRoutes = mkOption {
           type = types.attrsOf (types.listOf types.str);
           default = { };
-          example = { "192.168.50.0/24" = [ "birger@" ]; };
+          example = {
+            "192.168.50.0/24" = [ "birger@" ];
+          };
           description = ''
             Subnet routes to auto-approve, forwarded to
             `headscale.autoApprovedRoutes` (see that module for semantics,
@@ -296,7 +316,12 @@ in
       headscale = {
         enable = true;
         inherit (cfg.controller.headscale)
-          domain baseDomain users extraDnsRecords autoApprovedRoutes;
+          domain
+          baseDomain
+          users
+          extraDnsRecords
+          autoApprovedRoutes
+          ;
       };
 
       # Server-side bootstrap rotator: every `rotateInterval`, mint a fresh
@@ -311,7 +336,10 @@ in
 
       systemd.services.home-network-rotate-preauth = {
         description = "Rotate the age-encrypted headscale preauth key for tailnet onboarding";
-        after = [ "headscale.service" "headscale-provision-users.service" ];
+        after = [
+          "headscale.service"
+          "headscale-provision-users.service"
+        ];
         requires = [ "headscale.service" ];
         wants = [ "headscale-provision-users.service" ];
         path = [
@@ -387,14 +415,15 @@ in
       # Exact-match location (`= /path`) — gixy rejects `alias` under a prefix
       # location because nginx can synthesize traversal paths off the end of a
       # prefix. Exact match makes it apply to this single file only.
-      services.nginx.virtualHosts.${cfg.controller.bootstrap.publicDomain}.locations."= ${cfg.controller.bootstrap.urlPath}" = {
-        alias = preauthBlobPath;
-        extraConfig = ''
-          default_type application/octet-stream;
-          add_header Cache-Control "no-store";
-          limit_except GET { deny all; }
-        '';
-      };
+      services.nginx.virtualHosts.${cfg.controller.bootstrap.publicDomain}.locations."= ${cfg.controller.bootstrap.urlPath}" =
+        {
+          alias = preauthBlobPath;
+          extraConfig = ''
+            default_type application/octet-stream;
+            add_header Cache-Control "no-store";
+            limit_except GET { deny all; }
+          '';
+        };
     })
 
     (mkIf (cfg.enable && isBootstrap) {

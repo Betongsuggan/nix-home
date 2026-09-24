@@ -16,7 +16,11 @@ with lib;
       enable = mkEnableOption "Intel graphics";
 
       generation = mkOption {
-        type = types.enum [ "legacy" "modern" "arc" ];
+        type = types.enum [
+          "legacy"
+          "modern"
+          "arc"
+        ];
         default = "modern";
         description = ''
           Intel GPU generation:
@@ -83,9 +87,11 @@ with lib;
     boot.initrd.kernelModules = mkIf config.graphics.intel.enable [ "i915" ];
 
     # Intel Arc: Enable GuC/HuC firmware for better performance and features
-    boot.kernelParams = mkIf (config.graphics.intel.enable && config.graphics.intel.generation == "arc") [
-      "i915.enable_guc=3" # Enable both GuC submission and HuC authentication
-    ];
+    boot.kernelParams =
+      mkIf (config.graphics.intel.enable && config.graphics.intel.generation == "arc")
+        [
+          "i915.enable_guc=3" # Enable both GuC submission and HuC authentication
+        ];
 
     # NVIDIA-specific configuration
     hardware.nvidia = mkIf config.graphics.nvidia {
@@ -101,13 +107,15 @@ with lib;
       {
         __NVFBC_CAPTURE = mkIf config.graphics.nvidia "1";
         LIBVA_DRIVER_NAME =
-          if config.graphics.nvidia then "nvidia"
-          else mkIf (config.graphics.intel.enable || config.graphics.amd) (
-            if config.graphics.intel.enable then
-              (if config.graphics.intel.generation == "legacy" then "i965" else "iHD")
-            else
-              "radeonsi"
-          );
+          if config.graphics.nvidia then
+            "nvidia"
+          else
+            mkIf (config.graphics.intel.enable || config.graphics.amd) (
+              if config.graphics.intel.enable then
+                (if config.graphics.intel.generation == "legacy" then "i965" else "iHD")
+              else
+                "radeonsi"
+            );
         VDPAU_DRIVER = mkIf config.graphics.intel.enable "va_gl";
       }
       (mkIf config.graphics.nvidia {

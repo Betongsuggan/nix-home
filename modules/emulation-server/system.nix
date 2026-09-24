@@ -50,7 +50,12 @@ let
     "switch"
   ];
 
-  defaultEmulators = [ "retroarch" "ppsspp" "dolphin" "switch" ];
+  defaultEmulators = [
+    "retroarch"
+    "ppsspp"
+    "dolphin"
+    "switch"
+  ];
 
   tmpfilesDir = path: "d ${path} 0775 ${cfg.user} users -";
 
@@ -150,23 +155,22 @@ in
     in
     {
       # Directory layout — owned by the configured user, group writable for Samba/Syncthing.
-      systemd.tmpfiles.rules =
-        [
-          (tmpfilesDir cfg.dataDir)
-          (tmpfilesDir "${cfg.dataDir}/roms")
-          (tmpfilesDir "${cfg.dataDir}/saves")
-          (tmpfilesDir "${cfg.dataDir}/bios")
-          (tmpfilesDir "${cfg.dataDir}/saves/retroarch/saves")
-          (tmpfilesDir "${cfg.dataDir}/saves/retroarch/states")
-          # Nintendo Switch keys + firmware live under the BIOS share so they
-          # can be uploaded remotely over Samba and consumed by the client.
-          # `prod.keys`/`title.keys` go directly in `bios/switch/`; firmware
-          # NCA files go in `bios/switch/firmware/`.
-          (tmpfilesDir "${cfg.dataDir}/bios/switch")
-          (tmpfilesDir "${cfg.dataDir}/bios/switch/firmware")
-        ]
-        ++ map (sys: tmpfilesDir "${cfg.dataDir}/roms/${sys}") cfg.systems
-        ++ map (emu: tmpfilesDir "${cfg.dataDir}/saves/${emu}") cfg.standaloneEmulators;
+      systemd.tmpfiles.rules = [
+        (tmpfilesDir cfg.dataDir)
+        (tmpfilesDir "${cfg.dataDir}/roms")
+        (tmpfilesDir "${cfg.dataDir}/saves")
+        (tmpfilesDir "${cfg.dataDir}/bios")
+        (tmpfilesDir "${cfg.dataDir}/saves/retroarch/saves")
+        (tmpfilesDir "${cfg.dataDir}/saves/retroarch/states")
+        # Nintendo Switch keys + firmware live under the BIOS share so they
+        # can be uploaded remotely over Samba and consumed by the client.
+        # `prod.keys`/`title.keys` go directly in `bios/switch/`; firmware
+        # NCA files go in `bios/switch/firmware/`.
+        (tmpfilesDir "${cfg.dataDir}/bios/switch")
+        (tmpfilesDir "${cfg.dataDir}/bios/switch/firmware")
+      ]
+      ++ map (sys: tmpfilesDir "${cfg.dataDir}/roms/${sys}") cfg.systems
+      ++ map (emu: tmpfilesDir "${cfg.dataDir}/saves/${emu}") cfg.standaloneEmulators;
 
       services.syncthing = {
         enable = true;
@@ -213,7 +217,13 @@ in
           enable = true;
           openFirewall = false;
           allowedSubnets =
-            if cfg.tailnetOnly then [ "100.64.0.0/10" ] else [ cfg.lanSubnet "100.64.0.0/10" ];
+            if cfg.tailnetOnly then
+              [ "100.64.0.0/10" ]
+            else
+              [
+                cfg.lanSubnet
+                "100.64.0.0/10"
+              ];
           # Intentionally NOT setting samba.interfaces here even in tailnet-only
           # mode: `bind interfaces only = yes` combined with `interfaces =
           # tailscale0` makes smbd panic and nmbd time out at boot, because
@@ -245,19 +255,34 @@ in
 
       # Expose Syncthing + Samba on the tailnet (always) and the LAN (only
       # when not in tailnet-only mode).
-      networking.firewall.interfaces =
-        {
-          tailscale0 = {
-            allowedTCPPorts = [ 22000 445 139 ];
-            allowedUDPPorts = [ 21027 137 138 ];
-          };
-        }
-        // lib.optionalAttrs (!cfg.tailnetOnly) {
-          ${cfg.lanInterface} = {
-            allowedTCPPorts = [ 22000 445 139 ];
-            allowedUDPPorts = [ 21027 137 138 ];
-          };
+      networking.firewall.interfaces = {
+        tailscale0 = {
+          allowedTCPPorts = [
+            22000
+            445
+            139
+          ];
+          allowedUDPPorts = [
+            21027
+            137
+            138
+          ];
         };
+      }
+      // lib.optionalAttrs (!cfg.tailnetOnly) {
+        ${cfg.lanInterface} = {
+          allowedTCPPorts = [
+            22000
+            445
+            139
+          ];
+          allowedUDPPorts = [
+            21027
+            137
+            138
+          ];
+        };
+      };
     }
   );
 }

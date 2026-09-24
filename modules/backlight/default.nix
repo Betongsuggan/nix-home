@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -14,6 +19,6 @@ with lib;
     '';
 
     # Ensure the video group exists
-    users.groups.video = {};
+    users.groups.video = { };
   };
 }

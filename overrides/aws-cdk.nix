@@ -10,7 +10,10 @@
       hash = "sha256-lfEnTSHYWNlVgtCjzq6rmHE75GLqvmU94cZhf8nTxJ4=";
     };
 
-    nativeBuildInputs = [ prev.nodejs_22 prev.makeWrapper ];
+    nativeBuildInputs = [
+      prev.nodejs_22
+      prev.makeWrapper
+    ];
 
     unpackPhase = ''
       mkdir -p source
@@ -54,7 +57,10 @@
       sha256 = "sha256-Eq/4dNcQH4h4dSKlZ4HzgkD+ZopUXvAtO8X6UCvaak8=";
     };
 
-    nativeBuildInputs = [ prev.nodejs_22 prev.makeWrapper ];
+    nativeBuildInputs = [
+      prev.nodejs_22
+      prev.makeWrapper
+    ];
 
     buildPhase = ''
       # Create a package directory

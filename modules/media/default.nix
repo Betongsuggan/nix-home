@@ -1,8 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 let
   cfg = config.media;
-in {
+in
+{
   options.media = {
     enable = mkEnableOption "Enable media playback and offline downloading";
 
@@ -16,7 +22,12 @@ in {
   config = mkIf cfg.enable {
     # ffmpeg is not optional in practice: yt-dlp needs it to mux the separate
     # video/audio streams that DASH/HLS sources serve, and to embed subtitles.
-    home.packages = with pkgs;
-      [ mpv ] ++ optionals cfg.downloader [ yt-dlp ffmpeg ];
+    home.packages =
+      with pkgs;
+      [ mpv ]
+      ++ optionals cfg.downloader [
+        yt-dlp
+        ffmpeg
+      ];
   };
 }

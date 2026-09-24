@@ -1,24 +1,27 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
   cfg = config.terminal;
 
   # Use terminal font family or fall back to theme font
-  fontFamily = if cfg.font.family != null
-    then cfg.font.family
-    else config.theme.font.name;
+  fontFamily = if cfg.font.family != null then cfg.font.family else config.theme.font.name;
 
   # Unicode emoji ranges - route these to color emoji font
   # This is needed because Ghostty doesn't use fontconfig fallback
   emojiRanges = [
-    "U+1F300-U+1F5FF"  # Misc Symbols and Pictographs
-    "U+1F600-U+1F64F"  # Emoticons
-    "U+1F680-U+1F6FF"  # Transport and Map
-    "U+1F900-U+1F9FF"  # Supplemental Symbols and Pictographs
-    "U+1FA00-U+1FAFF"  # Symbols and Pictographs Extended-A
-    "U+2600-U+26FF"    # Misc Symbols
-    "U+2700-U+27BF"    # Dingbats
+    "U+1F300-U+1F5FF" # Misc Symbols and Pictographs
+    "U+1F600-U+1F64F" # Emoticons
+    "U+1F680-U+1F6FF" # Transport and Map
+    "U+1F900-U+1F9FF" # Supplemental Symbols and Pictographs
+    "U+1FA00-U+1FAFF" # Symbols and Pictographs Extended-A
+    "U+2600-U+26FF" # Misc Symbols
+    "U+2700-U+27BF" # Dingbats
   ];
 
   # Build color palette for Ghostty (indices 0-15)
@@ -70,11 +73,16 @@ let
   finalSettings = baseSettings // cfg.ghostty.extraSettings;
 
   # Convert settings to Ghostty config format
-  formatValue = v:
-    if isBool v then (if v then "true" else "false")
-    else if isInt v then toString v
-    else if isFloat v then toString v
-    else toString v;
+  formatValue =
+    v:
+    if isBool v then
+      (if v then "true" else "false")
+    else if isInt v then
+      toString v
+    else if isFloat v then
+      toString v
+    else
+      toString v;
 
   settingsLines = mapAttrsToList (name: value: "${name} = ${formatValue value}") finalSettings;
   paletteLines = map (p: "palette = ${p}") colorPalette;

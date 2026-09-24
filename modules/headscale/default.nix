@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.headscale;
-in {
+let
+  cfg = config.headscale;
+in
+{
   options.headscale = {
     enable = mkEnableOption "Headscale Tailscale coordination server";
 
@@ -46,25 +53,27 @@ in {
     };
 
     extraDnsRecords = mkOption {
-      type = types.listOf (types.submodule {
-        options = {
-          name = mkOption {
-            type = types.str;
-            example = "vault.example.com";
-            description = "FQDN to override on tailnet clients.";
+      type = types.listOf (
+        types.submodule {
+          options = {
+            name = mkOption {
+              type = types.str;
+              example = "vault.example.com";
+              description = "FQDN to override on tailnet clients.";
+            };
+            type = mkOption {
+              type = types.str;
+              default = "A";
+              description = "DNS record type (A or AAAA).";
+            };
+            value = mkOption {
+              type = types.str;
+              example = "100.64.0.2";
+              description = "Address to return. Typically a tailnet IP.";
+            };
           };
-          type = mkOption {
-            type = types.str;
-            default = "A";
-            description = "DNS record type (A or AAAA).";
-          };
-          value = mkOption {
-            type = types.str;
-            example = "100.64.0.2";
-            description = "Address to return. Typically a tailnet IP.";
-          };
-        };
-      });
+        }
+      );
       default = [ ];
       description = ''
         Extra DNS records pushed to tailnet clients. Use this to make a
@@ -78,7 +87,9 @@ in {
     autoApprovedRoutes = mkOption {
       type = types.attrsOf (types.listOf types.str);
       default = { };
-      example = { "192.168.50.0/24" = [ "birger@" ]; };
+      example = {
+        "192.168.50.0/24" = [ "birger@" ];
+      };
       description = ''
         Subnet routes to auto-approve, keyed by CIDR, each listing the
         headscale users, groups (`group:x`) or tags (`tag:x`) whose
@@ -130,18 +141,29 @@ in {
         dns = {
           magic_dns = true;
           base_domain = cfg.baseDomain;
-          nameservers.global = [ "1.1.1.1" "9.9.9.9" ];
+          nameservers.global = [
+            "1.1.1.1"
+            "9.9.9.9"
+          ];
           extra_records = cfg.extraDnsRecords;
         };
 
         policy = mkIf (cfg.autoApprovedRoutes != { }) {
           mode = "file";
-          path = pkgs.writeText "headscale-policy.json" (builtins.toJSON {
-            # Presence of a policy file switches headscale from implicit
-            # allow-all to ACL enforcement; this rule keeps the tailnet open.
-            acls = [ { action = "accept"; src = [ "*" ]; dst = [ "*:*" ]; } ];
-            autoApprovers.routes = cfg.autoApprovedRoutes;
-          });
+          path = pkgs.writeText "headscale-policy.json" (
+            builtins.toJSON {
+              # Presence of a policy file switches headscale from implicit
+              # allow-all to ACL enforcement; this rule keeps the tailnet open.
+              acls = [
+                {
+                  action = "accept";
+                  src = [ "*" ];
+                  dst = [ "*:*" ];
+                }
+              ];
+              autoApprovers.routes = cfg.autoApprovedRoutes;
+            }
+          );
         };
 
         # `derp.urls` is left at the upstream default (Tailscale's public DERP
@@ -170,7 +192,10 @@ in {
         Type = "oneshot";
         RemainAfterExit = true;
       };
-      path = [ pkgs.headscale pkgs.jq ];
+      path = [
+        pkgs.headscale
+        pkgs.jq
+      ];
       script = ''
         set -eu
         existing=$(headscale users list --output json | jq -r '(. // []) | .[].name')

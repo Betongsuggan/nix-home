@@ -2,8 +2,10 @@
 
 with lib;
 
-let cfg = config.sops-secrets;
-in {
+let
+  cfg = config.sops-secrets;
+in
+{
   options.sops-secrets = {
     enable = mkEnableOption "sops-nix-managed secrets for this host";
 

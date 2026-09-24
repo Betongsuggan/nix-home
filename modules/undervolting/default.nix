@@ -1,4 +1,9 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
 
 {
@@ -12,7 +17,7 @@ with lib;
 
   config = mkIf config.undervolting.enable {
     programs.corectrl.enable = true;
-    
+
     hardware.amdgpu.overdrive = {
       enable = true;
       ppfeaturemask = "0xffffffff";

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -38,7 +43,8 @@ let
     SER_SHOWPERFOVERLAY=${if cfg.client.showPerfOverlay then "true" else "false"}
   '';
 
-in {
+in
+{
   options.game-streaming = {
     client = {
       enable = mkEnableOption "Enable Moonlight game streaming client with optimized settings";
@@ -69,7 +75,12 @@ in {
       };
 
       codec = mkOption {
-        type = types.enum [ "auto" "h264" "hevc" "av1" ];
+        type = types.enum [
+          "auto"
+          "h264"
+          "hevc"
+          "av1"
+        ];
         default = "auto";
         description = ''
           Video codec preference.
@@ -93,7 +104,11 @@ in {
       };
 
       decoder = mkOption {
-        type = types.enum [ "auto" "hardware" "software" ];
+        type = types.enum [
+          "auto"
+          "hardware"
+          "software"
+        ];
         default = "auto";
         description = "Video decoder selection (auto recommended for Intel/AMD laptops)";
       };

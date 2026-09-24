@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
@@ -70,37 +75,46 @@ let
   };
 
   # Convert share list to Samba shares attrset
-  mkSambaShares = shares:
-    builtins.listToAttrs (map (share: {
-      name = share.name;
-      value = {
-        path = share.path;
-        browseable = "yes";
-        "read only" = if share.readOnly then "yes" else "no";
-        "guest ok" = if share.guestOk then "yes" else "no";
-      }
-      // (if share.guestOk then {
-        "guest only" = "yes";
-      } else {
-        "valid users" = concatStringsSep " " share.validUsers;
-      })
-      // (lib.optionalAttrs (share.forceUser != null) {
-        "force user" = share.forceUser;
-      })
-      // (lib.optionalAttrs share.deleteProtection {
-        "vfs objects" = "recycle";
-        "recycle:repository" = ".recycle";
-        "recycle:keeptree" = "yes";
-        "recycle:versions" = "yes";
-        "recycle:maxsize" = "0";
-        "recycle:exclude" = "*.tmp *.temp *.bak ~$*";
-        "recycle:exclude_dir" = ".recycle";
-        "veto files" = "/.recycle/";
-        "hide files" = "/.recycle/";
-      });
-    }) shares);
+  mkSambaShares =
+    shares:
+    builtins.listToAttrs (
+      map (share: {
+        name = share.name;
+        value = {
+          path = share.path;
+          browseable = "yes";
+          "read only" = if share.readOnly then "yes" else "no";
+          "guest ok" = if share.guestOk then "yes" else "no";
+        }
+        // (
+          if share.guestOk then
+            {
+              "guest only" = "yes";
+            }
+          else
+            {
+              "valid users" = concatStringsSep " " share.validUsers;
+            }
+        )
+        // (lib.optionalAttrs (share.forceUser != null) {
+          "force user" = share.forceUser;
+        })
+        // (lib.optionalAttrs share.deleteProtection {
+          "vfs objects" = "recycle";
+          "recycle:repository" = ".recycle";
+          "recycle:keeptree" = "yes";
+          "recycle:versions" = "yes";
+          "recycle:maxsize" = "0";
+          "recycle:exclude" = "*.tmp *.temp *.bak ~$*";
+          "recycle:exclude_dir" = ".recycle";
+          "veto files" = "/.recycle/";
+          "hide files" = "/.recycle/";
+        });
+      }) shares
+    );
 
-in {
+in
+{
   options.file-sharing = {
     enable = mkEnableOption "Enable file sharing";
 
@@ -131,7 +145,11 @@ in {
 
       allowedSubnets = mkOption {
         type = types.listOf types.str;
-        default = [ "192.168.0.0/16" "10.0.0.0/8" "172.16.0.0/12" ];
+        default = [
+          "192.168.0.0/16"
+          "10.0.0.0/8"
+          "172.16.0.0/12"
+        ];
         description = "Subnets allowed to access Samba shares";
       };
 
@@ -183,7 +201,13 @@ in {
           "client min protocol" = "SMB2_10";
 
           # Restrict access to allowed subnets
-          "hosts allow" = concatStringsSep " " (cfg.samba.allowedSubnets ++ [ "127.0.0.1" "localhost" ]);
+          "hosts allow" = concatStringsSep " " (
+            cfg.samba.allowedSubnets
+            ++ [
+              "127.0.0.1"
+              "localhost"
+            ]
+          );
           "hosts deny" = "0.0.0.0/0";
 
           # Performance and compatibility
@@ -195,11 +219,13 @@ in {
           printing = "bsd";
           "printcap name" = "/dev/null";
           "disable spoolss" = "yes";
-        } // (lib.optionalAttrs (cfg.samba.interfaces != [ ]) {
+        }
+        // (lib.optionalAttrs (cfg.samba.interfaces != [ ]) {
           interfaces = concatStringsSep " " cfg.samba.interfaces;
           "bind interfaces only" = "yes";
         });
-      } // mkSambaShares cfg.samba.shares;
+      }
+      // mkSambaShares cfg.samba.shares;
     };
 
     # Enable WSDD for network discovery (Windows/Android)
@@ -209,9 +235,12 @@ in {
     };
 
     # Install useful packages
-    environment.systemPackages = mkIf cfg.samba.enable (with pkgs; [
-      samba
-      cifs-utils
-    ]);
+    environment.systemPackages = mkIf cfg.samba.enable (
+      with pkgs;
+      [
+        samba
+        cifs-utils
+      ]
+    );
   };
 }

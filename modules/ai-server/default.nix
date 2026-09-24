@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.ai-server;
-in {
+let
+  cfg = config.ai-server;
+in
+{
   options.ai-server = {
     enable = mkEnableOption "Local AI inference server (Ollama on AMD ROCm)";
 
@@ -22,7 +29,10 @@ in {
     models = mkOption {
       type = types.listOf types.str;
       default = [ ];
-      example = [ "qwen3:8b" "qwen2.5-coder:14b" ];
+      example = [
+        "qwen3:8b"
+        "qwen2.5-coder:14b"
+      ];
       description = ''
         Models to keep present on the host. Pulled in the background after
         Ollama starts; existing models are left in place. Not destructive —
@@ -255,7 +265,8 @@ in {
         # (like a user's chosen STT engine in their personal Settings)
         # still persist; only admin/system config is overridden.
         ENABLE_PERSISTENT_CONFIG = "False";
-      } // lib.optionalAttrs cfg.comfyui.enable {
+      }
+      // lib.optionalAttrs cfg.comfyui.enable {
         # Image generation via the local ComfyUI container. Server-to-server
         # over loopback, so no HTTPS hop. Switching the default model is a
         # one-line edit here; per-user overrides still work in the UI.
@@ -265,11 +276,14 @@ in {
         IMAGE_GENERATION_MODEL = "sd_xl_base_1.0.safetensors";
         IMAGE_SIZE = "1024x1024";
         IMAGE_STEPS = "25";
-      } // lib.optionalAttrs (cfg.comfyui.enable && cfg.comfyui.workflow != null) {
+      }
+      // lib.optionalAttrs (cfg.comfyui.enable && cfg.comfyui.workflow != null) {
         COMFYUI_WORKFLOW = builtins.readFile cfg.comfyui.workflow;
-      } // lib.optionalAttrs (cfg.comfyui.enable && cfg.comfyui.workflowNodes != null) {
+      }
+      // lib.optionalAttrs (cfg.comfyui.enable && cfg.comfyui.workflowNodes != null) {
         COMFYUI_WORKFLOW_NODES = builtins.toJSON cfg.comfyui.workflowNodes;
-      } // lib.optionalAttrs cfg.voice.enable {
+      }
+      // lib.optionalAttrs cfg.voice.enable {
         # STT + TTS via the local Speaches container (server-to-server over
         # loopback). These env vars set the defaults that new Open WebUI
         # users inherit; per-user overrides in Settings → Audio still win.
@@ -282,7 +296,8 @@ in {
         AUDIO_TTS_OPENAI_API_KEY = "dummy";
         AUDIO_TTS_MODEL = cfg.voice.ttsModel;
         AUDIO_TTS_VOICE = cfg.voice.ttsVoice;
-      } // {
+      }
+      // {
         # RAG / embeddings via local Ollama. `nomic-embed-text` must be in
         # `ai-server.models` for this to work; it's pulled on activation.
         RAG_EMBEDDING_ENGINE = "ollama";
@@ -298,16 +313,20 @@ in {
         # UI niceties
         ENABLE_FOLDERS = "True";
         ENABLE_NOTES = "True";
-      } // lib.optionalAttrs cfg.features.memory {
+      }
+      // lib.optionalAttrs cfg.features.memory {
         ENABLE_MEMORY = "True";
-      } // lib.optionalAttrs cfg.features.directConnections {
+      }
+      // lib.optionalAttrs cfg.features.directConnections {
         # Lets users attach OpenAPI/MCP tool servers under Settings → Tools.
         ENABLE_DIRECT_CONNECTIONS = "True";
         MCP_INITIALIZE_TIMEOUT = "30";
-      } // lib.optionalAttrs cfg.features.evaluationArena {
+      }
+      // lib.optionalAttrs cfg.features.evaluationArena {
         ENABLE_MESSAGE_RATING = "True";
         ENABLE_EVALUATION_ARENA_MODELS = "True";
-      } // lib.optionalAttrs cfg.search.enable {
+      }
+      // lib.optionalAttrs cfg.search.enable {
         # Web search via local SearXNG container, JSON output enabled by the
         # bundled settings.yml. The `<query>` placeholder is filled by Open
         # WebUI per request. Both env-var prefixes are set because Open WebUI
@@ -322,13 +341,15 @@ in {
         RAG_WEB_SEARCH_RESULT_COUNT = "3";
         RAG_WEB_SEARCH_CONCURRENT_REQUESTS = "10";
         SEARXNG_QUERY_URL = "http://127.0.0.1:${toString cfg.search.port}/search?q=<query>&format=json";
-      } // lib.optionalAttrs cfg.documents.enable {
+      }
+      // lib.optionalAttrs cfg.documents.enable {
         # Apache Tika takes uploaded files and returns clean extracted text,
         # which Open WebUI then embeds for RAG. Massively better than the
         # built-in extractor for PDFs and Office docs.
         CONTENT_EXTRACTION_ENGINE = "tika";
         TIKA_SERVER_URL = "http://127.0.0.1:${toString cfg.documents.port}";
-      } // lib.optionalAttrs cfg.codeInterpreter.enable {
+      }
+      // lib.optionalAttrs cfg.codeInterpreter.enable {
         # The auth token comes from /var/lib/ai-server/secrets/env via
         # EnvironmentFile below (we don't inline the secret here so it
         # doesn't leak into the Nix store).
@@ -344,8 +365,8 @@ in {
     # `-` makes the file optional — if ai-server-secrets hasn't run yet, the
     # code-interpreter feature is silently degraded instead of preventing
     # the rest of Open WebUI from starting.
-    systemd.services.open-webui.serviceConfig.EnvironmentFile = lib.mkIf cfg.codeInterpreter.enable
-      "-/var/lib/ai-server/secrets/env";
+    systemd.services.open-webui.serviceConfig.EnvironmentFile =
+      lib.mkIf cfg.codeInterpreter.enable "-/var/lib/ai-server/secrets/env";
 
     # Open WebUI 0.9.x (nixpkgs 26.05) calls Python's Path.expanduser(), which
     # throws "Could not determine home directory" under DynamicUser when $HOME
@@ -355,18 +376,20 @@ in {
     networking.firewall.interfaces.tailscale0.allowedTCPPorts = [
       cfg.ollamaPort
       cfg.webuiPort
-    ] ++ lib.optional cfg.comfyui.enable cfg.comfyui.port
-      ++ lib.optional cfg.voice.enable cfg.voice.port;
-      # NOTE: search/documents/codeInterpreter ports are deliberately not
-      # exposed on tailscale0 — they're loopback-only, called server-to-server
-      # by Open WebUI.
+    ]
+    ++ lib.optional cfg.comfyui.enable cfg.comfyui.port
+    ++ lib.optional cfg.voice.enable cfg.voice.port;
+    # NOTE: search/documents/codeInterpreter ports are deliberately not
+    # exposed on tailscale0 — they're loopback-only, called server-to-server
+    # by Open WebUI.
 
     environment.systemPackages = [ pkgs.rocmPackages.rocminfo ];
 
     # Some ROCm-aware tools expect a usable /opt/rocm/hip path.
     systemd.tmpfiles.rules = [
       "L+ /opt/rocm/hip - - - - ${pkgs.rocmPackages.clr}"
-    ] ++ lib.optionals cfg.comfyui.enable [
+    ]
+    ++ lib.optionals cfg.comfyui.enable [
       # 0775 root:wheel so admins can drop models in without sudo. The
       # container runs as root inside, so write access is unaffected.
       "d ${cfg.comfyui.dataDir} 0775 root wheel -"
@@ -381,19 +404,22 @@ in {
       "d ${cfg.comfyui.dataDir}/output 0775 root wheel -"
       "d ${cfg.comfyui.dataDir}/input 0775 root wheel -"
       "d ${cfg.comfyui.dataDir}/user 0775 root wheel -"
-    ] ++ lib.optionals cfg.voice.enable [
+    ]
+    ++ lib.optionals cfg.voice.enable [
       # 1000:1000 matches the container's `ubuntu` user so Speaches can write
       # the model cache. On home-desktop UID 1000 is also the admin user, so
       # files can still be dropped here manually without sudo.
       "d ${cfg.voice.dataDir} 0775 1000 1000 -"
       "d ${cfg.voice.dataDir}/hub 0775 1000 1000 -"
-    ] ++ lib.optionals cfg.search.enable [
+    ]
+    ++ lib.optionals cfg.search.enable [
       "d ${cfg.search.dataDir} 0775 root wheel -"
-    ] ++ lib.optionals cfg.codeInterpreter.enable [
+    ]
+    ++ lib.optionals cfg.codeInterpreter.enable [
       # jovyan (1000:100) is the container default user for jupyter images.
       "d ${cfg.codeInterpreter.dataDir} 0775 1000 100 -"
-    ] ++ lib.optionals
-      (cfg.codeInterpreter.enable || cfg.search.enable) [
+    ]
+    ++ lib.optionals (cfg.codeInterpreter.enable || cfg.search.enable) [
       # Shared secrets dir, populated once by ai-server-secrets.service.
       "d /var/lib/ai-server 0750 root root -"
       "d /var/lib/ai-server/secrets 0750 root root -"
@@ -404,13 +430,14 @@ in {
     # them via systemd EnvironmentFile. Re-runs are no-ops once the file
     # exists, so the values are stable across reboots until the file is
     # deleted manually.
-    systemd.services.ai-server-secrets = lib.mkIf
-      (cfg.codeInterpreter.enable || cfg.search.enable) {
+    systemd.services.ai-server-secrets = lib.mkIf (cfg.codeInterpreter.enable || cfg.search.enable) {
       description = "Bootstrap shared secrets for ai-server sidecars";
       wantedBy = [ "multi-user.target" ];
-      before = [ "open-webui.service" ]
-        ++ lib.optional cfg.codeInterpreter.enable "jupyter.service"
-        ++ lib.optional cfg.search.enable "searxng.service";
+      before = [
+        "open-webui.service"
+      ]
+      ++ lib.optional cfg.codeInterpreter.enable "jupyter.service"
+      ++ lib.optional cfg.search.enable "searxng.service";
 
       path = [ pkgs.openssl ];
 
@@ -438,7 +465,10 @@ in {
 
     systemd.services.comfyui = mkIf cfg.comfyui.enable {
       description = "ComfyUI image generation (ROCm container)";
-      after = [ "docker.service" "network-online.target" ];
+      after = [
+        "docker.service"
+        "network-online.target"
+      ];
       requires = [ "docker.service" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
@@ -485,7 +515,10 @@ in {
 
     systemd.services.speaches = mkIf cfg.voice.enable {
       description = "Speaches voice server (STT + TTS, OpenAI-API compatible)";
-      after = [ "docker.service" "network-online.target" ];
+      after = [
+        "docker.service"
+        "network-online.target"
+      ];
       requires = [ "docker.service" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
@@ -548,8 +581,15 @@ in {
 
     systemd.services.searxng = mkIf cfg.search.enable {
       description = "SearXNG metasearch backend for Open WebUI";
-      after = [ "docker.service" "network-online.target" "ai-server-secrets.service" ];
-      requires = [ "docker.service" "ai-server-secrets.service" ];
+      after = [
+        "docker.service"
+        "network-online.target"
+        "ai-server-secrets.service"
+      ];
+      requires = [
+        "docker.service"
+        "ai-server-secrets.service"
+      ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
 
@@ -580,7 +620,10 @@ in {
 
     systemd.services.tika = mkIf cfg.documents.enable {
       description = "Apache Tika document extraction sidecar";
-      after = [ "docker.service" "network-online.target" ];
+      after = [
+        "docker.service"
+        "network-online.target"
+      ];
       requires = [ "docker.service" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
@@ -605,8 +648,15 @@ in {
 
     systemd.services.jupyter = mkIf cfg.codeInterpreter.enable {
       description = "Jupyter sandbox for Open WebUI code interpreter";
-      after = [ "docker.service" "network-online.target" "ai-server-secrets.service" ];
-      requires = [ "docker.service" "ai-server-secrets.service" ];
+      after = [
+        "docker.service"
+        "network-online.target"
+        "ai-server-secrets.service"
+      ];
+      requires = [
+        "docker.service"
+        "ai-server-secrets.service"
+      ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
 

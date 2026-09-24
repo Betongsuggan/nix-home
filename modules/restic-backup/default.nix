@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.restic-backup;
-in {
+let
+  cfg = config.restic-backup;
+in
+{
   options.restic-backup = {
     enable = mkEnableOption "Push-mode restic backups to one or more SFTP targets";
 
@@ -19,7 +26,10 @@ in {
     excludes = mkOption {
       type = types.listOf types.str;
       default = [ ];
-      example = [ "**/.cache/**" "**/.thumbnails/**" ];
+      example = [
+        "**/.cache/**"
+        "**/.thumbnails/**"
+      ];
       description = ''
         Restic exclude patterns. Each entry becomes a `--exclude <pattern>`
         argument on the backup command line.
@@ -47,34 +57,36 @@ in {
     };
 
     targets = mkOption {
-      type = types.attrsOf (types.submodule {
-        options = {
-          sftpHost = mkOption {
-            type = types.str;
-            example = "desktop.ts.rydback.net";
-            description = "Hostname of the SFTP receiver (typically the tailnet FQDN).";
+      type = types.attrsOf (
+        types.submodule {
+          options = {
+            sftpHost = mkOption {
+              type = types.str;
+              example = "desktop.ts.rydback.net";
+              description = "Hostname of the SFTP receiver (typically the tailnet FQDN).";
+            };
+            sftpUser = mkOption {
+              type = types.str;
+              example = "restic-controller";
+              description = ''
+                Username on the receiver. Convention: `restic-<source-host>`, so
+                this should match the corresponding entry on the receiver's
+                `restic-target.sources.<source>` configuration.
+              '';
+            };
+            sftpPath = mkOption {
+              type = types.path;
+              default = "/repo";
+              description = ''
+                Path to the restic repository as seen by the SFTP server **inside
+                the receiver's chroot**. The default `/repo` matches the writable
+                subdir created by `restic-target` (the chroot root itself is
+                root-owned 0755 and not writable — see that module's SPEC).
+              '';
+            };
           };
-          sftpUser = mkOption {
-            type = types.str;
-            example = "restic-controller";
-            description = ''
-              Username on the receiver. Convention: `restic-<source-host>`, so
-              this should match the corresponding entry on the receiver's
-              `restic-target.sources.<source>` configuration.
-            '';
-          };
-          sftpPath = mkOption {
-            type = types.path;
-            default = "/repo";
-            description = ''
-              Path to the restic repository as seen by the SFTP server **inside
-              the receiver's chroot**. The default `/repo` matches the writable
-              subdir created by `restic-target` (the chroot root itself is
-              root-owned 0755 and not writable — see that module's SPEC).
-            '';
-          };
-        };
-      });
+        }
+      );
       default = { };
       description = ''
         Named SFTP targets. One `services.restic.backups.<name>` job is
@@ -115,7 +127,10 @@ in {
         repository = "sftp:${target.sftpUser}@${target.sftpHost}:${target.sftpPath}";
         passwordFile = cfg.passwordFile;
         initialize = true;
-        extraBackupArgs = concatMap (p: [ "--exclude" p ]) cfg.excludes;
+        extraBackupArgs = concatMap (p: [
+          "--exclude"
+          p
+        ]) cfg.excludes;
         extraOptions = [
           "sftp.args='-i ${cfg.sshKeyFile} -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/var/lib/restic/known_hosts'"
         ];

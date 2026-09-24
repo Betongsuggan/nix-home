@@ -162,24 +162,26 @@ with lib;
           };
 
           corePresets = mkOption {
-            type = types.attrsOf (types.submodule {
-              options = {
-                preset = mkOption {
-                  type = types.str;
-                  description = "Preset path relative to the shaders_slang root of pkgs.libretro-shaders-slang";
+            type = types.attrsOf (
+              types.submodule {
+                options = {
+                  preset = mkOption {
+                    type = types.str;
+                    description = "Preset path relative to the shaders_slang root of pkgs.libretro-shaders-slang";
+                  };
+                  parameters = mkOption {
+                    type = types.attrsOf types.str;
+                    default = { };
+                    description = ''
+                      Shader parameter overrides (name -> value as string), written
+                      after the #reference line — the same format RetroArch itself
+                      uses when saving a simple preset. Parameter names/defaults:
+                      `#pragma parameter` lines in the referenced .slang sources.
+                    '';
+                  };
                 };
-                parameters = mkOption {
-                  type = types.attrsOf types.str;
-                  default = { };
-                  description = ''
-                    Shader parameter overrides (name -> value as string), written
-                    after the #reference line — the same format RetroArch itself
-                    uses when saving a simple preset. Parameter names/defaults:
-                    `#pragma parameter` lines in the referenced .slang sources.
-                  '';
-                };
-              };
-            });
+              }
+            );
             default = {
               # Light CRT look: subtle scanlines, softened pixels, no curvature.
               # Subtler alternative: "pixel-art-scaling/sharp-bilinear.slangp".
@@ -236,7 +238,11 @@ with lib;
         enable = mkEnableOption "Nintendo Switch emulation";
 
         emulator = mkOption {
-          type = types.enum [ "ryubing" "citron" "eden" ];
+          type = types.enum [
+            "ryubing"
+            "citron"
+            "eden"
+          ];
           default = "ryubing";
           description = "Switch emulator fork to install (from unstable for latest versions)";
         };
@@ -297,65 +303,72 @@ with lib;
         };
 
         systems = mkOption {
-          type = types.attrsOf (types.submodule ({ name, ... }: {
-            options = {
-              enable = mkOption {
-                type = types.bool;
-                default = true;
-                description = "Generate Steam tiles for this system";
-              };
+          type = types.attrsOf (
+            types.submodule (
+              { name, ... }: {
+                options = {
+                  enable = mkOption {
+                    type = types.bool;
+                    default = true;
+                    description = "Generate Steam tiles for this system";
+                  };
 
-              romDir = mkOption {
-                type = types.str;
-                default = "${config.home.homeDirectory}/${config.games.emulators.dataDir}/roms/${name}";
-                defaultText = "\${home}/\${emulators.dataDir}/roms/<system>";
-                description = "Directory scanned for this system's ROMs";
-              };
+                  romDir = mkOption {
+                    type = types.str;
+                    default = "${config.home.homeDirectory}/${config.games.emulators.dataDir}/roms/${name}";
+                    defaultText = "\${home}/\${emulators.dataDir}/roms/<system>";
+                    description = "Directory scanned for this system's ROMs";
+                  };
 
-              extensions = mkOption {
-                type = types.listOf types.str;
-                description = "ROM file extensions (with leading dot, case-insensitive)";
-              };
+                  extensions = mkOption {
+                    type = types.listOf types.str;
+                    description = "ROM file extensions (with leading dot, case-insensitive)";
+                  };
 
-              layout = mkOption {
-                type = types.enum [ "flat" "folder" ];
-                default = "flat";
-                description = ''
-                  "flat": one tile per ROM file in romDir (retro systems).
-                  "folder": one tile per subdirectory, launching the base ROM
-                  inside it, skipping (UPD)/(DLC) files (Switch layout).
-                '';
-              };
+                  layout = mkOption {
+                    type = types.enum [
+                      "flat"
+                      "folder"
+                    ];
+                    default = "flat";
+                    description = ''
+                      "flat": one tile per ROM file in romDir (retro systems).
+                      "folder": one tile per subdirectory, launching the base ROM
+                      inside it, skipping (UPD)/(DLC) files (Switch layout).
+                    '';
+                  };
 
-              command = mkOption {
-                type = types.listOf types.str;
-                description = "Launch argv prefix; the ROM path is appended as the last argument";
-              };
+                  command = mkOption {
+                    type = types.listOf types.str;
+                    description = "Launch argv prefix; the ROM path is appended as the last argument";
+                  };
 
-              windowClass = mkOption {
-                type = types.str;
-                default = "retroarch";
-                description = "Hyprland window class the launcher polls to fullscreen the emulator over Big Picture";
-              };
+                  windowClass = mkOption {
+                    type = types.str;
+                    default = "retroarch";
+                    description = "Hyprland window class the launcher polls to fullscreen the emulator over Big Picture";
+                  };
 
-              tag = mkOption {
-                type = types.str;
-                default = name;
-                description = "Steam collection tag applied to this system's tiles";
-              };
+                  tag = mkOption {
+                    type = types.str;
+                    default = name;
+                    description = "Steam collection tag applied to this system's tiles";
+                  };
 
-              launcherDir = mkOption {
-                type = types.str;
-                default = "${config.home.homeDirectory}/.local/share/emulation-shortcuts/${name}";
-                defaultText = "~/.local/share/emulation-shortcuts/<system>";
-                description = ''
-                  Where per-game launcher scripts are written. The shortcut
-                  appid hashes the launcher path, so changing this orphans
-                  existing artwork/collections/playtime for the system.
-                '';
-              };
-            };
-          }));
+                  launcherDir = mkOption {
+                    type = types.str;
+                    default = "${config.home.homeDirectory}/.local/share/emulation-shortcuts/${name}";
+                    defaultText = "~/.local/share/emulation-shortcuts/<system>";
+                    description = ''
+                      Where per-game launcher scripts are written. The shortcut
+                      appid hashes the launcher path, so changing this orphans
+                      existing artwork/collections/playtime for the system.
+                    '';
+                  };
+                };
+              }
+            )
+          );
           default = { };
           description = ''
             Systems to generate Steam tiles for. Merged over the generated
@@ -436,45 +449,47 @@ with lib;
       # back=6 start=7 guide=8, sticks a0/a1 + a3/a4, triggers a2/a5, dpad on
       # hat0). Note RetroPad convention: input_b is the BOTTOM face button
       # (physical A), so b/a and y/x are cross-assigned on purpose.
-      sunshinePadAutoconfig =
-        pkgs.writeTextDir "share/libretro/autoconfig/udev/Sunshine X-Box One (virtual) pad.cfg" ''
-          input_driver = "udev"
-          input_device = "Sunshine X-Box One (virtual) pad"
-          input_vendor_id = "1118"
-          input_product_id = "746"
-          input_b_btn = "0"
-          input_a_btn = "1"
-          input_y_btn = "2"
-          input_x_btn = "3"
-          input_l_btn = "4"
-          input_r_btn = "5"
-          input_select_btn = "6"
-          input_start_btn = "7"
-          input_menu_toggle_btn = "8"
-          input_l3_btn = "9"
-          input_r3_btn = "10"
-          input_l2_axis = "+2"
-          input_r2_axis = "+5"
-          input_l_x_plus_axis = "+0"
-          input_l_x_minus_axis = "-0"
-          input_l_y_plus_axis = "+1"
-          input_l_y_minus_axis = "-1"
-          input_r_x_plus_axis = "+3"
-          input_r_x_minus_axis = "-3"
-          input_r_y_plus_axis = "+4"
-          input_r_y_minus_axis = "-4"
-          input_up_btn = "h0up"
-          input_down_btn = "h0down"
-          input_left_btn = "h0left"
-          input_right_btn = "h0right"
-        '';
+      sunshinePadAutoconfig = pkgs.writeTextDir "share/libretro/autoconfig/udev/Sunshine X-Box One (virtual) pad.cfg" ''
+        input_driver = "udev"
+        input_device = "Sunshine X-Box One (virtual) pad"
+        input_vendor_id = "1118"
+        input_product_id = "746"
+        input_b_btn = "0"
+        input_a_btn = "1"
+        input_y_btn = "2"
+        input_x_btn = "3"
+        input_l_btn = "4"
+        input_r_btn = "5"
+        input_select_btn = "6"
+        input_start_btn = "7"
+        input_menu_toggle_btn = "8"
+        input_l3_btn = "9"
+        input_r3_btn = "10"
+        input_l2_axis = "+2"
+        input_r2_axis = "+5"
+        input_l_x_plus_axis = "+0"
+        input_l_x_minus_axis = "-0"
+        input_l_y_plus_axis = "+1"
+        input_l_y_minus_axis = "-1"
+        input_r_x_plus_axis = "+3"
+        input_r_x_minus_axis = "-3"
+        input_r_y_plus_axis = "+4"
+        input_r_y_minus_axis = "-4"
+        input_up_btn = "h0up"
+        input_down_btn = "h0down"
+        input_left_btn = "h0left"
+        input_right_btn = "h0right"
+      '';
 
       # Upstream autoconfig DB (physical pads keep working) + the Sunshine
       # profile. The wrapper's default joypad_autoconfig_dir points at the
       # upstream DB only, so we join and override.
       retroarchAutoconfigDir = pkgs.symlinkJoin {
         name = "retroarch-autoconfig-with-sunshine-pad";
-        paths = [ pkgs.retroarch-joypad-autoconfig sunshinePadAutoconfig ];
+        paths = [
+          pkgs.retroarch-joypad-autoconfig
+          sunshinePadAutoconfig
+        ];
       };
 
       # One store dir per core preset: presets/<CoreName>/<CoreName>.slangp with
@@ -482,7 +497,8 @@ with lib;
       # store path, so the preset's internal relative shader paths resolve
       # against real files regardless of symlinkJoin layout. writeTextFile (not
       # writeTextDir) so core names with spaces still yield a valid drv name.
-      shaderCorePresets = mapAttrsToList (coreName: p:
+      shaderCorePresets = mapAttrsToList (
+        coreName: p:
         pkgs.writeTextFile {
           name = "retroarch-auto-preset-${strings.sanitizeDerivationName coreName}";
           destination = "/share/libretro/shaders/presets/${coreName}/${coreName}.slangp";
@@ -490,9 +506,12 @@ with lib;
           # writes when saving a "simple preset" in-menu.
           text = ''
             #reference "${pkgs.libretro-shaders-slang}/share/libretro/shaders/shaders_slang/${p.preset}"
-          '' + concatStrings (mapAttrsToList (param: value: ''
-            ${param} = "${value}"
-          '') p.parameters);
+          ''
+          + concatStrings (
+            mapAttrsToList (param: value: ''
+              ${param} = "${value}"
+            '') p.parameters
+          );
         }
       ) cfg.emulators.retroarch.shaders.corePresets;
 
@@ -565,23 +584,29 @@ with lib;
           # Menu is otherwise controllable only by the pad on port 0; with
           # more than one joystick-tagged device present, let any pad drive it.
           input_all_users_control_menu = "true";
-        } // (if cfg.emulators.retroarch.shaders.enable then {
-          # Per-core shaders: video_shader_dir's presets/ subdir is one of the
-          # auto-preset search roots (lowest priority — presets the user saves
-          # in-menu under ~/.config/retroarch/config/<Core>/ still win).
-          # video_shader_enable defaults to FALSE on desktop and gates all
-          # shader loading.
-          video_shader_dir = "${retroarchShaderDir}/share/libretro/shaders";
-          auto_shaders_enable = "true";
-          video_shader_enable = "true";
-        } else {
-          # Tombstones (never delete a declared key — see SPEC.md): reset to
-          # RetroArch defaults; "default" is the canonical reset value for
-          # directory settings.
-          video_shader_dir = "default";
-          auto_shaders_enable = "true";
-          video_shader_enable = "false";
-        });
+        }
+        // (
+          if cfg.emulators.retroarch.shaders.enable then
+            {
+              # Per-core shaders: video_shader_dir's presets/ subdir is one of the
+              # auto-preset search roots (lowest priority — presets the user saves
+              # in-menu under ~/.config/retroarch/config/<Core>/ still win).
+              # video_shader_enable defaults to FALSE on desktop and gates all
+              # shader loading.
+              video_shader_dir = "${retroarchShaderDir}/share/libretro/shaders";
+              auto_shaders_enable = "true";
+              video_shader_enable = "true";
+            }
+          else
+            {
+              # Tombstones (never delete a declared key — see SPEC.md): reset to
+              # RetroArch defaults; "default" is the canonical reset value for
+              # directory settings.
+              video_shader_dir = "default";
+              auto_shaders_enable = "true";
+              video_shader_enable = "false";
+            }
+        );
       };
 
       # Core .so filenames don't always match their nixpkgs attr names. Paths
@@ -612,14 +637,21 @@ with lib;
       retroSystemDefaults =
         optionalAttrs (hasCore "snes9x") {
           snes = {
-            extensions = [ ".sfc" ".smc" ".zip" ];
+            extensions = [
+              ".sfc"
+              ".smc"
+              ".zip"
+            ];
             command = raCmd "snes9x";
             tag = "SNES";
           };
         }
         // optionalAttrs (hasCore "mesen" || hasCore "fceumm") {
           nes = {
-            extensions = [ ".nes" ".zip" ];
+            extensions = [
+              ".nes"
+              ".zip"
+            ];
             # Mesen preferred (accuracy); fceumm honored for hosts that keep it
             # in their cores list instead.
             command = raCmd (if hasCore "mesen" then "mesen" else "fceumm");
@@ -628,24 +660,38 @@ with lib;
         }
         // optionalAttrs (hasCore "mgba") {
           gb = {
-            extensions = [ ".gb" ".zip" ];
+            extensions = [
+              ".gb"
+              ".zip"
+            ];
             command = raCmd "mgba";
             tag = "Game Boy";
           };
           gbc = {
-            extensions = [ ".gbc" ".zip" ];
+            extensions = [
+              ".gbc"
+              ".zip"
+            ];
             command = raCmd "mgba";
             tag = "Game Boy Color";
           };
           gba = {
-            extensions = [ ".gba" ".zip" ];
+            extensions = [
+              ".gba"
+              ".zip"
+            ];
             command = raCmd "mgba";
             tag = "Game Boy Advance";
           };
         }
         // optionalAttrs (hasCore "mupen64plus") {
           n64 = {
-            extensions = [ ".n64" ".z64" ".v64" ".zip" ];
+            extensions = [
+              ".n64"
+              ".z64"
+              ".v64"
+              ".zip"
+            ];
             command = raCmd "mupen64plus";
             tag = "Nintendo 64";
           };
@@ -654,19 +700,32 @@ with lib;
           psx = {
             # .m3u > .cue > .chd stem-dedup in add-shortcuts.py keeps
             # multi-disc/multi-track games as a single tile.
-            extensions = [ ".m3u" ".cue" ".chd" ".pbp" ];
+            extensions = [
+              ".m3u"
+              ".cue"
+              ".chd"
+              ".pbp"
+            ];
             command = raCmd "beetle-psx-hw";
             tag = "PlayStation";
           };
         }
         // optionalAttrs (hasCore "genesis-plus-gx") {
           megadrive = {
-            extensions = [ ".md" ".gen" ".bin" ".zip" ];
+            extensions = [
+              ".md"
+              ".gen"
+              ".bin"
+              ".zip"
+            ];
             command = raCmd "genesis-plus-gx";
             tag = "Mega Drive";
           };
           mastersystem = {
-            extensions = [ ".sms" ".zip" ];
+            extensions = [
+              ".sms"
+              ".zip"
+            ];
             command = raCmd "genesis-plus-gx";
             tag = "Master System";
           };
@@ -734,76 +793,78 @@ with lib;
       # what ryubing's SDL2GamepadDriver.GenerateGamepadId produces for the pad:
       # "0-" + the SDL GUID as a .NET Guid string with the name-CRC nibbles
       # zeroed. Schema mirrors GenericControllerInputConfig (snake_case).
-      switchInputEntry = pkgs.writeText "sunshine-pad-input.json" (builtins.toJSON {
-        version = 1;
-        backend = "GamepadSDL2";
-        id = "0-00000003-045e-0000-ea02-000008040000";
-        name = "Sunshine Virtual Pad";
-        controller_type = "ProController";
-        player_index = "Player1";
-        deadzone_left = 0.1;
-        deadzone_right = 0.1;
-        range_left = 1.0;
-        range_right = 1.0;
-        trigger_threshold = 0.5;
-        left_joycon_stick = {
-          joystick = "Left";
-          stick_button = "LeftStick";
-          invert_stick_x = false;
-          invert_stick_y = false;
-          rotate90_cw = false;
-        };
-        right_joycon_stick = {
-          joystick = "Right";
-          stick_button = "RightStick";
-          invert_stick_x = false;
-          invert_stick_y = false;
-          rotate90_cw = false;
-        };
-        left_joycon = {
-          button_minus = "Minus";
-          button_l = "LeftShoulder";
-          button_zl = "LeftTrigger";
-          button_sl = "Unbound";
-          button_sr = "Unbound";
-          dpad_up = "DpadUp";
-          dpad_down = "DpadDown";
-          dpad_left = "DpadLeft";
-          dpad_right = "DpadRight";
-        };
-        right_joycon = {
-          button_plus = "Plus";
-          button_r = "RightShoulder";
-          button_zr = "RightTrigger";
-          button_sl = "Unbound";
-          button_sr = "Unbound";
-          # Direct 1:1 (Nintendo-label) mapping: the pad's A/B/X/Y drive the Switch
-          # A/B/X/Y of the same name, so the printed letters match in-game actions.
-          # (ryubing's default position-swaps A/B and X/Y, which put actions on the
-          # wrong buttons — e.g. jump landing on Y instead of X.)
-          button_a = "A";
-          button_b = "B";
-          button_x = "X";
-          button_y = "Y";
-        };
-        motion = {
-          motion_backend = "GamepadDriver";
-          sensitivity = 100;
-          gyro_deadzone = 1;
-          enable_motion = false;
-        };
-        rumble = {
-          strong_rumble = 1.0;
-          weak_rumble = 1.0;
-          enable_rumble = false;
-        };
-        led = {
-          enable_led = false;
-          turn_off_led = false;
-          use_rainbow = false;
-          led_color = 0;
-        };
-      });
+      switchInputEntry = pkgs.writeText "sunshine-pad-input.json" (
+        builtins.toJSON {
+          version = 1;
+          backend = "GamepadSDL2";
+          id = "0-00000003-045e-0000-ea02-000008040000";
+          name = "Sunshine Virtual Pad";
+          controller_type = "ProController";
+          player_index = "Player1";
+          deadzone_left = 0.1;
+          deadzone_right = 0.1;
+          range_left = 1.0;
+          range_right = 1.0;
+          trigger_threshold = 0.5;
+          left_joycon_stick = {
+            joystick = "Left";
+            stick_button = "LeftStick";
+            invert_stick_x = false;
+            invert_stick_y = false;
+            rotate90_cw = false;
+          };
+          right_joycon_stick = {
+            joystick = "Right";
+            stick_button = "RightStick";
+            invert_stick_x = false;
+            invert_stick_y = false;
+            rotate90_cw = false;
+          };
+          left_joycon = {
+            button_minus = "Minus";
+            button_l = "LeftShoulder";
+            button_zl = "LeftTrigger";
+            button_sl = "Unbound";
+            button_sr = "Unbound";
+            dpad_up = "DpadUp";
+            dpad_down = "DpadDown";
+            dpad_left = "DpadLeft";
+            dpad_right = "DpadRight";
+          };
+          right_joycon = {
+            button_plus = "Plus";
+            button_r = "RightShoulder";
+            button_zr = "RightTrigger";
+            button_sl = "Unbound";
+            button_sr = "Unbound";
+            # Direct 1:1 (Nintendo-label) mapping: the pad's A/B/X/Y drive the Switch
+            # A/B/X/Y of the same name, so the printed letters match in-game actions.
+            # (ryubing's default position-swaps A/B and X/Y, which put actions on the
+            # wrong buttons — e.g. jump landing on Y instead of X.)
+            button_a = "A";
+            button_b = "B";
+            button_x = "X";
+            button_y = "Y";
+          };
+          motion = {
+            motion_backend = "GamepadDriver";
+            sensitivity = 100;
+            gyro_deadzone = 1;
+            enable_motion = false;
+          };
+          rumble = {
+            strong_rumble = 1.0;
+            weak_rumble = 1.0;
+            enable_rumble = false;
+          };
+          led = {
+            enable_led = false;
+            turn_off_led = false;
+            use_rainbow = false;
+            led_color = 0;
+          };
+        }
+      );
 
       # Merge ONLY the Player1 binding into Config.json, keyed by the pad's
       # GUID — idempotent, and everything else in the file (graphics settings,
@@ -960,13 +1021,23 @@ with lib;
       # Nix-built manifest consumed by add-shortcuts.py: per system the ROM
       # dir, extensions, layout, launch argv, Hyprland window class, and Steam
       # tag. Hosts extend/override via emulators.steamShortcuts.systems.
-      shortcutsManifest = pkgs.writeText "emulation-shortcuts.json" (builtins.toJSON {
-        hyprctl = "${pkgs.hyprland}/bin/hyprctl";
-        artworkKeyFile = if ss.artwork.apiKeyFile == null then "" else ss.artwork.apiKeyFile;
-        systems = mapAttrs (_: s: {
-          inherit (s) romDir extensions layout command windowClass tag launcherDir;
-        }) (filterAttrs (_: s: s.enable) ss.systems);
-      });
+      shortcutsManifest = pkgs.writeText "emulation-shortcuts.json" (
+        builtins.toJSON {
+          hyprctl = "${pkgs.hyprland}/bin/hyprctl";
+          artworkKeyFile = if ss.artwork.apiKeyFile == null then "" else ss.artwork.apiKeyFile;
+          systems = mapAttrs (_: s: {
+            inherit (s)
+              romDir
+              extensions
+              layout
+              command
+              windowClass
+              tag
+              launcherDir
+              ;
+          }) (filterAttrs (_: s: s.enable) ss.systems);
+        }
+      );
 
       # Stop Steam (so it doesn't clobber shortcuts.vdf on exit), run the
       # Switch pre-hooks when enabled, then upsert one Steam shortcut per game
@@ -1005,205 +1076,205 @@ with lib;
       '';
     in
     mkIf cfg.enable {
-    # Generated per-system Steam-tile defaults (retro systems from the enabled
-    # RetroArch cores when steamShortcuts is on; Switch whenever it's enabled,
-    # matching the pre-manifest behavior). Every field is mkDefault'd so hosts
-    # can override piecemeal via emulators.steamShortcuts.systems.<name>.
-    games.emulators.steamShortcuts.systems =
-      mapAttrs (_: s: mapAttrs (_: mkDefault) s) (
+      # Generated per-system Steam-tile defaults (retro systems from the enabled
+      # RetroArch cores when steamShortcuts is on; Switch whenever it's enabled,
+      # matching the pre-manifest behavior). Every field is mkDefault'd so hosts
+      # can override piecemeal via emulators.steamShortcuts.systems.<name>.
+      games.emulators.steamShortcuts.systems = mapAttrs (_: s: mapAttrs (_: mkDefault) s) (
         (optionalAttrs shortcutsEnabled retroSystemDefaults) // switchSystemDefault
       );
 
-    programs.mangohud = mkIf cfg.mangohud.enable {
-      enable = true;
-      enableSessionWide = true;
-      settings = {
-        # Performance metrics
-        fps = true;
-        frametime = true;
-        frame_timing = true;
+      programs.mangohud = mkIf cfg.mangohud.enable {
+        enable = true;
+        enableSessionWide = true;
+        settings = {
+          # Performance metrics
+          fps = true;
+          frametime = true;
+          frame_timing = true;
 
-        # GPU information
-        gpu_stats = true;
-        gpu_temp = true;
-        gpu_junction_temp = true;
-        gpu_mem_temp = true;
-        gpu_power = true;
-        gpu_fan = true;
-        gpu_core_clock = true;
-        gpu_mem_clock = true;
-        gpu_name = cfg.mangohud.detailedMode;
-        gpu_voltage = true;
+          # GPU information
+          gpu_stats = true;
+          gpu_temp = true;
+          gpu_junction_temp = true;
+          gpu_mem_temp = true;
+          gpu_power = true;
+          gpu_fan = true;
+          gpu_core_clock = true;
+          gpu_mem_clock = true;
+          gpu_name = cfg.mangohud.detailedMode;
+          gpu_voltage = true;
 
-        # CPU information
-        cpu_stats = true;
-        cpu_temp = true;
-        cpu_power = true;
-        cpu_mhz = cfg.mangohud.detailedMode;
-        core_load = cfg.mangohud.detailedMode;
+          # CPU information
+          cpu_stats = true;
+          cpu_temp = true;
+          cpu_power = true;
+          cpu_mhz = cfg.mangohud.detailedMode;
+          core_load = cfg.mangohud.detailedMode;
 
-        # Memory information
-        vram = true;
-        ram = true;
-        swap = cfg.mangohud.detailedMode;
-        procmem = cfg.mangohud.detailedMode;
+          # Memory information
+          vram = true;
+          ram = true;
+          swap = cfg.mangohud.detailedMode;
+          procmem = cfg.mangohud.detailedMode;
 
-        # Gaming features
-        fsr = true;
-        hdr = true;
-        refresh_rate = true;
-        show_fps_limit = true;
-        present_mode = true;
-        gamemode = true;
-        vkbasalt = cfg.vkbasalt.enable;
-        winesync = true;
+          # Gaming features
+          fsr = true;
+          hdr = true;
+          refresh_rate = true;
+          show_fps_limit = true;
+          present_mode = true;
+          gamemode = true;
+          vkbasalt = cfg.vkbasalt.enable;
+          winesync = true;
 
-        # System information
-        throttling_status = true;
-        vulkan_driver = true;
-        engine_version = cfg.mangohud.detailedMode;
-        wine = true;
-        resolution = true;
-        arch = cfg.mangohud.detailedMode;
-        display_server = cfg.mangohud.detailedMode;
+          # System information
+          throttling_status = true;
+          vulkan_driver = true;
+          engine_version = cfg.mangohud.detailedMode;
+          wine = true;
+          resolution = true;
+          arch = cfg.mangohud.detailedMode;
+          display_server = cfg.mangohud.detailedMode;
 
-        # Controller battery
-        device_battery = "gamepad";
-        device_battery_icon = true;
+          # Controller battery
+          device_battery = "gamepad";
+          device_battery_icon = true;
 
-        # Time and system status
-        time = true;
-        time_format = "%H:%M:%S";
-        version = cfg.mangohud.detailedMode;
+          # Time and system status
+          time = true;
+          time_format = "%H:%M:%S";
+          version = cfg.mangohud.detailedMode;
 
-        # Network and IO (for detailed mode)
-        network = mkIf cfg.mangohud.detailedMode true;
-        io_read = mkIf cfg.mangohud.detailedMode true;
-        io_write = mkIf cfg.mangohud.detailedMode true;
+          # Network and IO (for detailed mode)
+          network = mkIf cfg.mangohud.detailedMode true;
+          io_read = mkIf cfg.mangohud.detailedMode true;
+          io_write = mkIf cfg.mangohud.detailedMode true;
 
-        # Visual settings
-        position = cfg.mangohud.position;
-        font_size = cfg.mangohud.fontSize;
-        text_outline = true;
-        text_outline_thickness = 1.5;
-        round_corners = 8;
+          # Visual settings
+          position = cfg.mangohud.position;
+          font_size = cfg.mangohud.fontSize;
+          text_outline = true;
+          text_outline_thickness = 1.5;
+          round_corners = 8;
 
-        # Toggle keybind (Shift+F9 avoids game F-key conflicts)
-        toggle_hud = "Shift_R+F9";
+          # Toggle keybind (Shift+F9 avoids game F-key conflicts)
+          toggle_hud = "Shift_R+F9";
 
-        # Start hidden by default (toggle with controller)
-        no_display = true;
+          # Start hidden by default (toggle with controller)
+          no_display = true;
 
-        # Color scheme
-        text_color = "FFFFFF";
-        gpu_color = "2E9762";
-        cpu_color = "2E97CB";
-        vram_color = "AD64C1";
-        ram_color = "C26693";
-        frametime_color = "00FF00";
-        background_color = "020202";
-        background_alpha = 0.8;
+          # Color scheme
+          text_color = "FFFFFF";
+          gpu_color = "2E9762";
+          cpu_color = "2E97CB";
+          vram_color = "AD64C1";
+          ram_color = "C26693";
+          frametime_color = "00FF00";
+          background_color = "020202";
+          background_alpha = 0.8;
+        };
+      };
+
+      home.packages =
+        with pkgs;
+        [
+          chiaki
+          discord
+          evtest
+          gamemode
+          lutris
+          steam
+          steam-run
+          sc-controller
+          vulkan-tools
+          mesa-demos
+        ]
+        ++ (optionals cfg.tools.enable [
+          protonup-qt # Proton-GE version manager
+          winetricks
+          protontricks
+          goverlay # MangoHud/vkBasalt GUI
+          bottles # Wine prefix manager
+          unstable.heroic # GOG/Epic launcher (stable pulls insecure electron-39)
+        ])
+        ++ (optionals cfg.vkbasalt.enable [
+          vkbasalt
+        ])
+        # RetroArch — the emulation backend for older systems (NES through Saturn).
+        # Uses retroarch-bare.wrapper (hoisted into the let so the Steam-tile
+        # launchers run the same binary) to bake in cores, paths, the Sunshine-pad
+        # autoconfig, and the Select+Start quit chord declaratively via
+        # --appendconfig, while still allowing runtime tweaks (config_save_on_exit
+        # persists undeclared keys; declared keys re-win on every launch).
+        ++ (optionals retroarchEnabled [ retroarchPkg ])
+        # Standalone emulators for systems where dedicated apps outperform RetroArch
+        # cores (better accuracy, HDR support, per-game settings, etc.). Not yet
+        # wired into steamShortcuts — each needs controller/save-path validation.
+        ++ (optionals cfg.emulators.enable (
+          (optional cfg.emulators.standalone.pcsx2 pcsx2)
+          ++ (optional cfg.emulators.standalone.dolphin dolphin-emu)
+          ++ (optional cfg.emulators.standalone.ppsspp ppsspp)
+        ))
+        # Per-ROM Steam tiles: installed for steamShortcuts, and kept for plain
+        # switch.enable so the pre-manifest Switch-only workflow still works.
+        ++ (optionals (cfg.emulators.enable && (ss.enable || switchEnabled)) [
+          emulationApplyShortcuts
+        ])
+        # Steam library integration — BoilR writes non-Steam shortcuts for store
+        # launchers (Heroic/Lutris/etc.) into shortcuts.vdf. Steam ROM Manager is
+        # installable but unused for ROMs: its headless CLI hangs on this host —
+        # emulation-apply-shortcuts covers per-ROM tiles instead.
+        ++ (optionals cfg.steamIntegration.enable (
+          (optional cfg.steamIntegration.boilr boilr)
+          ++ (optional cfg.steamIntegration.steamRomManager steam-rom-manager)
+        ))
+        # Nintendo Switch: the emulator (from unstable) plus the shortcut/firmware
+        # helper scripts (switch-apply-shortcuts writes shortcuts.vdf directly).
+        ++ (optionals switchEnabled [
+          switchPkg
+          switchApplyShortcuts
+          switchApplyInput
+          switchRefreshKeys
+          switchRefreshInput
+          switchRunEmulator
+        ]);
+
+      # Install Proton-GE to Steam's compatibility tools directory
+      home.file = mkIf cfg.protonGE.enable {
+        ".steam/root/compatibilitytools.d/proton-ge".source = pkgs.proton-ge-bin;
+      };
+
+      # Switch setup: copy keys from the BIOS share into Ryujinx's data dir.
+      # Steam shortcuts are generated on demand by switch-apply-shortcuts (which
+      # must stop Steam first), not at activation time. Firmware is a one-time
+      # Ryujinx UI install (see modules/games/SPEC.md), persisted in the data dir.
+      home.activation.switchSetup = mkIf switchEnabled (
+        lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          ${switchRefreshKeys}/bin/switch-refresh-keys || true
+          ${switchRefreshInput}/bin/switch-refresh-input || true
+          ${switchApplyInput}/bin/switch-apply-input || true
+        ''
+      );
+
+      # Quit-chord listener (Select+Start held -> close the running game).
+      # Same service shape as controller-mangohud-toggle in modules/controller.
+      systemd.user.services.switch-quit-listener = mkIf (switchEnabled && sw.quitChord.enable) {
+        Unit = {
+          Description = "Quit Switch games via Select+Start on the streamed gamepad";
+          After = [ "graphical-session.target" ];
+        };
+
+        Service = {
+          Type = "simple";
+          ExecStart = "${pkgs.python3}/bin/python3 ${switchQuitListener}";
+          Restart = "always";
+          RestartSec = "5s";
+        };
+
+        Install = {
+          WantedBy = [ "default.target" ];
+        };
       };
     };
-
-    home.packages = with pkgs;
-      [
-        chiaki
-        discord
-        evtest
-        gamemode
-        lutris
-        steam
-        steam-run
-        sc-controller
-        vulkan-tools
-        mesa-demos
-      ]
-      ++ (optionals cfg.tools.enable [
-        protonup-qt # Proton-GE version manager
-        winetricks
-        protontricks
-        goverlay # MangoHud/vkBasalt GUI
-        bottles # Wine prefix manager
-        unstable.heroic # GOG/Epic launcher (stable pulls insecure electron-39)
-      ])
-      ++ (optionals cfg.vkbasalt.enable [
-        vkbasalt
-      ])
-      # RetroArch — the emulation backend for older systems (NES through Saturn).
-      # Uses retroarch-bare.wrapper (hoisted into the let so the Steam-tile
-      # launchers run the same binary) to bake in cores, paths, the Sunshine-pad
-      # autoconfig, and the Select+Start quit chord declaratively via
-      # --appendconfig, while still allowing runtime tweaks (config_save_on_exit
-      # persists undeclared keys; declared keys re-win on every launch).
-      ++ (optionals retroarchEnabled [ retroarchPkg ])
-      # Standalone emulators for systems where dedicated apps outperform RetroArch
-      # cores (better accuracy, HDR support, per-game settings, etc.). Not yet
-      # wired into steamShortcuts — each needs controller/save-path validation.
-      ++ (optionals cfg.emulators.enable (
-        (optional cfg.emulators.standalone.pcsx2 pcsx2)
-        ++ (optional cfg.emulators.standalone.dolphin dolphin-emu)
-        ++ (optional cfg.emulators.standalone.ppsspp ppsspp)
-      ))
-      # Per-ROM Steam tiles: installed for steamShortcuts, and kept for plain
-      # switch.enable so the pre-manifest Switch-only workflow still works.
-      ++ (optionals (cfg.emulators.enable && (ss.enable || switchEnabled)) [
-        emulationApplyShortcuts
-      ])
-      # Steam library integration — BoilR writes non-Steam shortcuts for store
-      # launchers (Heroic/Lutris/etc.) into shortcuts.vdf. Steam ROM Manager is
-      # installable but unused for ROMs: its headless CLI hangs on this host —
-      # emulation-apply-shortcuts covers per-ROM tiles instead.
-      ++ (optionals cfg.steamIntegration.enable (
-        (optional cfg.steamIntegration.boilr boilr)
-        ++ (optional cfg.steamIntegration.steamRomManager steam-rom-manager)
-      ))
-      # Nintendo Switch: the emulator (from unstable) plus the shortcut/firmware
-      # helper scripts (switch-apply-shortcuts writes shortcuts.vdf directly).
-      ++ (optionals switchEnabled [
-        switchPkg
-        switchApplyShortcuts
-        switchApplyInput
-        switchRefreshKeys
-        switchRefreshInput
-        switchRunEmulator
-      ]);
-
-    # Install Proton-GE to Steam's compatibility tools directory
-    home.file = mkIf cfg.protonGE.enable {
-      ".steam/root/compatibilitytools.d/proton-ge".source = pkgs.proton-ge-bin;
-    };
-
-    # Switch setup: copy keys from the BIOS share into Ryujinx's data dir.
-    # Steam shortcuts are generated on demand by switch-apply-shortcuts (which
-    # must stop Steam first), not at activation time. Firmware is a one-time
-    # Ryujinx UI install (see modules/games/SPEC.md), persisted in the data dir.
-    home.activation.switchSetup = mkIf switchEnabled (
-      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        ${switchRefreshKeys}/bin/switch-refresh-keys || true
-        ${switchRefreshInput}/bin/switch-refresh-input || true
-        ${switchApplyInput}/bin/switch-apply-input || true
-      ''
-    );
-
-    # Quit-chord listener (Select+Start held -> close the running game).
-    # Same service shape as controller-mangohud-toggle in modules/controller.
-    systemd.user.services.switch-quit-listener = mkIf (switchEnabled && sw.quitChord.enable) {
-      Unit = {
-        Description = "Quit Switch games via Select+Start on the streamed gamepad";
-        After = [ "graphical-session.target" ];
-      };
-
-      Service = {
-        Type = "simple";
-        ExecStart = "${pkgs.python3}/bin/python3 ${switchQuitListener}";
-        Restart = "always";
-        RestartSec = "5s";
-      };
-
-      Install = {
-        WantedBy = [ "default.target" ];
-      };
-    };
-  };
 }

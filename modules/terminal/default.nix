@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
@@ -6,17 +11,26 @@ let
 
   # Build the terminal command based on backend
   terminalCommand =
-    if cfg.backend == "alacritty" then "${pkgs.alacritty}/bin/alacritty"
-    else if cfg.backend == "urxvt" then "${pkgs.rxvt-unicode}/bin/urxvt"
-    else if cfg.backend == "ghostty" then "${pkgs.ghostty}/bin/ghostty"
-    else throw "Unsupported terminal backend: ${cfg.backend}";
+    if cfg.backend == "alacritty" then
+      "${pkgs.alacritty}/bin/alacritty"
+    else if cfg.backend == "urxvt" then
+      "${pkgs.rxvt-unicode}/bin/urxvt"
+    else if cfg.backend == "ghostty" then
+      "${pkgs.ghostty}/bin/ghostty"
+    else
+      throw "Unsupported terminal backend: ${cfg.backend}";
 
   # Build the terminal command with working directory
-  terminalCommandWithCwd = { cwd }:
-    if cfg.backend == "alacritty" then "${pkgs.alacritty}/bin/alacritty --working-directory \"${cwd}\""
-    else if cfg.backend == "urxvt" then "${pkgs.rxvt-unicode}/bin/urxvt -cd \"${cwd}\""
-    else if cfg.backend == "ghostty" then "${pkgs.ghostty}/bin/ghostty --working-directory=\"${cwd}\""
-    else throw "Unsupported terminal backend: ${cfg.backend}";
+  terminalCommandWithCwd =
+    { cwd }:
+    if cfg.backend == "alacritty" then
+      "${pkgs.alacritty}/bin/alacritty --working-directory \"${cwd}\""
+    else if cfg.backend == "urxvt" then
+      "${pkgs.rxvt-unicode}/bin/urxvt -cd \"${cwd}\""
+    else if cfg.backend == "ghostty" then
+      "${pkgs.ghostty}/bin/ghostty --working-directory=\"${cwd}\""
+    else
+      throw "Unsupported terminal backend: ${cfg.backend}";
 
 in
 {
@@ -31,7 +45,11 @@ in
 
     backend = mkOption {
       description = "Terminal emulator backend to use";
-      type = types.enum [ "alacritty" "urxvt" "ghostty" ];
+      type = types.enum [
+        "alacritty"
+        "urxvt"
+        "ghostty"
+      ];
       default = "alacritty";
     };
 
@@ -91,7 +109,7 @@ in
       extraSettings = mkOption {
         description = "Extra Alacritty settings";
         type = types.attrs;
-        default = {};
+        default = { };
       };
     };
 
@@ -105,7 +123,7 @@ in
       extraConfig = mkOption {
         description = "Extra urxvt configuration";
         type = types.attrs;
-        default = {};
+        default = { };
       };
 
       keybindings = mkOption {
@@ -128,13 +146,13 @@ in
       extraSettings = mkOption {
         description = "Extra Ghostty settings";
         type = types.attrs;
-        default = {};
+        default = { };
       };
 
       keybindings = mkOption {
         description = "Ghostty keybindings (list of 'key=action' strings)";
         type = types.listOf types.str;
-        default = [];
+        default = [ ];
       };
     };
   };

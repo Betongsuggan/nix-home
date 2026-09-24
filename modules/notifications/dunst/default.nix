@@ -1,10 +1,17 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.notifications;
+let
+  cfg = config.notifications;
 
-in {
+in
+{
   options.notifications.dunst = {
     settings = mkOption {
       type = types.attrs;
@@ -51,8 +58,7 @@ in {
           };
           slack = {
             desktop_entry = "Slack";
-            new_icon =
-              "/run/current-system/sw/share/icons/Papirus/24x24/apps/slack.svg";
+            new_icon = "/run/current-system/sw/share/icons/Papirus/24x24/apps/slack.svg";
           };
           discord = {
             desktop_entry = "Discord";
@@ -67,4 +73,3 @@ in {
     };
   };
 }
-

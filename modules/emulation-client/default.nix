@@ -1,4 +1,10 @@
-{ config, lib, pkgs, inputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 with lib;
 
 let
@@ -25,7 +31,8 @@ let
     echo "Done. ROMs at $MOUNT_BASE/roms, BIOS at $MOUNT_BASE/bios"
   '';
 
-in {
+in
+{
   options.emulation-client = {
     enable = mkEnableOption "Emulation client (save sync + ROM access)";
 
@@ -47,7 +54,12 @@ in {
       type = types.listOf types.str;
       # duckstation was dropped from nixpkgs 26.05 (PSX is covered by the
       # RetroArch beetle-psx-hw core, whose saves live under retroarch/).
-      default = [ "retroarch" "ppsspp" "dolphin" "switch" ];
+      default = [
+        "retroarch"
+        "ppsspp"
+        "dolphin"
+        "switch"
+      ];
       description = "Standalone emulators to create save subdirectories for";
     };
   };

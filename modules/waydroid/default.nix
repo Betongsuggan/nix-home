@@ -1,4 +1,9 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
 let
   cfg = config.waydroid;
@@ -10,7 +15,11 @@ let
   # discards both blobs, making this a command you re-run rather than a one-time setup.
   drmSetup = pkgs.writeShellApplication {
     name = "waydroid-drm-setup";
-    runtimeInputs = with pkgs; [ git python3 lzip ];
+    runtimeInputs = with pkgs; [
+      git
+      python3
+      lzip
+    ];
     text = ''
       repo=/var/lib/waydroid-script
 
@@ -86,7 +95,8 @@ let
       waydroid show-full-ui
     '';
   };
-in {
+in
+{
   options.waydroid = {
     enable = mkEnableOption "Enable Waydroid Android container";
 
@@ -123,7 +133,12 @@ in {
     # it stays stopped until `waydroid-up` (or the DRM setup helper) asks for it.
     systemd.services.waydroid-container.wantedBy = mkIf (!cfg.startOnBoot) (mkForce [ ]);
 
-    environment.systemPackages = with pkgs;
-      [ wl-clipboard waydroidUp ] ++ optional cfg.drmSetup drmSetup;
+    environment.systemPackages =
+      with pkgs;
+      [
+        wl-clipboard
+        waydroidUp
+      ]
+      ++ optional cfg.drmSetup drmSetup;
   };
 }

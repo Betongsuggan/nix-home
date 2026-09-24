@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
@@ -8,12 +13,17 @@ let
     # Generic/built-in drivers don't need a TOD package
     generic = null;
   };
-in {
+in
+{
   options.fingerprint = {
     enable = mkEnableOption "Enable fingerprint reader";
 
     driver = mkOption {
-      type = types.enum [ "goodix" "elan" "generic" ];
+      type = types.enum [
+        "goodix"
+        "elan"
+        "generic"
+      ];
       default = "goodix";
       description = ''
         Fingerprint reader driver to use.
@@ -45,12 +55,18 @@ in {
 
       services.fprintd = {
         enable = true;
-      } // (if driverPackages.${config.fingerprint.driver} != null then {
-        tod = {
-          enable = true;
-          driver = driverPackages.${config.fingerprint.driver};
-        };
-      } else {});
+      }
+      // (
+        if driverPackages.${config.fingerprint.driver} != null then
+          {
+            tod = {
+              enable = true;
+              driver = driverPackages.${config.fingerprint.driver};
+            };
+          }
+        else
+          { }
+      );
 
       security.pam.services.login.fprintAuth = true;
       security.pam.services.sudo.fprintAuth = true;

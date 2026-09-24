@@ -1,12 +1,17 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
 
 {
   config = mkIf config.shell.nushell.enable {
     programs.nushell = {
       enable = true;
-      
-      configFile = { 
+
+      configFile = {
         text = ''
           $env.config = {
             show_banner: ${if config.shell.nushell.showBanner then "true" else "false"}
@@ -16,11 +21,11 @@ with lib;
           ${config.shell.nushell.extraConfig}
         '';
       };
-      
+
       envFile = {
         text = "";
       };
-      
+
       shellAliases = config.shell.aliases;
     };
   };

@@ -16,7 +16,9 @@ inputs.nixpkgs.lib.nixosSystem {
     {
       nixpkgs = {
         inherit overlays;
-        config = { allowUnfree = true; };
+        config = {
+          allowUnfree = true;
+        };
       };
     }
   ];

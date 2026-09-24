@@ -88,10 +88,25 @@ with lib;
       buttons = mkOption {
         type = types.listOf (
           types.enum [
-            "a" "b" "x" "y" "l1" "r1" "l2" "r2" "select" "start" "guide" "l3" "r3"
+            "a"
+            "b"
+            "x"
+            "y"
+            "l1"
+            "r1"
+            "l2"
+            "r2"
+            "select"
+            "start"
+            "guide"
+            "l3"
+            "r3"
           ]
         );
-        default = [ "l3" "r3" ];
+        default = [
+          "l3"
+          "r3"
+        ];
         description = "Chord (all buttons held together) that opens the Steam overlay";
       };
 
@@ -355,127 +370,136 @@ with lib;
     # evdev node and inject the overlay hotkey (Shift+Tab) via hyprctl on the
     # chord. Same listener pattern as modules/games switch-quit-listener; both
     # open the pad read-only (no grab) and use distinct chords, so they coexist.
-    systemd.user.services.controller-steam-overlay =
-      mkIf config.controller.steamOverlay.enable (
-        let
-          so = config.controller.steamOverlay;
-          # evdev key codes (Linux input-event-codes.h), Xbox pad layout.
-          btnCodes = {
-            a = 304; b = 305; x = 308; y = 307;
-            l1 = 310; r1 = 311; l2 = 312; r2 = 313;
-            select = 314; start = 315; guide = 316; l3 = 317; r3 = 318;
-          };
-          chordPy = "{" + concatMapStringsSep ", " (b: toString btnCodes.${b}) so.buttons + "}";
-          script = pkgs.writeText "controller-steam-overlay.py" ''
-            import os
-            import re
-            import select
-            import struct
-            import subprocess
-            import time
+    systemd.user.services.controller-steam-overlay = mkIf config.controller.steamOverlay.enable (
+      let
+        so = config.controller.steamOverlay;
+        # evdev key codes (Linux input-event-codes.h), Xbox pad layout.
+        btnCodes = {
+          a = 304;
+          b = 305;
+          x = 308;
+          y = 307;
+          l1 = 310;
+          r1 = 311;
+          l2 = 312;
+          r2 = 313;
+          select = 314;
+          start = 315;
+          guide = 316;
+          l3 = 317;
+          r3 = 318;
+        };
+        chordPy = "{" + concatMapStringsSep ", " (b: toString btnCodes.${b}) so.buttons + "}";
+        script = pkgs.writeText "controller-steam-overlay.py" ''
+          import os
+          import re
+          import select
+          import struct
+          import subprocess
+          import time
 
-            PAD_NAME = "${so.padName}"
-            CHORD = ${chordPy}
-            HOLD_SECONDS = ${toString so.holdSeconds}
-            HYPRCTL = "${pkgs.hyprland}/bin/hyprctl"
-            EVENT_FORMAT = "llHHi"
-            EVENT_SIZE = struct.calcsize(EVENT_FORMAT)
-
-
-            def find_pad():
-                try:
-                    blocks = open("/proc/bus/input/devices").read().split("\n\n")
-                except OSError:
-                    return None
-                for block in blocks:
-                    if PAD_NAME in block:
-                        m = re.search(r"event(\d+)", block)
-                        if m:
-                            return "/dev/input/event" + m.group(1)
-                return None
+          PAD_NAME = "${so.padName}"
+          CHORD = ${chordPy}
+          HOLD_SECONDS = ${toString so.holdSeconds}
+          HYPRCTL = "${pkgs.hyprland}/bin/hyprctl"
+          EVENT_FORMAT = "llHHi"
+          EVENT_SIZE = struct.calcsize(EVENT_FORMAT)
 
 
-            def hypr_env():
-                env = dict(os.environ)
-                hypr_dir = os.path.join(env.get("XDG_RUNTIME_DIR", ""), "hypr")
-                try:
-                    sigs = sorted(
-                        os.listdir(hypr_dir),
-                        key=lambda s: os.path.getmtime(os.path.join(hypr_dir, s)),
-                        reverse=True,
-                    )
-                    if sigs:
-                        env["HYPRLAND_INSTANCE_SIGNATURE"] = sigs[0]
-                except OSError:
-                    pass
-                return env
+          def find_pad():
+              try:
+                  blocks = open("/proc/bus/input/devices").read().split("\n\n")
+              except OSError:
+                  return None
+              for block in blocks:
+                  if PAD_NAME in block:
+                      m = re.search(r"event(\d+)", block)
+                      if m:
+                          return "/dev/input/event" + m.group(1)
+              return None
 
 
-            def open_overlay():
-                # Send Shift+Tab (Steam's overlay hotkey) to the focused window.
-                subprocess.run(
-                    [HYPRCTL, "dispatch", "sendshortcut", "SHIFT,TAB,activewindow"],
-                    env=hypr_env(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                )
+          def hypr_env():
+              env = dict(os.environ)
+              hypr_dir = os.path.join(env.get("XDG_RUNTIME_DIR", ""), "hypr")
+              try:
+                  sigs = sorted(
+                      os.listdir(hypr_dir),
+                      key=lambda s: os.path.getmtime(os.path.join(hypr_dir, s)),
+                      reverse=True,
+                  )
+                  if sigs:
+                      env["HYPRLAND_INSTANCE_SIGNATURE"] = sigs[0]
+              except OSError:
+                  pass
+              return env
 
 
-            while True:
-                dev = find_pad()
-                if dev is None:
-                    time.sleep(2)
-                    continue
-                try:
-                    fd = os.open(dev, os.O_RDONLY)
-                except OSError:
-                    time.sleep(2)
-                    continue
-                down = {}
-                fired = False
-                try:
-                    while True:
-                        ready, _, _ = select.select([fd], [], [], 0.2)
-                        if ready:
-                            data = os.read(fd, EVENT_SIZE)
-                            if len(data) < EVENT_SIZE:
-                                break
-                            _, _, etype, code, value = struct.unpack(EVENT_FORMAT, data)
-                            if etype == 1 and code in CHORD:
-                                if value == 1:
-                                    down[code] = time.monotonic()
-                                elif value == 0:
-                                    down.pop(code, None)
-                                    fired = False
-                        if (
-                            not fired
-                            and len(down) == len(CHORD)
-                            and time.monotonic() - max(down.values()) >= HOLD_SECONDS
-                        ):
-                            fired = True
-                            open_overlay()
-                except OSError:
-                    pass  # pad unplugged (Moonlight disconnect) — rediscover
-                finally:
-                    os.close(fd)
-          '';
-        in
-        {
-          Unit = {
-            Description = "Open Steam overlay from a gamepad chord on the streamed pad";
-            After = [ "graphical-session.target" ];
-          };
+          def open_overlay():
+              # Send Shift+Tab (Steam's overlay hotkey) to the focused window.
+              subprocess.run(
+                  [HYPRCTL, "dispatch", "sendshortcut", "SHIFT,TAB,activewindow"],
+                  env=hypr_env(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+              )
 
-          Service = {
-            Type = "simple";
-            ExecStart = "${pkgs.python3}/bin/python3 ${script}";
-            Restart = "always";
-            RestartSec = "5s";
-          };
 
-          Install = {
-            WantedBy = [ "default.target" ];
-          };
-        }
-      );
+          while True:
+              dev = find_pad()
+              if dev is None:
+                  time.sleep(2)
+                  continue
+              try:
+                  fd = os.open(dev, os.O_RDONLY)
+              except OSError:
+                  time.sleep(2)
+                  continue
+              down = {}
+              fired = False
+              try:
+                  while True:
+                      ready, _, _ = select.select([fd], [], [], 0.2)
+                      if ready:
+                          data = os.read(fd, EVENT_SIZE)
+                          if len(data) < EVENT_SIZE:
+                              break
+                          _, _, etype, code, value = struct.unpack(EVENT_FORMAT, data)
+                          if etype == 1 and code in CHORD:
+                              if value == 1:
+                                  down[code] = time.monotonic()
+                              elif value == 0:
+                                  down.pop(code, None)
+                                  fired = False
+                      if (
+                          not fired
+                          and len(down) == len(CHORD)
+                          and time.monotonic() - max(down.values()) >= HOLD_SECONDS
+                      ):
+                          fired = True
+                          open_overlay()
+              except OSError:
+                  pass  # pad unplugged (Moonlight disconnect) — rediscover
+              finally:
+                  os.close(fd)
+        '';
+      in
+      {
+        Unit = {
+          Description = "Open Steam overlay from a gamepad chord on the streamed pad";
+          After = [ "graphical-session.target" ];
+        };
+
+        Service = {
+          Type = "simple";
+          ExecStart = "${pkgs.python3}/bin/python3 ${script}";
+          Restart = "always";
+          RestartSec = "5s";
+        };
+
+        Install = {
+          WantedBy = [ "default.target" ];
+        };
+      }
+    );
 
     # Custom controller mappings script (future expansion)
     home.file."bin/controller-custom-mappings.sh" = mkIf config.controller.customMappings.enable {

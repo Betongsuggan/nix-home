@@ -1,8 +1,15 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
-let cfg = config.printers;
-in {
+let
+  cfg = config.printers;
+in
+{
   options.printers = {
     enable = mkEnableOption "Enable Printers";
 

@@ -1,15 +1,21 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.notifications;
 
-in {
+in
+{
   options.notifications.mako = {
     settings = mkOption {
       type = types.attrs;
-      default = {};
+      default = { };
       description = "Mako configuration";
     };
   };

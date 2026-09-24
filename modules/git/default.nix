@@ -1,4 +1,9 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
 
 {
@@ -36,9 +41,13 @@ with lib;
         init.defaultBranch = "main";
         credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
         url = {
-          "ssh://git@github.com" = { insteadOf = "https://github.com"; };
+          "ssh://git@github.com" = {
+            insteadOf = "https://github.com";
+          };
         };
-        push = { autoSetupRemote = true; };
+        push = {
+          autoSetupRemote = true;
+        };
         alias = {
           "f" = "fetch -pt";
           "s" = "status";

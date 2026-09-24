@@ -2,8 +2,10 @@
 
 with lib;
 
-let cfg = config.openssh;
-in {
+let
+  cfg = config.openssh;
+in
+{
   options.openssh = {
     enable = mkEnableOption "OpenSSH server (sshd)";
 

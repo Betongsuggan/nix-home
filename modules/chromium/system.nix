@@ -1,12 +1,15 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  hmUsers = config.home-manager.users or {};
-  anyUserEnabled = any
-    (u: (u.chromium.enable or false))
-    (attrValues hmUsers);
+  hmUsers = config.home-manager.users or { };
+  anyUserEnabled = any (u: (u.chromium.enable or false)) (attrValues hmUsers);
 in
 {
   config = mkIf anyUserEnabled {

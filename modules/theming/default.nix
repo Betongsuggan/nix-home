@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.theme;
-in {
+let
+  cfg = config.theme;
+in
+{
   options.theme = {
     enable = mkEnableOption "Enable theme";
 
@@ -176,7 +183,10 @@ in {
       enable = true;
       # Primary families come from stylix (targets.fontconfig, inserted at
       # list order 600); these merge in after them as fallbacks.
-      defaultFonts.monospace = [ "Symbols Nerd Font Mono" "Noto Color Emoji" ];
+      defaultFonts.monospace = [
+        "Symbols Nerd Font Mono"
+        "Noto Color Emoji"
+      ];
     };
 
     home.packages = with pkgs; [

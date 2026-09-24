@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -7,106 +12,108 @@ let
   thunarCfg = cfg.thunar;
 
   # Build custom actions XML
-  customActionsXml = let
-    # Default actions
-    openTerminalAction = optionalString thunarCfg.defaultActions.openTerminal ''
-      <action>
-        <icon>utilities-terminal</icon>
-        <name>Open Terminal Here</name>
-        <unique-id>open-terminal-here</unique-id>
-        <command>${cfg.terminal { cwd = "%f"; }}</command>
-        <description>Open terminal in this directory</description>
-        <patterns>*</patterns>
-        <directories/>
-      </action>
+  customActionsXml =
+    let
+      # Default actions
+      openTerminalAction = optionalString thunarCfg.defaultActions.openTerminal ''
+        <action>
+          <icon>utilities-terminal</icon>
+          <name>Open Terminal Here</name>
+          <unique-id>open-terminal-here</unique-id>
+          <command>${cfg.terminal { cwd = "%f"; }}</command>
+          <description>Open terminal in this directory</description>
+          <patterns>*</patterns>
+          <directories/>
+        </action>
+      '';
+
+      copyPathAction = optionalString thunarCfg.defaultActions.copyPath ''
+        <action>
+          <icon>edit-copy</icon>
+          <name>Copy Path</name>
+          <unique-id>copy-path</unique-id>
+          <command>echo -n %f | ${pkgs.wl-clipboard}/bin/wl-copy</command>
+          <description>Copy file path to clipboard</description>
+          <patterns>*</patterns>
+          <directories/>
+          <audio-files/>
+          <image-files/>
+          <other-files/>
+          <text-files/>
+          <video-files/>
+        </action>
+      '';
+
+      computeChecksumAction = optionalString thunarCfg.defaultActions.computeChecksum ''
+        <action>
+          <icon>dialog-information</icon>
+          <name>Compute SHA256</name>
+          <unique-id>compute-checksum</unique-id>
+          <command>${pkgs.coreutils}/bin/sha256sum %f | ${pkgs.wl-clipboard}/bin/wl-copy</command>
+          <description>Compute SHA256 checksum and copy to clipboard</description>
+          <patterns>*</patterns>
+          <other-files/>
+          <text-files/>
+          <audio-files/>
+          <image-files/>
+          <video-files/>
+        </action>
+      '';
+
+      openAsRootAction = optionalString thunarCfg.defaultActions.openAsRoot ''
+        <action>
+          <icon>dialog-password</icon>
+          <name>Open as Root</name>
+          <unique-id>open-as-root</unique-id>
+          <command>pkexec ${pkgs.xfce.thunar}/bin/thunar %f</command>
+          <description>Open folder as root</description>
+          <patterns>*</patterns>
+          <directories/>
+        </action>
+      '';
+
+      setAsWallpaperAction = optionalString thunarCfg.defaultActions.setAsWallpaper ''
+        <action>
+          <icon>preferences-desktop-wallpaper</icon>
+          <name>Set as Wallpaper</name>
+          <unique-id>set-as-wallpaper</unique-id>
+          <command>${pkgs.feh}/bin/feh --bg-fill %f</command>
+          <description>Set image as desktop wallpaper</description>
+          <patterns>*.jpg;*.jpeg;*.png;*.bmp;*.gif</patterns>
+          <image-files/>
+        </action>
+      '';
+
+      # User custom actions
+      userCustomActions = concatMapStringsSep "\n" (action: ''
+        <action>
+          <icon>${action.icon or "application-x-executable"}</icon>
+          <name>${action.name}</name>
+          <unique-id>${action.id}</unique-id>
+          <command>${action.command}</command>
+          <description>${action.description or ""}</description>
+          <patterns>${action.patterns or "*"}</patterns>
+          ${optionalString (action.directories or false) "<directories/>"}
+          ${optionalString (action.audioFiles or false) "<audio-files/>"}
+          ${optionalString (action.imageFiles or false) "<image-files/>"}
+          ${optionalString (action.otherFiles or false) "<other-files/>"}
+          ${optionalString (action.textFiles or false) "<text-files/>"}
+          ${optionalString (action.videoFiles or false) "<video-files/>"}
+        </action>
+      '') thunarCfg.customActions;
+
+    in
+    ''
+      <?xml version="1.0" encoding="UTF-8"?>
+      <actions>
+      ${openTerminalAction}
+      ${copyPathAction}
+      ${computeChecksumAction}
+      ${openAsRootAction}
+      ${setAsWallpaperAction}
+      ${userCustomActions}
+      </actions>
     '';
-
-    copyPathAction = optionalString thunarCfg.defaultActions.copyPath ''
-      <action>
-        <icon>edit-copy</icon>
-        <name>Copy Path</name>
-        <unique-id>copy-path</unique-id>
-        <command>echo -n %f | ${pkgs.wl-clipboard}/bin/wl-copy</command>
-        <description>Copy file path to clipboard</description>
-        <patterns>*</patterns>
-        <directories/>
-        <audio-files/>
-        <image-files/>
-        <other-files/>
-        <text-files/>
-        <video-files/>
-      </action>
-    '';
-
-    computeChecksumAction = optionalString thunarCfg.defaultActions.computeChecksum ''
-      <action>
-        <icon>dialog-information</icon>
-        <name>Compute SHA256</name>
-        <unique-id>compute-checksum</unique-id>
-        <command>${pkgs.coreutils}/bin/sha256sum %f | ${pkgs.wl-clipboard}/bin/wl-copy</command>
-        <description>Compute SHA256 checksum and copy to clipboard</description>
-        <patterns>*</patterns>
-        <other-files/>
-        <text-files/>
-        <audio-files/>
-        <image-files/>
-        <video-files/>
-      </action>
-    '';
-
-    openAsRootAction = optionalString thunarCfg.defaultActions.openAsRoot ''
-      <action>
-        <icon>dialog-password</icon>
-        <name>Open as Root</name>
-        <unique-id>open-as-root</unique-id>
-        <command>pkexec ${pkgs.xfce.thunar}/bin/thunar %f</command>
-        <description>Open folder as root</description>
-        <patterns>*</patterns>
-        <directories/>
-      </action>
-    '';
-
-    setAsWallpaperAction = optionalString thunarCfg.defaultActions.setAsWallpaper ''
-      <action>
-        <icon>preferences-desktop-wallpaper</icon>
-        <name>Set as Wallpaper</name>
-        <unique-id>set-as-wallpaper</unique-id>
-        <command>${pkgs.feh}/bin/feh --bg-fill %f</command>
-        <description>Set image as desktop wallpaper</description>
-        <patterns>*.jpg;*.jpeg;*.png;*.bmp;*.gif</patterns>
-        <image-files/>
-      </action>
-    '';
-
-    # User custom actions
-    userCustomActions = concatMapStringsSep "\n" (action: ''
-      <action>
-        <icon>${action.icon or "application-x-executable"}</icon>
-        <name>${action.name}</name>
-        <unique-id>${action.id}</unique-id>
-        <command>${action.command}</command>
-        <description>${action.description or ""}</description>
-        <patterns>${action.patterns or "*"}</patterns>
-        ${optionalString (action.directories or false) "<directories/>"}
-        ${optionalString (action.audioFiles or false) "<audio-files/>"}
-        ${optionalString (action.imageFiles or false) "<image-files/>"}
-        ${optionalString (action.otherFiles or false) "<other-files/>"}
-        ${optionalString (action.textFiles or false) "<text-files/>"}
-        ${optionalString (action.videoFiles or false) "<video-files/>"}
-      </action>
-    '') thunarCfg.customActions;
-
-  in ''
-    <?xml version="1.0" encoding="UTF-8"?>
-    <actions>
-    ${openTerminalAction}
-    ${copyPathAction}
-    ${computeChecksumAction}
-    ${openAsRootAction}
-    ${setAsWallpaperAction}
-    ${userCustomActions}
-    </actions>
-  '';
 
   # Build tumbler configuration
   tumblerConfig = ''
@@ -127,10 +134,14 @@ let
 
   # Archive manager package
   archiveManagerPkg =
-    if thunarCfg.archive.manager == "file-roller" then pkgs.file-roller
-    else if thunarCfg.archive.manager == "xarchiver" then pkgs.xarchiver
-    else if thunarCfg.archive.manager == "engrampa" then pkgs.mate.engrampa
-    else throw "Unsupported archive manager: ${thunarCfg.archive.manager}";
+    if thunarCfg.archive.manager == "file-roller" then
+      pkgs.file-roller
+    else if thunarCfg.archive.manager == "xarchiver" then
+      pkgs.xarchiver
+    else if thunarCfg.archive.manager == "engrampa" then
+      pkgs.mate.engrampa
+    else
+      throw "Unsupported archive manager: ${thunarCfg.archive.manager}";
 
 in
 {
@@ -181,7 +192,11 @@ in
       };
 
       manager = mkOption {
-        type = types.enum [ "file-roller" "xarchiver" "engrampa" ];
+        type = types.enum [
+          "file-roller"
+          "xarchiver"
+          "engrampa"
+        ];
         default = "file-roller";
         description = "Archive manager to use with Thunar";
       };
@@ -240,74 +255,80 @@ in
     };
 
     customActions = mkOption {
-      type = types.listOf (types.submodule {
-        options = {
-          id = mkOption {
-            type = types.str;
-            description = "Unique identifier for the action";
+      type = types.listOf (
+        types.submodule {
+          options = {
+            id = mkOption {
+              type = types.str;
+              description = "Unique identifier for the action";
+            };
+            name = mkOption {
+              type = types.str;
+              description = "Display name for the action";
+            };
+            command = mkOption {
+              type = types.str;
+              description = "Command to execute (%f = file, %d = directory, %n = filename)";
+            };
+            icon = mkOption {
+              type = types.str;
+              default = "application-x-executable";
+              description = "Icon name for the action";
+            };
+            description = mkOption {
+              type = types.str;
+              default = "";
+              description = "Description of the action";
+            };
+            patterns = mkOption {
+              type = types.str;
+              default = "*";
+              description = "File patterns to match (semicolon-separated)";
+            };
+            directories = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Apply to directories";
+            };
+            audioFiles = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Apply to audio files";
+            };
+            imageFiles = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Apply to image files";
+            };
+            textFiles = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Apply to text files";
+            };
+            videoFiles = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Apply to video files";
+            };
+            otherFiles = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Apply to other files";
+            };
           };
-          name = mkOption {
-            type = types.str;
-            description = "Display name for the action";
-          };
-          command = mkOption {
-            type = types.str;
-            description = "Command to execute (%f = file, %d = directory, %n = filename)";
-          };
-          icon = mkOption {
-            type = types.str;
-            default = "application-x-executable";
-            description = "Icon name for the action";
-          };
-          description = mkOption {
-            type = types.str;
-            default = "";
-            description = "Description of the action";
-          };
-          patterns = mkOption {
-            type = types.str;
-            default = "*";
-            description = "File patterns to match (semicolon-separated)";
-          };
-          directories = mkOption {
-            type = types.bool;
-            default = false;
-            description = "Apply to directories";
-          };
-          audioFiles = mkOption {
-            type = types.bool;
-            default = false;
-            description = "Apply to audio files";
-          };
-          imageFiles = mkOption {
-            type = types.bool;
-            default = false;
-            description = "Apply to image files";
-          };
-          textFiles = mkOption {
-            type = types.bool;
-            default = false;
-            description = "Apply to text files";
-          };
-          videoFiles = mkOption {
-            type = types.bool;
-            default = false;
-            description = "Apply to video files";
-          };
-          otherFiles = mkOption {
-            type = types.bool;
-            default = false;
-            description = "Apply to other files";
-          };
-        };
-      });
-      default = [];
+        }
+      );
+      default = [ ];
       description = "Custom context menu actions";
     };
 
     view = {
       defaultView = mkOption {
-        type = types.enum [ "icon" "compact" "detailed" ];
+        type = types.enum [
+          "icon"
+          "compact"
+          "detailed"
+        ];
         default = "detailed";
         description = "Default view mode";
       };
@@ -319,13 +340,21 @@ in
       };
 
       sortColumn = mkOption {
-        type = types.enum [ "name" "size" "type" "date" ];
+        type = types.enum [
+          "name"
+          "size"
+          "type"
+          "date"
+        ];
         default = "name";
         description = "Default sort column";
       };
 
       sortOrder = mkOption {
-        type = types.enum [ "ascending" "descending" ];
+        type = types.enum [
+          "ascending"
+          "descending"
+        ];
         default = "ascending";
         description = "Default sort order";
       };
@@ -335,7 +364,9 @@ in
   config = mkIf thunarCfg.enable {
     # Core Thunar, plugins (archive, volman), xfconf, gvfs, tumbler, and udisks2
     # are provided by the system module (fileManagerSystem.enable = true)
-    home.packages = with pkgs; []
+    home.packages =
+      with pkgs;
+      [ ]
       # Thumbnail support (beyond what system tumbler provides)
       ++ optional thunarCfg.thumbnails.enableVideo ffmpegthumbnailer
       ++ optional thunarCfg.thumbnails.enablePdf poppler-utils
@@ -355,28 +386,30 @@ in
     };
 
     # Volume manager settings written as XML directly (avoids needing xfconfd)
-    home.file.".config/xfce4/xfconf/xfce-perchannel-xml/thunar-volman.xml" = mkIf thunarCfg.volumeManager.enable {
-      text = ''
-        <?xml version="1.0" encoding="UTF-8"?>
-        <channel name="thunar-volman" version="1.0">
-          <property name="automount-drives" type="empty">
-            <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoMount}"/>
-          </property>
-          <property name="automount-media" type="empty">
-            <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoMount}"/>
-          </property>
-          <property name="autobrowse" type="empty">
-            <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoMount}"/>
-          </property>
-          <property name="autoopen" type="empty">
-            <property name="enabled" type="bool" value="false"/>
-          </property>
-          <property name="autorun" type="empty">
-            <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoRun}"/>
-          </property>
-        </channel>
-      '';
-      force = true;
-    };
+    home.file.".config/xfce4/xfconf/xfce-perchannel-xml/thunar-volman.xml" =
+      mkIf thunarCfg.volumeManager.enable
+        {
+          text = ''
+            <?xml version="1.0" encoding="UTF-8"?>
+            <channel name="thunar-volman" version="1.0">
+              <property name="automount-drives" type="empty">
+                <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoMount}"/>
+              </property>
+              <property name="automount-media" type="empty">
+                <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoMount}"/>
+              </property>
+              <property name="autobrowse" type="empty">
+                <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoMount}"/>
+              </property>
+              <property name="autoopen" type="empty">
+                <property name="enabled" type="bool" value="false"/>
+              </property>
+              <property name="autorun" type="empty">
+                <property name="enabled" type="bool" value="${boolToString thunarCfg.volumeManager.autoRun}"/>
+              </property>
+            </channel>
+          '';
+          force = true;
+        };
   };
 }

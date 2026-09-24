@@ -1,15 +1,22 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
   cfg = config.controls.brightness;
-  
+
   # Build notification command using the notifications module
-  notifyBrightness = optionalString cfg.notifications (config.notifications.send {
-    category = "brightness";
-    summary = "\$brightness%";
-    progress = "\$brightness";
-  });
+  notifyBrightness = optionalString cfg.notifications (
+    config.notifications.send {
+      category = "brightness";
+      summary = "\$brightness%";
+      progress = "\$brightness";
+    }
+  );
 
   brightnessBackend = pkgs.brightnessctl;
 
@@ -17,7 +24,7 @@ let
     set = "${brightnessBackend}/bin/brightnessctl set";
     get = "${brightnessBackend}/bin/brightnessctl get";
   };
-  
+
   brightnessControl = pkgs.writeShellScriptBin "brightness-control" ''
     #!/usr/bin/env bash
 

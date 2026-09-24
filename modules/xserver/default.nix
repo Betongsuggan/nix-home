@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -10,7 +15,10 @@ with lib;
       type = types.str;
       default = "lightdm";
     };
-    videoDrivers = [ "displaylink" "modesetting" ];
+    videoDrivers = [
+      "displaylink"
+      "modesetting"
+    ];
   };
 
   config = mkIf config.xserver.enable {

@@ -1,4 +1,9 @@
-{ config, lib, inputs, ... }:
+{
+  config,
+  lib,
+  inputs,
+  ...
+}:
 
 with lib;
 
@@ -11,23 +16,33 @@ in
     enable = mkEnableOption "Tailnet membership with bundled SSH server + client defaults";
 
     authorizeSshFor = mkOption {
-      type = types.attrsOf (types.listOf (types.submodule {
-        options = {
-          host = mkOption {
-            type = types.str;
-            description = "Tailnet host name (must be a key in flake.lib.hosts).";
-          };
-          user = mkOption {
-            type = types.str;
-            description = "Username on the peer host whose SSH keys to authorize.";
-          };
-        };
-      }));
+      type = types.attrsOf (
+        types.listOf (
+          types.submodule {
+            options = {
+              host = mkOption {
+                type = types.str;
+                description = "Tailnet host name (must be a key in flake.lib.hosts).";
+              };
+              user = mkOption {
+                type = types.str;
+                description = "Username on the peer host whose SSH keys to authorize.";
+              };
+            };
+          }
+        )
+      );
       default = { };
       example = {
         betongsuggan = [
-          { host = "bits"; user = "birgerrydback"; }
-          { host = "controller"; user = "betongsuggan"; }
+          {
+            host = "bits";
+            user = "birgerrydback";
+          }
+          {
+            host = "controller";
+            user = "betongsuggan";
+          }
         ];
       };
       description = ''
@@ -43,7 +58,10 @@ in
       tailscale-client = {
         enable = true;
         loginServer = "https://vpn.rydback.net";
-        extraUpFlags = [ "--accept-routes" "--accept-dns" ];
+        extraUpFlags = [
+          "--accept-routes"
+          "--accept-dns"
+        ];
       };
 
       openssh = {
@@ -67,9 +85,9 @@ in
       '';
 
       users.users = mapAttrs (_localUser: peers: {
-        openssh.authorizedKeys.keys = concatMap
-          (p: collect isString (selfLib.hosts.${p.host}.users.${p.user}.ssh or { }))
-          peers;
+        openssh.authorizedKeys.keys = concatMap (
+          p: collect isString (selfLib.hosts.${p.host}.users.${p.user}.ssh or { })
+        ) peers;
       }) cfg.authorizeSshFor;
     }
 

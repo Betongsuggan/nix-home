@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -8,8 +13,30 @@ let
   sanitizeDeviceName =
     name:
     replaceStrings
-      [ "/" "\\" "?" "%" "*" ":" "|" "\"" "<" ">" ]
-      [ "_" "_" "_" "_" "_" "_" "_" "_" "_" "_" ]
+      [
+        "/"
+        "\\"
+        "?"
+        "%"
+        "*"
+        ":"
+        "|"
+        "\""
+        "<"
+        ">"
+      ]
+      [
+        "_"
+        "_"
+        "_"
+        "_"
+        "_"
+        "_"
+        "_"
+        "_"
+        "_"
+        "_"
+      ]
       name;
 
   inputEventType = types.submodule {
@@ -79,7 +106,9 @@ let
   mkMappingEntry = mapping: {
     input_combination = map (
       input:
-      { inherit (input) type code; }
+      {
+        inherit (input) type code;
+      }
       // optionalAttrs (input.origin_hash != null) { inherit (input) origin_hash; }
       // optionalAttrs (input.analog_threshold != null) { inherit (input) analog_threshold; }
     ) mapping.input;
@@ -87,24 +116,28 @@ let
     output_symbol = mapping.output;
   };
 
-  configFile = pkgs.writeText "input-remapper-config.json" (builtins.toJSON {
-    version = "2";
-    autoload = mapAttrs (_: device: device.preset) cfg.devices;
-  });
+  configFile = pkgs.writeText "input-remapper-config.json" (
+    builtins.toJSON {
+      version = "2";
+      autoload = mapAttrs (_: device: device.preset) cfg.devices;
+    }
+  );
 
-  presetLinks = concatStringsSep "\n" (mapAttrsToList (
-    deviceName: device:
-    let
-      sanitized = sanitizeDeviceName deviceName;
-      presetFile = pkgs.writeText "${sanitized}-${device.preset}.json" (
-        builtins.toJSON (map mkMappingEntry device.mappings)
-      );
-    in
-    ''
-      mkdir -p "/root/.config/input-remapper-2/presets/${sanitized}"
-      ln -sf "${presetFile}" "/root/.config/input-remapper-2/presets/${sanitized}/${device.preset}.json"
-    ''
-  ) cfg.devices);
+  presetLinks = concatStringsSep "\n" (
+    mapAttrsToList (
+      deviceName: device:
+      let
+        sanitized = sanitizeDeviceName deviceName;
+        presetFile = pkgs.writeText "${sanitized}-${device.preset}.json" (
+          builtins.toJSON (map mkMappingEntry device.mappings)
+        );
+      in
+      ''
+        mkdir -p "/root/.config/input-remapper-2/presets/${sanitized}"
+        ln -sf "${presetFile}" "/root/.config/input-remapper-2/presets/${sanitized}/${device.preset}.json"
+      ''
+    ) cfg.devices
+  );
 
 in
 {

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -6,7 +11,8 @@ let
   cfg = config.launcher;
 
   # Main launcher dmenu function - delegates to backend
-  launcherDmenuCmd = args:
+  launcherDmenuCmd =
+    args:
     if cfg.backend == "wofi" then
       cfg.wofi.buildDmenuCmd args
     else if cfg.backend == "rofi" then
@@ -19,7 +25,8 @@ let
       throw "Unsupported launcher backend: ${cfg.backend}";
 
   # Main launcher show function - delegates to backend
-  launcherShowCmd = args:
+  launcherShowCmd =
+    args:
     if cfg.backend == "wofi" then
       cfg.wofi.buildShowCmd args
     else if cfg.backend == "rofi" then
@@ -32,104 +39,116 @@ let
       throw "Unsupported launcher backend: ${cfg.backend}";
 
   # WiFi launcher - delegates to backend-specific implementation
-  launcherWifiCmd = { additionalArgs ? [ ] }:
+  launcherWifiCmd =
+    {
+      additionalArgs ? [ ],
+    }:
     if cfg.backend == "wofi" then
       "${cfg.wofi.wifi}/bin/wifi-control"
     else if cfg.backend == "rofi" then
       "${cfg.rofi.wifi}/bin/wifi-control"
     else if cfg.backend == "walker" then
-      "${pkgs.unstable.iwmenu}/bin/iwmenu --launcher walker --spaces 2 ${
-        concatStringsSep " " additionalArgs
-      }"
+      "${pkgs.unstable.iwmenu}/bin/iwmenu --launcher walker --spaces 2 ${concatStringsSep " " additionalArgs}"
     else if cfg.backend == "vicinae" then
-      "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/dagimg-dot/wifi-commander/scan-wifi' ${
-        concatStringsSep " " additionalArgs
-      }"
+      "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/dagimg-dot/wifi-commander/scan-wifi' ${concatStringsSep " " additionalArgs}"
     else
       throw "Unsupported launcher backend: ${cfg.backend}";
 
   # Bluetooth launcher - delegates to backend-specific implementation
-  launcherBluetoothCmd = { additionalArgs ? [ ] }:
+  launcherBluetoothCmd =
+    {
+      additionalArgs ? [ ],
+    }:
     if cfg.backend == "wofi" then
       "${cfg.wofi.bluetooth}/bin/bluetooth-control"
     else if cfg.backend == "rofi" then
       "${cfg.rofi.bluetooth}/bin/bluetooth-control"
     else if cfg.backend == "walker" then
-      "${pkgs.unstable.bzmenu}/bin/bzmenu --launcher walker --spaces 2 ${
-        concatStringsSep " " additionalArgs
-      }"
+      "${pkgs.unstable.bzmenu}/bin/bzmenu --launcher walker --spaces 2 ${concatStringsSep " " additionalArgs}"
     else if cfg.backend == "vicinae" then
-      "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/Gelei/bluetooth/devices' ${
-        concatStringsSep " " additionalArgs
-      }"
+      "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/Gelei/bluetooth/devices' ${concatStringsSep " " additionalArgs}"
     else
       throw "Unsupported launcher backend: ${cfg.backend}";
 
   # Audio output launcher - delegates to backend-specific implementation
-  launcherAudioOutputCmd = { additionalArgs ? [ ] }:
+  launcherAudioOutputCmd =
+    {
+      additionalArgs ? [ ],
+    }:
     if cfg.backend == "wofi" then
       throw "Audio menu not yet implemented for wofi"
     else if cfg.backend == "rofi" then
       throw "Audio menu not yet implemented for rofi"
     else if cfg.backend == "walker" then
-      "${pkgs.audiomenu}/bin/audiomenu sink --launcher walker ${
-        concatStringsSep " " additionalArgs
-      }"
+      "${pkgs.audiomenu}/bin/audiomenu sink --launcher walker ${concatStringsSep " " additionalArgs}"
     else if cfg.backend == "vicinae" then
-      "${pkgs.audiomenu}/bin/audiomenu sink --launcher vicinae ${
-        concatStringsSep " " additionalArgs
-      }"
+      "${pkgs.audiomenu}/bin/audiomenu sink --launcher vicinae ${concatStringsSep " " additionalArgs}"
     else
       throw "Unsupported launcher backend: ${cfg.backend}";
 
   # Audio input launcher - delegates to backend-specific implementation
-  launcherAudioInputCmd = { additionalArgs ? [ ] }:
+  launcherAudioInputCmd =
+    {
+      additionalArgs ? [ ],
+    }:
     if cfg.backend == "wofi" then
       throw "Audio menu not yet implemented for wofi"
     else if cfg.backend == "rofi" then
       throw "Audio menu not yet implemented for rofi"
     else if cfg.backend == "walker" then
-      "${pkgs.audiomenu}/bin/audiomenu source --launcher walker ${
-        concatStringsSep " " additionalArgs
-      }"
+      "${pkgs.audiomenu}/bin/audiomenu source --launcher walker ${concatStringsSep " " additionalArgs}"
     else if cfg.backend == "vicinae" then
-      "${pkgs.audiomenu}/bin/audiomenu source --launcher vicinae ${
-        concatStringsSep " " additionalArgs
-      }"
+      "${pkgs.audiomenu}/bin/audiomenu source --launcher vicinae ${concatStringsSep " " additionalArgs}"
     else
       throw "Unsupported launcher backend: ${cfg.backend}";
 
   # Monitor launcher - delegates to backend-specific implementation
-  launcherMonitorCmd = { additionalArgs ? [ ] }:
+  launcherMonitorCmd =
+    {
+      additionalArgs ? [ ],
+    }:
     if cfg.backend == "wofi" then
       throw "Monitor menu not yet implemented for wofi"
     else if cfg.backend == "rofi" then
       throw "Monitor menu not yet implemented for rofi"
     else if cfg.backend == "walker" then
-      "${pkgs.monitormenu}/bin/monitormenu --launcher walker ${
-        concatStringsSep " " additionalArgs
-      }"
+      "${pkgs.monitormenu}/bin/monitormenu --launcher walker ${concatStringsSep " " additionalArgs}"
     else if cfg.backend == "vicinae" then
-      "${pkgs.monitormenu}/bin/monitormenu --launcher vicinae --backend ${cfg.windowManager} ${
-        concatStringsSep " " additionalArgs
-      }"
+      "${pkgs.monitormenu}/bin/monitormenu --launcher vicinae --backend ${cfg.windowManager} ${concatStringsSep " " additionalArgs}"
     else
       throw "Unsupported launcher backend: ${cfg.backend}";
 
-in {
-  imports = [ ./wofi ./rofi ./walker ./vicinae ];
+in
+{
+  imports = [
+    ./wofi
+    ./rofi
+    ./walker
+    ./vicinae
+  ];
 
   options.launcher = {
     enable = mkEnableOption "launcher system";
 
     backend = mkOption {
-      type = types.enum [ "wofi" "rofi" "walker" "vicinae" ];
+      type = types.enum [
+        "wofi"
+        "rofi"
+        "walker"
+        "vicinae"
+      ];
       default = "walker";
       description = "Which launcher to use";
     };
 
     windowManager = mkOption {
-      type = types.enum [ "hyprland" "niri" "sway" "i3" "generic" ];
+      type = types.enum [
+        "hyprland"
+        "niri"
+        "sway"
+        "i3"
+        "generic"
+      ];
       default = "generic";
       description = "Window manager for session integration.";
     };

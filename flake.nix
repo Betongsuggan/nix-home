@@ -102,36 +102,29 @@
         (
           self: super:
           let
-            mkVicinaeExtension =
-              inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.mkVicinaeExtension;
+            mkVicinaeExtension = inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.mkVicinaeExtension;
           in
           {
             awscli-local = awscli-local.packages.${self.stdenv.hostPlatform.system}.default;
             walker = inputs.walker.packages.${self.stdenv.hostPlatform.system}.default;
             elephant = inputs.elephant.packages.${self.stdenv.hostPlatform.system}.default;
-            audiomenu =
-              inputs.audiomenu.packages.${self.stdenv.hostPlatform.system}.default;
-            monitormenu =
-              inputs.monitormenu.packages.${self.stdenv.hostPlatform.system}.default;
-            console-mode =
-              inputs.console-mode.packages.${self.stdenv.hostPlatform.system}.default;
+            audiomenu = inputs.audiomenu.packages.${self.stdenv.hostPlatform.system}.default;
+            monitormenu = inputs.monitormenu.packages.${self.stdenv.hostPlatform.system}.default;
+            console-mode = inputs.console-mode.packages.${self.stdenv.hostPlatform.system}.default;
             d2 = inputs.d2.packages.${self.stdenv.hostPlatform.system}.default;
             # nixpkgs 26.05 ships a newer LayerShellQt whose <LayerShellQt/Shell>
             # header no longer transitively declares LayerShellQt::Window.
             # native-file-chooser.cpp uses Shell::Window (= LayerShellQt::Window)
             # but only includes <LayerShellQt/Shell>, so it fails to compile.
             # Add the missing include until the fix lands in vicinae-fork.
-            vicinae =
-              (inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.default)
-              .overrideAttrs
-                (old: {
-                  postPatch = (old.postPatch or "") + ''
-                    cpp="$(find . -path '*services/file-chooser/native/native-file-chooser.cpp' | head -1)"
-                    if [ -n "$cpp" ]; then
-                      sed -i '/#include <LayerShellQt\/Shell>/a #include <LayerShellQt/Window>' "$cpp"
-                    fi
-                  '';
-                });
+            vicinae = (inputs.vicinae.packages.${self.stdenv.hostPlatform.system}.default).overrideAttrs (old: {
+              postPatch = (old.postPatch or "") + ''
+                cpp="$(find . -path '*services/file-chooser/native/native-file-chooser.cpp' | head -1)"
+                if [ -n "$cpp" ]; then
+                  sed -i '/#include <LayerShellQt\/Shell>/a #include <LayerShellQt/Window>' "$cpp"
+                fi
+              '';
+            });
 
             # Vicinae extensions
             vicinae-wifi-commander = mkVicinaeExtension {
@@ -226,13 +219,11 @@
         };
       };
 
-      packages.x86_64-linux.terraform-mail =
-        inputs.terranix.lib.terranixConfiguration
-          {
-            system = "x86_64-linux";
-            modules = [ ./hosts/mail/terraform.nix ];
-            extraArgs = { inherit inputs; };
-          };
+      packages.x86_64-linux.terraform-mail = inputs.terranix.lib.terranixConfiguration {
+        system = "x86_64-linux";
+        modules = [ ./hosts/mail/terraform.nix ];
+        extraArgs = { inherit inputs; };
+      };
 
       # Bootable SD-card image for island-pi with the host config baked in.
       # Built on any x86 host via binfmt (see modules/common); the full
@@ -250,18 +241,14 @@
         }).config.system.build.sdImage;
 
       homeConfigurations = {
-        "betongsuggan@desktop" =
-          mkHomeConfiguration ./hosts/desktop/user-betongsuggan.nix;
+        "betongsuggan@desktop" = mkHomeConfiguration ./hosts/desktop/user-betongsuggan.nix;
         "gamer@desktop" = mkHomeConfiguration ./hosts/desktop/user-gamer.nix;
-        "betongsuggan@private-laptop" =
-          mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
+        "betongsuggan@private-laptop" = mkHomeConfiguration ./hosts/private-laptop/user-betongsuggan.nix;
         "birgerrydback@bits" = mkHomeConfiguration ./hosts/bits/user-birgerrydback.nix;
         "betongsuggan@island-stationary" =
           mkHomeConfiguration ./hosts/island-stationary/user-betongsuggan.nix;
-        "gamer@island-stationary" =
-          mkHomeConfiguration ./hosts/island-stationary/user-gamer.nix;
-        "betongsuggan@controller" =
-          mkHomeConfiguration ./hosts/controller/user-betongsuggan.nix;
+        "gamer@island-stationary" = mkHomeConfiguration ./hosts/island-stationary/user-gamer.nix;
+        "betongsuggan@controller" = mkHomeConfiguration ./hosts/controller/user-betongsuggan.nix;
       };
     };
 }

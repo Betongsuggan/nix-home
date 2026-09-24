@@ -4,14 +4,25 @@
   users.users.betongsuggan = {
     isNormalUser = true;
     description = "Betongsuggan user";
-    extraGroups = [ "wheel" "networkmanager" "network" "video" "docker" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "network"
+      "video"
+      "docker"
+    ];
   };
 
   boot = {
     kernelPackages = pkgs.linuxPackages_latest;
     supportedFilesystems = [ "ntfs" ];
-    initrd.availableKernelModules =
-      [ "xhci_pci" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
+    initrd.availableKernelModules = [
+      "xhci_pci"
+      "nvme"
+      "usb_storage"
+      "sd_mod"
+      "rtsx_pci_sdmmc"
+    ];
     loader = {
       systemd-boot.enable = true;
       systemd-boot.configurationLimit = 10;
@@ -22,7 +33,10 @@
       grub.configurationLimit = 10;
     };
 
-    kernelModules = [ "kvm-intel" "iwlwifi" ];
+    kernelModules = [
+      "kvm-intel"
+      "iwlwifi"
+    ];
   };
 
   nixpkgs.config = {
@@ -61,11 +75,15 @@
     };
   };
 
-  swapDevices =
-    [{ device = "/dev/disk/by-uuid/da3b504d-b0fa-450e-8974-e332c5ce5608"; }];
+  swapDevices = [ { device = "/dev/disk/by-uuid/da3b504d-b0fa-450e-8974-e332c5ce5608"; } ];
 
-  environment.systemPackages = with pkgs; [ iio-sensor-proxy home-manager ];
-  services = { fwupd.enable = true; };
+  environment.systemPackages = with pkgs; [
+    iio-sensor-proxy
+    home-manager
+  ];
+  services = {
+    fwupd.enable = true;
+  };
 
   console.keyMap = "colemak";
   touchpad.enable = true;

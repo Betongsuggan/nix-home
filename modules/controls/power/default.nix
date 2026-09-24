@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
@@ -11,40 +16,52 @@ let
   dmenuPowerMenu = config.launcher.dmenu { prompt = "Power Options"; };
 
   # Build notification commands using the notifications module
-  notifySuspend = optionalString cfg.notifications (config.notifications.send {
-    category = "power";
-    icon = "system-suspend";
-    summary = "Suspending";
-  });
+  notifySuspend = optionalString cfg.notifications (
+    config.notifications.send {
+      category = "power";
+      icon = "system-suspend";
+      summary = "Suspending";
+    }
+  );
 
-  notifyHibernate = optionalString cfg.notifications (config.notifications.send {
-    category = "power";
-    icon = "system-hibernate";
-    summary = "Hibernating";
-  });
+  notifyHibernate = optionalString cfg.notifications (
+    config.notifications.send {
+      category = "power";
+      icon = "system-hibernate";
+      summary = "Hibernating";
+    }
+  );
 
-  notifyLogout = optionalString cfg.notifications (config.notifications.send {
-    category = "power";
-    icon = "system-log-out";
-    summary = "Logging out";
-  });
+  notifyLogout = optionalString cfg.notifications (
+    config.notifications.send {
+      category = "power";
+      icon = "system-log-out";
+      summary = "Logging out";
+    }
+  );
 
-  notifyReboot = optionalString cfg.notifications (config.notifications.send {
-    category = "power";
-    icon = "system-reboot";
-    summary = "Rebooting";
-  });
+  notifyReboot = optionalString cfg.notifications (
+    config.notifications.send {
+      category = "power";
+      icon = "system-reboot";
+      summary = "Rebooting";
+    }
+  );
 
-  notifyShutdown = optionalString cfg.notifications (config.notifications.send {
-    category = "power";
-    summary = "Shutting down";
-  });
+  notifyShutdown = optionalString cfg.notifications (
+    config.notifications.send {
+      category = "power";
+      summary = "Shutting down";
+    }
+  );
 
-  notifyStatus = optionalString cfg.notifications (config.notifications.send {
-    category = "system";
-    summary = "\$uptime_info";
-    body = "Load \$load_avg\$battery_detail";
-  });
+  notifyStatus = optionalString cfg.notifications (
+    config.notifications.send {
+      category = "system";
+      summary = "\$uptime_info";
+      body = "Load \$load_avg\$battery_detail";
+    }
+  );
 
   # Window manager specific commands
   wmCommands = {
@@ -88,9 +105,9 @@ let
       logout)
         # Confirm logout
         ${optionalString cfg.confirmActions ''
-        if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${dmenuLogout} | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
-          exit 0
-        fi
+          if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${dmenuLogout} | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
+            exit 0
+          fi
         ''}
         ${notifyLogout}
         ${pkgs.coreutils}/bin/sleep 1
@@ -100,9 +117,9 @@ let
       reboot)
         # Confirm reboot
         ${optionalString cfg.confirmActions ''
-        if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${dmenuReboot} | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
-          exit 0
-        fi
+          if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${dmenuReboot} | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
+            exit 0
+          fi
         ''}
         ${notifyReboot}
         ${pkgs.coreutils}/bin/sleep 1
@@ -112,9 +129,9 @@ let
       shutdown)
         # Confirm shutdown
         ${optionalString cfg.confirmActions ''
-        if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${dmenuShutdown} | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
-          exit 0
-        fi
+          if [ "$2" != "--confirm" ] && ! ${pkgs.coreutils}/bin/echo -e "y\nn" | ${dmenuShutdown} | ${pkgs.gnugrep}/bin/grep -q "^[Yy]"; then
+            exit 0
+          fi
         ''}
         ${notifyShutdown}
         ${pkgs.coreutils}/bin/sleep 1
@@ -189,11 +206,14 @@ in
       powerControl
       pkgs.systemd
       pkgs.upower
-    ] ++ optionals (config.controls.windowManager == "hyprland") [
+    ]
+    ++ optionals (config.controls.windowManager == "hyprland") [
       pkgs.hyprland
-    ] ++ optionals (config.controls.windowManager == "i3") [
+    ]
+    ++ optionals (config.controls.windowManager == "i3") [
       pkgs.i3
-    ] ++ optionals (config.controls.windowManager == "sway") [
+    ]
+    ++ optionals (config.controls.windowManager == "sway") [
       pkgs.sway
     ];
   };

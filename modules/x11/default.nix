@@ -1,8 +1,15 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 with lib;
 
 {
-  options.x11 = { enable = mkEnableOption "Enable X11"; };
+  options.x11 = {
+    enable = mkEnableOption "Enable X11";
+  };
 
   config = mkIf config.x11.enable {
     xsession.enable = true;

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -6,26 +11,36 @@ let
   cfg = config.fileManager;
 
   # Build the file manager open command based on backend
-  fileManagerOpenCmd = { path }:
-    if cfg.backend == "thunar" then "${pkgs.xfce.thunar}/bin/thunar \"${path}\""
-    else if cfg.backend == "nautilus" then "${pkgs.gnome.nautilus}/bin/nautilus \"${path}\""
-    else if cfg.backend == "dolphin" then "${pkgs.kdePackages.dolphin}/bin/dolphin \"${path}\""
-    else if cfg.backend == "pcmanfm" then "${pkgs.pcmanfm}/bin/pcmanfm \"${path}\""
-    else throw "Unsupported file manager backend: ${cfg.backend}";
+  fileManagerOpenCmd =
+    { path }:
+    if cfg.backend == "thunar" then
+      "${pkgs.xfce.thunar}/bin/thunar \"${path}\""
+    else if cfg.backend == "nautilus" then
+      "${pkgs.gnome.nautilus}/bin/nautilus \"${path}\""
+    else if cfg.backend == "dolphin" then
+      "${pkgs.kdePackages.dolphin}/bin/dolphin \"${path}\""
+    else if cfg.backend == "pcmanfm" then
+      "${pkgs.pcmanfm}/bin/pcmanfm \"${path}\""
+    else
+      throw "Unsupported file manager backend: ${cfg.backend}";
 
   # Build the file manager select command based on backend
-  fileManagerSelectCmd = { file }:
-    if cfg.backend == "thunar" then "${pkgs.xfce.thunar}/bin/thunar \"${file}\""
-    else if cfg.backend == "nautilus" then "${pkgs.gnome.nautilus}/bin/nautilus --select \"${file}\""
-    else if cfg.backend == "dolphin" then "${pkgs.kdePackages.dolphin}/bin/dolphin --select \"${file}\""
-    else if cfg.backend == "pcmanfm" then "${pkgs.pcmanfm}/bin/pcmanfm \"${file}\""
-    else throw "Unsupported file manager backend: ${cfg.backend}";
+  fileManagerSelectCmd =
+    { file }:
+    if cfg.backend == "thunar" then
+      "${pkgs.xfce.thunar}/bin/thunar \"${file}\""
+    else if cfg.backend == "nautilus" then
+      "${pkgs.gnome.nautilus}/bin/nautilus --select \"${file}\""
+    else if cfg.backend == "dolphin" then
+      "${pkgs.kdePackages.dolphin}/bin/dolphin --select \"${file}\""
+    else if cfg.backend == "pcmanfm" then
+      "${pkgs.pcmanfm}/bin/pcmanfm \"${file}\""
+    else
+      throw "Unsupported file manager backend: ${cfg.backend}";
 
   # Get the terminal command - use override or fall back to terminal module
   terminalCmd =
-    if cfg.terminalOverride != null
-    then cfg.terminalOverride
-    else config.terminal.commandWithCwd;
+    if cfg.terminalOverride != null then cfg.terminalOverride else config.terminal.commandWithCwd;
 
 in
 {
@@ -37,7 +52,12 @@ in
     enable = mkEnableOption "file manager";
 
     backend = mkOption {
-      type = types.enum [ "thunar" "nautilus" "dolphin" "pcmanfm" ];
+      type = types.enum [
+        "thunar"
+        "nautilus"
+        "dolphin"
+        "pcmanfm"
+      ];
       default = "thunar";
       description = "File manager backend to use";
     };
@@ -52,7 +72,7 @@ in
 
     bookmarks = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
       description = ''
         List of bookmark paths for the file manager sidebar.
         Format: "file:///path/to/directory" or "file:///path/to/directory Label"
@@ -117,7 +137,7 @@ in
     fileManager.thunar.enable = mkIf (cfg.backend == "thunar") (mkDefault true);
 
     # Generate GTK bookmarks file if bookmarks are specified
-    home.file.".config/gtk-3.0/bookmarks" = mkIf (cfg.bookmarks != []) {
+    home.file.".config/gtk-3.0/bookmarks" = mkIf (cfg.bookmarks != [ ]) {
       text = concatStringsSep "\n" cfg.bookmarks + "\n";
     };
   };

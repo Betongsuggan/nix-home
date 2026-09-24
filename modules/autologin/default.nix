@@ -1,16 +1,21 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 {
   options.autologin = {
     enable = mkEnableOption "Enable autologin functionality";
-    
+
     user = mkOption {
       type = types.str;
       description = "Username to automatically login";
     };
-    
+
     session = mkOption {
       type = types.str;
       default = "hyprland";
@@ -18,7 +23,10 @@ with lib;
     };
 
     method = mkOption {
-      type = types.enum [ "gdm" "getty" ];
+      type = types.enum [
+        "gdm"
+        "getty"
+      ];
       default = "gdm";
       description = "Autologin method to use (gdm for display manager, getty for console)";
     };
@@ -63,12 +71,16 @@ with lib;
     };
 
     # Allow passwordless sudo for the autologin user (gaming convenience)
-    security.sudo.extraRules = [{
-      users = [ config.autologin.user ];
-      commands = [{
-        command = "ALL";
-        options = [ "NOPASSWD" ];
-      }];
-    }];
+    security.sudo.extraRules = [
+      {
+        users = [ config.autologin.user ];
+        commands = [
+          {
+            command = "ALL";
+            options = [ "NOPASSWD" ];
+          }
+        ];
+      }
+    ];
   };
 }

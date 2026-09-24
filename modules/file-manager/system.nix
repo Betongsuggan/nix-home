@@ -1,15 +1,18 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  hmUsers = config.home-manager.users or {};
-  anyUserEnabled = any
-    (u: (u.fileManager.enable or false))
-    (attrValues hmUsers);
-  anyNetworkShares = any
-    (u: (u.fileManager.enable or false) && (u.fileManager.networkShares.enable or false))
-    (attrValues hmUsers);
+  hmUsers = config.home-manager.users or { };
+  anyUserEnabled = any (u: (u.fileManager.enable or false)) (attrValues hmUsers);
+  anyNetworkShares = any (
+    u: (u.fileManager.enable or false) && (u.fileManager.networkShares.enable or false)
+  ) (attrValues hmUsers);
 in
 {
   config = mkMerge [

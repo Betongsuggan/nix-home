@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -14,29 +19,38 @@ with lib;
 
     backend = mkOption {
       description = "Window manager backend to use";
-      type = types.enum [ "hyprland" "i3" "niri" "sway" ];
+      type = types.enum [
+        "hyprland"
+        "i3"
+        "niri"
+        "sway"
+      ];
       default = "hyprland";
     };
 
     autostartApps = mkOption {
       description = "Applications to autostart, with optional workspace assignment";
-      type = types.attrsOf (types.nullOr (types.submodule {
-        options = {
-          command = mkOption {
-            type = types.str;
-            description = "Command to execute";
-            example = "firefox";
-          };
+      type = types.attrsOf (
+        types.nullOr (
+          types.submodule {
+            options = {
+              command = mkOption {
+                type = types.str;
+                description = "Command to execute";
+                example = "firefox";
+              };
 
-          workspace = mkOption {
-            type = types.nullOr types.int;
-            description = "Workspace number to launch the application in (null for no specific workspace)";
-            default = null;
-            example = 1;
-          };
-        };
-      }));
-      default = {};
+              workspace = mkOption {
+                type = types.nullOr types.int;
+                description = "Workspace number to launch the application in (null for no specific workspace)";
+                default = null;
+                example = 1;
+              };
+            };
+          }
+        )
+      );
+      default = { };
     };
 
     monitors = mkOption {
@@ -72,31 +86,35 @@ with lib;
 
     workspaceBindings = mkOption {
       description = "Bind workspaces to specific monitors";
-      type = types.listOf (types.submodule {
-        options = {
-          workspace = mkOption {
-            type = types.int;
-            description = "Workspace number";
-            example = 10;
+      type = types.listOf (
+        types.submodule {
+          options = {
+            workspace = mkOption {
+              type = types.int;
+              description = "Workspace number";
+              example = 10;
+            };
+            monitor = mkOption {
+              type = types.str;
+              description = "Monitor name (e.g., DP-1, SUNSHINE)";
+              example = "DP-1";
+            };
+            default = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Make this the default workspace for the monitor";
+            };
           };
-          monitor = mkOption {
-            type = types.str;
-            description = "Monitor name (e.g., DP-1, SUNSHINE)";
-            example = "DP-1";
-          };
-          default = mkOption {
-            type = types.bool;
-            default = false;
-            description = "Make this the default workspace for the monitor";
-          };
-        };
-      });
+        }
+      );
       default = [ ];
-      example = [{
-        workspace = 10;
-        monitor = "SUNSHINE";
-        default = true;
-      }];
+      example = [
+        {
+          workspace = 10;
+          monitor = "SUNSHINE";
+          default = true;
+        }
+      ];
     };
 
     composeKey = mkOption {
@@ -160,8 +178,8 @@ with lib;
 
     # Environment variables for XIM to make .XCompose work in XWayland apps
     home.sessionVariables = {
-      GTK_IM_MODULE = "xim";   # GTK apps (e.g., Slack) read .XCompose
-      QT_IM_MODULE = "xim";    # Qt apps read .XCompose
+      GTK_IM_MODULE = "xim"; # GTK apps (e.g., Slack) read .XCompose
+      QT_IM_MODULE = "xim"; # Qt apps read .XCompose
       XMODIFIERS = "@im=none"; # Disable other input method frameworks
     };
   };

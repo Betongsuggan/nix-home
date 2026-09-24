@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.git-server;
-in {
+let
+  cfg = config.git-server;
+in
+{
   options.git-server = {
     enable = mkEnableOption "Minimal SSH-based git server (git-shell, no web UI)";
 

@@ -1,16 +1,23 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
   cfg = config.controls.mediaPlayer;
-  
+
   # Build notification command using the notifications module
-  notifyMedia = optionalString cfg.notifications (config.notifications.send {
-    category = "media";
-    icon = "\$icon";
-    summary = "\$title";
-    body = "\$artist";
-  });
+  notifyMedia = optionalString cfg.notifications (
+    config.notifications.send {
+      category = "media";
+      icon = "\$icon";
+      summary = "\$title";
+      body = "\$artist";
+    }
+  );
 
   mediaPlayerControl = pkgs.writeShellScriptBin "media-player" ''
     #!/usr/bin/env bash

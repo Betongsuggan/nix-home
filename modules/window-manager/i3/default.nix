@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 with lib;
 let
   mod = "Mod4";
@@ -6,7 +11,8 @@ let
   # Convert Hyprland monitor format to xrandr command
   # Hyprland: "name,resolution@refresh,position,scale"
   # xrandr: "--output NAME --mode WxH --rate R --pos X*Y --scale SxS"
-  convertMonitorToXrandr = monitorStr:
+  convertMonitorToXrandr =
+    monitorStr:
     let
       parts = lib.splitString "," monitorStr;
       name = builtins.elemAt parts 0;
@@ -15,41 +21,56 @@ let
       scale = builtins.elemAt parts 3;
 
       # Parse resolution and refresh rate
-      resolutionParts = if lib.hasInfix "@" resolution then
-        lib.splitString "@" resolution
-      else [ resolution "" ];
+      resolutionParts =
+        if lib.hasInfix "@" resolution then
+          lib.splitString "@" resolution
+        else
+          [
+            resolution
+            ""
+          ];
       res = builtins.elemAt resolutionParts 0;
-      refresh = if (builtins.length resolutionParts) > 1
-        then builtins.elemAt resolutionParts 1
-        else "";
+      refresh = if (builtins.length resolutionParts) > 1 then builtins.elemAt resolutionParts 1 else "";
 
       # Build xrandr command parts
       outputArg = if name == "" then "--output auto" else "--output ${name}";
       modeArg = if res == "preferred" then "--auto" else "--mode ${res}";
       rateArg = if refresh != "" then "--rate ${refresh}" else "";
-      posArg = if position == "auto" then "--auto" else "--pos ${lib.replaceStrings ["x"] ["*"] position}";
+      posArg =
+        if position == "auto" then "--auto" else "--pos ${lib.replaceStrings [ "x" ] [ "*" ] position}";
       scaleArg = if scale != "1" then "--scale ${scale}x${scale}" else "";
     in
     "${outputArg} ${modeArg} ${rateArg} ${posArg} ${scaleArg}";
 
   # Generate full xrandr command for all monitors
-  xrandrCommand = "${pkgs.xorg.xrandr}/bin/xrandr " +
-    (lib.concatStringsSep " " (map convertMonitorToXrandr config.windowManager.monitors));
+  xrandrCommand =
+    "${pkgs.xorg.xrandr}/bin/xrandr "
+    + (lib.concatStringsSep " " (map convertMonitorToXrandr config.windowManager.monitors));
 
-in {
-  options.i3 = { enable = mkEnableOption "Enable I3 window manager"; };
+in
+{
+  options.i3 = {
+    enable = mkEnableOption "Enable I3 window manager";
+  };
 
   config = mkIf config.i3.enable {
 
     services.network-manager-applet.enable = true;
 
-    home.packages = with pkgs; [ feh brightnessctl i3lock-fancy-rapid ];
+    home.packages = with pkgs; [
+      feh
+      brightnessctl
+      i3lock-fancy-rapid
+    ];
 
     # Configure keyboard layout and compose key for X11
     home.keyboard = {
       layout = "us";
       variant = "colemak";
-      options = [ "caps:escape" "compose:${config.windowManager.composeKey}" ];
+      options = [
+        "caps:escape"
+        "compose:${config.windowManager.composeKey}"
+      ];
     };
 
     xsession.windowManager.i3 = {
@@ -87,10 +108,13 @@ in {
             always = false;
             notification = false;
           }
-        ] ++ (builtins.map (app: {
-          command = if app.workspace != null
-            then "i3-msg 'workspace ${toString app.workspace}; exec ${app.command}'"
-            else app.command;
+        ]
+        ++ (builtins.map (app: {
+          command =
+            if app.workspace != null then
+              "i3-msg 'workspace ${toString app.workspace}; exec ${app.command}'"
+            else
+              app.command;
           always = false;
           notification = false;
         }) (builtins.filter (app: app != null) (builtins.attrValues config.windowManager.autostartApps)));
@@ -104,11 +128,9 @@ in {
 
         keybindings = lib.mkOptionDefault {
           "${mod}+Return" = "exec ${config.terminal.command}";
-          "${mod}+x" =
-            "exec sh -c '${pkgs.maim}/bin/maim -s | xclip -selection clipboard -t image/png'";
+          "${mod}+x" = "exec sh -c '${pkgs.maim}/bin/maim -s | xclip -selection clipboard -t image/png'";
           "${mod}+o" = "exec ${config.launcher.show { mode = "run"; }}";
-          "${mod}+Shift+x" =
-            "exec sh -c '${pkgs.i3lock-fancy-rapid}/bin/i3lock-fancy-rapid 15 8'";
+          "${mod}+Shift+x" = "exec sh -c '${pkgs.i3lock-fancy-rapid}/bin/i3lock-fancy-rapid 15 8'";
 
           # Focus
           "${mod}+h" = "focus left";
@@ -123,16 +145,13 @@ in {
           "${mod}+Shift+l" = "move right";
 
           # Multi monitors
-          "${mod}+p" =
-            "exec autorandr --change && feh --bg-center ${config.theme.wallpaper}";
+          "${mod}+p" = "exec autorandr --change && feh --bg-center ${config.theme.wallpaper}";
 
           # Multimedia Keys
 
-          ## Volume 
-          XF86AudioRaiseVolume =
-            "exec --no-startup-id pactl set-sink-volume 0 +5%";
-          XF86AudioLowerVolume =
-            "exec --no-startup-id pactl set-sink-volume 0 -5%";
+          ## Volume
+          XF86AudioRaiseVolume = "exec --no-startup-id pactl set-sink-volume 0 +5%";
+          XF86AudioLowerVolume = "exec --no-startup-id pactl set-sink-volume 0 -5%";
           XF86AudioMute = "exec --no-startup-id pactl set-sink-mute 0 toggle";
 
           ## Backlighting
@@ -208,12 +227,16 @@ in {
       modules = {
         "cpu_usage" = {
           position = 0;
-          settings = { format = " cpu  %usage "; };
+          settings = {
+            format = " cpu  %usage ";
+          };
         };
 
         "cpu_temperature 1" = {
           position = 0.5;
-          settings = { format = "%degrees °C"; };
+          settings = {
+            format = "%degrees °C";
+          };
         };
 
         "disk /" = {
@@ -267,14 +290,19 @@ in {
 
         "tztime local" = {
           position = 5;
-          settings = { format = " %Y-%m-%d %H:%M:%S "; };
+          settings = {
+            format = " %Y-%m-%d %H:%M:%S ";
+          };
         };
       };
     };
 
     systemd.user.services.mpris-proxy = {
       Unit.Description = "Mpris proxy";
-      Unit.After = [ "network.target" "sound.target" ];
+      Unit.After = [
+        "network.target"
+        "sound.target"
+      ];
       Service.ExecStart = "${pkgs.bluez}/bin/mpris-proxy";
       Install.WantedBy = [ "default.target" ];
     };

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -24,7 +29,9 @@ with lib;
           DriverQuirks = {
             DefaultInterface = true; # Creates wlan0 automatically
           };
-          Settings = { AutoConnect = true; };
+          Settings = {
+            AutoConnect = true;
+          };
         };
       };
 

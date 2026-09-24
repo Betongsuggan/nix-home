@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 with lib;
 
 {
@@ -83,14 +88,12 @@ with lib;
           type = "internal/i3";
           label-focused = "%index%";
           label-focused-background = "${config.theme.colors.normal.white}";
-          label-focused-foreground =
-            "${config.theme.colors.primary.background}";
+          label-focused-foreground = "${config.theme.colors.primary.background}";
           label-focused-alignment = "center";
           label-focused-padding = 1;
 
           label-unfocused = "%index%";
-          label-unfocused-background =
-            "${config.theme.colors.primary.background}";
+          label-unfocused-background = "${config.theme.colors.primary.background}";
           label-unfocused-foreground = "${config.theme.colors.normal.white}";
           label-unfocused-alignment = "center";
           label-unfocused-padding = 1;
@@ -110,7 +113,8 @@ with lib;
           ramp-volume-0 = "";
           ramp-volume-1 = "";
           ramp-volume-2 = "";
-        } // optionalAttrs (config.polybar.audioSink != null) {
+        }
+        // optionalAttrs (config.polybar.audioSink != null) {
           sink = config.polybar.audioSink;
         };
         "module/battery" = {

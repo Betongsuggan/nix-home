@@ -1,4 +1,10 @@
-{ lib, pkgs, inputs, ... }: {
+{
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
+{
   options = {
     unfreePackages = lib.mkOption {
       type = lib.types.listOf lib.types.str;
@@ -18,8 +24,7 @@
     # building happen on the deployer (the Pi never builds — see
     # hosts/island-pi/SPEC.md). Gated on x86_64 so aarch64 hosts don't try to
     # emulate themselves.
-    boot.binfmt.emulatedSystems =
-      lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 [ "aarch64-linux" ];
+    boot.binfmt.emulatedSystems = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 [ "aarch64-linux" ];
 
     nix = {
       # Enable features in Nix commands
@@ -51,16 +56,22 @@
         auto-optimise-store = true;
 
         # Parallel build settings for faster rebuilds
-        max-jobs = "auto";           # Build multiple derivations in parallel
-        cores = 0;                   # Use all cores per build (0 = auto)
-        keep-outputs = true;         # Keep build outputs for faster rebuilds
-        keep-derivations = true;     # Keep .drv files for debugging/rebuilds
-        connect-timeout = 5;         # Fail faster on unavailable substituters
+        max-jobs = "auto"; # Build multiple derivations in parallel
+        cores = 0; # Use all cores per build (0 = auto)
+        keep-outputs = true; # Keep build outputs for faster rebuilds
+        keep-derivations = true; # Keep .drv files for debugging/rebuilds
+        connect-timeout = 5; # Fail faster on unavailable substituters
       };
     };
 
     # Basic common system packages for all devices
-    environment.systemPackages = with pkgs; [ git vim wget curl sshfs ];
+    environment.systemPackages = with pkgs; [
+      git
+      vim
+      wget
+      curl
+      sshfs
+    ];
 
     # System-side dconf/gsettings plumbing, required for the home-manager
     # stylix gtk/gnome targets' dark-mode preference to reach GTK apps
@@ -72,7 +83,8 @@
       hostNames = [
         (inputs.self.lib.tailnet.fqdn "controller")
         "controller"
-      ] ++ inputs.self.lib.hosts.controller.addresses;
+      ]
+      ++ inputs.self.lib.hosts.controller.addresses;
       publicKey = inputs.self.lib.hosts.controller.ssh.host;
     };
   };

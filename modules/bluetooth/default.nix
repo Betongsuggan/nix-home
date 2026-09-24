@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -11,9 +16,11 @@ with lib;
       allowedDevices = mkOption {
         type = types.listOf types.str;
         default = [ ];
-        description =
-          "List of bluetooth device MAC addresses allowed to wake the system";
-        example = [ "AA:BB:CC:DD:EE:FF" "11:22:33:44:55:66" ];
+        description = "List of bluetooth device MAC addresses allowed to wake the system";
+        example = [
+          "AA:BB:CC:DD:EE:FF"
+          "11:22:33:44:55:66"
+        ];
       };
     };
   };
@@ -24,7 +31,9 @@ with lib;
       enable = true;
       powerOnBoot = true;
       settings = mkIf config.bluetooth.wake.enable {
-        General = { Enable = "Source,Sink,Media,Socket"; };
+        General = {
+          Enable = "Source,Sink,Media,Socket";
+        };
       };
     };
 
@@ -37,10 +46,10 @@ with lib;
       ACTION=="add", SUBSYSTEM=="input", KERNEL=="event*", SUBSYSTEMS=="bluetooth", ATTR{power/wakeup}="enabled"
 
       # Enable wake for specific bluetooth devices
-      ${concatMapStringsSep "\n" (device:
-        ''
-          ACTION=="add", SUBSYSTEM=="bluetooth", ATTR{address}=="${device}", ATTR{power/wakeup}="enabled"'')
-      config.bluetooth.wake.allowedDevices}
+      ${concatMapStringsSep "\n" (
+        device:
+        ''ACTION=="add", SUBSYSTEM=="bluetooth", ATTR{address}=="${device}", ATTR{power/wakeup}="enabled"''
+      ) config.bluetooth.wake.allowedDevices}
     '';
 
     # Add power management configuration
@@ -69,7 +78,7 @@ with lib;
           if [ -f /sys/class/bluetooth/hci0/power/wakeup ]; then
             echo enabled > /sys/class/bluetooth/hci0/power/wakeup || true
           fi
-          
+
           # Find and configure all USB bluetooth devices
           for device_path in /sys/bus/usb/drivers/btusb/*/; do
             if [ -d "$device_path" ]; then

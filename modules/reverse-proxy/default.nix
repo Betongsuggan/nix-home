@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.reverse-proxy;
-in {
+let
+  cfg = config.reverse-proxy;
+in
+{
   options.reverse-proxy = {
     enable = mkEnableOption "Nginx reverse proxy with Let's Encrypt TLS";
 
@@ -21,7 +28,10 @@ in {
     domains = mkOption {
       type = types.listOf types.str;
       default = [ ];
-      example = [ "rydback.net" "vpn.rydback.net" ];
+      example = [
+        "rydback.net"
+        "vpn.rydback.net"
+      ];
       description = ''
         Domains to issue HTTP-01 certs for. Each needs a public A record
         pointing at this host and TCP 80 reachable from the internet. A vhost
@@ -36,26 +46,28 @@ in {
         Reverse-proxy vhosts keyed by short label. Each vhost's `domain` MUST
         appear in `domains`.
       '';
-      type = types.attrsOf (types.submodule {
-        options = {
-          domain = mkOption {
-            type = types.str;
-            description = "FQDN this vhost serves. MUST appear in `domains`.";
-          };
+      type = types.attrsOf (
+        types.submodule {
+          options = {
+            domain = mkOption {
+              type = types.str;
+              description = "FQDN this vhost serves. MUST appear in `domains`.";
+            };
 
-          upstream = mkOption {
-            type = types.str;
-            example = "http://127.0.0.1:8080";
-            description = "Upstream URL that nginx proxies to.";
-          };
+            upstream = mkOption {
+              type = types.str;
+              example = "http://127.0.0.1:8080";
+              description = "Upstream URL that nginx proxies to.";
+            };
 
-          extraConfig = mkOption {
-            type = types.lines;
-            default = "";
-            description = "Extra nginx config lines inserted into the `location /` block.";
+            extraConfig = mkOption {
+              type = types.lines;
+              default = "";
+              description = "Extra nginx config lines inserted into the `location /` block.";
+            };
           };
-        };
-      });
+        }
+      );
     };
   };
 
@@ -80,25 +92,32 @@ in {
         let
           vhostByDomain = mapAttrs' (_n: v: nameValuePair v.domain v) cfg.vhosts;
         in
-        genAttrs cfg.domains (d:
-          if vhostByDomain ? ${d} then {
-            serverName = d;
-            enableACME = true;
-            forceSSL = true;
-            locations."/" = {
-              proxyPass = vhostByDomain.${d}.upstream;
-              proxyWebsockets = true;
-              extraConfig = vhostByDomain.${d}.extraConfig;
-            };
-          } else {
-            serverName = d;
-            enableACME = true;
-            forceSSL = true;
-            locations."/".return = "404";
-          }
+        genAttrs cfg.domains (
+          d:
+          if vhostByDomain ? ${d} then
+            {
+              serverName = d;
+              enableACME = true;
+              forceSSL = true;
+              locations."/" = {
+                proxyPass = vhostByDomain.${d}.upstream;
+                proxyWebsockets = true;
+                extraConfig = vhostByDomain.${d}.extraConfig;
+              };
+            }
+          else
+            {
+              serverName = d;
+              enableACME = true;
+              forceSSL = true;
+              locations."/".return = "404";
+            }
         );
     };
 
-    networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [ 80 443 ];
+    networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [
+      80
+      443
+    ];
   };
 }

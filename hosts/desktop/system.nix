@@ -1,4 +1,9 @@
-{ pkgs, lib, inputs, ... }:
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 
 {
   nixpkgs.overlays = [
@@ -250,7 +255,10 @@
     server = inputs.self.lib.tailnet.fqdn "controller";
     # gamer needs the shares too: it runs the streamed Big Picture session and
     # consumes Switch ROMs (roms/switch) plus keys/firmware (bios/switch).
-    users = [ "betongsuggan" "gamer" ];
+    users = [
+      "betongsuggan"
+      "gamer"
+    ];
   };
 
   # Receive restic snapshots from controller as the on-site copy in the interim
@@ -312,19 +320,43 @@
       "qwen3:8b"
       "qwen2.5-coder:14b"
       "qwen2.5-coder:1.5b"
-      "nomic-embed-text"   # embeddings for RAG / memory / web-search ranking
+      "nomic-embed-text" # embeddings for RAG / memory / web-search ranking
     ];
     comfyui = {
       enable = true;
       workflow = ../../modules/ai-server/comfyui/workflows/sdxl-base.json;
       workflowNodes = [
-        { type = "prompt";          node_ids = [ "6" ]; key = "text"; }
-        { type = "negative_prompt"; node_ids = [ "7" ]; key = "text"; }
-        { type = "model";           node_ids = [ "4" ]; key = "ckpt_name"; }
-        { type = "width";           node_ids = [ "5" ]; }
-        { type = "height";          node_ids = [ "5" ]; }
-        { type = "steps";           node_ids = [ "3" ]; }
-        { type = "seed";            node_ids = [ "3" ]; }
+        {
+          type = "prompt";
+          node_ids = [ "6" ];
+          key = "text";
+        }
+        {
+          type = "negative_prompt";
+          node_ids = [ "7" ];
+          key = "text";
+        }
+        {
+          type = "model";
+          node_ids = [ "4" ];
+          key = "ckpt_name";
+        }
+        {
+          type = "width";
+          node_ids = [ "5" ];
+        }
+        {
+          type = "height";
+          node_ids = [ "5" ];
+        }
+        {
+          type = "steps";
+          node_ids = [ "3" ];
+        }
+        {
+          type = "seed";
+          node_ids = [ "3" ];
+        }
       ];
     };
     voice.enable = true;

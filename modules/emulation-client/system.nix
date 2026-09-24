@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -102,7 +107,10 @@ in
     users = mkOption {
       type = types.listOf types.str;
       default = [ ];
-      example = [ "betongsuggan" "gamer" ];
+      example = [
+        "betongsuggan"
+        "gamer"
+      ];
       description = ''
         User accounts that should get `~/emulation/{roms,bios}` automounted
         from the emulation server's Samba shares. The mounts use
@@ -119,9 +127,7 @@ in
     # Create each user's `~/emulation/` parent. The mount-point dirs
     # themselves (`roms`, `bios`) are auto-created by systemd on first
     # access, but their parent must exist.
-    systemd.tmpfiles.rules = map (
-      user: "d /home/${user}/emulation 0755 ${user} users -"
-    ) cfg.users;
+    systemd.tmpfiles.rules = map (user: "d /home/${user}/emulation 0755 ${user} users -") cfg.users;
 
     environment.systemPackages = [ pkgs.cifs-utils ];
   };

@@ -1,11 +1,17 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.restic-target;
   sourceNames = attrNames cfg.sources;
-in {
+in
+{
   options.restic-target = {
     enable = mkEnableOption "Receive restic backups from one or more sources over chrooted SFTP";
 
@@ -71,14 +77,14 @@ in {
       }
     ) cfg.sources;
 
-    users.groups = mapAttrs' (
-      _name: src:
-      nameValuePair src.userName { }
-    ) cfg.sources;
+    users.groups = mapAttrs' (_name: src: nameValuePair src.userName { }) cfg.sources;
 
     systemd.tmpfiles.rules = concatMap (
       name:
-      let src = cfg.sources.${name}; in [
+      let
+        src = cfg.sources.${name};
+      in
+      [
         "d ${src.storagePath} 0755 root root -"
         "d ${src.storagePath}/repo 0700 ${src.userName} ${src.userName} -"
       ]
@@ -87,7 +93,10 @@ in {
     services.openssh.extraConfig = mkAfter (
       concatMapStringsSep "\n" (
         name:
-        let src = cfg.sources.${name}; in ''
+        let
+          src = cfg.sources.${name};
+        in
+        ''
           Match User ${src.userName}
             ChrootDirectory ${src.storagePath}
             ForceCommand internal-sftp

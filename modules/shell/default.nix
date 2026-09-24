@@ -1,15 +1,28 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
-  imports = [ ./bash ./fish ./nushell ];
+  imports = [
+    ./bash
+    ./fish
+    ./nushell
+  ];
 
   options.shell = {
     enable = mkEnableOption "Enable shell configuration";
 
     backend = mkOption {
       description = "Shell backend to use";
-      type = types.enum [ "bash" "fish" "nushell" ];
+      type = types.enum [
+        "bash"
+        "fish"
+        "nushell"
+      ];
       default = "bash";
     };
 

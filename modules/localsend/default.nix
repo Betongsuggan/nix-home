@@ -1,8 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 let
   cfg = config.localsend;
-in {
+in
+{
   options.localsend = {
     enable = mkEnableOption "Enable Localsend for LAN file transfer";
 
@@ -20,8 +26,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs;
-      [ localsend ] ++ optional cfg.cli jocalsend;
+    home.packages = with pkgs; [ localsend ] ++ optional cfg.cli jocalsend;
 
     # XDG autostart entry for localsend
     xdg.configFile."autostart/localsend.desktop" = mkIf cfg.autostart {

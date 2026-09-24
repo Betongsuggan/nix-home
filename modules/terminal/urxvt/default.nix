@@ -1,13 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 let
   cfg = config.terminal;
 
   # Use terminal font family or fall back to theme font
-  fontFamily = if cfg.font.family != null
-    then cfg.font.family
-    else config.theme.font.name;
+  fontFamily = if cfg.font.family != null then cfg.font.family else config.theme.font.name;
 
   # Build font strings for urxvt (xft format)
   fontSize = cfg.font.size;

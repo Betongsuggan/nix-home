@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.sops-edit;
-in {
+let
+  cfg = config.sops-edit;
+in
+{
   options.sops-edit = {
     enable = mkEnableOption "tools for editing the nix-vault repository";
   };

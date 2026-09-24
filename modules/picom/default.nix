@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 with lib;
 
 {
@@ -11,7 +16,10 @@ with lib;
       enable = true;
       backend = "glx";
       fade = true;
-      fadeSteps =  [ 0.1 0.12 ];
+      fadeSteps = [
+        0.1
+        0.12
+      ];
       vSync = true;
     };
   };
