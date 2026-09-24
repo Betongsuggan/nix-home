@@ -7,7 +7,7 @@ A backend-agnostic application launcher system that provides a unified interface
 ```nix
 my.launcher = {
   enable = true;
-  backend = "walker";
+  backend = "vicinae";
   windowManager = "hyprland";
 };
 ```
@@ -17,7 +17,7 @@ my.launcher = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable launcher system |
-| backend | enum | "walker" | Which launcher backend to use: "wofi", "rofi", "walker", "vicinae" |
+| backend | enum | "vicinae" | Which launcher backend to use: "wofi", "rofi", "walker", "vicinae" |
 | windowManager | enum | "generic" | Window manager for session integration: "hyprland", "niri", "sway", "i3", "generic" |
 
 ### Backend-specific options
@@ -48,7 +48,7 @@ my.launcher = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | vicinae.config | attrs | {} | Vicinae settings (JSON configuration) |
-| vicinae.extensions | list of package | [] | List of Vicinae extensions to install |
+| vicinae.extensions | list of package | wifi-commander, bluetooth (+ hyprland-monitors under Hyprland) | List of Vicinae extensions to install |
 | vicinae.themes | attrs | {} | Custom themes to add to vicinae |
 | vicinae.useLayerShell | bool | true | Whether vicinae should use layer shell |
 

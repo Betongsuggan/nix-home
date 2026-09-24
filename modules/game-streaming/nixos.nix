@@ -217,6 +217,9 @@ in
         ) cfg.allowedNetworks
       );
 
+    # wlroots screencopy portal for Sunshine's capture
+    xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
+
     services.sunshine = {
       enable = true;
       # Auto-start via graphical-session.target loses a race against the

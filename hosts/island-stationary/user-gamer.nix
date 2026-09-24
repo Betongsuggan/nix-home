@@ -18,32 +18,7 @@
     tools.enable = true;
   };
 
-  my.general.enable = true;
-  my.chromium.enable = true;
-  my.file-manager = {
-    enable = true;
-    backend = "thunar";
-  };
-
-  my.communication.enable = true;
   my.localsend.enable = true;
-  my.starship.enable = true;
-  my.terminal = {
-    enable = true;
-    backend = "alacritty";
-  };
-
-  my.launcher = {
-    enable = true;
-    backend = "vicinae";
-    vicinae = {
-      extensions = with pkgs; [
-        vicinae-wifi-commander
-        vicinae-bluetooth
-        vicinae-monitor
-      ];
-    };
-  };
 
   my.controller = {
     enable = true;
@@ -71,31 +46,11 @@
   ];
 
   my.window-manager = {
-    enable = true;
-    backend = "hyprland";
-    monitors = [
-      ",preferred,auto,1"
-    ];
-
     autostartApps = {
       steam = {
         command = "steam -gamepadui";
         workspace = 1;
       };
-    };
-  };
-
-  my.shell = {
-    enable = true;
-    backend = "bash";
-  };
-
-  my.theming = {
-    enable = true;
-    wallpaper = ../../assets/wallpaper/zeal.jpg;
-    cursor = {
-      package = pkgs.banana-cursor;
-      name = "Banana";
     };
   };
 

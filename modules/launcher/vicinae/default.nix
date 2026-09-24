@@ -65,7 +65,15 @@ in
 
     extensions = mkOption {
       type = types.listOf types.package;
-      default = [ ];
+      # The monitor extension drives hyprctl, so it only makes sense there
+      default = [
+        pkgs.vicinae-wifi-commander
+        pkgs.vicinae-bluetooth
+      ]
+      ++ optional (
+        config.my.window-manager.enable && config.my.window-manager.backend == "hyprland"
+      ) pkgs.vicinae-monitor;
+      defaultText = literalExpression "wifi-commander and bluetooth, plus hyprland-monitors under Hyprland";
       description = ''
         List of Vicinae extensions to install.
         Use mkVicinaeExtension from vicinae flake to create extensions.

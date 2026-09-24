@@ -2,15 +2,10 @@
 {
   home.stateVersion = "24.05";
 
-  my.general.enable = true;
-  my.chromium.enable = true;
   my.game-streaming.client.enable = true;
   my.games.enable = true;
-  my.communication.enable = true;
-  my.starship.enable = true;
   my.notifications.enable = true;
   my.network-monitor.enable = true;
-  my.battery-monitor.enable = true;
   my.kanshi.enable = true;
   my.development = {
     enable = true;
@@ -18,18 +13,8 @@
     node.enable = true;
     go.enable = true;
   };
-  my.file-manager = {
-    enable = true;
-    backend = "thunar";
-  };
-
-  my.shell = {
-    enable = true;
-    backend = "bash";
-  };
 
   my.terminal = {
-    enable = true;
     backend = "ghostty";
     colors.useTheme = true;
 
@@ -80,28 +65,7 @@
     ];
   };
 
-  my.launcher = {
-    enable = true;
-    backend = "vicinae";
-    vicinae = {
-      extensions = with pkgs; [
-        vicinae-wifi-commander
-        vicinae-bluetooth
-      ];
-    };
-  };
-
-  my.theming = {
-    enable = true;
-    wallpaper = ../../assets/wallpaper/zeal.jpg;
-    cursor = {
-      package = pkgs.banana-cursor;
-      name = "Banana";
-    };
-  };
-
   my.window-manager = {
-    enable = true;
     backend = "niri";
     autostartApps = {
       chromium = {

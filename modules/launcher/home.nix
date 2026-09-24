@@ -137,7 +137,7 @@ in
         "walker"
         "vicinae"
       ];
-      default = "walker";
+      default = "vicinae";
       description = "Which launcher to use";
     };
 

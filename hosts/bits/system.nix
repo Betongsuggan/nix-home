@@ -47,19 +47,10 @@
       "sd_mod"
       "sdhci_pci"
     ];
-    loader = {
-      systemd-boot.enable = true;
-      systemd-boot.configurationLimit = 10;
-
-      efi.efiSysMountPoint = "/boot";
-      efi.canTouchEfiVariables = true;
-    };
   };
 
   hardware = {
     cpu.amd.updateMicrocode = true;
-    enableAllFirmware = true;
-    enableRedistributableFirmware = true;
     i2c.enable = true;
   };
 
@@ -69,8 +60,6 @@
       "nexusmods-app-0.21.1"
     ];
   };
-
-  time.timeZone = "Europe/Stockholm";
 
   fileSystems = {
     "/" = {
@@ -93,8 +82,6 @@
   swapDevices = [
     { device = "/dev/disk/by-uuid/08fd16ed-033c-456a-af0e-f16c933f08a3"; }
   ];
-
-  services.fwupd.enable = true;
 
   my.sops = {
     enable = true;
@@ -130,18 +117,9 @@
   systemd.services.fwupd = {
     wantedBy = lib.mkForce [ ];
   };
-  console.keyMap = "colemak";
-  my.touchpad.enable = true;
-  my.backlight.enable = true;
-  my.graphics = {
-    enable = true;
-    amd = true;
-  };
-  my.audio.enable = true;
-  my.network-manager = {
-    enable = true;
-    hostName = "bits-nixos";
-  };
+  my.profiles.laptop.enable = true;
+  my.graphics.amd = true;
+  my.network-manager.hostName = "bits-nixos";
   networking.nameservers = [ "1.1.1.1" ];
   # LocalStack API Gateway endpoint used by local development
   networking.extraHosts = ''
@@ -163,21 +141,17 @@
     # offline Netflix downloads.
     startOnBoot = false;
   };
-  my.bluetooth.enable = true;
   my.fingerprint = {
     enable = false;
     clamshellAware = true;
     lidStatePath = "/proc/acpi/button/lid/LID/state";
   };
-  my.wayland-security.enable = true;
   my.printers = {
-    enable = true;
     # Nothing on this network shares a printer; dropping browsed lets cupsd stay
     # socket-activated instead of running from boot.
     remoteDiscovery = false;
   };
   my.power-management = {
-    enable = true;
     cpuVendor = "amd";
     gpuVendor = "amd";
 
@@ -217,12 +191,4 @@
   };
 
   services.xserver.desktopManager.runXdgAutostartIfNone = true;
-  # Portal setup for the hyprland backend, mirroring island-stationary.
-  xdg.portal = {
-    enable = true;
-    extraPortals = [
-      pkgs.xdg-desktop-portal-gtk
-    ];
-    config.common.default = "*";
-  };
 }

@@ -39,20 +39,11 @@
       "usbhid"
       "sd_mod"
     ];
-
-    loader = {
-      systemd-boot.enable = true;
-      systemd-boot.configurationLimit = 10;
-      efi.canTouchEfiVariables = true;
-    };
   };
 
   hardware = {
     cpu.intel.updateMicrocode = true;
-    enableRedistributableFirmware = true;
   };
-
-  time.timeZone = "Europe/Stockholm";
 
   i18n.defaultLocale = "en_GB.UTF-8";
   i18n.extraLocaleSettings = {
@@ -257,8 +248,6 @@
 
   my.wayland-security.enable = true;
 
-  console.keyMap = "colemak";
-
   my.graphics = {
     enable = true;
     intel.enable = true;
@@ -288,7 +277,6 @@
       ipv6.method = "auto";
     };
   };
-
 
   my.wake-proxy = {
     enable = true;

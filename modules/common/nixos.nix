@@ -1,17 +1,38 @@
 {
+  config,
   lib,
   pkgs,
   inputs,
   ...
 }:
+with lib;
+
 {
+  options.my.common.systemd-boot = mkOption {
+    type = types.bool;
+    default = true;
+    description = "Boot through systemd-boot on UEFI (off for e.g. the Pi's extlinux).";
+  };
+
   config = {
+    time.timeZone = mkDefault "Europe/Stockholm";
+    console.keyMap = mkDefault "colemak";
+    hardware.enableRedistributableFirmware = mkDefault true;
+
+    boot.loader = mkIf config.my.common.systemd-boot {
+      systemd-boot = {
+        enable = true;
+        configurationLimit = mkDefault 10;
+      };
+      efi.canTouchEfiVariables = mkDefault true;
+    };
+
     # aarch64 builder support: island-pi is deployed with `nixos-rebuild
     # --target-host` from whatever fleet machine is at hand; evaluation and
     # building happen on the deployer (the Pi never builds — see
     # hosts/island-pi/SPEC.md). Gated on x86_64 so aarch64 hosts don't try to
     # emulate themselves.
-    boot.binfmt.emulatedSystems = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 [ "aarch64-linux" ];
+    boot.binfmt.emulatedSystems = mkIf pkgs.stdenv.hostPlatform.isx86_64 [ "aarch64-linux" ];
 
     nix = {
       # Enable features in Nix commands
@@ -68,10 +89,10 @@
     # itself): key-only logins, no root, and no firewall hole unless a host
     # asks for one; tailnet opens 22 on tailscale0 only.
     services.openssh = {
-      openFirewall = lib.mkDefault false;
+      openFirewall = mkDefault false;
       settings = {
-        PasswordAuthentication = lib.mkDefault false;
-        PermitRootLogin = lib.mkDefault "no";
+        PasswordAuthentication = mkDefault false;
+        PermitRootLogin = mkDefault "no";
       };
     };
 

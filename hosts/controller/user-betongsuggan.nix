@@ -6,22 +6,9 @@
   home.file.".ssh/id_ed25519.pub".text =
     inputs.self.lib.hosts.controller.users.betongsuggan.ssh.ssh_ed25519 + "\n";
 
-  my.general.enable = true;
-  my.starship.enable = true;
-
   home.packages = with pkgs; [
     unstable.claude-code
   ];
-
-  my.terminal = {
-    enable = true;
-    backend = "alacritty";
-  };
-
-  my.shell = {
-    enable = true;
-    backend = "bash";
-  };
 
   my.sops.enable = true;
   #chromium.enable = true;
@@ -45,15 +32,6 @@
   #  composeKey = "ralt";
   #  monitors = [ ",preferred,auto,1" ];
   #};
-
-  my.theming = {
-    enable = true;
-    wallpaper = ../../assets/wallpaper/zeal.jpg;
-    #cursor = {
-    #  package = pkgs.banana-cursor;
-    #  name = "Banana";
-    #};
-  };
 
   my.git = {
     enable = true;

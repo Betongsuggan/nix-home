@@ -4,6 +4,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 
 ## Key Features
 
+- `my.profiles.gaming-station` (implies workstation): autologin `gamer` session, zen kernel and gaming tuning, gamemode, secure boot, DualSense wake, restic target for controller (see `modules/profiles/SPEC.md`); this file only keeps what is specific to this machine
 - Two-user setup: `betongsuggan` (development/daily use) and `gamer` (dedicated gaming)
 - Gamer user auto-logs in on TTY1 and launches Hyprland automatically
 - Hyprland compositor on both users with HDR-enabled ultrawide (3440x1440@240) and 4K HDMI monitors

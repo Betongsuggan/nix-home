@@ -16,8 +16,10 @@
 
   networking.hostName = "mail";
 
-  time.timeZone = "Europe/Stockholm";
   i18n.defaultLocale = "en_GB.UTF-8";
+
+  # Cloud VM: no physical devices that need firmware blobs
+  hardware.enableRedistributableFirmware = false;
 
   users.users.betongsuggan = {
     isNormalUser = true;

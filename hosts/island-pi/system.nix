@@ -22,7 +22,6 @@ in
 
   networking.hostName = "island-pi";
 
-  time.timeZone = "Europe/Stockholm";
   i18n.defaultLocale = "en_GB.UTF-8";
 
   # --- Raspberry Pi 3 Model B boot & hardware ---------------------------------
@@ -31,6 +30,7 @@ in
   # vfat FIRMWARE partition with Pi firmware + U-Boot, ext4 NIXOS_SD root.
   # Rebuilds only rewrite /boot/extlinux on the root partition — the firmware
   # partition is never touched by deploys.
+  my.common.systemd-boot = false;
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;
   boot.initrd.availableKernelModules = [
@@ -38,7 +38,6 @@ in
     "usbhid"
     "usb_storage"
   ];
-  hardware.enableRedistributableFirmware = true;
 
   fileSystems = {
     "/" = {

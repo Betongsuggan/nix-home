@@ -33,12 +33,6 @@
   };
 
   boot = {
-    loader = {
-      systemd-boot.enable = true;
-      systemd-boot.configurationLimit = 10;
-      efi.canTouchEfiVariables = true;
-    };
-
     initrd.availableKernelModules = [
       "virtio_pci"
       "virtio_blk"

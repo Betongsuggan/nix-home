@@ -17,19 +17,19 @@ in
     wallpaper = mkOption {
       type = types.path;
       description = "Path to wallpaper image";
-      default = ../../assets/wallpaper/nix-background.png;
+      default = ../../assets/wallpaper/zeal.jpg;
     };
 
     cursor = {
       package = mkOption {
-        type = types.attrs;
-        description = "Font package";
-        default = pkgs.bibata-cursors;
+        type = types.package;
+        description = "Cursor theme package";
+        default = pkgs.banana-cursor;
       };
       name = mkOption {
         type = types.str;
         description = "Name of the cursor theme";
-        default = "Bibata-Modern-Classic";
+        default = "Banana";
       };
       size = mkOption {
         type = types.int;

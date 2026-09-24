@@ -10,7 +10,6 @@
   home.file.".ssh/bits.pub".text = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.bits + "\n";
   home.file.".ssh/id_rsa.pub".text = inputs.self.lib.hosts.bits.users.birgerrydback.ssh.id_rsa + "\n";
 
-  my.general.enable = true;
   my.development = {
     enable = true;
     python.enable = true;
@@ -19,9 +18,7 @@
     kotlin.enable = true;
   };
   my.direnv.enable = true;
-  my.chromium.enable = true;
   my.firefox.enable = true;
-  my.communication.enable = true;
   my.media.enable = true;
   my.localsend = {
     enable = true;
@@ -31,27 +28,13 @@
     enable = true;
     cad.enable = true;
   };
-  my.battery-monitor.enable = true;
   my.file-manager = {
-    enable = true;
-    backend = "thunar";
     networkShares.enable = true;
     # Shares on the tailnet can't be discovered via mDNS (multicast doesn't
     # route over Tailscale), so bookmark them directly instead
     bookmarks = [
       "smb://${inputs.self.lib.tailnet.fqdn "controller"}/emulation-roms ROMs (controller)"
     ];
-  };
-  my.starship.enable = true;
-
-  my.terminal = {
-    enable = true;
-    backend = "alacritty";
-  };
-
-  my.shell = {
-    enable = true;
-    backend = "bash";
   };
 
   my.notifications.enable = true;
@@ -62,35 +45,11 @@
     brightness.backend = "brightnessctl";
   };
 
-  my.launcher = {
-    enable = true;
-    backend = "vicinae";
-    vicinae = {
-      extensions = with pkgs; [
-        vicinae-wifi-commander
-        vicinae-bluetooth
-        vicinae-monitor
-      ];
-    };
-  };
-
   my.window-manager = {
-    enable = true;
-    backend = "hyprland";
     composeKey = "ralt";
-    monitors = [ ",preferred,auto,1" ];
     # No autostart: Chromium and Slack are both Electron apps that cost ~1-1.5 W
     # idle and were the top CPU consumers at every login. Launch them from the
     # Vicinae launcher when they're actually wanted.
-  };
-
-  my.theming = {
-    enable = true;
-    wallpaper = ../../assets/wallpaper/zeal.jpg;
-    cursor = {
-      package = pkgs.banana-cursor;
-      name = "Banana";
-    };
   };
 
   my.git = {

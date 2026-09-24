@@ -13,7 +13,7 @@ Personal Intel-based laptop for daily use, development, light gaming, and game s
 - Game streaming client for streaming from desktop
 - Light gaming support via games module
 - Battery monitoring and power management
-- Bluetooth, touchpad, and printer support
+- `my.profiles.laptop` (implies workstation): touchpad, backlight, TLP power management, battery notifications, bluetooth, printing
 - Bash shell with Starship prompt
 - File manager (Thunar) with system integration
 - Stylix theming with Banana cursor

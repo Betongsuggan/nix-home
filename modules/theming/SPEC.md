@@ -22,9 +22,9 @@ my.theming = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable theme |
-| wallpaper | path | (built-in nix-background.png) | Path to wallpaper image |
-| cursor.package | attrs | pkgs.bibata-cursors | Cursor theme package |
-| cursor.name | str | "Bibata-Modern-Classic" | Name of the cursor theme |
+| wallpaper | path | `assets/wallpaper/zeal.jpg` | Path to wallpaper image |
+| cursor.package | package | pkgs.banana-cursor | Cursor theme package |
+| cursor.name | str | "Banana" | Name of the cursor theme |
 | cursor.size | int | 24 | Size of the cursor |
 | font.package | package | pkgs.hasklig | Font package |
 | font.name | str | "Hasklig" | Name of the font to use |

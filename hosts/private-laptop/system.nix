@@ -23,13 +23,6 @@
       "sd_mod"
       "rtsx_pci_sdmmc"
     ];
-    loader = {
-      systemd-boot.enable = true;
-      systemd-boot.configurationLimit = 10;
-
-      efi.efiSysMountPoint = "/boot";
-      efi.canTouchEfiVariables = true;
-    };
 
     kernelModules = [
       "kvm-intel"
@@ -41,23 +34,10 @@
     permittedInsecurePackages = [ "electron-25.9.0" ];
   };
 
-  xdg.portal = {
-    enable = true;
-    extraPortals = [
-      pkgs.xdg-desktop-portal-gtk
-      pkgs.xdg-desktop-portal-gnome
-    ];
-    # Include niri package to install niri-portals.conf
-    configPackages = [ pkgs.niri-stable ];
-  };
-
   hardware = {
-    enableAllFirmware = true;
-    enableRedistributableFirmware = true;
     i2c.enable = true;
     sensor.iio.enable = true;
   };
-  time.timeZone = "Europe/Stockholm";
 
   # File systems must be declared in order to boot
   fileSystems = {
@@ -77,27 +57,14 @@
   environment.systemPackages = with pkgs; [
     iio-sensor-proxy
   ];
-  services = {
-    fwupd.enable = true;
-  };
 
-  console.keyMap = "colemak";
-  my.touchpad.enable = true;
+  my.profiles.laptop.enable = true;
   my.graphics = {
-    enable = true;
     intel.enable = true;
     # intel.generation = "modern"; # Set to "legacy" or "arc" if needed
   };
-  my.audio.enable = true;
   my.docker.enable = true;
-  my.bluetooth.enable = true;
-  my.wayland-security.enable = true;
-  my.printers.enable = true;
-  my.power-management.enable = true;
-  my.network-manager = {
-    enable = true;
-    hostName = "nixos";
-  };
+  my.network-manager.hostName = "nixos";
   networking.firewall = {
     allowedTCPPorts = [ 8080 ];
   };

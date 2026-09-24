@@ -6,19 +6,6 @@
 }:
 
 {
-  users.users.gamer = {
-    isNormalUser = true;
-    description = "Gaming User";
-    extraGroups = [
-      "networkmanager"
-      "video"
-      "audio"
-      "input"
-      "uinput"
-      "gamemode"
-    ];
-  };
-
   users.users.betongsuggan = {
     isNormalUser = true;
     description = "Betongsuggan user";
@@ -34,35 +21,15 @@
     ];
   };
 
-  my.autologin = {
-    enable = true;
-    user = "gamer";
-    method = "getty";
-    tty = "tty1";
-  };
+  my.profiles.gaming-station.enable = true;
 
-  nixpkgs.config = {
-    permittedInsecurePackages = [ "freeimage-3.18.0-unstable-2024-04-18" ];
-  };
-
-  my.secure-boot.enable = true;
   boot = {
-    # Zen kernel optimized for desktop/gaming performance on Ryzen CPUs
-    kernelPackages = pkgs.linuxPackages_zen;
-
     initrd.availableKernelModules = [
       "xhci_pci"
       "nvme"
       "usb_storage"
       "sd_mod"
     ];
-
-    loader = {
-      systemd-boot.enable = true;
-      systemd-boot.configurationLimit = 10;
-      efi.efiSysMountPoint = "/boot";
-      efi.canTouchEfiVariables = true;
-    };
 
     # Add ryzen-smu module for Ryzen CPU monitoring and control
     extraModulePackages = with pkgs.linuxPackages_zen; [ ryzen-smu ];
@@ -71,23 +38,12 @@
       "amdgpu"
       "ryzen_smu"
     ];
-    supportedFilesystems = [ "ntfs" ];
 
     kernelParams = [
       "amdgpu.ppfeaturemask=0xffffffff"
       "amdgpu.dpm=1"
       "amdgpu.dcfeaturemask=0x8" # FreeSync on all displays
       "amdgpu.sg_display=0" # Disable scatter-gather for RDNA4 stability
-      "preempt=full"
-      "threadirqs"
-      "transparent_hugepage=madvise"
-      "mitigations=off"
-      "amd_pstate=active" # Modern AMD P-State driver
-      "split_lock_detect=off" # Gaming performance
-      "tsc=reliable"
-      "clocksource=tsc"
-      "nowatchdog"
-      "nmi_watchdog=0"
       "usbcore.usbfs_memory_mb=256" # Increase USB memory buffer for KVM USB ethernet
       # Headless-streaming bootstrap: force the otherwise-unused DP-1
       # connector to enumerate as connected, AND supply a built-in 1920x1080
@@ -100,23 +56,7 @@
       "video=DP-1:1920x1080@60D"
       "drm.edid_firmware=DP-1:edid/1920x1080.bin"
     ];
-
-    kernel.sysctl = {
-      "vm.swappiness" = 10;
-      "vm.max_map_count" = 2147483642; # Required for some games
-      "vm.vfs_cache_pressure" = 50;
-      "vm.dirty_ratio" = 20;
-      "vm.dirty_background_ratio" = 5;
-    };
   };
-
-  zramSwap = {
-    enable = true;
-    algorithm = "zstd";
-    memoryPercent = 50;
-  };
-
-  powerManagement.cpuFreqGovernor = "performance";
 
   # The cpufreq boost knob is volatile kernel state: amd-pstate can come out
   # of S3 resume (and possibly boot — this CPU doesn't advertise the `cpb`
@@ -132,16 +72,12 @@
   ];
 
   hardware = {
-    enableAllFirmware = true;
-    enableRedistributableFirmware = true;
     i2c.enable = true;
     sensor.iio.enable = true;
     # Provides /lib/firmware/edid/1920x1080.bin, loaded by the
     # `drm.edid_firmware=DP-1:edid/1920x1080.bin` kernel param above.
     firmware = [ pkgs.edid-generator ];
   };
-
-  time.timeZone = "Europe/Stockholm";
 
   fileSystems = {
     "/" = {
@@ -159,7 +95,6 @@
   ];
 
   services = {
-    fwupd.enable = true;
     udev.extraRules = ''
       ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/scheduler}="none"
       # Disable USB autosuspend for VIA Labs hubs (KVM switch)
@@ -170,15 +105,7 @@
   };
 
   programs.gamemode = {
-    enable = true;
-    enableRenice = true;
     settings = {
-      general = {
-        renice = 10;
-        softrealtime = "auto";
-        ioprio = 0;
-        inhibit_screensaver = 1;
-      };
       gpu = {
         apply_gpu_optimisations = "accept-responsibility";
         gpu_device = 0;
@@ -253,56 +180,10 @@
     ];
   };
 
-  # Receive restic snapshots from controller as the on-site copy in the interim
-  # 3-2-1-ish topology. Pubkey sourced from lib (never as a literal); the
-  # `restic-controller` system user is chrooted to /var/lib/restic-repos/controller
-  # via internal-sftp. See modules/restic-target/SPEC.md.
-  my.restic-target = {
-    enable = true;
-    sources.controller = {
-      sshKey = inputs.self.lib.hosts.controller.users.restic.ssh.id_ed25519;
-    };
-  };
+  environment.systemPackages = [ pkgs.iio-sensor-proxy ];
+  my.graphics.amd = true;
 
-  environment.systemPackages = with pkgs; [
-    iio-sensor-proxy
-    gamemode
-    mangohud
-  ];
-  my.graphics = {
-    enable = true;
-    amd = true;
-  };
-  my.audio = {
-    enable = true;
-    lowLatency = true;
-  };
-  my.bluetooth = {
-    enable = true;
-    wake = {
-      enable = true;
-      allowedDevices = [
-        "D0:BC:C1:41:80:04" # DualSense Wireless Controller
-      ];
-    };
-  };
-  console.keyMap = "colemak";
-  my.printers.enable = true;
-
-  xdg.portal = {
-    enable = true;
-    extraPortals = [
-      pkgs.xdg-desktop-portal-gtk
-      pkgs.xdg-desktop-portal-wlr # For Sunshine WLR capture
-    ];
-    config.common.default = "*";
-  };
-
-  my.wayland-security.enable = true;
-  my.network-manager = {
-    enable = true;
-    hostName = "desktop";
-  };
+  my.network-manager.hostName = "desktop";
   networking.interfaces.enp12s0f3u3u2.wakeOnLan.enable = true;
   networking.interfaces.enp4s0.wakeOnLan.enable = true;
   my.ai-server = {

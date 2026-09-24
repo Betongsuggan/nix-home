@@ -3,9 +3,7 @@
 {
   home.stateVersion = "25.05";
 
-  my.general.enable = true;
   my.games.enable = true;
-  my.communication.enable = true;
   my.localsend.enable = true;
   my.development = {
     enable = true;
@@ -14,36 +12,8 @@
     go.enable = true;
   };
 
-  my.terminal = {
-    enable = true;
-    backend = "alacritty";
-  };
-
-  my.starship.enable = true;
-  my.shell = {
-    enable = true;
-    backend = "bash";
-  };
-
   my.notifications.enable = true;
   my.network-monitor.enable = true;
-  my.battery-monitor.enable = false;
-  my.file-manager = {
-    enable = true;
-    backend = "thunar";
-  };
-  my.chromium.enable = true;
-  my.launcher = {
-    enable = true;
-    backend = "vicinae";
-    vicinae = {
-      extensions = with pkgs; [
-        vicinae-wifi-commander
-        vicinae-bluetooth
-        vicinae-monitor
-      ];
-    };
-  };
 
   # Enable PS5 controller support with MangoHud toggle
   my.controller = {
@@ -62,11 +32,6 @@
   my.sops.enable = true;
 
   my.window-manager = {
-    enable = true;
-    backend = "hyprland";
-    monitors = [
-      ",preferred,auto,1"
-    ];
     autostartApps = {
       chromium = {
         command = "chromium";
@@ -103,14 +68,6 @@
     };
   };
 
-  my.theming = {
-    enable = true;
-    wallpaper = ../../assets/wallpaper/zeal.jpg;
-    cursor = {
-      package = pkgs.banana-cursor;
-      name = "Banana";
-    };
-  };
   my.git = {
     enable = true;
     userName = "Betongsuggan";
