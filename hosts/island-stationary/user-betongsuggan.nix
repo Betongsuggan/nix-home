@@ -27,7 +27,6 @@
       ]; # Press Square or Triangle to toggle
       autoStart = true;
     };
-    rumble.enable = true;
   };
   my.sops.enable = true;
 

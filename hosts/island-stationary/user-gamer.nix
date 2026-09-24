@@ -30,7 +30,6 @@
       ]; # Press Square or Triangle to toggle
       autoStart = true;
     };
-    rumble.enable = true;
   };
 
   # Enable Hyprland for gaming session
