@@ -111,12 +111,24 @@
       # One check per host: its system toplevel, grouped by the host's own
       # platform. `nix flake check --no-build --all-systems` evaluates every host
       # without building; drop `--no-build` to build them.
-      checks = nixpkgs.lib.foldlAttrs (
-        acc: name: host:
-        nixpkgs.lib.recursiveUpdate acc {
-          ${host.pkgs.stdenv.hostPlatform.system}.${name} = host.config.system.build.toplevel;
-        }
-      ) { } inputs.self.nixosConfigurations;
+      # One check per host (its system toplevel, grouped by the host's own
+      # platform) plus, on x86_64, one per unused backend/module
+      # (checks/backends.nix). `nix flake check --no-build --all-systems`
+      # evaluates them all without building.
+      checks =
+        nixpkgs.lib.recursiveUpdate
+          (nixpkgs.lib.foldlAttrs (
+            acc: name: host:
+            nixpkgs.lib.recursiveUpdate acc {
+              ${host.pkgs.stdenv.hostPlatform.system}.${name} = host.config.system.build.toplevel;
+            }
+          ) { } inputs.self.nixosConfigurations)
+          {
+            x86_64-linux = import ./checks/backends.nix {
+              inherit (inputs) self;
+              inherit (nixpkgs) lib;
+            };
+          };
 
       nixosConfigurations = nixpkgs.lib.mapAttrs (import ./lib/mk-host.nix {
         inherit inputs overlays;

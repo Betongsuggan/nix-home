@@ -17,5 +17,5 @@ my.x11.enable = true;
 ## Notes
 
 - Enables `xsession` via home-manager.
-- Applies a full Gruvbox Dark color scheme to xresources (256-color palette).
+- Terminal colors in Xresources come from the theme via `stylix.targets.xresources`.
 - Enables Xft font antialiasing.

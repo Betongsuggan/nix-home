@@ -23,6 +23,7 @@ my.theming = {
 |--------|------|---------|-------------|
 | enable | bool | false | Enable theme |
 | wallpaper | path | `assets/wallpaper/zeal.jpg` | Path to wallpaper image |
+| cornerRadius | int | 5 | Corner radius (px) used by Hyprland, niri, waybar and wofi |
 | cursor.package | package | pkgs.banana-cursor | Cursor theme package |
 | cursor.name | str | "Banana" | Name of the cursor theme |
 | cursor.size | int | 24 | Size of the cursor |
@@ -60,3 +61,4 @@ my.theming = {
 - Installs Papirus icon theme (kept manual; `stylix.icons` unused), Nerd Font symbols as monospace fallback, and glibc locales. Font and cursor packages are installed via stylix.
 - The wallpaper is also written to `~/.background-image` for compatibility with tools that expect it there.
 - Modules for apps without a stylix target (niri focus ring, ghostty, walker, polybar) still reference `config.my.theming.*` directly.
+- `my.theming.colors` (`primary`, `normal`, `bright`) and `my.theming.font` are the only theme schema. Apps with a stylix target use it (alacritty, ghostty, sway, i3, swaylock, zellij, mako, xresources, vicinae, ...); the rest (hyprlock, niri focus ring, waybar and wofi CSS, polybar) read these options directly.

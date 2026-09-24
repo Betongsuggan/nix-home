@@ -77,9 +77,9 @@ with lib;
           background = config.my.theming.colors.primary.background;
           foreground = config.my.theming.colors.normal.white;
 
-          font-0 = "${config.my.theming.font.name},${theme.font.style}:size=10";
-          font-1 = "${config.my.theming.font.name},${theme.font.style}:size=20";
-          font-2 = "${config.my.theming.font.name},${theme.font.style}:size=18;1";
+          font-0 = "${config.my.theming.font.name},${config.my.theming.font.style}:size=10";
+          font-1 = "${config.my.theming.font.name},${config.my.theming.font.style}:size=20";
+          font-2 = "${config.my.theming.font.name},${config.my.theming.font.style}:size=18;1";
 
           tray-position = "right";
           tray-padding = 1;

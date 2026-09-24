@@ -21,10 +21,11 @@ in
   };
 
   config = mkIf (cfg.enable && cfg.backend == "mako") {
+    # Colors and font from the theme via stylix
+    stylix.targets.mako.enable = true;
     services.mako = {
       enable = true;
-      # TODO: Add mako-specific configuration
-      # Can be added later when needed
+      inherit (cfg.mako) settings;
     };
   };
 }

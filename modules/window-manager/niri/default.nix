@@ -293,7 +293,7 @@ in
           {
             geometry-corner-radius =
               let
-                r = 5.0;
+                r = config.my.theming.cornerRadius * 1.0;
               in
               {
                 top-left = r;

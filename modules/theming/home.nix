@@ -20,6 +20,12 @@ in
       default = ../../assets/wallpaper/zeal.jpg;
     };
 
+    cornerRadius = mkOption {
+      type = types.int;
+      default = 5;
+      description = "Corner radius in pixels for windows, bars and menus.";
+    };
+
     cursor = {
       package = mkOption {
         type = types.package;

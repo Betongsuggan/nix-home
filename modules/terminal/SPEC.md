@@ -30,7 +30,7 @@ my.terminal = {
 | urxvt.extraConfig | attrs | {} | Extra urxvt configuration |
 | urxvt.keybindings | attrsOf str | (Shift-Control-V/C for clipboard) | urxvt keybindings |
 | ghostty.enable | bool | (true if backend == "ghostty") | Enable Ghostty terminal |
-| ghostty.extraSettings | attrs | {} | Extra Ghostty settings |
+| ghostty.extraSettings | attrs | {} | Extra Ghostty settings (merged into `programs.ghostty.settings`) |
 | ghostty.keybindings | listOf str | [] | Ghostty keybindings (list of "key=action" strings) |
 
 ## Notes
@@ -39,3 +39,4 @@ my.terminal = {
 - The `my.terminal.command` and `my.terminal.commandWithCwd` options are internal read-only values used by other modules (e.g., window-manager) to launch the configured terminal.
 - **Alacritty is themed by stylix**: `colors.useTheme` toggles the stylix alacritty target (colors, font, opacity as a whole); `font.size` is wired to `stylix.fonts.sizes.terminal` and `opacity` to `stylix.opacity.terminal`. `alacritty.extraSettings` merges via the module system — use `lib.mkForce` to override a stylix-set leaf (e.g. `font.normal.style`, which stylix sets to "Regular").
 - Ghostty and urxvt keep manual theming from `config.my.theming.*` (no stylix target enabled).
+- Ghostty is configured through `programs.ghostty`; like alacritty, its colors, font and opacity come from stylix (`stylix.targets.ghostty`, on with `colors.useTheme`). Emoji codepoints are routed to Noto Color Emoji because Ghostty ignores fontconfig fallback.

@@ -58,9 +58,11 @@ in
       ];
     };
 
+    # Colors and fonts from the theme via stylix
+    stylix.targets.i3.enable = true;
+
     xsession.windowManager.i3 = {
       enable = true;
-      package = pkgs.i3-gaps;
       config = {
         startup = [
           {
@@ -109,11 +111,6 @@ in
 
         modifier = mod;
 
-        fonts = with config.my.theming.font; {
-          inherit style size;
-          names = [ name ];
-        };
-
         # The shared keymap (my.window-manager.keybinds) on top of i3's defaults
         keybindings = lib.mkOptionDefault (wmLib.i3Keybindings "i3" mod config.my.window-manager.keybinds);
 
@@ -129,42 +126,6 @@ in
           left = 10;
           right = 10;
           smartGaps = true;
-        };
-
-        colors = with config.my.theming.colors; {
-          background = "${primary.background}";
-
-          focused = {
-            border = "${normal.blue}";
-            background = "${normal.blue}";
-            text = "${bright.black}";
-            indicator = "${normal.magenta}";
-            childBorder = "${bright.black}";
-          };
-
-          unfocused = {
-            border = "${bright.black}";
-            background = "${bright.black}";
-            text = "${normal.white}";
-            indicator = "${normal.magenta}";
-            childBorder = "${bright.black}";
-          };
-
-          focusedInactive = {
-            border = "${bright.black}";
-            background = "${bright.black}";
-            text = "${bright.black}";
-            indicator = "${normal.magenta}";
-            childBorder = "${bright.black}";
-          };
-
-          urgent = {
-            border = "${normal.red}";
-            background = "${normal.red}";
-            text = "${primary.foreground}";
-            indicator = "${primary.foreground}";
-            childBorder = "${primary.foreground}";
-          };
         };
 
         window.titlebar = false;

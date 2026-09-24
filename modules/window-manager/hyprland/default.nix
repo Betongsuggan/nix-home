@@ -468,7 +468,7 @@ in
         };
 
         decoration = {
-          rounding = 5;
+          rounding = config.my.theming.cornerRadius;
         };
 
         bind = keybindsWhere (e: !(e.repeat or false));

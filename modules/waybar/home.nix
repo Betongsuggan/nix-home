@@ -207,7 +207,7 @@ in
 
       style = ''
         * {
-          font-family: ${config.my.theming.font.name}, ${theme.font.style};
+          font-family: ${config.my.theming.font.name}, ${config.my.theming.font.style};
           font-size: 10pt;
         }
 
@@ -224,37 +224,37 @@ in
         .modules-right {
           margin-right: 0px;
           padding-left: 15px;
-          background-color: ${config.my.theming.colors.thirdText};
-          color: ${config.my.theming.colors.background};
+          background-color: ${config.my.theming.colors.normal.yellow};
+          color: ${config.my.theming.colors.primary.background};
           margin-top: 2;
           margin-bottom: 2;
-          border-radius: ${config.my.theming.cornerRadius};
+          border-radius: ${toString config.my.theming.cornerRadius}px;
         }
 
         .modules-left {
           padding-right: 15px;
           margin-left: 0px;
-          background-color: ${config.my.theming.colors.thirdText};
-          color: ${config.my.theming.colors.background};
+          background-color: ${config.my.theming.colors.normal.yellow};
+          color: ${config.my.theming.colors.primary.background};
           margin-top: 2;
           margin-bottom: 2;
-          border-radius: ${config.my.theming.cornerRadius};
+          border-radius: ${toString config.my.theming.cornerRadius}px;
         }
 
         window#waybar.bottom {
           opacity: 0.90;
-          background-color: ${config.my.theming.colors.background};
-          border: 2px solid ${config.my.theming.colors.border};
-          border-radius: ${config.my.theming.cornerRadius};
+          background-color: ${config.my.theming.colors.primary.background};
+          border: 2px solid ${config.my.theming.colors.bright.black};
+          border-radius: ${toString config.my.theming.cornerRadius}px;
         }
 
         window#waybar {
-          color: ${config.my.theming.colors.thirdText};
+          color: ${config.my.theming.colors.normal.yellow};
         }
 
         #workspaces button {
-          background-color: ${config.my.theming.colors.background};
-          color: ${config.my.theming.colors.thirdText};
+          background-color: ${config.my.theming.colors.primary.background};
+          color: ${config.my.theming.colors.normal.yellow};
           margin-top: 4;
           margin-bottom: 4;
           padding-top: 0px;
@@ -264,40 +264,40 @@ in
         }
 
         #workspaces button.hidden {
-          background-color: ${config.my.theming.colors.background};
-          color: ${config.my.theming.colors.blue};
+          background-color: ${config.my.theming.colors.primary.background};
+          color: ${config.my.theming.colors.normal.blue};
         }
 
         #workspaces button.focused,
         #workspaces button.active {
-          background-color: ${config.my.theming.colors.secondaryText};
-          color: ${config.my.theming.colors.background};
+          background-color: ${config.my.theming.colors.normal.green};
+          color: ${config.my.theming.colors.primary.background};
         }
 
         #custom-menu {
-          background-color: ${config.my.theming.colors.utilityText};
-          color: ${config.my.theming.colors.background};
+          background-color: ${config.my.theming.colors.normal.blue};
+          color: ${config.my.theming.colors.primary.background};
           padding-left: 15px;
           padding-right: 15px;
           margin-left: 0;
           margin-top: -2;
           margin-bottom: -4;
-          border-radius: ${config.my.theming.cornerRadius};
+          border-radius: ${toString config.my.theming.cornerRadius}px;
         }
 
         #custom-hostname {
-          background-color: ${config.my.theming.colors.utilityText};
-          color: ${config.my.theming.colors.background};
+          background-color: ${config.my.theming.colors.normal.blue};
+          color: ${config.my.theming.colors.primary.background};
           padding-left: 15px;
           padding-right: 15px;
           margin-right: 0;
           margin-top: -2;
           margin-bottom: -4;
-          border-radius: ${config.my.theming.cornerRadius};
+          border-radius: ${toString config.my.theming.cornerRadius}px;
         }
 
         #tray {
-          color: ${config.my.theming.colors.background};
+          color: ${config.my.theming.colors.primary.background};
         }
       '';
     };

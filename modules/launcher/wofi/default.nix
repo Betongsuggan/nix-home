@@ -132,10 +132,10 @@ in
           ''
             window {
               font-size: 18px;
-              border-radius: ${config.my.theming.cornerRadius};
-              border-color: ${config.my.theming.colors.orange-light};
-              background-color: ${config.my.theming.colors.background-dark};
-              color: ${config.my.theming.colors.text-light};
+              border-radius: ${toString config.my.theming.cornerRadius}px;
+              border-color: ${config.my.theming.colors.bright.yellow};
+              background-color: ${config.my.theming.colors.primary.background};
+              color: ${config.my.theming.colors.primary.foreground};
             }
 
             #entry {
@@ -143,16 +143,16 @@ in
             }
 
             #entry:selected {
-              background-color: ${config.my.theming.colors.red-dark};
+              background-color: ${config.my.theming.colors.normal.red};
             }
 
             #text:selected {
-              color: ${config.my.theming.colors.text-light};
+              color: ${config.my.theming.colors.primary.foreground};
             }
 
             #input {
-              background-color: ${config.my.theming.colors.background-light};
-              color: ${config.my.theming.colors.text-light};
+              background-color: ${config.my.theming.colors.bright.black};
+              color: ${config.my.theming.colors.primary.foreground};
               padding: 0.50em;
             }
 

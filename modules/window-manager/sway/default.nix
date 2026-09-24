@@ -58,6 +58,10 @@ in
         swaylock-effects
       ];
 
+    # Colors and fonts from the theme via stylix (swaylock too)
+    stylix.targets.sway.enable = true;
+    stylix.targets.swaylock.enable = config.my.window-manager.sway.lockscreen.enable;
+
     wayland.windowManager.sway = {
       enable = true;
       wrapperFeatures.gtk = true;
@@ -65,11 +69,6 @@ in
         inherit modifier;
         terminal = config.my.terminal.command;
         menu = config.my.launcher.show { mode = "drun"; };
-
-        fonts = with config.my.theming.font; {
-          inherit style size;
-          names = [ name ];
-        };
 
         startup = [
           {
@@ -117,42 +116,6 @@ in
           };
         };
 
-        colors = with config.my.theming.colors; {
-          background = "${background}";
-
-          focused = {
-            border = "${thirdText}";
-            background = "${thirdText}";
-            text = "${borderDark}";
-            indicator = "${purple}";
-            childBorder = "${borderDark}";
-          };
-
-          unfocused = {
-            border = "${borderDark}";
-            background = "${borderDark}";
-            text = "${utilityText}";
-            indicator = "${purple}";
-            childBorder = "${borderDark}";
-          };
-
-          focusedInactive = {
-            border = "${borderDark}";
-            background = "${borderDark}";
-            text = "${borderDark}";
-            indicator = "${purple}";
-            childBorder = "${borderDark}";
-          };
-
-          urgent = {
-            border = "${alertText}";
-            background = "${alertText}";
-            text = "${mainText}";
-            indicator = "${mainText}";
-            childBorder = "${mainText}";
-          };
-        };
-
         window.titlebar = false;
       };
       extraConfig = ''
@@ -172,8 +135,6 @@ in
       package = pkgs.swaylock-effects;
       settings = {
         # Background with blur (like hyprlock blur_passes=2, blur_size=4)
-        image = "${config.my.theming.wallpaper}";
-        scaling = "fill";
         effect-blur = "7x5";
         effect-vignette = "0.5:0.5";
 
@@ -186,23 +147,6 @@ in
         indicator = true;
         indicator-radius = 100;
         indicator-thickness = 7;
-
-        # Colors matching theme
-        color = lib.strings.removePrefix "#" config.my.theming.colors.primary.background;
-        inside-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.background;
-        inside-clear-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.background;
-        inside-ver-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.background;
-        inside-wrong-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.background;
-        key-hl-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
-        ring-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
-        ring-clear-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
-        ring-ver-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
-        ring-wrong-color = lib.strings.removePrefix "#" config.my.theming.colors.normal.red;
-        line-color = "00000000";
-        text-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
-        text-clear-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
-        text-ver-color = lib.strings.removePrefix "#" config.my.theming.colors.primary.foreground;
-        text-wrong-color = lib.strings.removePrefix "#" config.my.theming.colors.normal.red;
 
         # Font settings
         font = config.my.theming.font.name;
