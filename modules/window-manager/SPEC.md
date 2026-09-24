@@ -44,6 +44,32 @@ my.window-manager = {
 | workspaceBindings.*.default | bool | false | Make this the default workspace for the monitor |
 | composeKey | str | "ralt" | Keyboard key to use as the compose key for special characters |
 | touchOutput | nullOr str | null | Output name to map touchscreen input to (e.g., "eDP-1") |
+| idle.dimAfter / lockAfter / screenOffAfter / suspendAfter | int (s) | 240 / 300 / 330 / 900 | Idle timeouts, shared by hypridle (Hyprland) and swayidle (niri) |
+
+## Keymap
+
+One keymap, `my.window-manager.keybinds` (internal, defined in `home.nix`), rendered by every backend in its own syntax: Hyprland `bind`/`binde`, niri `binds`, and i3/sway `keybindings` on top of their defaults. An entry is either a command run the same way everywhere (`spawn`) or a native action per compositor; a compositor without one leaves the chord unbound, as does a launcher menu the launcher backend lacks.
+
+| Keys | Action |
+|---|---|
+| Mod+Return / Mod+Shift+Q | terminal / close window |
+| Mod+H/L, Mod+K/J | focus column left/right, workspace up/down |
+| Mod+Shift+H/L, Mod+Shift+K/J | move column left/right, to workspace up/down |
+| Mod+Ctrl+K/J, Mod+Ctrl+Shift+K/J | focus / move window within the column |
+| Mod+Ctrl+H/L, Mod+Ctrl+Shift+H/L | focus monitor, move to monitor |
+| Mod+Minus/Equal, Mod+Shift+Minus/Equal | column width, window height |
+| Mod+F / Mod+Shift+F | maximize column / fullscreen |
+| Mod+Comma/Period | consume into / expel from column |
+| Mod+1..0, Mod+Shift+1..0 | focus / move to workspace |
+| Mod+Shift+X / Mod+Ctrl+X | lock / lock via power-control |
+| Mod+Escape, Mod+Shift+Escape, Mod+Ctrl+S | power menu, power status, suspend |
+| Mod+Shift+P / Mod+Ctrl+P | screenshot region / focused output |
+| Mod+V / Mod+Shift+V | toggle recording of a region / the focused output (`screen-record`) |
+| Mod+B, Mod+Space, Mod+W, Mod+T | battery, system, workspace, clock notifiers |
+| Mod+S, Mod+N, Mod+P (+ XF86 media keys) | play/pause, next, previous |
+| Mod+O, D, E, C, U, Z, M, A, Shift+A | launcher: apps, web search, symbols, clipboard, wifi, bluetooth, monitors, audio out/in |
+| Hyprland only: Mod+R, Mod+Ctrl+C, Mod+Shift+B/C | cycle column widths, center column, QWERTY/Colemak |
+| niri only: Mod+Tab, Mod+Shift+E | overview, quit |
 
 ## Notes
 

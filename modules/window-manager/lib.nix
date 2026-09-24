@@ -16,4 +16,58 @@ rec {
 
   # Named outputs of my.window-manager.monitors, as a list of { name, ... }
   outputList = monitors: lib.mapAttrsToList (name: m: m // { inherit name; }) monitors;
+
+  # "Mod+Ctrl+P" -> { mods = [ "Mod" "Ctrl" ]; key = "P"; }
+  chord =
+    c:
+    let
+      parts = lib.splitString "+" c;
+    in
+    {
+      mods = lib.init parts;
+      key = lib.last parts;
+    };
+
+  # How a keymap entry is run on `backend`: its shell command (spawn, as one
+  # string) or the backend's native action; null = leave unbound
+  spawnString = s: if builtins.isList s then lib.concatStringsSep " " s else s;
+  entryFor =
+    backend: e:
+    if e ? spawn then
+      (if e.spawn == null then null else { spawn = e.spawn; })
+    else if (e.${backend} or null) != null then
+      { native = e.${backend}; }
+    else
+      null;
+
+  # The keymap as i3/sway `keybindings` (both share the syntax)
+  i3Keybindings =
+    backend: modifier: keybinds:
+    let
+      modName = {
+        Mod = modifier;
+        Ctrl = "Ctrl";
+        Shift = "Shift";
+        Alt = "Mod1";
+      };
+      keyName = {
+        Space = "space";
+        Minus = "minus";
+        Equal = "equal";
+        Comma = "comma";
+        Period = "period";
+      };
+    in
+    lib.concatMapAttrs (
+      chordName: e:
+      let
+        c = chord chordName;
+        how = entryFor backend e;
+        key = keyName.${c.key} or (if lib.stringLength c.key == 1 then lib.toLower c.key else c.key);
+      in
+      lib.optionalAttrs (how != null) {
+        ${lib.concatStringsSep "+" (map (m: modName.${m}) c.mods ++ [ key ])} =
+          if how ? spawn then "exec ${spawnString how.spawn}" else how.native;
+      }
+    ) keybinds;
 }

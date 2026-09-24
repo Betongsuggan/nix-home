@@ -6,6 +6,61 @@
 }:
 with lib;
 
+let
+  cfg = config.my.window-manager;
+  launcher = config.my.launcher;
+
+  # Name of the focused output, per compositor (for recording/screenshots)
+  focusedOutput =
+    {
+      hyprland = "${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name'";
+      niri = "${config.programs.niri.package}/bin/niri msg --json focused-output | ${pkgs.jq}/bin/jq -r .name";
+      sway = "${pkgs.sway}/bin/swaymsg -t get_outputs | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name'";
+      i3 = "";
+    }
+    .${cfg.backend};
+
+  # `screen-record region|output`: toggles a wf-recorder capture of a selected
+  # region or the focused output into ~/media/videos
+  screenRecord = pkgs.writeShellScriptBin "screen-record" ''
+    if ${pkgs.procps}/bin/pkill -SIGINT wf-recorder; then
+      ${config.my.notifications.send {
+        category = "recording";
+        icon = "media-playback-stop";
+        summary = "Recording stopped";
+      }}
+      exit 0
+    fi
+    case "$1" in
+      region) geometry=$(${pkgs.slurp}/bin/slurp) || exit 0; target=(-g "$geometry") ;;
+      *) target=(-o "$(${focusedOutput})") ;;
+    esac
+    ${config.my.notifications.send {
+      category = "recording";
+      summary = "Recording started";
+    }}
+    exec ${pkgs.wf-recorder}/bin/wf-recorder "''${target[@]}" -c libx264 -p crf=23 -p preset=fast \
+      --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv
+  '';
+
+  # `screenshot region|output` into ~/media/images (wlroots compositors; niri
+  # uses its built-in screenshot UI instead)
+  screenshot = pkgs.writeShellScriptBin "screenshot" ''
+    file=~/media/images/$(${pkgs.coreutils}/bin/date -Iseconds).png
+    case "$1" in
+      region) geometry=$(${pkgs.slurp}/bin/slurp) || exit 0; exec ${pkgs.grim}/bin/grim -g "$geometry" "$file" ;;
+      *) exec ${pkgs.grim}/bin/grim -o "$(${focusedOutput})" "$file" ;;
+    esac
+  '';
+
+  # Launcher menus the chosen launcher backend doesn't provide are null
+  launch = f: args: if launcher.${f} == null then null else launcher.${f} args;
+
+  workspaceKeys = genList (i: {
+    n = i + 1;
+    key = toString (mod (i + 1) 10);
+  }) 10;
+in
 {
   imports = [
     ./hyprland
@@ -215,6 +270,44 @@ with lib;
       example = "menu";
     };
 
+    idle = {
+      dimAfter = mkOption {
+        type = types.int;
+        default = 240;
+        description = "Seconds of inactivity before the backlight dims to 10%.";
+      };
+      lockAfter = mkOption {
+        type = types.int;
+        default = 300;
+        description = "Seconds before the session locks (when the backend's lockscreen is on).";
+      };
+      screenOffAfter = mkOption {
+        type = types.int;
+        default = 330;
+        description = "Seconds before the outputs are powered off.";
+      };
+      suspendAfter = mkOption {
+        type = types.int;
+        default = 900;
+        description = "Seconds before the machine suspends.";
+      };
+    };
+
+    keybinds = mkOption {
+      internal = true;
+      readOnly = true;
+      type = types.attrsOf types.attrs;
+      description = ''
+        The shared keymap, keyed by chord in niri notation ("Mod+Shift+P").
+        Each entry is either `{ spawn = <shell string or argv list>; }`, run
+        the same way everywhere, or native actions per compositor
+        (`{ hyprland = "dispatcher, args"; niri = { <action> = ...; }; sway =
+        "command"; i3 = "command"; }`); a compositor without an entry leaves
+        the chord unbound. `repeat = true` repeats while held; `spawn = null`
+        (e.g. a launcher menu the backend lacks) is skipped.
+      '';
+    };
+
     touchOutput = mkOption {
       type = types.nullOr types.str;
       default = null;
@@ -228,6 +321,335 @@ with lib;
   };
 
   config = mkIf config.my.window-manager.enable {
+    home.packages = [
+      screenRecord
+      screenshot
+    ];
+
+    my.window-manager.keybinds = {
+      ## Applications
+      "Mod+Return".spawn = [ config.my.terminal.command ];
+      "Mod+Shift+Q" = {
+        hyprland = "killactive,";
+        niri.close-window = { };
+        sway = "kill";
+        i3 = "kill";
+      };
+
+      # Lock directly (Mod+Ctrl+X goes through power-control)
+      "Mod+Shift+X" = {
+        hyprland = if cfg.hyprland.lockscreen.enable then "exec, ${pkgs.hyprlock}/bin/hyprlock" else null;
+        niri =
+          if cfg.niri.lockscreen.enable then
+            {
+              spawn = [
+                "${pkgs.swaylock-effects}/bin/swaylock"
+                "-f"
+              ];
+            }
+          else
+            null;
+        sway = if cfg.sway.lockscreen.enable then "exec ${pkgs.swaylock-effects}/bin/swaylock -f" else null;
+        i3 = "exec sh -c '${pkgs.i3lock-fancy-rapid}/bin/i3lock-fancy-rapid 15 8'";
+      };
+
+      ## Screenshots and recording
+      "Mod+Shift+P" = {
+        hyprland = "exec, ${screenshot}/bin/screenshot region";
+        niri.screenshot = { };
+        sway = "exec ${screenshot}/bin/screenshot region";
+        i3 = "exec sh -c '${pkgs.maim}/bin/maim -s | ${pkgs.xclip}/bin/xclip -selection clipboard -t image/png'";
+      };
+      "Mod+Ctrl+P" = {
+        hyprland = "exec, ${screenshot}/bin/screenshot output";
+        niri.screenshot-screen = { };
+        sway = "exec ${screenshot}/bin/screenshot output";
+      };
+      "Mod+V" = {
+        hyprland = "exec, ${screenRecord}/bin/screen-record region";
+        niri.spawn = [
+          "${screenRecord}/bin/screen-record"
+          "region"
+        ];
+        sway = "exec ${screenRecord}/bin/screen-record region";
+      };
+      "Mod+Shift+V" = {
+        hyprland = "exec, ${screenRecord}/bin/screen-record output";
+        niri.spawn = [
+          "${screenRecord}/bin/screen-record"
+          "output"
+        ];
+        sway = "exec ${screenRecord}/bin/screen-record output";
+      };
+
+      ## Notifiers
+      "Mod+B".spawn = [ "battery-notifier" ];
+      "Mod+Space".spawn = [ "system-notifier" ];
+      "Mod+W".spawn = [ "workspace-notifier" ];
+      "Mod+T".spawn = [ "time-notifier" ];
+
+      ## Power
+      "Mod+Escape".spawn = [
+        "power-control"
+        "menu"
+      ];
+      "Mod+Shift+Escape".spawn = [
+        "power-control"
+        "status"
+      ];
+      "Mod+Ctrl+X".spawn = [
+        "power-control"
+        "lock"
+      ];
+      "Mod+Ctrl+S".spawn = [
+        "power-control"
+        "suspend"
+      ];
+
+      ## Media, volume, brightness
+      "XF86AudioPlay".spawn = [
+        "media-player"
+        "play"
+      ];
+      "Mod+S".spawn = [
+        "media-player"
+        "play"
+      ];
+      "XF86AudioNext".spawn = [
+        "media-player"
+        "next"
+      ];
+      "Mod+N".spawn = [
+        "media-player"
+        "next"
+      ];
+      "XF86AudioPrev".spawn = [
+        "media-player"
+        "previous"
+      ];
+      "Mod+P".spawn = [
+        "media-player"
+        "previous"
+      ];
+      "XF86AudioRaiseVolume" = {
+        spawn = [
+          "volume-control"
+          "-i"
+          "2"
+        ];
+        repeat = true;
+      };
+      "XF86AudioLowerVolume" = {
+        spawn = [
+          "volume-control"
+          "-d"
+          "2"
+        ];
+        repeat = true;
+      };
+      "XF86AudioMute" = {
+        spawn = [
+          "volume-control"
+          "-m"
+        ];
+        repeat = true;
+      };
+      "XF86MonBrightnessUp" = {
+        spawn = [
+          "brightness-control"
+          "-i"
+          "10"
+        ];
+        repeat = true;
+      };
+      "XF86MonBrightnessDown" = {
+        spawn = [
+          "brightness-control"
+          "-d"
+          "10"
+        ];
+        repeat = true;
+      };
+
+      ## Launcher menus
+      "Mod+O".spawn = launch "show" { mode = "desktopapplications"; };
+      "Mod+D".spawn = launch "show" { mode = "websearch"; };
+      "Mod+E".spawn = launch "show" { mode = "symbols"; };
+      "Mod+C".spawn = launch "show" { mode = "clipboard"; };
+      "Mod+U".spawn = launch "wifi" { };
+      "Mod+Z".spawn = launch "bluetooth" { };
+      "Mod+M".spawn = launch "monitor" { };
+      "Mod+A".spawn = launch "audioOutput" { };
+      "Mod+Shift+A".spawn = launch "audioInput" { };
+
+      ## Layout: left/right walks columns, up/down walks workspaces, Ctrl acts
+      ## within a column (niri's model; Hyprland's scrolling layout mimics it)
+      "Mod+H" = {
+        hyprland = "movefocus, l";
+        niri.focus-column-left = { };
+        sway = "focus left";
+        i3 = "focus left";
+      };
+      "Mod+L" = {
+        hyprland = "movefocus, r";
+        niri.focus-column-right = { };
+        sway = "focus right";
+        i3 = "focus right";
+      };
+      "Mod+K" = {
+        # Hyprland's `workspace m-1` wraps; the helper stops at the ends
+        hyprland = "exec, hypr-workspace-step workspace -1";
+        niri.focus-workspace-up = { };
+        sway = "focus up";
+        i3 = "focus up";
+      };
+      "Mod+J" = {
+        hyprland = "exec, hypr-workspace-step workspace +1";
+        niri.focus-workspace-down = { };
+        sway = "focus down";
+        i3 = "focus down";
+      };
+      "Mod+Shift+H" = {
+        hyprland = "layoutmsg, swapcol l";
+        niri.move-column-left = { };
+        sway = "move left";
+        i3 = "move left";
+      };
+      "Mod+Shift+L" = {
+        hyprland = "layoutmsg, swapcol r";
+        niri.move-column-right = { };
+        sway = "move right";
+        i3 = "move right";
+      };
+      "Mod+Shift+K" = {
+        # Hyprland can only take the focused window along, not the column
+        hyprland = "exec, hypr-workspace-step movetoworkspace -1";
+        niri.move-column-to-workspace-up = { };
+        sway = "move up";
+        i3 = "move up";
+      };
+      "Mod+Shift+J" = {
+        hyprland = "exec, hypr-workspace-step movetoworkspace +1";
+        niri.move-column-to-workspace-down = { };
+        sway = "move down";
+        i3 = "move down";
+      };
+      "Mod+Ctrl+K" = {
+        hyprland = "movefocus, u";
+        niri.focus-window-up = { };
+      };
+      "Mod+Ctrl+J" = {
+        hyprland = "movefocus, d";
+        niri.focus-window-down = { };
+      };
+      "Mod+Ctrl+Shift+K" = {
+        hyprland = "movewindow, u";
+        niri.move-window-up = { };
+      };
+      "Mod+Ctrl+Shift+J" = {
+        hyprland = "movewindow, d";
+        niri.move-window-down = { };
+      };
+      "Mod+Ctrl+H" = {
+        hyprland = "focusmonitor, l";
+        niri.focus-monitor-left = { };
+        sway = "focus output left";
+        i3 = "focus output left";
+      };
+      "Mod+Ctrl+L" = {
+        hyprland = "focusmonitor, r";
+        niri.focus-monitor-right = { };
+        sway = "focus output right";
+        i3 = "focus output right";
+      };
+      "Mod+Ctrl+Shift+H" = {
+        hyprland = "movewindow, mon:l";
+        niri.move-column-to-monitor-left = { };
+        sway = "move container to output left";
+        i3 = "move container to output left";
+      };
+      "Mod+Ctrl+Shift+L" = {
+        hyprland = "movewindow, mon:r";
+        niri.move-column-to-monitor-right = { };
+        sway = "move container to output right";
+        i3 = "move container to output right";
+      };
+      "Mod+Comma" = {
+        hyprland = "layoutmsg, consume";
+        niri.consume-window-into-column = { };
+      };
+      "Mod+Period" = {
+        hyprland = "layoutmsg, expel";
+        niri.expel-window-from-column = { };
+      };
+      "Mod+Minus" = {
+        hyprland = "layoutmsg, colresize -0.1";
+        niri.set-column-width = "-10%";
+        sway = "resize shrink width 10 ppt";
+        i3 = "resize shrink width 10 ppt";
+      };
+      "Mod+Equal" = {
+        hyprland = "layoutmsg, colresize +0.1";
+        niri.set-column-width = "+10%";
+        sway = "resize grow width 10 ppt";
+        i3 = "resize grow width 10 ppt";
+      };
+      "Mod+Shift+Minus" = {
+        hyprland = "resizeactive, 0 -10%";
+        niri.set-window-height = "-10%";
+        sway = "resize shrink height 10 ppt";
+        i3 = "resize shrink height 10 ppt";
+      };
+      "Mod+Shift+Equal" = {
+        hyprland = "resizeactive, 0 10%";
+        niri.set-window-height = "+10%";
+        sway = "resize grow height 10 ppt";
+        i3 = "resize grow height 10 ppt";
+      };
+      "Mod+F" = {
+        # Full column width <-> 0.5, staying tiled
+        hyprland = "exec, hypr-toggle-column-maximize";
+        niri.maximize-column = { };
+      };
+      "Mod+Shift+F" = {
+        hyprland = "fullscreen";
+        niri.fullscreen-window = { };
+        sway = "fullscreen toggle";
+        i3 = "fullscreen toggle";
+      };
+
+      ## Compositor-specific extras
+      "Mod+R".hyprland = "layoutmsg, colresize +conf"; # cycle preset widths
+      "Mod+Ctrl+C".hyprland = "layoutmsg, center";
+      "Mod+Shift+B" = {
+        hyprland = "exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant"; # QWERTY
+        niri.spawn = [
+          "sh"
+          "-c"
+          "niri msg action switch-keyboard-layout"
+        ];
+      };
+      "Mod+Shift+C".hyprland = "exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant colemak";
+      "Mod+Tab".niri.toggle-overview = { };
+      "Mod+Shift+E".niri.quit.skip-confirmation = false;
+    }
+    // listToAttrs (
+      concatMap (w: [
+        (nameValuePair "Mod+${w.key}" {
+          hyprland = "workspace, ${toString w.n}";
+          niri.focus-workspace = w.n;
+          sway = "workspace number ${toString w.n}";
+          i3 = "workspace number ${toString w.n}";
+        })
+        (nameValuePair "Mod+Shift+${w.key}" {
+          hyprland = "movetoworkspacesilent, ${toString w.n}";
+          niri.move-column-to-workspace = w.n;
+          sway = "move container to workspace number ${toString w.n}";
+          i3 = "move container to workspace number ${toString w.n}";
+        })
+      ]) workspaceKeys
+    );
+
     # Every backend's binds use these; each reads the backend itself
     my.launcher.enable = mkDefault true;
     my.controls.enable = mkDefault true;

@@ -64,7 +64,7 @@ in
       systemdTargets = [ "graphical-session.target" ];
       timeouts = [
         {
-          timeout = 240; # 4 minutes
+          timeout = config.my.window-manager.idle.dimAfter;
           command = "${pkgs.brightnessctl}/bin/brightnessctl -s set 10";
           resumeCommand = "${pkgs.brightnessctl}/bin/brightnessctl -r";
         }
@@ -73,7 +73,7 @@ in
         if cfg.lockscreen.enable then
           [
             {
-              timeout = 300; # 5 minutes
+              timeout = config.my.window-manager.idle.lockAfter;
               command = "${pkgs.systemd}/bin/loginctl lock-session";
             }
           ]
@@ -82,12 +82,12 @@ in
       )
       ++ [
         {
-          timeout = 330; # 5.5 minutes
+          timeout = config.my.window-manager.idle.screenOffAfter;
           command = "niri msg action power-off-monitors";
           resumeCommand = "niri msg action power-on-monitors";
         }
         {
-          timeout = 900; # 15 minutes
+          timeout = config.my.window-manager.idle.suspendAfter;
           command = "${pkgs.systemd}/bin/systemctl suspend";
         }
       ];
@@ -332,294 +332,30 @@ in
           }
         ];
 
-        # Keybindings
-        binds = {
-          # Keyboard layout switching
-          "Mod+Shift+B".action.spawn = [
-            "sh"
-            "-c"
-            "niri msg action switch-keyboard-layout"
-          ];
-
-          # Terminal
-          "Mod+Return".action.spawn = [ config.my.terminal.command ];
-
-          # Lock screen
-          "Mod+Shift+X".action =
-            if cfg.lockscreen.enable then
-              {
-                spawn = [
-                  "${pkgs.swaylock-effects}/bin/swaylock"
-                  "-f"
-                ];
-              }
-            else
-              null;
-
-          # Screenshot (region)
-          "Mod+Shift+P".action.screenshot-screen = { };
-
-          # Screenshot (area selection)
-          "Mod+P".action.screenshot = { };
-
-          # Screen recording toggle (region selection)
-          "Mod+V".action.spawn = [
-            "sh"
-            "-c"
-            ''
-              if ${pkgs.procps}/bin/pkill -SIGINT wf-recorder; then
-                ${config.my.notifications.send {
-                  category = "recording";
-                  icon = "media-playback-stop";
-                  summary = "Recording stopped";
-                }}
+        # The shared keymap (my.window-manager.keybinds)
+        binds = concatMapAttrs (
+          chord: e:
+          let
+            how = wmLib.entryFor "niri" e;
+          in
+          optionalAttrs (how != null) {
+            ${chord}.action =
+              if how ? spawn then
+                {
+                  spawn =
+                    if isList how.spawn then
+                      how.spawn
+                    else
+                      [
+                        "sh"
+                        "-c"
+                        how.spawn
+                      ];
+                }
               else
-                GEOMETRY=$(${pkgs.slurp}/bin/slurp)
-                if [ -n "$GEOMETRY" ]; then
-                  ${config.my.notifications.send {
-                    category = "recording";
-                    summary = "Recording started";
-                    body = "Selected region";
-                  }}
-                  ${pkgs.wf-recorder}/bin/wf-recorder -g "$GEOMETRY" -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv
-                fi
-              fi
-            ''
-          ];
-
-          # Screen recording toggle (full screen)
-          "Mod+Shift+V".action.spawn = [
-            "sh"
-            "-c"
-            ''
-              if ${pkgs.procps}/bin/pkill -SIGINT wf-recorder; then
-                ${config.my.notifications.send {
-                  category = "recording";
-                  icon = "media-playback-stop";
-                  summary = "Recording stopped";
-                }}
-              else
-                ${config.my.notifications.send {
-                  category = "recording";
-                  summary = "Recording started";
-                }}
-                ${pkgs.wf-recorder}/bin/wf-recorder -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv
-              fi
-            ''
-          ];
-
-          # Focus navigation (Niri uses columns horizontally, workspaces vertically)
-          "Mod+H".action.focus-column-left = { };
-          "Mod+L".action.focus-column-right = { };
-          "Mod+K".action.focus-workspace-up = { };
-          "Mod+J".action.focus-workspace-down = { };
-
-          # Move column between workspaces
-          "Mod+Shift+H".action.move-column-left = { };
-          "Mod+Shift+L".action.move-column-right = { };
-          "Mod+Shift+K".action.move-column-to-workspace-up = { };
-          "Mod+Shift+J".action.move-column-to-workspace-down = { };
-
-          # Focus window within column
-          "Mod+Ctrl+K".action.focus-window-up = { };
-          "Mod+Ctrl+J".action.focus-window-down = { };
-
-          # Move window within column
-          "Mod+Ctrl+Shift+K".action.move-window-up = { };
-          "Mod+Ctrl+Shift+J".action.move-window-down = { };
-
-          # Consume/expel windows into/from columns
-          "Mod+Comma".action.consume-window-into-column = { };
-          "Mod+Period".action.expel-window-from-column = { };
-
-          # Column width adjustments
-          "Mod+Minus".action.set-column-width = "-10%";
-          "Mod+Equal".action.set-column-width = "+10%";
-
-          # Window height adjustments
-          "Mod+Shift+Minus".action.set-window-height = "-10%";
-          "Mod+Shift+Equal".action.set-window-height = "+10%";
-
-          # Maximize column (like fullscreen in traditional WMs)
-          "Mod+F".action.maximize-column = { };
-
-          # Fullscreen window
-          "Mod+Shift+F".action.fullscreen-window = { };
-
-          # Kill window
-          "Mod+Shift+Q".action.close-window = { };
-
-          # Notifiers
-          "Mod+B".action.spawn = [ "battery-notifier" ];
-          "Mod+Space".action.spawn = [ "system-notifier" ];
-          "Mod+W".action.spawn = [ "workspace-notifier" ];
-          "Mod+T".action.spawn = [ "time-notifier" ];
-
-          # Power management
-          "Mod+Escape".action.spawn = [
-            "power-control"
-            "menu"
-          ];
-          "Mod+Ctrl+X".action.spawn = [
-            "power-control"
-            "lock"
-          ];
-          "Mod+Ctrl+S".action.spawn = [
-            "power-control"
-            "suspend"
-          ];
-          "Mod+Shift+Escape".action.spawn = [
-            "power-control"
-            "status"
-          ];
-
-          # Media controls
-          "XF86AudioPlay".action.spawn = [
-            "media-player"
-            "play"
-          ];
-          "Mod+S".action.spawn = [
-            "media-player"
-            "play"
-          ];
-          "XF86AudioNext".action.spawn = [
-            "media-player"
-            "next"
-          ];
-          "Mod+N".action.spawn = [
-            "media-player"
-            "next"
-          ];
-          "XF86AudioPrev".action.spawn = [
-            "media-player"
-            "previous"
-          ];
-          # Note: Mod+P conflicts with screenshot, using Alt instead
-          "Mod+Alt+P".action.spawn = [
-            "media-player"
-            "previous"
-          ];
-
-          # Brightness controls (using allow-when-locked for these)
-          "XF86MonBrightnessUp".action.spawn = [
-            "brightness-control"
-            "-i"
-            "10"
-          ];
-          "XF86MonBrightnessDown".action.spawn = [
-            "brightness-control"
-            "-d"
-            "10"
-          ];
-
-          # Volume controls
-          "XF86AudioRaiseVolume".action.spawn = [
-            "volume-control"
-            "-i"
-            "2"
-          ];
-          "XF86AudioLowerVolume".action.spawn = [
-            "volume-control"
-            "-d"
-            "2"
-          ];
-          "XF86AudioMute".action.spawn = [
-            "volume-control"
-            "-m"
-          ];
-
-          # Workspace shortcuts by index (1-9 and 0 for 10)
-          "Mod+1".action.focus-workspace = 1;
-          "Mod+2".action.focus-workspace = 2;
-          "Mod+3".action.focus-workspace = 3;
-          "Mod+4".action.focus-workspace = 4;
-          "Mod+5".action.focus-workspace = 5;
-          "Mod+6".action.focus-workspace = 6;
-          "Mod+7".action.focus-workspace = 7;
-          "Mod+8".action.focus-workspace = 8;
-          "Mod+9".action.focus-workspace = 9;
-          "Mod+0".action.focus-workspace = 10;
-          "Mod+Shift+1".action.move-column-to-workspace = 1;
-          "Mod+Shift+2".action.move-column-to-workspace = 2;
-          "Mod+Shift+3".action.move-column-to-workspace = 3;
-          "Mod+Shift+4".action.move-column-to-workspace = 4;
-          "Mod+Shift+5".action.move-column-to-workspace = 5;
-          "Mod+Shift+6".action.move-column-to-workspace = 6;
-          "Mod+Shift+7".action.move-column-to-workspace = 7;
-          "Mod+Shift+8".action.move-column-to-workspace = 8;
-          "Mod+Shift+9".action.move-column-to-workspace = 9;
-          "Mod+Shift+0".action.move-column-to-workspace = 10;
-
-          # Switch between monitors (H/L only, J/K used for window focus)
-          "Mod+Ctrl+H".action.focus-monitor-left = { };
-          "Mod+Ctrl+L".action.focus-monitor-right = { };
-
-          # Move column to monitor (H/L only, J/K used for window movement)
-          "Mod+Shift+Ctrl+H".action.move-column-to-monitor-left = { };
-          "Mod+Shift+Ctrl+L".action.move-column-to-monitor-right = { };
-
-          # Overview (Niri's built-in feature)
-          "Mod+Tab".action.toggle-overview = { };
-
-          # Quit Niri
-          "Mod+Shift+E".action.quit = {
-            skip-confirmation = false;
-          };
-        }
-        // (
-          if config.my.launcher.enable then
-            {
-              # Launcher bindings
-              "Mod+E".action.spawn = [
-                "sh"
-                "-c"
-                (config.my.launcher.show { mode = "symbols"; })
-              ];
-              "Mod+U".action.spawn = [
-                "sh"
-                "-c"
-                (config.my.launcher.wifi { })
-              ];
-              "Mod+M".action.spawn = [
-                "sh"
-                "-c"
-                (config.my.launcher.monitor { })
-              ];
-              "Mod+Z".action.spawn = [
-                "sh"
-                "-c"
-                (config.my.launcher.bluetooth { })
-              ];
-              # Note: Monitor keybinding removed - uses Hyprland-specific extension
-              "Mod+D".action.spawn = [
-                "sh"
-                "-c"
-                (config.my.launcher.show { mode = "websearch"; })
-              ];
-              "Mod+O".action.spawn = [
-                "sh"
-                "-c"
-                (config.my.launcher.show { mode = "desktopapplications"; })
-              ];
-              "Mod+C".action.spawn = [
-                "sh"
-                "-c"
-                (config.my.launcher.show { mode = "clipboard"; })
-              ];
-              "Mod+A".action.spawn = [
-                "sh"
-                "-c"
-                (config.my.launcher.audioOutput { })
-              ];
-              "Mod+Shift+A".action.spawn = [
-                "sh"
-                "-c"
-                (config.my.launcher.audioInput { })
-              ];
-            }
-          else
-            { }
-        );
+                how.native;
+          }
+        ) config.my.window-manager.keybinds;
 
         # Animations
         animations = {

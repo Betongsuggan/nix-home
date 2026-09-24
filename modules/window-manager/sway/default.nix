@@ -7,7 +7,6 @@
 with lib;
 
 let
-  inherit (pkgs) pamixer playerctl;
   modifier = "Mod4";
 
   wmLib = import ../lib.nix { inherit lib; };
@@ -107,16 +106,9 @@ in
           }
         ];
 
+        # The shared keymap (my.window-manager.keybinds) on top of sway's defaults
         keybindings = lib.mkOptionDefault (
-          {
-            "${modifier}+o" = "exec ${config.my.launcher.show { mode = "drun"; }}";
-
-            "${modifier}+Shift+p" =
-              "exec ${pkgs.sway-contrib.grimshot}/bin/grimshot save area ~/Pictures/$(date -Iseconds)";
-          }
-          // optionalAttrs config.my.window-manager.sway.lockscreen.enable {
-            "${modifier}+Shift+x" = "exec ${pkgs.swaylock-effects}/bin/swaylock -f";
-          }
+          wmLib.i3Keybindings "sway" modifier config.my.window-manager.keybinds
         );
 
         input = {
@@ -171,19 +163,6 @@ in
         input * xkb_variant "colemak,"
         input * xkb_options "caps:escape,compose:${config.my.window-manager.composeKey},grp:shifts_toggle"
 
-        # Brightness (light was removed in nixpkgs 26.05; use brightnessctl)
-        bindsym XF86MonBrightnessDown exec ${pkgs.brightnessctl}/bin/brightnessctl set 10%-
-        bindsym XF86MonBrightnessUp exec ${pkgs.brightnessctl}/bin/brightnessctl set +10%
-
-        # Volume
-        bindsym XF86AudioRaiseVolume exec '${pamixer}/bin/pamixer -i 2'
-        bindsym XF86AudioLowerVolume exec '${pamixer}/bin/pamixer -d 2'
-        bindsym XF86AudioMute exec '${pamixer}/bin/pamixer -t'
-
-        # Media control
-        bindsym XF86AudioPlay exec '${playerctl}/bin/playerctl play-pause'
-        bindsym XF86AudioNext exec '${playerctl}/bin/playerctl next'
-        bindsym XF86AudioPrev exec '${playerctl}/bin/playerctl previous'
       '';
     };
 

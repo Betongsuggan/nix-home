@@ -54,6 +54,34 @@ let
     ",preferred,auto,1"
   ];
 
+  # The shared keymap (my.window-manager.keybinds) as Hyprland binds
+  hyprMod = {
+    Mod = "SUPER";
+    Ctrl = "CTRL";
+    Shift = "SHIFT";
+    Alt = "ALT";
+  };
+  hyprKey = {
+    Return = "RETURN";
+    Space = "SPACE";
+    Minus = "minus";
+    Equal = "equal";
+    Comma = "comma";
+    Period = "period";
+  };
+  hyprBind =
+    chordName: e:
+    let
+      c = wmLib.chord chordName;
+      how = wmLib.entryFor "hyprland" e;
+      key = hyprKey.${c.key} or (if stringLength c.key == 1 then toLower c.key else c.key);
+      dispatcher = if how ? spawn then "exec, ${wmLib.spawnString how.spawn}" else how.native;
+    in
+    optional (how != null) "${concatMapStringsSep "_" (m: hyprMod.${m}) c.mods}, ${key}, ${dispatcher}";
+  keybindsWhere =
+    pred:
+    concatLists (mapAttrsToList hyprBind (filterAttrs (_: pred) config.my.window-manager.keybinds));
+
   # Niri-style maximize-column toggle for the scrolling layout: full column
   # width <-> the 0.5 default, staying tiled (borders/gaps kept) — unlike
   # `fullscreen, 1`, which enters maximize mode. The layout has no native
@@ -184,6 +212,9 @@ in
         inherit (config.my.theming.cursor) size;
       };
       packages = with pkgs; [
+        # Helpers the keymap's Hyprland actions call
+        toggleColumnMaximize
+        workspaceStep
         hyprlock
         grim
         slurp
@@ -240,7 +271,7 @@ in
 
         listener = [
           {
-            timeout = 240; # 4 minutes
+            timeout = config.my.window-manager.idle.dimAfter;
             on-timeout = "${pkgs.brightnessctl}/bin/brightnessctl -s set 10";
             on-resume = "${pkgs.brightnessctl}/bin/brightnessctl -r";
           }
@@ -249,7 +280,7 @@ in
           if config.my.window-manager.hyprland.lockscreen.enable then
             [
               {
-                timeout = 300; # 5 minutes
+                timeout = config.my.window-manager.idle.lockAfter;
                 on-timeout = "${pkgs.systemd}/bin/loginctl lock-session";
               }
             ]
@@ -258,12 +289,12 @@ in
         )
         ++ [
           {
-            timeout = 330; # 5.5 minutes
+            timeout = config.my.window-manager.idle.screenOffAfter;
             on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
             on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
           }
           {
-            timeout = 900; # 15 minutes
+            timeout = config.my.window-manager.idle.suspendAfter;
             on-timeout = "${pkgs.systemd}/bin/systemctl suspend";
           }
         ];
@@ -376,11 +407,6 @@ in
           enable_hyprcursor = false;
         };
 
-        "$mod" = "SUPER";
-        "$modShift" = "SUPER_SHIFT";
-        "$modCtrl" = "SUPER_CTRL";
-        "$modCtrlShift" = "SUPER_CTRL_SHIFT";
-
         exec-once = [
           # Launcher daemons (walker, vicinae) are started via systemd services
         ]
@@ -445,198 +471,14 @@ in
           rounding = 5;
         };
 
-        bind = [
-          ### Keyboard layouts
-          # Qwerty
-          "$modShift, b, exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant"
-
-          # Colemak
-          "$modShift, c, exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant colemak"
-
-          ### Applications
-          # Terminal
-          "$mod, RETURN, exec, ${config.my.terminal.command}"
-        ]
-        ++ (lib.optionals config.my.window-manager.hyprland.lockscreen.enable [
-          # Lock screen
-          "$modShift, x, exec, ${pkgs.hyprlock}/bin/hyprlock"
-        ])
-        ++ [
-
-          # Print screen
-          ''$modShift, p, exec, ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" ~/media/images/$(${pkgs.coreutils}/bin/date -Iseconds).png''
-
-          # Record screen (toggle: press to start, press again to stop)
-          # Records the currently focused monitor using H.264 in MKV container (more resilient)
-          ''$mod, v, exec, ${pkgs.procps}/bin/pkill -SIGINT wf-recorder && ${
-            config.my.notifications.send {
-              category = "recording";
-              icon = "media-playback-stop";
-              summary = "Recording stopped";
-            }
-          } || { ${
-            config.my.notifications.send {
-              category = "recording";
-              summary = "Recording started";
-            }
-          }; ${pkgs.wf-recorder}/bin/wf-recorder -o "$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.focused) | .name')" -c libx264 -p crf=23 -p preset=fast --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv; }''
-
-          ### Screen handling — mirrors the niri module's layout: left/right
-          ### navigates columns, up/down navigates workspaces, Ctrl variants
-          ### act within a column.
-          # Focus column left/right (niri Mod+H/L)
-          "$mod, h, movefocus, l"
-          "$mod, l, movefocus, r"
-
-          # Focus workspace up/down (niri Mod+K/J), stopping at the ends —
-          # `workspace m±1` would wrap around
-          "$mod, k, exec, ${workspaceStep}/bin/hypr-workspace-step workspace -1"
-          "$mod, j, exec, ${workspaceStep}/bin/hypr-workspace-step workspace +1"
-
-          # Move column left/right on the strip (niri Mod+Shift+H/L)
-          "$modShift, h, layoutmsg, swapcol l"
-          "$modShift, l, layoutmsg, swapcol r"
-
-          # Move to workspace up/down (niri Mod+Shift+K/J moves the whole
-          # column; Hyprland can only take the focused window along)
-          "$modShift, k, exec, ${workspaceStep}/bin/hypr-workspace-step movetoworkspace -1"
-          "$modShift, j, exec, ${workspaceStep}/bin/hypr-workspace-step movetoworkspace +1"
-
-          # Focus window within column (niri Mod+Ctrl+K/J)
-          "$modCtrl, k, movefocus, u"
-          "$modCtrl, j, movefocus, d"
-
-          # Move window within column (niri Mod+Ctrl+Shift+K/J)
-          "$modCtrlShift, k, movewindow, u"
-          "$modCtrlShift, j, movewindow, d"
-
-          # Column width adjustments (niri Mod+Minus/Equal)
-          "$mod, minus, layoutmsg, colresize -0.1"
-          "$mod, equal, layoutmsg, colresize +0.1"
-
-          # Window height adjustments (niri Mod+Shift+Minus/Equal)
-          "$modShift, minus, resizeactive, 0 -10%"
-          "$modShift, equal, resizeactive, 0 10%"
-
-          # Maximize-column toggle (niri Mod+F): full column width <-> 0.5,
-          # stays tiled with borders/gaps
-          "$mod, f, exec, ${toggleColumnMaximize}/bin/hypr-toggle-column-maximize"
-
-          # Fullscreen toggle (niri Mod+Shift+F)
-          "$modShift, f, fullscreen"
-
-          # Cycle column through preset widths 0.333/0.5/0.667/1.0 (niri Mod+R)
-          "$mod, r, layoutmsg, colresize +conf"
-
-          # Consume the next window into this column / expel one out into its
-          # own column (niri Mod+Comma/Period)
-          "$mod, comma, layoutmsg, consume"
-          "$mod, period, layoutmsg, expel"
-
-          # Center the focused column on screen (niri Mod+C; Mod+C itself is
-          # the clipboard launcher here)
-          "$modCtrl, c, layoutmsg, center"
-
-          # Kill application
-          "$modShift, q, killactive,"
-
-          ### Notifiers
-
-          # Battery status
-          "$mod, b, exec, battery-notifier"
-
-          # System resources, e.g. cpu, mem, storage
-          "$mod, SPACE, exec, system-notifier"
-
-          # Workspace information
-          "$mod, w, exec, workspace-notifier"
-
-          # Clock
-          "$mod, t, exec, time-notifier"
-
-          ### Power Management
-          # Power menu
-          "$mod, Escape, exec, power-control menu"
-
-          # Quick lock
-          "$modCtrl, l, exec, power-control lock"
-
-          # Quick suspend
-          "$modCtrl, s, exec, power-control suspend"
-
-          # Power status
-          "$modShift, Escape, exec, power-control status"
-
-          ### Control
-          # Media
-          ", XF86AudioPlay, exec, media-player play"
-          "$mod, s, exec, media-player play"
-          ", XF86AudioNext, exec, media-player next"
-          "$mod, n, exec, media-player next"
-          ", XF86AudioPrev, exec, media-player previous"
-          "$mod, p, exec, media-player previous"
-        ]
-        ++ (lib.optionals config.my.launcher.enable [
-          ### Launchers
-          # Emojis
-          "$mod, e, exec, ${config.my.launcher.show { mode = "symbols"; }}"
-
-          # Wifi
-          "$mod, u, exec, ${config.my.launcher.wifi { }}"
-
-          # Bluetooth
-          "$mod, z, exec, ${config.my.launcher.bluetooth { }}"
-
-          # Monitors
-          "$mod, m, exec, ${config.my.launcher.monitor { }}"
-
-          # Websearch
-          "$mod, d, exec, ${config.my.launcher.show { mode = "websearch"; }}"
-
-          # Applications
-          "$mod, o, exec, ${config.my.launcher.show { mode = "desktopapplications"; }}"
-          # Clipboard
-          "$mod, c, exec, ${config.my.launcher.show { mode = "clipboard"; }}"
-
-          # Audio sink/source launchers
-          "$mod, a, exec, ${config.my.launcher.audioOutput { }}"
-          "$modShift, a, exec, ${config.my.launcher.audioInput { }}"
-        ])
-        ++ (builtins.concatLists (
-          builtins.genList (
-            x:
-            let
-              ws =
-                let
-                  c = (x + 1) / 10;
-                in
-                builtins.toString (x + 1 - (c * 10));
-            in
-            [
-              # Move focus to workspace x
-              "$mod, ${ws}, workspace, ${toString (x + 1)}"
-              # Move focused application to workspace x
-              "$modShift, ${ws}, movetoworkspacesilent, ${toString (x + 1)}"
-            ]
-          ) 10
-        ));
+        bind = keybindsWhere (e: !(e.repeat or false));
         binds = {
           movefocus_cycles_fullscreen = true;
           # Don't hop focus to the adjacent monitor at the strip end — niri
           # stops there too (it uses dedicated monitor binds instead).
           window_direction_monitor_fallback = false;
         };
-        binde = [
-          ### Controls
-          # Brightness
-          ", XF86MonBrightnessUp,  exec, brightness-control -i 10"
-          ", XF86MonBrightnessDown, exec, brightness-control -d 10"
-
-          # Volume
-          ", XF86AudioRaiseVolume, exec, volume-control -i 2"
-          ", XF86AudioLowerVolume, exec, volume-control -d 2"
-          ", XF86AudioMute, exec, volume-control -m"
-        ];
+        binde = keybindsWhere (e: e.repeat or false);
 
         # Lid switch bindings: external-display-aware lock/panel handling
         bindl = lib.optionals config.my.window-manager.hyprland.lockscreen.enable [

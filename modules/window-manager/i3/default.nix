@@ -114,39 +114,8 @@ in
           names = [ name ];
         };
 
-        keybindings = lib.mkOptionDefault {
-          "${mod}+Return" = "exec ${config.my.terminal.command}";
-          "${mod}+x" = "exec sh -c '${pkgs.maim}/bin/maim -s | xclip -selection clipboard -t image/png'";
-          "${mod}+o" = "exec ${config.my.launcher.show { mode = "run"; }}";
-          "${mod}+Shift+x" = "exec sh -c '${pkgs.i3lock-fancy-rapid}/bin/i3lock-fancy-rapid 15 8'";
-
-          # Focus
-          "${mod}+h" = "focus left";
-          "${mod}+j" = "focus down";
-          "${mod}+k" = "focus up";
-          "${mod}+l" = "focus right";
-
-          # Move
-          "${mod}+Shift+h" = "move left";
-          "${mod}+Shift+j" = "move down";
-          "${mod}+Shift+k" = "move up";
-          "${mod}+Shift+l" = "move right";
-
-          # Multi monitors
-          "${mod}+p" = "exec autorandr --change && feh --bg-center ${config.my.theming.wallpaper}";
-
-          # Multimedia Keys
-
-          ## Volume
-          XF86AudioRaiseVolume = "exec --no-startup-id pactl set-sink-volume 0 +5%";
-          XF86AudioLowerVolume = "exec --no-startup-id pactl set-sink-volume 0 -5%";
-          XF86AudioMute = "exec --no-startup-id pactl set-sink-mute 0 toggle";
-
-          ## Backlighting
-          XF86MonBrightnessUp = "exec brightnessctl set +10%";
-          XF86MonBrightnessDown = "exec brightnessctl set 10%-";
-
-        };
+        # The shared keymap (my.window-manager.keybinds) on top of i3's defaults
+        keybindings = lib.mkOptionDefault (wmLib.i3Keybindings "i3" mod config.my.window-manager.keybinds);
 
         bars = [ ];
 
