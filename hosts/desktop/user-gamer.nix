@@ -9,7 +9,6 @@
     mangohud = {
       enable = true;
       detailedMode = true;
-      controllerToggle = false;
       position = "top-left";
       fontSize = 22;
     };

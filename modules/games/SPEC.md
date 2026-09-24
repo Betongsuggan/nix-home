@@ -51,7 +51,6 @@ my.games = {
 | enable | bool | false | Enable gaming setup |
 | mangohud.enable | bool | true | Enable MangoHud overlay |
 | mangohud.detailedMode | bool | true | Show detailed system information in MangoHud (CPU per-core load, swap, memory, network, IO, etc.) |
-| mangohud.controllerToggle | bool | false | Enable controller-based MangoHud toggle (deprecated -- use controller module instead) |
 | mangohud.position | enum | "top-left" | MangoHud overlay position. One of: "top-left", "top-right", "bottom-left", "bottom-right", "top-center", "bottom-center" |
 | mangohud.fontSize | int | 24 | MangoHud font size |
 | vkbasalt.enable | bool | false | Enable vkBasalt post-processing |
@@ -422,6 +421,14 @@ shortcut's `icon` vdf field). Behavior:
 ### Battle.net
 - Install via Bottles (already available via `tools.enable`)
 - Manually add game shortcuts to Steam after installation
+
+## Layout
+
+- `home.nix` — overview, base packages, store tools, Steam integration
+- `options.nix` — every `my.games.*` option
+- `mangohud.nix` — the overlay
+- `emulation.nix` — RetroArch, standalone emulators, the Switch emulator and helpers, and the per-ROM Steam shortcuts (these share one set of derived paths and launch commands)
+- `switch-quit-listener.py`, `add-shortcuts.py` — the Python helpers, filled in via `replaceVars` / called with the generated manifest
 
 ## Notes
 
