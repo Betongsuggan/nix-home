@@ -18,4 +18,4 @@ wayland-security.enable = true;
 
 - Enables Polkit for graphical privilege escalation prompts.
 - Enables hyprlock for Hyprland screen locking.
-- When `fingerprint.enable` is true, configures swaylock PAM to accept either fingerprint or password (not both required).
+- Defines the swaylock PAM service using the stock NixOS stack (pam_env, faillock, no empty passwords). When fprintd is enabled (`fingerprint.enable`), NixOS adds `pam_fprintd` as `sufficient` ahead of the password check, so either fingerprint or password unlocks.

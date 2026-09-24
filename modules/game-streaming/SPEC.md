@@ -25,6 +25,7 @@ game-streaming.client.enable = true;
 | server.enable | bool | false | Enable game streaming server (Sunshine) |
 | server.display | string | "DP-1" | Display connector or virtual monitor name to use for streaming |
 | server.workspace | int | 10 | Workspace number dedicated for streaming |
+| server.allowedNetworks | list of str | RFC1918, CGNAT, fe80::/10, fc00::/7 | Source networks the firewall accepts on Sunshine's ports; all other sources are refused |
 | server.hdr | bool | true | Enable HDR streaming support (requires HEVC Main10 or AV1 10-bit) |
 | server.user | null or string | null | Restrict Sunshine (and the virtual-monitor oneshot) to this user's session via `ConditionUser`. `services.sunshine` installs a *global* systemd user unit, so on multi-user hosts every graphical session otherwise starts its own instance and the loser of the race crash-loops on RTSP port 48010. `null` = no restriction. |
 
@@ -51,6 +52,7 @@ game-streaming.client.enable = true;
 - A systemd-user oneshot `hypr-virtual-monitors.service` materializes the headless `display` monitor at session start and is ordered before `sunshine.service`. Sunshine `autoStart` is therefore set to `false` on the upstream module and re-wired via a drop-in (`Wants=`/`After=hypr-virtual-monitors.service`, `WantedBy=graphical-session.target`) — this avoids a race where Sunshine would start before the monitor existed and crash-loop with an empty Wayland monitor list.
 - Sunshine is configured with AV1 and HEVC auto-negotiation, optimized for AMD VCN5 encoding.
 - LAN encryption is disabled for lower latency; WAN encryption remains on. Tailscale's CGNAT range (`100.64.0.0/10`) is classified as WAN by Sunshine — `origin_pin_allowed` and `origin_web_ui_allowed` are set to `wan` so tailnet clients (Moonlight on Android handhelds, etc.) can pair and access the admin UI.
+- Because of that, the firewall is what keeps Sunshine private: the upstream `openFirewall` is off and the streaming/web UI ports are accepted only from `server.allowedNetworks` (RFC1918, link-local, ULA and the Tailscale ranges by default). UPnP is explicitly disabled so the router is never asked to forward ports.
 - The `uinput` kernel module is loaded automatically for virtual input device support.
 - After enabling the server, pair clients by visiting the Sunshine web UI at `https://localhost:47990` (or `https://<host>.ts.rydback.net:47990` over tailnet).
 - The client settings are merged into the `[General]` section of `~/.config/Moonlight Game Streaming Project/Moonlight.conf` on every Home Manager activation. The file stays writable, so pairing data and other settings Moonlight saves are kept; only the declared keys are overwritten.

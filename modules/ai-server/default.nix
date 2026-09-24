@@ -494,7 +494,10 @@ in
           # back to the OS / driver when tensors are freed. Helps when
           # switching between models or running many workflows in a row.
           "-e PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.8,max_split_size_mb:512"
-          "-p ${toString cfg.comfyui.port}:8188"
+          # Host networking instead of `-p`: Docker's published ports bypass
+          # the NixOS firewall, whereas a host-network listener is subject to
+          # it, so the port stays reachable on tailscale0 and loopback only.
+          "--network=host"
           "-v ${cfg.comfyui.dataDir}/models:/opt/ComfyUI/models"
           "-v ${cfg.comfyui.dataDir}/output:/opt/ComfyUI/output"
           "-v ${cfg.comfyui.dataDir}/input:/opt/ComfyUI/input"
@@ -505,7 +508,7 @@ in
           # dramatically less system RAM. Right fit for "VRAM > free RAM"
           # hosts like this one.
           "comfyui-rocm:local"
-          "python main.py --listen 0.0.0.0 --port 8188 --lowvram"
+          "python main.py --listen 0.0.0.0 --port ${toString cfg.comfyui.port} --lowvram"
         ];
         ExecStop = "${pkgs.docker_29}/bin/docker stop comfyui";
         Restart = "on-failure";
@@ -532,7 +535,10 @@ in
         ];
         ExecStart = lib.concatStringsSep " " [
           "${pkgs.docker_29}/bin/docker run --rm --name=speaches"
-          "-p ${toString cfg.voice.port}:8000"
+          # Host networking so the NixOS firewall applies (see comfyui)
+          "--network=host"
+          "-e UVICORN_HOST=0.0.0.0"
+          "-e UVICORN_PORT=${toString cfg.voice.port}"
           "-v ${cfg.voice.dataDir}:/home/ubuntu/.cache/huggingface"
           cfg.voice.image
         ];

@@ -145,6 +145,23 @@ in
         default = null;
         example = "gamer";
       };
+      allowedNetworks = mkOption {
+        description = ''
+          Source networks allowed to reach Sunshine's streaming ports and web
+          UI. Everything else is refused by the firewall, which keeps the admin
+          UI off the internet even though Sunshine itself is told to accept
+          "wan" origins (so tailnet clients can pair).
+        '';
+        type = types.listOf types.str;
+        default = [
+          "10.0.0.0/8"
+          "172.16.0.0/12"
+          "192.168.0.0/16"
+          "100.64.0.0/10" # Tailscale CGNAT range
+          "fe80::/10"
+          "fc00::/7" # includes Tailscale's fd7a:115c:a1e0::/48
+        ];
+      };
       hdr = mkOption {
         description = ''
           Enable HDR streaming support.
@@ -168,6 +185,38 @@ in
       KERNEL=="uinput", MODE="0660", GROUP="uinput", OPTIONS+="static_node=uinput"
     '';
 
+    # The upstream openFirewall opens these ports to every source; accept them
+    # only from cfg.allowedNetworks instead.
+    networking.firewall.extraCommands =
+      let
+        base = config.services.sunshine.settings.port;
+        ports = {
+          tcp = map (o: base + o) [
+            (-5)
+            0
+            1
+            21
+          ];
+          udp = map (o: base + o) [
+            9
+            10
+            11
+            13
+            21
+          ];
+        };
+        rule =
+          net: proto: port:
+          "${
+            if hasInfix ":" net then "ip6tables" else "iptables"
+          } -w -A nixos-fw -p ${proto} -s ${net} --dport ${toString port} -j nixos-fw-accept";
+      in
+      concatStringsSep "\n" (
+        concatMap (
+          net: concatLists (mapAttrsToList (proto: map (rule net proto)) ports)
+        ) cfg.allowedNetworks
+      );
+
     services.sunshine = {
       enable = true;
       # Auto-start via graphical-session.target loses a race against the
@@ -176,7 +225,8 @@ in
       # WantedBy on the drop-in instead, after ordering against the monitor
       # service.
       autoStart = false;
-      openFirewall = true;
+      # Opened below, restricted to cfg.allowedNetworks
+      openFirewall = false;
       capSysAdmin = true; # Required for KMS capture, which is more reliable
       settings = {
         sunshine_name = "betongsuggan station";
@@ -203,6 +253,8 @@ in
         # from any tailnet device.
         origin_pin_allowed = "wan";
         origin_web_ui_allowed = "wan";
+        # Never ask the router to forward ports to us
+        upnp = "disabled";
       };
       applications = {
         apps = [

@@ -65,22 +65,10 @@ with lib;
       };
     };
 
-    # Ensure the autologin user has empty password for autologin to work
+    # Empty password so the unprivileged autologin user can unlock its own
+    # session; it is deliberately granted no sudo rights
     users.users.${config.autologin.user} = {
       hashedPassword = mkDefault "";
     };
-
-    # Allow passwordless sudo for the autologin user (gaming convenience)
-    security.sudo.extraRules = [
-      {
-        users = [ config.autologin.user ];
-        commands = [
-          {
-            command = "ALL";
-            options = [ "NOPASSWD" ];
-          }
-        ];
-      }
-    ];
   };
 }

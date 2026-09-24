@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -58,34 +59,48 @@ in
 
     targets = mkOption {
       type = types.attrsOf (
-        types.submodule {
-          options = {
-            sftpHost = mkOption {
-              type = types.str;
-              example = "desktop.ts.rydback.net";
-              description = "Hostname of the SFTP receiver (typically the tailnet FQDN).";
+        types.submodule (
+          { name, ... }:
+          {
+            options = {
+              hostKey = mkOption {
+                type = types.nullOr types.str;
+                default = inputs.self.lib.hosts.${name}.ssh.host or null;
+                defaultText = literalExpression "inputs.self.lib.hosts.<name>.ssh.host or null";
+                description = ''
+                  The receiver's SSH host public key. SFTP connections then check
+                  the host strictly against it. Defaults to the key recorded in the
+                  lib host registry for a target named after a fleet host. `null`
+                  falls back to trust-on-first-use (`accept-new`).
+                '';
+              };
+              sftpHost = mkOption {
+                type = types.str;
+                example = "desktop.ts.rydback.net";
+                description = "Hostname of the SFTP receiver (typically the tailnet FQDN).";
+              };
+              sftpUser = mkOption {
+                type = types.str;
+                example = "restic-controller";
+                description = ''
+                  Username on the receiver. Convention: `restic-<source-host>`, so
+                  this should match the corresponding entry on the receiver's
+                  `restic-target.sources.<source>` configuration.
+                '';
+              };
+              sftpPath = mkOption {
+                type = types.path;
+                default = "/repo";
+                description = ''
+                  Path to the restic repository as seen by the SFTP server **inside
+                  the receiver's chroot**. The default `/repo` matches the writable
+                  subdir created by `restic-target` (the chroot root itself is
+                  root-owned 0755 and not writable — see that module's SPEC).
+                '';
+              };
             };
-            sftpUser = mkOption {
-              type = types.str;
-              example = "restic-controller";
-              description = ''
-                Username on the receiver. Convention: `restic-<source-host>`, so
-                this should match the corresponding entry on the receiver's
-                `restic-target.sources.<source>` configuration.
-              '';
-            };
-            sftpPath = mkOption {
-              type = types.path;
-              default = "/repo";
-              description = ''
-                Path to the restic repository as seen by the SFTP server **inside
-                the receiver's chroot**. The default `/repo` matches the writable
-                subdir created by `restic-target` (the chroot root itself is
-                root-owned 0755 and not writable — see that module's SPEC).
-              '';
-            };
-          };
-        }
+          }
+        )
       );
       default = { };
       description = ''
@@ -132,7 +147,16 @@ in
           p
         ]) cfg.excludes;
         extraOptions = [
-          "sftp.args='-i ${cfg.sshKeyFile} -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/var/lib/restic/known_hosts'"
+          (
+            let
+              hostKeyArgs =
+                if target.hostKey != null then
+                  "-o StrictHostKeyChecking=yes -o UserKnownHostsFile=${pkgs.writeText "restic-${name}-known-hosts" "${target.sftpHost} ${target.hostKey}\n"}"
+                else
+                  "-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/var/lib/restic/known_hosts";
+            in
+            "sftp.args='-i ${cfg.sshKeyFile} ${hostKeyArgs}'"
+          )
         ];
         pruneOpts = cfg.pruneOpts;
         timerConfig = {

@@ -1,6 +1,6 @@
 # Autologin
 
-Automatically logs in a specified user at boot, using either GDM (display manager) or getty (console). Configures passwordless sudo for the autologin user.
+Automatically logs in a specified user at boot, using either GDM (display manager) or getty (console).
 
 ## Usage
 
@@ -26,5 +26,5 @@ autologin = {
 ## Notes
 
 - The GDM method enables GDM and uses `services.displayManager.autoLogin` with `session` as the default session.
-- Sets an empty hashed password on the autologin user and grants passwordless sudo for all commands.
+- Sets an empty hashed password on the autologin user (as `mkDefault`). It grants no sudo rights: the autologin user is meant to be unprivileged, so a console login does not imply root.
 - The getty method overrides the `getty@ttyN` systemd service to pass `--autologin` to `agetty`.
