@@ -78,6 +78,14 @@
     server.address = inputs.self.lib.tailnet.fqdn "controller";
   };
 
+  # Work project shortcuts
+  my.shell.aliases = {
+    cloud = "cd ~/Development/cloud";
+    dashboard = "cd ~/Development/web/apps/dashboard";
+    nocode = "cd ~/Development/web/apps/nocode";
+    demo = "cd ~/Development/web/apps/nocode-demo";
+  };
+
   # GitHub identities; fleet Host blocks come from the ssh module
   programs.ssh.settings = {
     "github.com-betongsuggan" = {

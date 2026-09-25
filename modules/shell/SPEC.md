@@ -22,7 +22,7 @@ my.shell = {
 |--------|------|---------|-------------|
 | enable | bool | false | Enable shell configuration |
 | backend | enum ["bash" "fish" "nushell"] | "bash" | Shell backend to use |
-| aliases | attrsOf str | (see default.nix) | Shell aliases shared across all shells |
+| aliases | attrsOf str | ll, ls, vim, gw (each mkDefault) | Shell aliases shared across all shells; hosts add their own (e.g. bits' work-project shortcuts) |
 | editor | str | "nix run github:/Betongsuggan/nvim" | Default editor |
 | viMode | bool | true | Enable vi mode in shells |
 | extraPaths | listOf str | ["${config.home.homeDirectory}/.cargo/bin"] | Extra paths to add to PATH via `home.sessionPath` (use absolute paths) |

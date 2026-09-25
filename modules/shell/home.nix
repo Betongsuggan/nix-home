@@ -27,19 +27,9 @@ with lib;
     };
 
     aliases = mkOption {
-      description = "Shell aliases shared across all shells";
+      description = "Shell aliases shared across all shells (hosts add their own; the defaults below are mkDefault per alias)";
       type = types.attrsOf types.str;
-      default = {
-        cloud = "cd ~/Development/cloud";
-        dashboard = "cd ~/Development/web/apps/dashboard";
-        nocode = "cd ~/Development/web/apps/nocode";
-        demo = "cd ~/Development/web/apps/nocode-demo";
-        ll = "ls -la --color=auto";
-        ls = "ls --color=auto";
-        vim = "nix run github:/Betongsuggan/nvim --refresh";
-        hm = "home-manager";
-        gw = "./gradlew --no-daemon";
-      };
+      default = { };
     };
 
     editor = mkOption {
@@ -116,6 +106,13 @@ with lib;
   };
 
   config = mkIf config.my.shell.enable {
+    my.shell.aliases = mapAttrs (_: mkDefault) {
+      ll = "ls -la --color=auto";
+      ls = "ls --color=auto";
+      vim = "nix run github:/Betongsuggan/nvim --refresh";
+      gw = "./gradlew --no-daemon";
+    };
+
     home.sessionPath = config.my.shell.extraPaths;
   };
 }
