@@ -4,7 +4,7 @@ Personal Intel-based laptop for daily use, development, light gaming, and game s
 
 ## Key Features
 
-- Niri tiling Wayland compositor with auto-screen-rotation support
+- Niri tiling Wayland compositor with accelerometer screen rotation (`my.controls.utils.autoScreenRotation`)
 - Kanshi for automatic display profile switching (multi-monitor)
 - Ghostty terminal with vim-style keybindings and split navigation
 - Vicinae launcher with wifi and bluetooth extensions

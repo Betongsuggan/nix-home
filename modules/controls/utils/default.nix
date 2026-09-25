@@ -113,31 +113,51 @@ let
     '';
   };
 
-  autoScreenRotationCommand =
-    optionalString (cfg.autoScreenRotation && config.my.controls.windowManager == "hyprland")
-      ''
-        ${pkgs.iio-sensor-proxy}/bin/monitor-sensor |
-        while read -r line; do
-          change=$(echo "$line" | awk '{print($1)}')
-          if [ "$change" == "Accelerometer" ]
-          then
-            rotation=$(echo "$line" | awk '{print($4)}')
-            transform=0
-            if [ "$rotation" == 'right-up' ]
-            then
-              transform=3
-            elif [ "$rotation" == 'left-up' ]
-            then
-              transform=1
-            elif [ "$rotation" == 'bottom-up' ]
-            then
-              transform=2
-            fi
-
-            ${pkgs.hyprland}/bin/hyprctl keyword monitor "eDP-1,preferred,auto,1,transform,$transform"
-          fi
-        done
-      '';
+  # Follow the accelerometer (iio-sensor-proxy) and rotate the built-in panel
+  rotationOutput =
+    if config.my.window-manager.touchOutput != null then
+      config.my.window-manager.touchOutput
+    else
+      "eDP-1";
+  # monitor-sensor orientation -> the compositor's transform
+  rotateCommand =
+    {
+      hyprland =
+        transform:
+        ''${pkgs.hyprland}/bin/hyprctl keyword monitor "${rotationOutput},preferred,auto,1,transform,${transform.hyprland}"'';
+      niri =
+        transform:
+        "${config.programs.niri.package}/bin/niri msg output ${rotationOutput} transform ${transform.niri}";
+    }
+    .${config.my.controls.windowManager} or null;
+  transforms = {
+    normal = {
+      hyprland = "0";
+      niri = "normal";
+    };
+    left-up = {
+      hyprland = "1";
+      niri = "90";
+    };
+    bottom-up = {
+      hyprland = "2";
+      niri = "180";
+    };
+    right-up = {
+      hyprland = "3";
+      niri = "270";
+    };
+  };
+  autoScreenRotationCommand = optionalString (cfg.autoScreenRotation && rotateCommand != null) ''
+    ${pkgs.iio-sensor-proxy}/bin/monitor-sensor | while read -r line; do
+      [ "$(echo "$line" | ${pkgs.gawk}/bin/awk '{print($1)}')" = "Accelerometer" ] || continue
+      case "$(echo "$line" | ${pkgs.gawk}/bin/awk '{print($4)}')" in
+        ${concatStrings (
+          mapAttrsToList (orientation: t: "${orientation}) ${rotateCommand t} ;;\n        ") transforms
+        )}
+      esac
+    done
+  '';
 
   timeNotifier = mkIf cfg.time (
     pkgs.writeShellScriptBin "time-notifier" ''
@@ -208,7 +228,7 @@ let
     ''
   );
 
-  autoScreenRotation = mkIf cfg.autoScreenRotation (
+  autoScreenRotation = (
     pkgs.writeShellScriptBin "auto-screen-rotation" ''
       #!/usr/bin/env bash
       ${autoScreenRotationCommand}
@@ -218,6 +238,11 @@ let
 in
 {
   config = mkIf (config.my.controls.enable && cfg.enable) {
+    # Rotation follows the session by itself; nothing to add to autostart
+    my.window-manager.autostartApps.auto-screen-rotation = mkIf cfg.autoScreenRotation {
+      command = "${autoScreenRotation}/bin/auto-screen-rotation";
+    };
+
     home.packages =
       with pkgs;
       [

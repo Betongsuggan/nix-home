@@ -142,7 +142,7 @@ with lib;
       };
 
       autoScreenRotation = mkOption {
-        description = "Enable automatic screen rotation";
+        description = "Rotate the built-in panel (my.window-manager.touchOutput, default eDP-1) with the accelerometer; Hyprland and niri. Starts with the session.";
         type = types.bool;
         default = false;
       };

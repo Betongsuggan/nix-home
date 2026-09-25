@@ -65,6 +65,9 @@
     ];
   };
 
+  # Convertible: follow the accelerometer
+  my.controls.utils.autoScreenRotation = true;
+
   my.window-manager = {
     backend = "niri";
     autostartApps = {
@@ -73,10 +76,6 @@
         workspace = null;
       };
 
-      auto-screen-rotation = {
-        command = "auto-screen-rotation";
-        workspace = null;
-      };
     };
   };
 
