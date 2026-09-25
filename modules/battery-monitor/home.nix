@@ -32,7 +32,7 @@ let
     category = "battery";
     urgency = "critical";
     summary = "Battery critical";
-    body = "\$PERCENT% remaining · connect charger now";
+    body = "\$PERCENT% remaining · \$POWER_DRAW · connect charger now";
     progress = "\$PERCENT";
   };
 
@@ -40,7 +40,7 @@ let
     category = "battery";
     urgency = "normal";
     summary = "Battery low";
-    body = "\$PERCENT% remaining";
+    body = "\$PERCENT% remaining · \$POWER_DRAW";
     progress = "\$PERCENT";
   };
 
@@ -65,7 +65,7 @@ let
     # Extract battery percentage, state, and energy rate (power draw)
     PERCENT=$(echo "$BATTERY_INFO" | ${pkgs.gnugrep}/bin/grep 'percentage' | ${pkgs.gawk}/bin/awk '{print $2}' | ${pkgs.gnused}/bin/sed 's/%//')
     STATE=$(echo "$BATTERY_INFO" | ${pkgs.gnugrep}/bin/grep 'state' | ${pkgs.gawk}/bin/awk '{print $2}')
-    ENERGY_RATE=$(echo "$BATTERY_INFO" | ${pkgs.gnugrep}/bin/grep 'energy-rate' | ${pkgs.gawk}/bin/awk '{print $2, $3}')
+    ENERGY_RATE=$(echo "$BATTERY_INFO" | ${pkgs.gawk}/bin/awk '/energy-rate/ { printf "%.1f W", $2 }')
 
     # Format power draw message
     if [ -n "$ENERGY_RATE" ]; then

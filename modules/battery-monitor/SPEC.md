@@ -31,3 +31,4 @@ my.battery-monitor = {
 - Runs as one long-lived user service in the graphical session (`battery-monitor.service`): it checks once at start, then again only when upower reports a change of `battery_BAT*` or `line_power*` (peripheral batteries are ignored). The Hyprland module uses the hooks to turn blur and shadows off on battery.
 - Tracks state between checks to avoid duplicate notifications (resets when charger is connected).
 - On machines without a battery, the service exits silently.
+- Every notification includes the current power draw from upower (`energy-rate`, e.g. `9.6 W`).

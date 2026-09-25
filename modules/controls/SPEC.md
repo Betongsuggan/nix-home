@@ -69,7 +69,7 @@ my.controls = {
 ## Notes
 
 - Automatically enables the `notifications` module when active. All notifications use the central category presets from the notifications module (volume, brightness, media, power, system, workspace, time), giving a coherent look: bold category header, short headline, optional one-line detail, progress bars for volume/brightness.
-- Provides the following CLI scripts: `brightness-control`, `volume-control`, `media-player`, `power-control`, `time-notifier`, `workspace-notifier`, `battery-notifier`, `system-notifier`.
+- Provides the following CLI scripts: `brightness-control`, `volume-control`, `media-player`, `power-control`, `time-notifier`, `workspace-notifier`, `battery-notifier`, `system-notifier`. Shows percentage, current battery power draw (W, from upower) and time left/to full.
 - The `brightness-control` script accepts flags: `-i <amount>` (increase), `-d <amount>` (decrease). Amounts are percentage points of max brightness.
 - The `volume-control` script accepts flags: `-i <amount>` (increase), `-d <amount>` (decrease), `-m` (toggle mute).
 - The `media-player` script accepts arguments: `play`, `next`, `previous`, `status`.

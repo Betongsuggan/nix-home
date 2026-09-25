@@ -30,7 +30,7 @@ let
     config.my.notifications.send {
       category = "battery";
       summary = "\$headline";
-      body = "\$percent%\$time_info";
+      body = "\$percent%\$power_info\$time_info";
       progress = "\$percent";
     }
   );
@@ -181,6 +181,13 @@ let
       battery_info=$(${pkgs.upower}/bin/upower -i `${pkgs.upower}/bin/upower -e | grep 'BAT'`)
       percent=$(echo "$battery_info" | grep percentage | awk '{print($2)}' | sed 's/%//')
       status=$(echo "$battery_info" | grep state | awk '{print($2)}')
+
+      # Power flowing out of (or into) the battery, as upower smooths it
+      power_info=""
+      rate=$(echo "$battery_info" | awk '/energy-rate/ { if ($2 > 0) printf "%.1f W", $2 }')
+      if [ -n "$rate" ]; then
+        power_info=" · $rate"
+      fi
 
       # Get time remaining/until full
       time_info=""
