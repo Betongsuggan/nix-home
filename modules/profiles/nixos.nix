@@ -43,6 +43,10 @@ in
         my.profiles.workstation.enable = mkDefault true;
         my.power-management.enable = mkDefault true;
 
+        # Two derivations at a time (each still uses every core): keeps big
+        # rebuilds from pegging a laptop's CPU and thermals
+        nix.settings.max-jobs = mkDefault 2;
+
         services.libinput = {
           enable = true;
           touchpad = {

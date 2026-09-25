@@ -18,7 +18,7 @@ Nothing to enable. The one option:
 
 - Base host defaults (all `mkDefault`): timezone Europe/Stockholm, colemak console keymap, redistributable firmware.
 
-- Nix: flakes and `nix-command`, weekly garbage collection of generations older than 14 days, store auto-optimisation, parallel builds, and the nix-community / walker / niri Cachix substituters.
+- Nix: flakes and `nix-command`; weekly garbage collection of generations older than 14 days and weekly store deduplication (`nix.optimise`), both with a 45 min random delay and at idle CPU/IO priority so a missed run caught up after boot doesn't compete with the session; parallel builds (the laptop profile caps `max-jobs` at 2); and the nix-community / walker / niri Cachix substituters. No `keep-outputs`/`keep-derivations`, so GC actually reclaims build dependencies.
 - aarch64 emulation via binfmt on x86_64 hosts, so any fleet machine can build and deploy island-pi.
 - A few base packages (git, vim, wget, curl, sshfs) and `programs.dconf` (needed for Home Manager's GTK dark-mode settings to reach GTK apps).
 - sshd defaults for any host that enables `services.openssh`: key-only authentication, no root login, and no global firewall opening (all `mkDefault`, so a host can override them).

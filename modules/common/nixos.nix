@@ -76,10 +76,18 @@ with lib;
         warn-dirty = false
       '';
 
+      # Weekly GC and store deduplication. Both catch up after a missed run
+      # (persistent timers), so they are spread out and run at idle CPU/IO
+      # priority instead of competing with the session right after boot.
       gc = {
         automatic = true;
         dates = "weekly";
+        randomizedDelaySec = "45min";
         options = "--delete-older-than 14d";
+      };
+      optimise = {
+        automatic = true;
+        dates = [ "weekly" ];
       };
 
       settings = {
@@ -96,16 +104,21 @@ with lib;
           "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
         ];
 
-        auto-optimise-store = true;
-
-        # Parallel build settings for faster rebuilds
-        max-jobs = "auto"; # Build multiple derivations in parallel
-        cores = 0; # Use all cores per build (0 = auto)
-        keep-outputs = true; # Keep build outputs for faster rebuilds
-        keep-derivations = true; # Keep .drv files for debugging/rebuilds
+        # Parallel builds: every derivation may use all cores; profiles cap
+        # how many run at once (laptops)
+        max-jobs = mkOptionDefault "auto";
+        cores = 0;
         connect-timeout = 5; # Fail faster on unavailable substituters
       };
     };
+
+    systemd.services = genAttrs [ "nix-gc" "nix-optimise" ] (_: {
+      serviceConfig = {
+        Nice = 19;
+        IOSchedulingClass = "idle";
+        CPUSchedulingPolicy = "idle";
+      };
+    });
 
     # Basic common system packages for all devices
     environment.systemPackages = with pkgs; [
