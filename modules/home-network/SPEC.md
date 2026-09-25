@@ -243,6 +243,7 @@ The `--ephemeral` flag is what makes the `installer-XXXXXXXX` nodes auto-clean: 
 ## Member wiring (controller and onboarded modes)
 
 - tailscaled logs in to `lib.tailnet.loginServer` with `--accept-routes --accept-dns`, using the sops secret `services/headscale-preauthkey` when sops is enabled.
+- `tailscaled-autoconnect` (which sends that key) is skipped when the node is already registered (`tailscale debug prefs`: not logged out, has a NodeID), so boots without network don't wait 90 s for it and it doesn't leave a failed unit. A logged-out or new node still gets the key.
 - sshd is enabled with the global firewall closed; port 22 is open on `tailscale0` only.
 - Each account's `authorized_keys` gets the peer keys its registry entry allows (`sshFrom`, or `sshFromFleet` on controller).
 - root (nix-daemon) fetches `nix-vault` from `git@controller` with the host SSH key (`Match localuser root user git`).

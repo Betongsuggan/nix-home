@@ -324,6 +324,17 @@ in
 
       (mkIf config.my.sops.enable {
         services.tailscale.authKeyFile = config.sops.secrets."headscale-preauthkey".path;
+
+        # The auth key is only needed to register. An already registered node
+        # skips the autoconnect unit, which otherwise polls tailscaled until it
+        # is Running and times out after 90 s on every boot without network
+        # (laptops that join Wi-Fi after login). The prefs are readable
+        # offline; if the check itself fails, the unit runs as before.
+        systemd.services.tailscaled-autoconnect.serviceConfig.ExecCondition =
+          pkgs.writeShellScript "tailscale-needs-login" ''
+            ! ${getExe config.services.tailscale.package} debug prefs \
+              | ${getExe pkgs.jq} -e '.LoggedOut == false and (.Config.NodeID // "") != ""' >/dev/null
+          '';
         sops.secrets."headscale-preauthkey" = {
           key = "services/headscale-preauthkey";
           owner = "root";
