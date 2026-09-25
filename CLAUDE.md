@@ -1,6 +1,6 @@
 # AI Rules
 
-This file provider guidance to AI assistants when working with this repository
+This file provides guidance to AI assistants when working with this repository
 
 ## General guidelines
 
@@ -23,7 +23,22 @@ the module's directory (e.g. `my.window-manager.hyprland`, `my.file-manager`). W
 Home Manager but needs system-side support, the `nixos.nix` half derives its enable from the users with
 `inputs.self.lib.anyHomeUser config (u: u.my.<name>.enable)`, so the user only enables it in one place.
 
-When we're creating new modules, it is importand that TO AS BIG EXTENT POSSIBLE use the nix programming language to define it.
+Roles live in `modules/profiles` (`my.profiles.{workstation,laptop,gaming-station}`, NixOS; the Home Manager `desktop`
+profile follows `workstation`) and only set `mkDefault`s; `modules/common` is the always-on base. Prefer adding a default to
+a profile or module over repeating a setting in several hosts.
+
+Identity is registry-driven: hostnames (`hosts.<name>.hostName`), login accounts and git identity (`accounts`), who may SSH
+where (`hosts.<host>.users.<user>.sshFrom` / `sshFromFleet`), SSH public keys (which also drive sops key placement) and
+fleet constants (`domain`, `operator`, `tailnet`) all come from `lib/default.nix`. Never hardcode these in a host or module.
+
+Window-manager keybinds are defined once in `my.window-manager.keybinds` (`modules/window-manager/home.nix`) and rendered by
+each backend; add or change binds there, not in a backend. Multi-backend modules dispatch through an attrset of backends.
+
+Verify every change: `nix flake check --no-build --all-systems` (all hosts plus `checks/backends.nix`), and for refactors
+compare `scripts/baseline.sh` output before and after; a pure refactor must leave every drvPath unchanged. Never run
+`nix flake lock --override-input nix-vault ...`: it writes the local path into `flake.lock`.
+
+When we're creating new modules, it is important that TO AS BIG EXTENT POSSIBLE use the nix programming language to define it.
 
 It is EXTREMELY important that you are critical to any existing and suggested solutions and give suggestions on what would be
 a more idiomatic way of doing it in terms of usage pattern, Nixos idiomatics, Linux mindset.
