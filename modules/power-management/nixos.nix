@@ -18,11 +18,15 @@ let
     runtimeInputs = [ pkgs.coreutils ];
     text = ''
       log=/var/log/power-telemetry.log
-      # First battery and first mains supply, whatever the firmware names them
+      # First system battery and mains supply, whatever the firmware names them
       # (BAT0/BAT1, AC/ACAD/ADP1)
       supply() {
         for s in /sys/class/power_supply/*; do
-          if [ "$(cat "$s/type" 2>/dev/null)" = "$1" ]; then echo "$s"; return; fi
+          # scope=Device marks peripherals (a wireless mouse's battery)
+          if [ "$(cat "$s/type" 2>/dev/null)" = "$1" ] \
+             && [ "$(cat "$s/scope" 2>/dev/null)" != "Device" ]; then
+            echo "$s"; return
+          fi
         done
         echo /nonexistent
       }
