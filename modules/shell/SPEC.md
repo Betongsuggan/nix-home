@@ -38,4 +38,4 @@ my.shell = {
 
 - Setting `backend` automatically enables the corresponding shell sub-module.
 - You can override individual shell enables independently of `backend` if you want multiple shells configured simultaneously.
-- The editor is the `nvim` flake input (nixvim, `github:Betongsuggan/nvim`) installed as a package, providing `nvim`, `vim` and `vi`. Update it with `nix flake update nvim`; it is no longer fetched and evaluated on every invocation.
+- `editor` only sets `EDITOR`; the editor itself is installed by `modules/editor` (`my.editor`).

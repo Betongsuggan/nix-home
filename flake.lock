@@ -714,11 +714,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1790369996,
-        "narHash": "sha256-eaCLlzGs0DjmCaLdylhtAO0EN0UbPxDHPrGkCoyvRq8=",
+        "lastModified": 1790377552,
+        "narHash": "sha256-I18udF5pI/XhWZCATFCijvraxIrxr4eqPngxZwjtSoM=",
         "owner": "Betongsuggan",
         "repo": "nvim",
-        "rev": "ddc5f7a7825ec61a7e0dd5fe8e1a08eb654de400",
+        "rev": "979c2285ce05801ccc068b34fdfb20682d4ac527",
         "type": "github"
       },
       "original": {

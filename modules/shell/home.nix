@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 with lib;
@@ -113,8 +112,5 @@ with lib;
     };
 
     home.sessionPath = config.my.shell.extraPaths;
-
-    # The editor from the nvim flake input (update with `nix flake update nvim`)
-    home.packages = [ pkgs.nvim-config ];
   };
 }
