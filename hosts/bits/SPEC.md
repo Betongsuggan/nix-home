@@ -32,6 +32,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 
 - Hardware: AMD CPU with `amd_pstate=active` frequency scaling and microcode updates
 - Kernel: Linux 6.18; on battery TLP applies amdgpu Adaptive Backlight Management (level 3)
+- `pcie_aspm=force`: BIOS 0.1.81 still marks ASPM unsupported in the FADT, which would leave TLP's `PCIE_ASPM_ON_BAT = powersupersave` a no-op. Being tested since 2026-09-25; if NVMe, Wi-Fi or the SD reader misbehave (AER errors, dropouts, failed resume), remove it
 - **Waydroid is disabled as of 2026-09-17.** It crashed Hyprland twice in three hours: Waydroid's gralloc allocates Android surfaces on the discrete Navi 24 (`gralloc.gbm.device=/dev/dri/renderD128` in `/var/lib/waydroid/waydroid_base.prop`) while Hyprland composites on the Rembrandt iGPU (`renderD129`), so every surface crosses GPUs as a DCC-compressed dmabuf. That reset the iGPU, and Hyprland aborts on `GL_UNKNOWN_CONTEXT_RESET` because it has no reset-recovery path. Re-enabling requires first repointing gralloc at the iGPU render node — `gralloc.gbm.device=/dev/dri/by-path/pci-0000:67:00.0-render` (by-path, because `renderD*` numbering is not stable across boots)
 - Waydroid pulls in `psi=1` on the kernel command line, so toggling it either way needs a reboot, not just a `nixos-rebuild switch`; it also forces `pkgs.waydroid-nftables` because 6.18 no longer ships `ip_tables`
 - Boot: systemd-boot (secure boot not enabled)

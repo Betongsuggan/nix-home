@@ -17,6 +17,9 @@
 
     kernelParams = [
       "amd_pstate=active" # Modern AMD CPU frequency scaling
+      # The BIOS (0.1.81) declares ASPM unsupported in the FADT, which leaves
+      # TLP's PCIE_ASPM_ON_BAT a no-op; force it so links can power down
+      "pcie_aspm=force"
     ];
 
     kernel.sysctl = {
