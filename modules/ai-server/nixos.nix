@@ -463,88 +463,140 @@ in
       '';
     };
 
-    systemd.services.comfyui = mkIf cfg.comfyui.enable {
-      description = "ComfyUI image generation (ROCm container)";
-      after = [
-        "docker.service"
-        "network-online.target"
-      ];
-      requires = [ "docker.service" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        Type = "exec";
-        # Build is layer-cached; first run pulls the ~15GB rocm/pytorch base.
-        TimeoutStartSec = "2h";
-        ExecStartPre = [
-          "${pkgs.docker_29}/bin/docker build --pull=false -t comfyui-rocm:local ${./comfyui}"
-          "-${pkgs.docker_29}/bin/docker rm -f comfyui"
-        ];
-        ExecStart = lib.concatStringsSep " " [
-          "${pkgs.docker_29}/bin/docker run --rm --name=comfyui"
-          "--device=/dev/kfd --device=/dev/dri"
-          "--security-opt=seccomp=unconfined"
-          # Hard memory cap so a runaway ComfyUI gets OOM-killed by the kernel
-          # rather than dragging the whole host into swap thrashing. 12 GB is
-          # generous for SDXL on this 16 GB host; bump if you start running
-          # heavier image models (Flux dev) and have RAM headroom.
-          "--memory=12g --memory-swap=12g"
-          # Tell PyTorch's HIP allocator to release VRAM more aggressively
-          # back to the OS / driver when tensors are freed. Helps when
-          # switching between models or running many workflows in a row.
-          "-e PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.8,max_split_size_mb:512"
-          # Host networking instead of `-p`: Docker's published ports bypass
-          # the NixOS firewall, whereas a host-network listener is subject to
-          # it, so the port stays reachable on tailscale0 and loopback only.
-          "--network=host"
-          "-v ${cfg.comfyui.dataDir}/models:/opt/ComfyUI/models"
-          "-v ${cfg.comfyui.dataDir}/output:/opt/ComfyUI/output"
-          "-v ${cfg.comfyui.dataDir}/input:/opt/ComfyUI/input"
-          "-v ${cfg.comfyui.dataDir}/user:/opt/ComfyUI/user"
-          # Override the image CMD so we can append --lowvram.
+    # Sidecar containers. Each keeps a plain unit name (comfyui.service, ...)
+    # via serviceName, so the units ordering against them are unaffected. All
+    # listeners are loopback-only or host-networked (so the NixOS firewall,
+    # which opens only tailscale0, applies); Docker's published ports would
+    # bypass it.
+    virtualisation.oci-containers = {
+      backend = "docker";
+      containers = {
+        comfyui = mkIf cfg.comfyui.enable {
+          serviceName = "comfyui";
+          # Built locally from ./comfyui (see the unit's preStart below)
+          image = "comfyui-rocm:local";
+          pull = "never";
+          devices = [
+            "/dev/kfd"
+            "/dev/dri"
+          ];
+          environment = {
+            # Tell PyTorch's HIP allocator to release VRAM more aggressively
+            # back to the OS / driver when tensors are freed. Helps when
+            # switching between models or running many workflows in a row.
+            PYTORCH_HIP_ALLOC_CONF = "garbage_collection_threshold:0.8,max_split_size_mb:512";
+          };
+          volumes = [
+            "${cfg.comfyui.dataDir}/models:/opt/ComfyUI/models"
+            "${cfg.comfyui.dataDir}/output:/opt/ComfyUI/output"
+            "${cfg.comfyui.dataDir}/input:/opt/ComfyUI/input"
+            "${cfg.comfyui.dataDir}/user:/opt/ComfyUI/user"
+          ];
+          extraOptions = [
+            "--security-opt=seccomp=unconfined"
+            # Hard memory cap so a runaway ComfyUI gets OOM-killed by the kernel
+            # rather than dragging the whole host into swap thrashing. 12 GB is
+            # generous for SDXL on this 16 GB host; bump if you start running
+            # heavier image models (Flux dev) and have RAM headroom.
+            "--memory=12g"
+            "--memory-swap=12g"
+            "--network=host"
+          ];
           # --lowvram: keep the UNet split across CPU+GPU and minimise the
           # CPU-side mirror of model weights. Slightly slower per generation,
           # dramatically less system RAM. Right fit for "VRAM > free RAM"
           # hosts like this one.
-          "comfyui-rocm:local"
-          "python main.py --listen 0.0.0.0 --port ${toString cfg.comfyui.port} --lowvram"
-        ];
-        ExecStop = "${pkgs.docker_29}/bin/docker stop comfyui";
-        Restart = "on-failure";
-        RestartSec = "10s";
+          cmd = [
+            "python"
+            "main.py"
+            "--listen"
+            "0.0.0.0"
+            "--port"
+            (toString cfg.comfyui.port)
+            "--lowvram"
+          ];
+        };
+
+        speaches = mkIf cfg.voice.enable {
+          serviceName = "speaches";
+          image = cfg.voice.image;
+          pull = "always";
+          environment = {
+            UVICORN_HOST = "0.0.0.0";
+            UVICORN_PORT = toString cfg.voice.port;
+          };
+          volumes = [ "${cfg.voice.dataDir}:/home/ubuntu/.cache/huggingface" ];
+          extraOptions = [ "--network=host" ];
+        };
+
+        searxng = mkIf cfg.search.enable {
+          serviceName = "searxng";
+          image = cfg.search.image;
+          pull = "always";
+          ports = [ "127.0.0.1:${toString cfg.search.port}:8080" ];
+          environment.SEARXNG_BASE_URL = "http://localhost:${toString cfg.search.port}/";
+          volumes = [
+            "${./searxng}/settings.yml:/etc/searxng/settings.yml:ro"
+            "${cfg.search.dataDir}:/var/cache/searxng"
+          ];
+          # Forward only SEARXNG_SECRET from the unit's EnvironmentFile
+          extraOptions = [
+            "-e"
+            "SEARXNG_SECRET"
+          ];
+        };
+
+        tika = mkIf cfg.documents.enable {
+          serviceName = "tika";
+          image = cfg.documents.image;
+          pull = "always";
+          ports = [ "127.0.0.1:${toString cfg.documents.port}:9998" ];
+        };
+
+        jupyter = mkIf cfg.codeInterpreter.enable {
+          serviceName = "jupyter";
+          image = cfg.codeInterpreter.image;
+          pull = "always";
+          ports = [ "127.0.0.1:${toString cfg.codeInterpreter.port}:8888" ];
+          volumes = [ "${cfg.codeInterpreter.dataDir}:/home/jovyan/work" ];
+          environment = {
+            JUPYTER_ENABLE_LAB = "yes";
+            GRANT_SUDO = "no";
+            RESTARTABLE = "yes";
+          };
+          # Forward only JUPYTER_TOKEN from the unit's EnvironmentFile
+          extraOptions = [
+            "-e"
+            "JUPYTER_TOKEN"
+          ];
+          cmd = [
+            "start-notebook.py"
+            "--ServerApp.ip=0.0.0.0"
+            "--ServerApp.allow_origin=*"
+            "--ServerApp.disable_check_xsrf=True"
+          ];
+        };
       };
     };
 
-    systemd.services.speaches = mkIf cfg.voice.enable {
-      description = "Speaches voice server (STT + TTS, OpenAI-API compatible)";
-      after = [
-        "docker.service"
-        "network-online.target"
-      ];
-      requires = [ "docker.service" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        Type = "exec";
-        TimeoutStartSec = "30min";
-        ExecStartPre = [
-          "${pkgs.docker_29}/bin/docker pull ${cfg.voice.image}"
-          "-${pkgs.docker_29}/bin/docker rm -f speaches"
-        ];
-        ExecStart = lib.concatStringsSep " " [
-          "${pkgs.docker_29}/bin/docker run --rm --name=speaches"
-          # Host networking so the NixOS firewall applies (see comfyui)
-          "--network=host"
-          "-e UVICORN_HOST=0.0.0.0"
-          "-e UVICORN_PORT=${toString cfg.voice.port}"
-          "-v ${cfg.voice.dataDir}:/home/ubuntu/.cache/huggingface"
-          cfg.voice.image
-        ];
-        ExecStop = "${pkgs.docker_29}/bin/docker stop speaches";
-        Restart = "on-failure";
-        RestartSec = "10s";
+    # What the generated units need on top of oci-containers' defaults
+    systemd.services = {
+      comfyui = mkIf cfg.comfyui.enable {
+        # Layer-cached; the first run pulls the ~15 GB rocm/pytorch base image.
+        # A Dockerfile edit changes the context path, so a rebuild picks it up.
+        preStart = mkBefore "${pkgs.docker_29}/bin/docker build --pull=false -t comfyui-rocm:local ${./comfyui}";
+        serviceConfig.TimeoutStartSec = mkForce "2h";
+      };
+      speaches.serviceConfig.TimeoutStartSec = mkIf cfg.voice.enable (mkForce "30min");
+      searxng = mkIf cfg.search.enable {
+        after = [ "ai-server-secrets.service" ];
+        requires = [ "ai-server-secrets.service" ];
+        serviceConfig.EnvironmentFile = "/var/lib/ai-server/secrets/env";
+      };
+      jupyter = mkIf cfg.codeInterpreter.enable {
+        after = [ "ai-server-secrets.service" ];
+        requires = [ "ai-server-secrets.service" ];
+        serviceConfig.EnvironmentFile = "/var/lib/ai-server/secrets/env";
       };
     };
 
@@ -585,117 +637,5 @@ in
       '';
     };
 
-    systemd.services.searxng = mkIf cfg.search.enable {
-      description = "SearXNG metasearch backend for Open WebUI";
-      after = [
-        "docker.service"
-        "network-online.target"
-        "ai-server-secrets.service"
-      ];
-      requires = [
-        "docker.service"
-        "ai-server-secrets.service"
-      ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        Type = "exec";
-        EnvironmentFile = "/var/lib/ai-server/secrets/env";
-        TimeoutStartSec = "10min";
-        ExecStartPre = [
-          "${pkgs.docker_29}/bin/docker pull ${cfg.search.image}"
-          "-${pkgs.docker_29}/bin/docker rm -f searxng"
-        ];
-        ExecStart = lib.concatStringsSep " " [
-          "${pkgs.docker_29}/bin/docker run --rm --name=searxng"
-          "-p 127.0.0.1:${toString cfg.search.port}:8080"
-          "-e SEARXNG_BASE_URL=http://localhost:${toString cfg.search.port}/"
-          # Forward SEARXNG_SECRET from the unit env (populated by
-          # EnvironmentFile via ai-server-secrets.service) into the container.
-          "-e SEARXNG_SECRET"
-          "-v ${./searxng}/settings.yml:/etc/searxng/settings.yml:ro"
-          "-v ${cfg.search.dataDir}:/var/cache/searxng"
-          cfg.search.image
-        ];
-        ExecStop = "${pkgs.docker_29}/bin/docker stop searxng";
-        Restart = "on-failure";
-        RestartSec = "10s";
-      };
-    };
-
-    systemd.services.tika = mkIf cfg.documents.enable {
-      description = "Apache Tika document extraction sidecar";
-      after = [
-        "docker.service"
-        "network-online.target"
-      ];
-      requires = [ "docker.service" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        Type = "exec";
-        TimeoutStartSec = "10min";
-        ExecStartPre = [
-          "${pkgs.docker_29}/bin/docker pull ${cfg.documents.image}"
-          "-${pkgs.docker_29}/bin/docker rm -f tika"
-        ];
-        ExecStart = lib.concatStringsSep " " [
-          "${pkgs.docker_29}/bin/docker run --rm --name=tika"
-          "-p 127.0.0.1:${toString cfg.documents.port}:9998"
-          cfg.documents.image
-        ];
-        ExecStop = "${pkgs.docker_29}/bin/docker stop tika";
-        Restart = "on-failure";
-        RestartSec = "10s";
-      };
-    };
-
-    systemd.services.jupyter = mkIf cfg.codeInterpreter.enable {
-      description = "Jupyter sandbox for Open WebUI code interpreter";
-      after = [
-        "docker.service"
-        "network-online.target"
-        "ai-server-secrets.service"
-      ];
-      requires = [
-        "docker.service"
-        "ai-server-secrets.service"
-      ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        Type = "exec";
-        EnvironmentFile = "/var/lib/ai-server/secrets/env";
-        TimeoutStartSec = "10min";
-        ExecStartPre = [
-          "${pkgs.docker_29}/bin/docker pull ${cfg.codeInterpreter.image}"
-          "-${pkgs.docker_29}/bin/docker rm -f jupyter"
-        ];
-        ExecStart = lib.concatStringsSep " " [
-          "${pkgs.docker_29}/bin/docker run --rm --name=jupyter"
-          "-p 127.0.0.1:${toString cfg.codeInterpreter.port}:8888"
-          "-v ${cfg.codeInterpreter.dataDir}:/home/jovyan/work"
-          # docker `-e VAR` with no value forwards the value of VAR from the
-          # current systemd unit's environment (populated by EnvironmentFile).
-          # This avoids relying on systemd's $VAR substitution in ExecStart,
-          # which Nix's escaping interfered with.
-          "-e JUPYTER_TOKEN"
-          "-e JUPYTER_ENABLE_LAB=yes"
-          "-e GRANT_SUDO=no"
-          "-e RESTARTABLE=yes"
-          cfg.codeInterpreter.image
-          "start-notebook.py"
-          "--ServerApp.ip=0.0.0.0"
-          "--ServerApp.allow_origin=*"
-          "--ServerApp.disable_check_xsrf=True"
-        ];
-        ExecStop = "${pkgs.docker_29}/bin/docker stop jupyter";
-        Restart = "on-failure";
-        RestartSec = "10s";
-      };
-    };
   };
 }
