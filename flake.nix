@@ -53,8 +53,11 @@
       flake = false;
     };
 
-    # The editor (nixvim); keeps its own nixpkgs, which nixvim is tied to
-    nvim.url = "github:Betongsuggan/nvim";
+    # The editor (nixvim, on the same NixOS release as the fleet)
+    nvim = {
+      url = "github:Betongsuggan/nvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     console-mode = {
       url = "github:Betongsuggan/console-mode";
