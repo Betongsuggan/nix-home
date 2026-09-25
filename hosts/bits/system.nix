@@ -81,9 +81,6 @@
     mode = "onboarded";
   };
 
-  systemd.services.fwupd = {
-    wantedBy = lib.mkForce [ ];
-  };
   my.profiles.laptop.enable = true;
   my.graphics.amd = true;
   networking.nameservers = [ "1.1.1.1" ];

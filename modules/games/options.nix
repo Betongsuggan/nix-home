@@ -17,6 +17,17 @@ with lib;
         description = "Enable MangoHud overlay";
       };
 
+      sessionWide = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Load MangoHud into every Vulkan app of the session (needed for the
+          controller toggle in a streamed Big Picture session). Off: only
+          games launched with `mangohud` (e.g. `mangohud %command%` in Steam),
+          so ordinary apps don't load the overlay and poll sensors every frame.
+        '';
+      };
+
       detailedMode = mkOption {
         type = types.bool;
         default = true;

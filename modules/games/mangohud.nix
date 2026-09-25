@@ -8,7 +8,7 @@ in
   config = mkIf cfg.enable {
     programs.mangohud = mkIf cfg.mangohud.enable {
       enable = true;
-      enableSessionWide = true;
+      enableSessionWide = cfg.mangohud.sessionWide;
       settings = {
         # Performance metrics
         fps = true;

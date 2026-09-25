@@ -155,7 +155,10 @@ let
   monitorWatch = pkgs.writeShellScriptBin "hypr-monitor-watch" ''
     hyprctl() { ${pkgs.hyprland}/bin/hyprctl "$@"; }
     export HYPRLAND_INSTANCE_SIGNATURE=''${HYPRLAND_INSTANCE_SIGNATURE:-$(${pkgs.coreutils}/bin/ls -t "$XDG_RUNTIME_DIR/hypr" | ${pkgs.coreutils}/bin/head -1)}
+    # Only monitor removals reach the shell loop; the socket carries every
+    # focus/workspace event
     ${pkgs.socat}/bin/socat -u "UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" - \
+    | ${pkgs.gnugrep}/bin/grep --line-buffered '^monitorremoved' \
     | while IFS= read -r event; do
       case "$event" in
         monitorremoved*)
@@ -203,6 +206,15 @@ in
   config = mkIf config.my.window-manager.hyprland.enable {
     # Multi-gestures
     # services.touchegg.enable = true;  # TODO: Move to system level
+
+    # On battery, skip the blur and shadow passes (extra GPU work on every
+    # redraw); back on when plugged in
+    my.battery-monitor.onBattery = [
+      "${pkgs.hyprland}/bin/hyprctl --batch 'keyword decoration:blur:enabled false; keyword decoration:shadow:enabled false'"
+    ];
+    my.battery-monitor.onAC = [
+      "${pkgs.hyprland}/bin/hyprctl --batch 'keyword decoration:blur:enabled true; keyword decoration:shadow:enabled true'"
+    ];
 
     home = {
       # name/package/size come from stylix (stylix.cursor in the theming

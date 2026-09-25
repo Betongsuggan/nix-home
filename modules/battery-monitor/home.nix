@@ -83,6 +83,26 @@ let
       source "$STATE_FILE"
     fi
 
+    # Power-source hooks: on the first check of the session and on every
+    # AC <-> battery transition
+    if [ "$STATE" = "discharging" ]; then SOURCE=battery; else SOURCE=ac; fi
+    PREV_SOURCE=""
+    case "$PREV_STATE" in
+      discharging) PREV_SOURCE=battery ;;
+      charging|fully-charged|pending-charge) PREV_SOURCE=ac ;;
+    esac
+    if [ "$SOURCE" != "$PREV_SOURCE" ]; then
+      if [ "$SOURCE" = battery ]; then
+        ${concatMapStringsSep "
+        " (c: "${c} || true") cfg.onBattery}
+        :
+      else
+        ${concatMapStringsSep "
+        " (c: "${c} || true") cfg.onAC}
+        :
+      fi
+    fi
+
     # If we're charging or fully charged, reset notification flags
     if [ "$STATE" = "charging" ] || [ "$STATE" = "fully-charged" ]; then
       # Notify on charger connect if state changed
@@ -135,10 +155,16 @@ in
       description = "Battery percentage threshold for critical battery warning";
     };
 
-    checkInterval = mkOption {
-      type = types.str;
-      default = "1min";
-      description = "How often to check battery status (systemd time format)";
+    onBattery = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
+      description = "Shell commands run when the session starts on battery or switches to it.";
+    };
+
+    onAC = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
+      description = "Shell commands run when the session starts on AC or switches to it.";
     };
   };
 
@@ -148,33 +174,31 @@ in
 
     home.packages = [ batteryMonitorScript ];
 
-    # Systemd service to check battery
+    # Event-driven: re-check whenever upower reports a change of the laptop
+    # battery or the charger (peripheral batteries are ignored), instead of
+    # polling on a timer. Runs in the graphical session so the power hooks
+    # can reach the compositor; the state is reset at start so the hooks are
+    # applied once for the current power source.
     systemd.user.services.battery-monitor = {
       Unit = {
-        Description = "Battery Monitor Check";
+        Description = "Battery notifications and power-source hooks";
+        PartOf = [ "graphical-session.target" ];
+        After = [ "graphical-session.target" ];
       };
 
       Service = {
-        Type = "oneshot";
-        ExecStart = "${batteryMonitorScript}/bin/battery-monitor-check";
-      };
-    };
-
-    # Systemd timer to run battery check periodically
-    systemd.user.timers.battery-monitor = {
-      Unit = {
-        Description = "Battery Monitor Timer";
-      };
-
-      Timer = {
-        OnBootSec = "60s";
-        OnUnitActiveSec = cfg.checkInterval;
-        Unit = "battery-monitor.service";
+        ExecStartPre = "${pkgs.coreutils}/bin/rm -f %t/battery-monitor/state";
+        ExecStart = "${pkgs.writeShellScript "battery-monitor" ''
+          ${batteryMonitorScript}/bin/battery-monitor-check
+          ${pkgs.upower}/bin/upower --monitor \
+            | ${pkgs.gnugrep}/bin/grep --line-buffered -E 'battery_BAT|line_power' \
+            | while read -r _; do ${batteryMonitorScript}/bin/battery-monitor-check; done
+        ''}";
+        Restart = "on-failure";
+        RestartSec = 5;
       };
 
-      Install = {
-        WantedBy = [ "timers.target" ];
-      };
+      Install.WantedBy = [ "graphical-session.target" ];
     };
   };
 }

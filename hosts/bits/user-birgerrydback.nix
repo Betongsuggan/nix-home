@@ -21,6 +21,8 @@
   my.localsend = {
     enable = true;
     cli = true;
+    # Started when needed, like everything else on this machine
+    autostart = false;
   };
   my.printing-3d = {
     enable = true;

@@ -4,7 +4,7 @@ Personal Intel-based laptop for daily use, development, light gaming, and game s
 
 ## Key Features
 
-- Niri tiling Wayland compositor with accelerometer screen rotation (`my.controls.utils.autoScreenRotation`)
+- Niri tiling Wayland compositor with accelerometer screen rotation in tablet mode (`my.controls.utils.autoScreenRotation`)
 - Kanshi for automatic display profile switching (multi-monitor)
 - Ghostty terminal with vim-style keybindings and split navigation
 - Vicinae launcher with wifi and bluetooth extensions
@@ -30,3 +30,4 @@ Personal Intel-based laptop for daily use, development, light gaming, and game s
 - NTFS filesystem support for accessing Windows drives
 - Timezone: Europe/Stockholm
 - Colemak keyboard layout
+- Nothing autostarts; MangoHud only for games launched with `mangohud`; game store/prefix tools are off (Steam and Moonlight stay)

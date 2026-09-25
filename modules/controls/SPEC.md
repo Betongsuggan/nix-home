@@ -64,7 +64,7 @@ my.controls = {
 | utils.battery | bool | true | Enable battery notifications |
 | utils.system | bool | true | Enable system resource notifications |
 | utils.workspaces | bool | true | Enable workspace notifications |
-| utils.autoScreenRotation | bool | false | Rotate the built-in panel (`my.window-manager.touchOutput`, default eDP-1) with the accelerometer on Hyprland or niri; adds itself to the session autostart |
+| utils.autoScreenRotation | bool | false | Rotate the built-in panel (`my.window-manager.touchOutput`, default eDP-1) with the accelerometer while in tablet mode, on Hyprland or niri. A `tablet-mode-watch` user service follows the switch via libinput and starts/stops `auto-screen-rotation`; the user is added to the `input` group for that. |
 
 ## Notes
 

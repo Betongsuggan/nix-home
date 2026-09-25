@@ -50,6 +50,7 @@ my.games = {
 |--------|------|---------|-------------|
 | enable | bool | false | Enable gaming setup |
 | mangohud.enable | bool | true | Enable MangoHud overlay |
+| mangohud.sessionWide | bool | true | Load MangoHud into every Vulkan app; off = only `mangohud`-launched games |
 | mangohud.detailedMode | bool | true | Show detailed system information in MangoHud (CPU per-core load, swap, memory, network, IO, etc.) |
 | mangohud.position | enum | "top-left" | MangoHud overlay position. One of: "top-left", "top-right", "bottom-left", "bottom-right", "top-center", "bottom-center" |
 | mangohud.fontSize | int | 24 | MangoHud font size |
@@ -433,7 +434,7 @@ shortcut's `icon` vdf field). Behavior:
 ## Notes
 
 - MangoHud is hidden by default and can be toggled with Shift_R+F9.
-- MangoHud is enabled session-wide when active.
+- MangoHud is session-wide by default (`mangohud.sessionWide`), which the streamed Big Picture session needs for the controller toggle; with it off (private-laptop) only games launched with `mangohud` load it.
 - Base packages always installed: chiaki, discord, evtest, gamemode, lutris, steam, steam-run, sc-controller, vulkan-tools, mesa-demos.
 - RetroArch uses the `retroarch-bare.wrapper` function for declarative configuration while preserving runtime changes.
 - Standalone emulators (PCSX2, Dolphin, PPSSPP) are for systems that benefit from dedicated emulators over RetroArch cores. (Duckstation was removed from nixpkgs 26.05 upstream; PSX is covered by RetroArch's beetle-psx-hw core.)

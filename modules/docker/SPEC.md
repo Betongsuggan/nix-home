@@ -16,7 +16,7 @@ my.docker.enable = true;
 
 ## Notes
 
-- Runs in rootless mode with a per-user socket at `$XDG_RUNTIME_DIR/docker.sock`.
+- Runs in rootless mode, **on demand**: `$XDG_RUNTIME_DIR/docker.sock` is a socket-activated user socket, and the first connection starts the rootless daemon (on a private `docker-daemon.sock`) plus a `systemd-socket-proxyd` proxy to it. Nothing Docker runs at login; once started it stays up until logout. `dockerd-rootless` can't take a systemd socket itself, hence the proxy.
 - The rootful daemon is configured but **not started at boot** (`enableOnBoot = false`).
   Because `DOCKER_HOST` points every client at the rootless socket, the rootful daemon had
   no clients and was holding open `dockerd` + `containerd` (~180 MB) at zero connections.

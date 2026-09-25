@@ -7,6 +7,8 @@
   my.games = {
     enable = true;
     tools.enable = false;
+    # Overlay only for games launched with `mangohud`
+    mangohud.sessionWide = false;
   };
   my.notifications.enable = true;
   my.network-monitor.enable = true;
@@ -74,13 +76,6 @@
 
   my.window-manager = {
     backend = "niri";
-    autostartApps = {
-      chromium = {
-        command = "chromium";
-        workspace = null;
-      };
-
-    };
   };
 
   my.secrets = {

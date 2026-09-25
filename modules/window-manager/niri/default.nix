@@ -251,8 +251,6 @@ in
               "fill"
             ];
           }
-          # Start XWayland satellite for X11 app compatibility
-          { command = [ "${pkgs.xwayland-satellite}/bin/xwayland-satellite" ]; }
         ]
         # Autostart applications
         ++ builtins.concatLists (
@@ -365,7 +363,6 @@ in
 
         # Environment variables
         environment = {
-          DISPLAY = ":0"; # For xwayland-satellite
           XDG_CURRENT_DESKTOP = "gnome"; # Tell portals to use GNOME backend for screen sharing
         };
       };

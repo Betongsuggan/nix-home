@@ -238,9 +238,43 @@ let
 in
 {
   config = mkIf (config.my.controls.enable && cfg.enable) {
-    # Rotation follows the session by itself; nothing to add to autostart
-    my.window-manager.autostartApps.auto-screen-rotation = mkIf cfg.autoScreenRotation {
-      command = "${autoScreenRotation}/bin/auto-screen-rotation";
+    # Rotation only while folded into tablet mode: a watcher follows the
+    # tablet-mode switch (libinput; there is no udev event for it) and starts
+    # the accelerometer loop on entry, stops it and restores the normal
+    # orientation on exit. Needs read access to input devices (the `input`
+    # group, granted by the NixOS half of this module).
+    systemd.user.services = mkIf cfg.autoScreenRotation {
+      auto-screen-rotation = {
+        Unit.Description = "Rotate the built-in panel with the accelerometer (tablet mode)";
+        Service = {
+          ExecStart = "${autoScreenRotation}/bin/auto-screen-rotation";
+          ExecStopPost = optional (rotateCommand != null) (
+            pkgs.writeShellScript "reset-rotation" (rotateCommand transforms.normal)
+          );
+        };
+      };
+      tablet-mode-watch = {
+        Unit = {
+          Description = "Start/stop screen rotation with the tablet-mode switch";
+          PartOf = [ "graphical-session.target" ];
+          After = [ "graphical-session.target" ];
+        };
+        Service = {
+          ExecStart = pkgs.writeShellScript "tablet-mode-watch" ''
+            ${pkgs.coreutils}/bin/stdbuf -oL ${pkgs.libinput.bin}/bin/libinput debug-events \
+              | ${pkgs.gnugrep}/bin/grep --line-buffered 'switch tablet-mode' \
+              | while read -r line; do
+                  case "$line" in
+                    *"state 1"*) ${pkgs.systemd}/bin/systemctl --user start auto-screen-rotation ;;
+                    *"state 0"*) ${pkgs.systemd}/bin/systemctl --user stop auto-screen-rotation ;;
+                  esac
+                done
+          '';
+          Restart = "on-failure";
+          RestartSec = 5;
+        };
+        Install.WantedBy = [ "graphical-session.target" ];
+      };
     };
 
     home.packages =

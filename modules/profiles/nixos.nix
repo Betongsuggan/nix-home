@@ -59,6 +59,24 @@ in
           memoryPercent = mkDefault 25;
         };
 
+        # Nothing resident that is only occasionally needed:
+        # sshd starts per connection; fwupd only when run by hand (no boot
+        # start, no twice-daily refresh); gvfs keeps SMB/udisks/MTP but not the
+        # GNOME Online Accounts, Apple (afc) and camera (gphoto2) monitors
+        services.openssh.startWhenNeeded = mkDefault true;
+        systemd.services.fwupd.wantedBy = mkForce [ ];
+        systemd.timers.fwupd-refresh.wantedBy = mkForce [ ];
+        systemd.user.services =
+          genAttrs
+            [
+              "gvfs-goa-volume-monitor"
+              "gvfs-afc-volume-monitor"
+              "gvfs-gphoto2-volume-monitor"
+            ]
+            (_: {
+              enable = false;
+            });
+
         services.libinput = {
           enable = true;
           touchpad = {

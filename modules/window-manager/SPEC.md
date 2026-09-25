@@ -86,3 +86,5 @@ One keymap, `my.window-manager.keybinds` (internal, defined in `home.nix`), rend
 - Enabling a window manager enables `my.launcher`, `my.controls` and `my.notifications` (mkDefault); those modules read the backend from `my.window-manager.backend` themselves.
 - sway and i3 take their colors and fonts from stylix (`stylix.targets.sway` / `.i3`, and swaylock under sway).
 - `checks/backends.nix` evaluates every window manager, launcher, terminal, shell, notification and file-manager backend, plus the optional desktop modules, as flake checks (`nix flake check --no-build`), so unused alternatives cannot silently break.
+- Hyprland turns blur and shadows off on battery and back on on AC, through `my.battery-monitor` hooks (on hosts with the battery monitor).
+- niri starts xwayland-satellite itself when an X11 client connects (niri ≥ 25.08); the package is on PATH, nothing spawns it at login.

@@ -142,7 +142,7 @@ with lib;
       };
 
       autoScreenRotation = mkOption {
-        description = "Rotate the built-in panel (my.window-manager.touchOutput, default eDP-1) with the accelerometer; Hyprland and niri. Starts with the session.";
+        description = "Rotate the built-in panel (my.window-manager.touchOutput, default eDP-1) with the accelerometer while in tablet mode; Hyprland and niri. Adds the user to the `input` group (to read the tablet-mode switch).";
         type = types.bool;
         default = false;
       };
