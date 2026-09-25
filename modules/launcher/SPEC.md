@@ -47,7 +47,7 @@ my.launcher = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | vicinae.config | JSON | {} | Extra settings merged into `programs.vicinae.settings` (`~/.config/vicinae/settings.json`) |
-| vicinae.extensions | list of package | wifi-commander, bluetooth (+ hyprland-monitors under Hyprland) | Extensions to install (from the `vicinae-extensions` input; build more with `config.lib.vicinae.mkExtension`) |
+| vicinae.extensions | list of package | wifi-commander, bluetooth | Extensions to install (from upstream `vicinaehq/extensions`, the `vicinae-extensions` input; build more with `config.lib.vicinae.mkExtension`) |
 | vicinae.themes | TOML | {} | Extra themes, keyed by theme file name |
 | vicinae.useLayerShell | bool | true | Whether vicinae should use layer shell |
 | vicinae.fileIndex.enable | bool | false | Run the background file indexer (file search) |

@@ -1083,17 +1083,17 @@
     "vicinae-extensions": {
       "flake": false,
       "locked": {
-        "lastModified": 1766237874,
-        "narHash": "sha256-b9vu28wMbycAw90P3akqX2SxZphMjv302r+dAuftbdk=",
-        "owner": "Betongsuggan",
-        "repo": "vicinae-extensions",
-        "rev": "9edf41e19b64efe082daf0acc2e8838d8b761f7b",
+        "lastModified": 1765275178,
+        "narHash": "sha256-jhlWZ6WfFBjS7CXbUOreZ2zEnYiVYfeqKOaZguFFslA=",
+        "owner": "vicinaehq",
+        "repo": "extensions",
+        "rev": "b698ce7ecb58dec1efe297f87370253d8f6ba9d5",
         "type": "github"
       },
       "original": {
-        "owner": "Betongsuggan",
-        "ref": "add-hyprland-monitor-extension",
-        "repo": "vicinae-extensions",
+        "owner": "vicinaehq",
+        "repo": "extensions",
+        "rev": "b698ce7ecb58dec1efe297f87370253d8f6ba9d5",
         "type": "github"
       }
     },

@@ -48,8 +48,10 @@
       inputs.elephant.follows = "elephant";
     };
 
+    # Upstream extensions, pinned: later revisions add a native npm module
+    # (usocket) to the bluetooth extension whose node-gyp build fails
     vicinae-extensions = {
-      url = "github:Betongsuggan/vicinae-extensions/add-hyprland-monitor-extension";
+      url = "github:vicinaehq/extensions/b698ce7ecb58dec1efe297f87370253d8f6ba9d5";
       flake = false;
     };
 
