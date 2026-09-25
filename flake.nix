@@ -61,10 +61,6 @@
       url = "github:Betongsuggan/console-mode";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    d2 = {
-      url = "github:Betongsuggan/terrastruct-d2-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v1.0.0";

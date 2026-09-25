@@ -10,6 +10,5 @@ in
   audiomenu = fromInput inputs.audiomenu;
   monitormenu = fromInput inputs.monitormenu;
   console-mode = fromInput inputs.console-mode;
-  d2 = fromInput inputs.d2;
   nvim-config = fromInput inputs.nvim; # nixvim build, provides `nvim`
 }
