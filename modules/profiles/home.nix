@@ -1,6 +1,11 @@
 # Home Manager defaults every user starts from, plus the `desktop` user
 # profile (switched on for all users by the NixOS workstation profile).
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 
 {
@@ -21,6 +26,16 @@ with lib;
     }
 
     (mkIf config.my.profiles.desktop.enable {
+      home.packages = with pkgs; [
+        gedit
+        gimp
+        gparted
+        imv
+        kdePackages.okular
+        vlc
+        wine
+      ];
+
       my = {
         chromium.enable = mkDefault true;
         communication.enable = mkDefault true;

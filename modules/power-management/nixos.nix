@@ -160,6 +160,9 @@ in
 
     services.upower.enable = true;
 
+    # Ryzen power/boost tuning CLI
+    environment.systemPackages = optional (cfg.cpuVendor == "amd") pkgs.ryzenadj;
+
     # Lid close behavior, gated on external displays rather than power source:
     # logind counts the system as "docked" when a docking station is attached
     # OR more than one display is connected, so lid close with an external

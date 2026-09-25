@@ -1,6 +1,6 @@
 # General
 
-Installs a collection of general-purpose desktop utilities and tools for everyday use, including system monitoring, file management, media viewing, and hardware diagnostics.
+The everyday CLI toolset for every user, headless machines included: system monitoring, archives, hardware diagnostics, YubiKey management. Enabled for everyone by the base Home Manager profile.
 
 ## Usage
 
@@ -12,9 +12,10 @@ my.general.enable = true;
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| enable | bool | false | Enable general desktop programs |
+| enable | bool | false | Enable the everyday CLI toolset |
 
 ## Notes
 
 - Enables dconf and sets `XDG_DATA_HOME`.
-- Installed packages include: btop, htop, gimp, gedit, gparted, vlc, wine, jq, lf, imv, okular, wf-recorder, p7zip, unzip, zip, powertop, ryzenadj, yubikey-manager, and various system utilities.
+- Packages: btop, htop, jq, lf, lm_sensors, lshw, pciutils, usbutils, powertop, p7zip, unzip, zip, exfat, gnumake, openssl, silver-searcher, ls-lint, yubikey-manager, dconf.
+- GUI apps (gimp, gedit, gparted, imv, okular, vlc, wine) come with the Home Manager `desktop` profile (`modules/profiles/home.nix`); `ryzenadj` is a system package on AMD machines (power-management with `cpuVendor = "amd"`, gaming-station).

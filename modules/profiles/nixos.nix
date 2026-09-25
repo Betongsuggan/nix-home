@@ -159,6 +159,7 @@ in
       environment.systemPackages = with pkgs; [
         gamemode
         mangohud
+        ryzenadj # these are Ryzen machines
       ];
     })
   ];

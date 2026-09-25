@@ -8,7 +8,7 @@ with lib;
 
 {
   options.my.general = {
-    enable = mkEnableOption "Enable general desktop programs";
+    enable = mkEnableOption "the everyday CLI toolset";
   };
 
   config = mkIf config.my.general.enable {
@@ -18,23 +18,16 @@ with lib;
       XDG_DATA_HOME = "$HOME/.local/share";
     };
 
+    # CLI tools wanted on every machine, headless ones included
     home.packages = with pkgs; [
       dconf
       btop
       coreutils
       pciutils
       exfat
-      gimp
-      gedit
       gnumake
-      gparted
-      gvfs
       htop
-      iio-sensor-proxy
-      imv
       jq
-      kdePackages.okular
-      wf-recorder
       lf
       lm_sensors
       lshw
@@ -42,14 +35,10 @@ with lib;
       openssl
       p7zip
       powertop
-      ryzenadj
       silver-searcher
       unzip
       yubikey-manager
-      udisks
       usbutils
-      vlc
-      wine
       zip
     ];
   };
