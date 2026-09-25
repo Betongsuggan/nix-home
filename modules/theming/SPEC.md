@@ -49,6 +49,8 @@ my.theming = {
 | colors.bright.magenta | str | "#d3869b" | Bright magenta color |
 | colors.bright.cyan | str | "#83a598" | Bright cyan color |
 | colors.bright.white | str | "#ffffff" | Bright white color |
+| colors.gray | str | "#928374" | Muted text: comments, placeholders (base16 base03) |
+| colors.orange | str | "#d65d0e" | Orange accent (base16 base09) |
 
 ## Notes
 
@@ -61,4 +63,4 @@ my.theming = {
 - Installs Papirus icon theme (kept manual; `stylix.icons` unused), Nerd Font symbols as monospace fallback, and glibc locales. Font and cursor packages are installed via stylix.
 - The wallpaper is also written to `~/.background-image` for compatibility with tools that expect it there.
 - Modules for apps without a stylix target (niri focus ring, ghostty, walker, polybar) still reference `config.my.theming.*` directly.
-- `my.theming.colors` (`primary`, `normal`, `bright`) and `my.theming.font` are the only theme schema. Apps with a stylix target use it (alacritty, ghostty, sway, i3, swaylock, zellij, mako, xresources, vicinae, ...); the rest (hyprlock, niri focus ring, waybar and wofi CSS, polybar) read these options directly.
+- `my.theming.colors` (`primary`, `normal`, `bright`, plus `gray` and `orange`) and `my.theming.font` are the only theme schema. The base16 scheme maps `gray` to base03 (comments, muted text) and `orange` to base09. Apps with a stylix target use it (alacritty, ghostty, sway, i3, swaylock, zellij, mako, xresources, vicinae, ...); the rest (hyprlock, niri focus ring, waybar and wofi CSS, polybar) read these options directly.

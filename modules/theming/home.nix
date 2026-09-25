@@ -181,6 +181,18 @@ in
           default = "#ffffff";
         };
       };
+
+      gray = mkOption {
+        type = types.str;
+        description = "Muted text: comments, placeholders, inactive items (base16 base03)";
+        default = "#928374";
+      };
+
+      orange = mkOption {
+        type = types.str;
+        description = "Orange accent: constants, numbers, warnings (base16 base09)";
+        default = "#d65d0e";
+      };
     };
   };
 
@@ -214,13 +226,13 @@ in
         base00 = cfg.colors.primary.background;
         base01 = cfg.colors.normal.black;
         base02 = cfg.colors.bright.black;
-        base03 = cfg.colors.normal.white;
+        base03 = cfg.colors.gray;
         base04 = cfg.colors.bright.white;
         base05 = cfg.colors.primary.foreground;
         base06 = cfg.colors.bright.white;
         base07 = cfg.colors.bright.white;
         base08 = cfg.colors.normal.red;
-        base09 = cfg.colors.normal.yellow;
+        base09 = cfg.colors.orange;
         base0A = cfg.colors.normal.yellow;
         base0B = cfg.colors.normal.green;
         base0C = cfg.colors.normal.cyan;
