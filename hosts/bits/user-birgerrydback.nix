@@ -16,6 +16,8 @@
     kotlin.enable = true;
   };
   my.direnv.enable = true;
+  # Firefox handles DRM streaming here; skip the second (Widevine) Chromium build
+  my.chromium.widevine = false;
   my.firefox.enable = true;
   my.media.enable = true;
   my.localsend = {
