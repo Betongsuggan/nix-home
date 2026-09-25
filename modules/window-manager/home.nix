@@ -111,8 +111,9 @@ in
     monitors = mkOption {
       description = ''
         Outputs by connector name (e.g. "DP-2", or a virtual monitor such as
-        "SUNSHINE"). Outputs not listed use their preferred mode, automatic
-        position and scale 1. Each backend renders this in its own format.
+        "SUNSHINE"). Outputs not listed use their highest resolution at its
+        highest refresh rate on Hyprland (the preferred mode elsewhere),
+        automatic position and scale 1. Each backend renders this in its own format.
       '';
       type = types.attrsOf (
         types.submodule {
@@ -137,7 +138,7 @@ in
                 }
               );
               default = null;
-              description = "Resolution and refresh rate; null uses the preferred mode.";
+              description = "Resolution and refresh rate; null picks the highest resolution and refresh rate (Hyprland) or the preferred mode.";
             };
             position = mkOption {
               type = types.nullOr (

@@ -36,7 +36,7 @@ my.window-manager = {
 | autostartApps | attrsOf submodule | {} | Applications to autostart with optional workspace assignment |
 | autostartApps.\<name\>.command | str | (required) | Command to execute |
 | autostartApps.\<name\>.workspace | nullOr int | null | Workspace number to launch the application in |
-| monitors | attrsOf submodule | {} | Outputs by connector name: `enable`, `mode` ({ width, height, refresh }; null = preferred), `position` ({ x, y }; null = auto), `scale`, `vrr`, and the Hyprland-only `hdr`, `bitdepth`, `sdrBrightness`, `sdrSaturation`. Unlisted outputs use their preferred mode at scale 1. Each backend renders this itself (Hyprland `monitor` rules, niri `outputs`, sway `output` lines, xrandr for i3). |
+| monitors | attrsOf submodule | {} | Outputs by connector name: `enable`, `mode` ({ width, height, refresh }; null = the highest resolution at its highest refresh rate on Hyprland (`highres`), the preferred mode elsewhere), `position` ({ x, y }; null = auto), `scale`, `vrr`, and the Hyprland-only `hdr`, `bitdepth`, `sdrBrightness`, `sdrSaturation`. Unlisted outputs get the same mode choice at scale 1. Each backend renders this itself (Hyprland `monitor` rules, niri `outputs`, sway `output` lines, xrandr for i3). |
 | virtualMonitors | listOf str | [] | Virtual/headless monitor names to create at startup (e.g., for Sunshine streaming) |
 | workspaceBindings | listOf submodule | [] | Bind workspaces to specific monitors |
 | workspaceBindings.*.workspace | int | (required) | Workspace number |

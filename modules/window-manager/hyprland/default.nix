@@ -20,8 +20,10 @@ let
         [
           m.name
           (
+            # No mode: the highest resolution at its highest refresh rate,
+            # rather than the EDID-preferred mode (often 60 Hz)
             if m.mode == null then
-              "preferred"
+              "highres"
             else
               "${toString m.mode.width}x${toString m.mode.height}"
               + optionalString (m.mode.refresh != null) "@${wmLib.fmtNum m.mode.refresh}"
@@ -51,7 +53,7 @@ let
         ]
       );
   monitorRules = map monitorRule (wmLib.outputList config.my.window-manager.monitors) ++ [
-    ",preferred,auto,1"
+    ",highres,auto,1"
   ];
 
   # The shared keymap (my.window-manager.keybinds) as Hyprland binds
