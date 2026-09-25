@@ -18,8 +18,16 @@ let
     runtimeInputs = [ pkgs.coreutils ];
     text = ''
       log=/var/log/power-telemetry.log
-      bat=/sys/class/power_supply/BAT0
-      ac=/sys/class/power_supply/AC
+      # First battery and first mains supply, whatever the firmware names them
+      # (BAT0/BAT1, AC/ACAD/ADP1)
+      supply() {
+        for s in /sys/class/power_supply/*; do
+          if [ "$(cat "$s/type" 2>/dev/null)" = "$1" ]; then echo "$s"; return; fi
+        done
+        echo /nonexistent
+      }
+      bat=$(supply Battery)
+      ac=$(supply Mains)
 
       val() {
         if [ -r "$1" ]; then cat "$1" 2>/dev/null || echo "?"; else echo "?"; fi
