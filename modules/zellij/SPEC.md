@@ -16,6 +16,6 @@ my.zellij.enable = true;
 
 ## Notes
 
-- Requires the `theme` module to be enabled, as the Gruvbox theme colors reference `config.my.theming.colors`.
+- Colors come from the theme via `stylix.targets.zellij`.
 - Uses a custom default layout from `layouts/default.kdl`.
 - Configured with `simplified_ui = true`, `pane_frames = false`, and rounded corners.

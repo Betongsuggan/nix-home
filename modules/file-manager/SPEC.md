@@ -1,6 +1,6 @@
 # File Manager
 
-Unified module with system-level services and user-level configuration. The system half (`system.nix`) auto-enables when any user sets `fileManager.enable = true` — no separate system option needed.
+Unified module with system-level services and user-level configuration. The system half (`nixos.nix`) auto-enables when any user sets `my.file-manager.enable = true` — no separate system option needed.
 
 ## System layer (auto-enabled)
 

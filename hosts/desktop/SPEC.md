@@ -30,8 +30,8 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - CPU core-performance-boost re-asserted at boot (tmpfiles) and after every resume (`powerManagement.resumeCommands`) — amd-pstate loses the boost state across suspend, capping cores at base clock, and this host auto-suspends every 30 idle minutes
 - Development environment on betongsuggan user with Docker support
 - Vicinae launcher with wifi, bluetooth, and monitor extensions on both users
-- Firefox, communication apps, and LocalSend on both users
-- PrusaSlicer on `betongsuggan` only (`my.printing-3d.enable`, see `modules/3d-printing/SPEC.md`)
+- Chromium, communication apps, and LocalSend on both users
+- PrusaSlicer on `betongsuggan` only (`my.printing-3d.enable`, see `modules/printing-3d/SPEC.md`)
 - Alacritty terminal with Bash shell and Starship prompt
 - Bluetooth with wake support for DualSense controller
 - Secure boot via Lanzaboote

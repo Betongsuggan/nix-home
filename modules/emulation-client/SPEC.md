@@ -92,7 +92,7 @@ Configure each emulator to use `~/emulation/saves/<emulator>/` for saves:
 
 - **RetroArch**: declarative — the `games` module's wrapper settings pin
   Savefile = `~/emulation/saves/retroarch/saves` and Savestate =
-  `~/emulation/saves/retroarch/states` (see `modules/games/default.nix`); no
+  `~/emulation/saves/retroarch/states` (see `modules/games/emulation.nix`); no
   manual step
 - **Switch (Ryubing)**: declarative — `my.games.emulators.switch.dataDir` defaults
   to `~/emulation/saves/switch`

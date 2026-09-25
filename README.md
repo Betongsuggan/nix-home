@@ -1,142 +1,43 @@
-# NixOS Configuration
+# nix-home
 
-Personal NixOS configuration flake managing multiple hosts and users.
+One flake for every machine I run: NixOS hosts, their users' Home Manager configuration, and the small fleet registry that ties them together (tailnet names, SSH keys, Syncthing IDs, accounts).
 
 ## Hosts
 
-- **bits** - NixOS laptop with disk encryption
-- **private-laptop** - Private laptop configuration
-- **desktop** - Gaming desktop with AMD GPU
+| Host | Role |
+|---|---|
+| `bits` | Work laptop (AMD, Hyprland) |
+| `private-laptop` | Personal convertible laptop (Intel, niri) |
+| `desktop` | Gaming and AI workstation, couch-gaming `gamer` session, Sunshine streaming |
+| `island-stationary` | Gaming machine at the summer place |
+| `controller` | Home server: headscale, reverse proxy, Vaultwarden, Nextcloud, git (nix-vault), backups |
+| `island-pi` | Raspberry Pi 3 wake-on-LAN relay at the summer place (aarch64) |
+| `mail` | Hetzner VM for self-hosted mail (scaffold) |
 
-## Features
+Each host's `SPEC.md` (`hosts/<host>/SPEC.md`) describes it in detail.
 
-### System Modules
-- Graphics (AMD/Intel support)
-- Audio (PipeWire)
-- Bluetooth with wake-on-bluetooth
-- Disk encryption (LUKS)
-- Secure Boot (opt-in)
-- Power management
-- Networking with NetworkManager
-- Docker
-- Printers
-- Touchpad configuration
-- Undervolting
-
-### User Modules
-- Window managers (Sway, Hyprland, i3)
-- Launchers (Walker, Rofi, Wofi)
-- Terminals (Alacritty)
-- Shell (Bash, Fish, Nushell)
-- Development tools
-- Gaming configuration
-
-## Secure Boot Setup
-
-Secure Boot is available as an opt-in feature for any host. To enable:
-
-### 1. Enable in Host Configuration
-
-Add to your host's `system.nix`:
-
-```nix
-my.secure-boot.enable = true;
-```
-
-### 2. Build and Switch
+## Usage
 
 ```bash
-sudo nixos-rebuild switch --flake .#<hostname>
+sudo nixos-rebuild switch --flake .#<host>    # system and Home Manager together
+nix fmt                                       # format (nixfmt)
+nix flake check --no-build --all-systems      # evaluate every host and backend
+scripts/baseline.sh > /tmp/before             # per-host drvPaths, to prove a refactor changed nothing
 ```
 
-Note: This will automatically disable GRUB and enable systemd-boot. You can still select NixOS generations by pressing **Space** during boot.
+Home Manager runs only as a NixOS module; there is no separate `home-manager switch`. Secrets come from the private `nix-vault` flake input (sops-nix), fetched from controller over the tailnet; off the tailnet, evaluate with `--override-input nix-vault path:~/nix-vault`.
 
-### 3. One-Time Setup (Per Machine)
+## How it fits together
 
-After rebuilding, complete these steps once per machine:
+- **Registry** (`lib/default.nix`): hosts (`system`, `hostName`, per-user SSH keys, who may SSH in via `sshFrom`, Syncthing IDs), `accounts` (description, admin flag, git identity), the operator, and tailnet constants. Everything that other hosts need to know about a host lives here, once.
+- **Hosts** (`hosts/<name>/`): `lib/mk-host.nix` builds every registry entry from its folder: `system.nix` is the NixOS config and each `user-<user>.nix` becomes that user's Home Manager config. Hosts mostly pick a profile and state their hardware.
+- **Modules** (`modules/<name>/`): `nixos.nix` and/or `home.nix`, discovered automatically. Every option lives under `my.<name>`. A feature a user switches on in Home Manager derives its system half from the users (`lib.anyHomeUser`), so it is enabled in one place.
+- **Profiles** (`modules/profiles`): `workstation`, `laptop` and `gaming-station` set defaults (`mkDefault`) for a whole role; `modules/common` is the always-on base (nix settings, timezone, keymap, boot, accounts, sshd defaults).
+- **Alternatives**: window managers (Hyprland, niri, sway, i3), launchers, terminals, shells, notification daemons and file managers are backends behind one interface; one keymap (`my.window-manager.keybinds`) is rendered for every compositor, and `checks/backends.nix` evaluates every backend so unused ones cannot rot.
+- **Overlays** (`overlays/`): packages from other flakes and a few local fixes.
 
-#### Create Secure Boot Keys
-```bash
-sudo sbctl create-keys
-```
+## Adding things
 
-#### Enroll Keys in Firmware
-This command enrolls your keys and enables Secure Boot:
-```bash
-sudo sbctl enroll-keys -m
-```
-
-The `-m` flag includes Microsoft keys, which allows dual-booting with Windows.
-
-#### Verify Signed Files
-Check that unified kernel images were created:
-```bash
-ls /boot/EFI/Linux/
-```
-
-You should see `*.efi` files for each generation.
-
-#### Enable Secure Boot in BIOS/UEFI
-1. Reboot your system
-2. Enter BIOS/UEFI settings (usually Del, F2, or F12)
-3. Navigate to Secure Boot settings
-4. Enable Secure Boot
-5. Save and exit
-
-#### Verify Secure Boot Status
-After rebooting with Secure Boot enabled:
-```bash
-sudo sbctl status
-```
-
-Expected output:
-```
-Installed:      ✓ sbctl is installed
-Setup Mode:     ✓ Disabled
-Secure Boot:    ✓ Enabled
-```
-
-### Troubleshooting
-
-**System won't boot after enabling Secure Boot:**
-- Disable Secure Boot in BIOS temporarily
-- Boot into NixOS
-- Run `sudo sbctl verify` to check what's not signed
-- Rebuild the system: `sudo nixos-rebuild switch --flake .#<hostname>`
-- Re-enable Secure Boot in BIOS
-
-**Dual-boot with Windows:**
-- Use `sbctl enroll-keys -m` to include Microsoft keys
-- This allows Windows to boot alongside NixOS
-
-**Custom kernel modules:**
-- Extra modules (like `ryzen-smu`) are automatically signed by lanzaboote
-- No additional configuration needed
-
-## Building Configurations
-
-### NixOS System
-```bash
-sudo nixos-rebuild switch --flake .#<hostname>
-```
-
-### Home Manager
-```bash
-home-manager switch --flake .#<user>@<hostname>
-```
-
-## Structure
-
-```
-.
-├── flake.nix              # Main flake configuration
-├── hosts/                 # Host-specific configurations
-│   ├── bits/
-│   ├── private-laptop/
-│   └── desktop/
-├── modules/
-│   ├── common/           # Shared between system and user
-│   ├── system/           # System-level modules
-│   └── users/            # User-level modules
-└── overrides/            # Package overrides
-```
+- **A module**: create `modules/<name>/{nixos,home}.nix` with options under `my.<name>`, and a `SPEC.md`.
+- **A host**: add it to `lib/default.nix` and create `hosts/<name>/system.nix` (plus `user-*.nix`); joining the tailnet is walked through in `modules/home-network/SPEC.md`.
+- **SSH access**: add the target account's `sshFrom` in the registry; the authorized keys, client `Host` blocks and key placement follow.

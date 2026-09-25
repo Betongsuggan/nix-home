@@ -105,12 +105,12 @@ in
   # the deploying machine fetches nix-vault, the Pi only needs its host key
   # registered as an age recipient so sops can decrypt at activation.
   #
-  # home-network = {
+  # my.home-network = {
   #   enable = true;
   #   mode = "onboarded";
   # };
   #
-  # sops-secrets = {
+  # my.sops = {
   #   enable = true;
   #   secretsFile = "${inputs.nix-vault}/secrets/island-pi.yaml";
   # };

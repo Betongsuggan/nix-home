@@ -67,7 +67,7 @@ my.ai-server = {
 
 ## Notes
 
-- Uses `pkgs.ollama-rocm`. If ROCm fails to init the GPU, swap to `pkgs.ollama-vulkan` in `default.nix` as a one-line fallback. The `graphics` module already enables the ROCm OpenCL ICD; this module adds `rocminfo` to the system path and the `/opt/rocm/hip` symlink some tooling expects.
+- Uses `pkgs.ollama-rocm`. If ROCm fails to init the GPU, swap to `pkgs.ollama-vulkan` in `nixos.nix` as a one-line fallback. The `graphics` module already enables the ROCm OpenCL ICD; this module adds `rocminfo` to the system path and the `/opt/rocm/hip` symlink some tooling expects.
 - ComfyUI runs in a container built from `modules/ai-server/comfyui/Dockerfile` (thin layer on `rocm/pytorch:latest`). The build is run by a systemd `ExecStartPre` and is layer-cached; first launch will pull the ~15-20 GB base image — be patient. Edits to the Dockerfile are picked up by `nixos-rebuild switch` because the build context path changes. To download a model, drop the file into `${dataDir}/models/checkpoints/` (e.g. SDXL from Hugging Face).
 - ComfyUI is launched with `--lowvram` (UNet split across CPU+GPU, minimal CPU mirror of weights) and the container is hard-capped at 12 GB RAM (`--memory=12g`). The 16 GB host can't fit a CPU mirror of SDXL alongside Ollama's resident model, so without these flags the host swap-thrashes the moment a workflow runs. `PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.8,max_split_size_mb:512` is also set so the HIP allocator returns VRAM more aggressively between runs.
 - `OLLAMA_KEEP_ALIVE=5m` (down from 24h) — idle Ollama unloads its model so ComfyUI / Speaches have RAM headroom. The first chat turn after idle pays a ~3–5 s reload; the wake-proxy already cushions cold-start latency at the host level.

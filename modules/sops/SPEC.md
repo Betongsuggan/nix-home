@@ -4,8 +4,8 @@ Integrates [sops-nix](https://github.com/Mic92/sops-nix) with a separate `nix-va
 
 The module has two halves:
 
-- **`system.nix`** — NixOS module: wires sops-nix, points it at the per-host encrypted file, configures the SSH host key as the decryption identity, and enables prerequisites. Implicitly enables `services.openssh` (so `/etc/ssh/ssh_host_ed25519_key` exists) and `services.pcscd` (for YubiKey access when editing).
-- **`user.nix`** — home-manager module: opt-in editing toolchain (`sops`, `age`, `age-plugin-yubikey`) for users who maintain the `nix-vault` repo. Sets `SOPS_AGE_KEY_FILE` to the conventional `~/.config/sops/age/keys.txt`.
+- **`nixos.nix`** — NixOS module: wires sops-nix, points it at the per-host encrypted file, configures the SSH host key as the decryption identity, and enables prerequisites. Implicitly enables `services.openssh` (so `/etc/ssh/ssh_host_ed25519_key` exists) and `services.pcscd` (for YubiKey access when editing).
+- **`home.nix`** — home-manager module: opt-in editing toolchain (`sops`, `age`, `age-plugin-yubikey`) for users who maintain the `nix-vault` repo. Sets `SOPS_AGE_KEY_FILE` to the conventional `~/.config/sops/age/keys.txt`.
 
 ## Usage
 
@@ -44,7 +44,7 @@ my.sops.enable = true;
 
 ## Options
 
-### System (`sops-secrets`)
+### System (`my.sops`, NixOS)
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -53,7 +53,7 @@ my.sops.enable = true;
 
 When enabled, also flips on `services.openssh.enable = true;` (with the key-only defaults from `modules/common`) and `services.pcscd`.
 
-### User (`sops-edit`)
+### User (`my.sops`, Home Manager)
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|

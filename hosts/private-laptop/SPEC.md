@@ -9,7 +9,7 @@ Personal Intel-based laptop for daily use, development, light gaming, and game s
 - Ghostty terminal with vim-style keybindings and split navigation
 - Vicinae launcher with wifi and bluetooth extensions
 - Development tooling with Docker, git, and direnv
-- Firefox browser and communication apps
+- Chromium and communication apps
 - Game streaming client for streaming from desktop
 - Light gaming support via games module
 - Battery monitoring and power management
@@ -20,7 +20,6 @@ Personal Intel-based laptop for daily use, development, light gaming, and game s
 - Secret management for Anthropic and Tavily API keys
 - IIO sensor support for screen auto-rotation
 - Intel graphics with firmware updates via fwupd
-- Secure boot via Lanzaboote
 - Firewall with port 8080 open for development
 
 ## Notes

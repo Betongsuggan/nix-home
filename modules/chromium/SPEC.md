@@ -1,6 +1,6 @@
 # Chromium (Ungoogled)
 
-Unified module with a user half (`user.nix`) that configures the browser and a system half (`system.nix`) that auto-enables a portal workaround when any user has chromium enabled.
+Unified module with a user half (`home.nix`) that configures the browser and a system half (`nixos.nix`) that auto-enables a portal workaround when any user has chromium enabled.
 
 Configures Ungoogled Chromium, a privacy-focused Chromium fork with all Google telemetry and service dependencies removed. Includes Wayland support, hardware acceleration flags, and pre-installed extensions via the home-manager `programs.chromium` module.
 

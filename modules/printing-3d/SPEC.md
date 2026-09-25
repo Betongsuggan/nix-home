@@ -3,8 +3,7 @@
 3D printing toolchain: the PrusaSlicer slicer, and optionally CAD modelling tools
 (OpenSCAD dev snapshot, FreeCAD).
 
-The option namespace is `printing3d` (not `3d-printing`): Nix identifiers can't start
-with a digit, and quoting the attribute at every usage site isn't worth it.
+The option namespace is `my.printing-3d`, matching the directory (Nix identifiers can't start with a digit, hence not `3d-printing`).
 
 ## Usage
 

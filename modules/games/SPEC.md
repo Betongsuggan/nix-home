@@ -186,7 +186,7 @@ BIOS layouts the read-only flat BIOS mount doesn't provide; standalone emulators
   index 6/7 is Back/Start on the Sunshine pad but L2/R2 on a DualSense — the
   triggers quit the game.) RetroPad convention note: `input_b` is the *bottom*
   face button — if confirm/cancel feel swapped in-game, the autoconfig's b/a and
-  y/x assignments in `modules/games/default.nix` are the place to flip.
+  y/x assignments in `modules/games/emulation.nix` are the place to flip.
 - **Shaders:** declarative per-core presets via RetroArch's auto-preset mechanism:
   `video_shader_dir` points at a `symlinkJoin` of the full `libretro-shaders-slang`
   collection (browsable in the Quick Menu) plus generated
@@ -269,7 +269,7 @@ folder layout, `.xci`; see "Steam tiles for emulated systems" above). The old
 `switch-apply-shortcuts` name survives as a deprecated alias.
 
 **Prerequisites**
-- The user must have this host's `emulation-mounts` (system module) access so
+- The user must have this host's `my.emulation-client` (NixOS half) access so
   `~/emulation/{roms,bios}` mount from the controller (BIOS share holds keys/firmware).
 - Steam must have been logged into at least once so a Steam user data dir exists
   (`userdata/<id>/config/shortcuts.vdf`).
@@ -322,7 +322,7 @@ The baked binding uses a **direct 1:1 (Nintendo-label) face-button map** — the
 A/B/X/Y drive the Switch A/B/X/Y of the same name, so printed letters match in-game
 actions. (ryubing's default position-swaps A/B and X/Y, which lands actions on the
 wrong buttons, e.g. jump on Y instead of X.) If a pad ever comes out mirrored, flip
-the relevant `button_*` values in `switchInputEntry` (`modules/games/default.nix`)
+the relevant `button_*` values in `switchInputEntry` (`modules/games/emulation.nix`)
 and re-run `switch-apply-input`.
 
 `switch-run-emulator` is the canonical entrypoint (generated Steam launchers use it; use it

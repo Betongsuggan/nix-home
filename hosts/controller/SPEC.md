@@ -4,7 +4,7 @@ Minimal Intel NUC host intended as a controller/server. The long-term goal is to
 
 ## Key Features
 
-- Niri tiling Wayland compositor with Vicinae launcher (wifi, bluetooth, monitor extensions)
+- Headless: no window manager; the Home Manager user gets the shell/CLI base only
 - Alacritty terminal with Bash shell and Starship prompt
 - Intel integrated graphics
 - Audio via PipeWire

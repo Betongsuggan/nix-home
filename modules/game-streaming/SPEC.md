@@ -1,11 +1,11 @@
 # Game Streaming
 
-Unified module with independent server and client halves. The server (`system.nix`) configures Sunshine with Hyprland virtual monitor management. The client (`user.nix`) configures Moonlight with declarative settings. Server and client are independent — enable each where needed.
+Unified module with independent server and client halves. The server (`nixos.nix`) configures Sunshine with Hyprland virtual monitor management. The client (`home.nix`) configures Moonlight with declarative settings. Server and client are independent — enable each where needed.
 
 ## Usage
 
 ```nix
-# Server (in system config — host games to other devices)
+# Server (NixOS config — host games to other devices)
 my.game-streaming.server = {
   enable = true;
   display = "SUNSHINE";
@@ -14,11 +14,11 @@ my.game-streaming.server = {
   user = "gamer";
 };
 
-# Client (in user config — connect to a Sunshine server)
+# Client (Home Manager config — connect to a Sunshine server)
 my.game-streaming.client.enable = true;
 ```
 
-## Options (server — system.nix)
+## Options (server — nixos.nix)
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -29,7 +29,7 @@ my.game-streaming.client.enable = true;
 | server.hdr | bool | true | Enable HDR streaming support (requires HEVC Main10 or AV1 10-bit) |
 | server.user | null or string | null | Restrict Sunshine (and the virtual-monitor oneshot) to this user's session via `ConditionUser`. `services.sunshine` installs a *global* systemd user unit, so on multi-user hosts every graphical session otherwise starts its own instance and the loser of the race crash-loops on RTSP port 48010. `null` = no restriction. |
 
-## Options (client — user.nix)
+## Options (client — home.nix)
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|

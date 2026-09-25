@@ -20,7 +20,7 @@ Deploying as root is what makes unsigned closure copies acceptable to the Pi's n
 
 ## Hardware / boot
 
-- U-Boot + `generic-extlinux-compatible`, mainline kernel (default `linuxPackages`). No systemd-boot, no lanzaboote (module imported for type-check only, never enabled).
+- U-Boot + `generic-extlinux-compatible`, mainline kernel (default `linuxPackages`). No systemd-boot (`my.common.systemd-boot = false`) and no secure boot.
 - SD layout comes from the flake-built image (`packages.aarch64-linux.island-pi-sd-image`, nixpkgs `sd-image-aarch64.nix`): vfat `FIRMWARE` partition (Pi firmware + U-Boot) + ext4 `NIXOS_SD` root. Deploys only rewrite `/boot/extlinux`; the firmware partition is never touched.
 - zram swap (zstd, 100% of RAM) instead of SD-card swap; journald capped at 100M.
 - Wired ethernet with plain DHCP — no NetworkManager.
@@ -49,7 +49,7 @@ The standard runbook (`modules/home-network/SPEC.md`) uses `mode = "bootstrap"` 
 2. **Register in `lib/default.nix`:** fill in the island-pi `ssh.host` entry. Commit, push.
 3. **Controller:** `git pull && sudo nixos-rebuild switch --flake .#controller` (trusts the new key via `allSshKeys`), then mint a preauth key: `sudo headscale preauthkeys create --user birger --reusable --expiration 8760h`.
 4. **nix-vault:** convert the host key (`ssh-to-age`), add the `age1…` recipient to `.sops.yaml`, create `secrets/island-pi.yaml` with `services.headscale-preauthkey`, `sops updatekeys`, commit, push.
-5. **Stage 2 flip in `system.nix`:** uncomment `home-network` (onboarded), `sops-secrets`, and `my.home-network.advertiseRoutes` (fill the real summer-place subnet); remove `openssh.openFirewall = true`. Then `nix flake update nix-vault` and deploy over LAN:
+5. **Stage 2 flip in `system.nix`:** uncomment `my.home-network` (onboarded), `my.sops`, and `my.home-network.advertiseRoutes` (fill the real summer-place subnet). `services.openssh.openFirewall = true` stays: it no longer conflicts with the tailnet defaults and keeps LAN SSH as the recovery path. Then `nix flake update nix-vault` and deploy over LAN:
    `nixos-rebuild switch --flake .#island-pi --target-host root@<lan-ip>`
 6. **Approve routes on controller** (headscale ≥0.26 syntax; verify with `--help`):
    ```bash

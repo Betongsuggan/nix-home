@@ -24,3 +24,9 @@ my.secure-boot.enable = true;
   2. `sudo sbctl enroll-keys -m`
   3. Reboot and enable Secure Boot in BIOS/UEFI settings
   4. Verify with `sudo sbctl status`
+- `-m` in `enroll-keys` also enrolls Microsoft's keys, which keeps Windows dual-boot working.
+- Extra kernel modules (e.g. `ryzen-smu`) are signed by lanzaboote automatically.
+
+## Troubleshooting
+
+If the machine won't boot after enabling Secure Boot: turn Secure Boot off in the firmware, boot NixOS, run `sudo sbctl verify` to see what is unsigned, rebuild (`sudo nixos-rebuild switch --flake .#<host>`), and turn it back on.

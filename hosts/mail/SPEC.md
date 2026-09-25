@@ -45,7 +45,7 @@ nixos-rebuild switch --flake .#mail --target-host root@mail.rydback.net
 - [ ] `system.nix`: enable Stalwart with real domain config and DKIM key sourcing.
 - [ ] `system.nix`: enable `reverse-proxy` for ACME certs (HTTP-01 on 80/443) — Stalwart consumes the resulting cert.
 - [ ] `system.nix`: enable sops, point at `nix-vault/secrets/mail.yaml`.
-- [ ] `nix-vault/keys.nix`: add this host's `/etc/ssh/ssh_host_ed25519_key.pub` once provisioned.
+- [ ] `lib/default.nix`: add this host's `/etc/ssh/ssh_host_ed25519_key.pub` as `hosts.mail.ssh.host` once provisioned.
 - [ ] Route 53: A/AAAA/MX/SPF/DKIM/DMARC/MTA-STS/TLS-RPT records (manual for trial phase).
 - [ ] Tighten SSH to tailnet-only after tailscale is up (currently public, key-only).
 

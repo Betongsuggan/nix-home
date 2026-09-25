@@ -201,7 +201,7 @@ Such hosts skip `mode = "bootstrap"` (and the YubiKey-on-host dance of steps 3â€
 
 1. Get the host running with plain LAN ssh (e.g. flashed from a flake-built image) and grab `/etc/ssh/ssh_host_ed25519_key.pub`.
 2. Steps 2, 4 (rebuild controller + mint preauth key) and 6 (register recipient + `secrets/<host>.yaml`) from the runbook above, all driven from an existing machine.
-3. Flip the host straight to `mode = "onboarded"` + `sops-secrets` and deploy with `--target-host`.
+3. Flip the host straight to `mode = "onboarded"` + `my.sops` and deploy with `--target-host`.
 
 `island-pi` is the example â€” see `hosts/island-pi/SPEC.md`.
 
