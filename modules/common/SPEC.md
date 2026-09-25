@@ -16,7 +16,7 @@ Nothing to enable. The one option:
 
 - One `users.users.<name>` per account, with its description from `lib.accounts`; admins get `wheel` and `video`. Hosts only add what is specific to them (e.g. `authorizedKeys`, an extra group).
 
-- Base host defaults (all `mkDefault`): timezone Europe/Stockholm, colemak console keymap, redistributable firmware.
+- Base host defaults (all `mkDefault`): timezone Europe/Stockholm, colemak console keymap, redistributable firmware, a 200 MB journal cap, a 1 s boot-menu timeout.
 
 - Nix: flakes and `nix-command`; weekly garbage collection of generations older than 14 days and weekly store deduplication (`nix.optimise`), both with a 45 min random delay and at idle CPU/IO priority so a missed run caught up after boot doesn't compete with the session; parallel builds (the laptop profile caps `max-jobs` at 2); and the nix-community / walker / niri Cachix substituters. No `keep-outputs`/`keep-derivations`, so GC actually reclaims build dependencies.
 - aarch64 emulation via binfmt on x86_64 hosts, so any fleet machine can build and deploy island-pi.

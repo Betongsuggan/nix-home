@@ -525,8 +525,10 @@ in
           # vfr moved to debug: in Hyprland 0.55 and defaults to on — no longer set here.
         };
 
+        # Keep Hyprland's own log (tmpfs, $XDG_RUNTIME_DIR/hypr) but don't
+        # also stream it into the on-disk journal
         debug = {
-          enable_stdout_logs = true;
+          enable_stdout_logs = false;
           disable_logs = false;
         };
 

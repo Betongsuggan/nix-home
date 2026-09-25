@@ -54,12 +54,19 @@ with lib;
     console.keyMap = mkDefault "colemak";
     hardware.enableRedistributableFirmware = mkDefault true;
 
+    # Bounded journal (hosts can set their own)
+    services.journald.extraConfig = mkDefault ''
+      SystemMaxUse=200M
+    '';
+
     boot.loader = mkIf config.my.common.systemd-boot {
       systemd-boot = {
         enable = true;
         configurationLimit = mkDefault 10;
       };
       efi.canTouchEfiVariables = mkDefault true;
+      # Show the menu for 1 s (press a key to stop it) instead of 5
+      timeout = mkDefault 1;
     };
 
     # aarch64 builder support: island-pi is deployed with `nixos-rebuild
