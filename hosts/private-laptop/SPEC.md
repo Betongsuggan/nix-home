@@ -12,6 +12,7 @@ Personal Intel-based laptop for daily use, development, light gaming, and game s
 - Chromium and communication apps
 - Game streaming client for streaming from desktop
 - Light gaming support via games module
+- Intel power tuning: `cpuVendor = "intel"` (TLP energy-performance preferences) and thermald
 - Battery monitoring and power management
 - `my.profiles.laptop` (implies workstation): touchpad, backlight, TLP power management, battery notifications, bluetooth, printing
 - Bash shell with Starship prompt

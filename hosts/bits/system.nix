@@ -20,7 +20,6 @@
     ];
 
     kernel.sysctl = {
-      "vm.laptop_mode" = 5;
       "vm.dirty_writeback_centisecs" = 1500;
       "vm.swappiness" = 10;
     };
@@ -112,11 +111,6 @@
     enable = false;
     clamshellAware = true;
     lidStatePath = "/proc/acpi/button/lid/LID/state";
-  };
-  my.printers = {
-    # Nothing on this network shares a printer; dropping browsed lets cupsd stay
-    # socket-activated instead of running from boot.
-    remoteDiscovery = false;
   };
   my.power-management = {
     cpuVendor = "amd";

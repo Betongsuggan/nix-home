@@ -36,12 +36,13 @@ my.power-management = {
 | enable | bool | false | Enable power management |
 | cpuVendor | null or "amd" or "intel" | null | CPU vendor for vendor-specific power settings (P-State, energy policy, platform profile) |
 | gpuVendor | null or "amd" or "intel" or "nvidia" | null | GPU vendor for vendor-specific power settings |
-| powerModes.ac | str | "performance" | Default CPU scaling governor on AC power |
+| powerModes.ac | str | "powersave" | CPU scaling governor on AC; with amd_pstate/intel_pstate, `powersave` lets the energy-performance preference (balance_performance on AC) steer, while `performance` would pin it |
 | powerModes.battery | str | "powersave" | Default CPU scaling governor on battery power |
 | platformProfiles.ac | str | "balanced" | ACPI platform profile on AC (AMD CPU only) |
 | platformProfiles.battery | str | "low-power" | ACPI platform profile on battery (AMD CPU only) |
 | amdgpuPerfLevel.ac | str | "auto" | amdgpu DPM performance level on AC (AMD GPU only) |
-| amdgpuPerfLevel.battery | str | "low" | amdgpu DPM performance level on battery (AMD GPU only) |
+| amdgpuPerfLevel.battery | str | "auto" | amdgpu DPM performance level on battery (AMD GPU only; `low` pins the lowest clocks) |
+| amdgpuAbmLevel.ac / .battery | int 0-4 | 0 / 3 | amdgpu Adaptive Backlight Management (lower backlight, contrast compensated); the panel is usually the largest consumer on battery |
 | forensics.enable | bool | false | Record power telemetry and make oopses panic (see below) |
 | forensics.interval | int | 5 | Seconds between telemetry samples |
 
@@ -85,3 +86,5 @@ Note that `panic_on_oops` converts otherwise-survivable oopses into reboots. Tha
 right trade while diagnosing, but it is a diagnostic posture rather than a default; it
 and any lowered `platformProfiles`/`amdgpuPerfLevel` caps are meant to be reverted once
 the cause is found.
+- amdgpu settings use TLP's real keys (`RADEON_DPM_PERF_LEVEL_ON_*`, `AMDGPU_ABM_LEVEL_ON_*`); earlier `AMDGPU_*DPM*` names did not exist in TLP and were ignored.
+- With `cpuVendor = "intel"`, thermald is enabled as well.

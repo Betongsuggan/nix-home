@@ -28,11 +28,10 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Printers and shit
+    # Local printing only: nothing here shares its printers, so don't
+    # advertise them (browsing/defaultShared would announce them on the LAN)
     services.printing = {
       enable = true;
-      browsing = true;
-      defaultShared = true;
       browsed.enable = cfg.remoteDiscovery;
       drivers = [
         pkgs.gutenprint

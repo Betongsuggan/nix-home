@@ -15,7 +15,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Tuned for a light login: nothing autostarts, and Docker (rootful) and CUPS start on demand rather than at boot. Measured idle draw is ~3.4 W with the screen off against ~10 W with the panel at full brightness, so the display dominates everything else on this machine.
 - Docker for containerized development — rootless only at boot; the rootful daemon is socket-activated (see `modules/docker/SPEC.md`)
 - Offline media for travel: `media` (mpv + yt-dlp) for DRM-free sources. **Waydroid is currently disabled** (see below); when it was on it provided Netflix's Android app for offline downloads — SD only, with Disney+/HBO Max hard-blocked (see `modules/waydroid/SPEC.md`)
-- Bluetooth and printer support; `printers.remoteDiscovery = false` drops `cups-browsed` so `cupsd` stays socket-activated instead of running from boot
+- Bluetooth and printer support; the laptop profile drops `cups-browsed` so `cupsd` stays socket-activated instead of running from boot
 - LocalSend for local file sharing (with CLI)
 - 3D printing toolchain: PrusaSlicer, OpenSCAD (dev snapshot), FreeCAD (`my.printing-3d` with `cad.enable`, see `modules/printing-3d/SPEC.md`)
 - SMB network share browsing in Thunar (GVFS + Avahi/mDNS discovery)
@@ -31,7 +31,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 ## Notes
 
 - Hardware: AMD CPU with `amd_pstate=active` frequency scaling and microcode updates
-- Kernel: Linux 6.18 with laptop-mode power optimizations (`vm.laptop_mode=5`)
+- Kernel: Linux 6.18; on battery TLP applies amdgpu Adaptive Backlight Management (level 3)
 - **Waydroid is disabled as of 2026-09-17.** It crashed Hyprland twice in three hours: Waydroid's gralloc allocates Android surfaces on the discrete Navi 24 (`gralloc.gbm.device=/dev/dri/renderD128` in `/var/lib/waydroid/waydroid_base.prop`) while Hyprland composites on the Rembrandt iGPU (`renderD129`), so every surface crosses GPUs as a DCC-compressed dmabuf. That reset the iGPU, and Hyprland aborts on `GL_UNKNOWN_CONTEXT_RESET` because it has no reset-recovery path. Re-enabling requires first repointing gralloc at the iGPU render node — `gralloc.gbm.device=/dev/dri/by-path/pci-0000:67:00.0-render` (by-path, because `renderD*` numbering is not stable across boots)
 - Waydroid pulls in `psi=1` on the kernel command line, so toggling it either way needs a reboot, not just a `nixos-rebuild switch`; it also forces `pkgs.waydroid-nftables` because 6.18 no longer ships `ip_tables`
 - Boot: systemd-boot (secure boot not enabled)

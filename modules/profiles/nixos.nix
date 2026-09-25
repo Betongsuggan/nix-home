@@ -47,6 +47,9 @@ in
         # rebuilds from pegging a laptop's CPU and thermals
         nix.settings.max-jobs = mkDefault 2;
 
+        # No cups-browsed daemon from boot; cupsd stays socket-activated
+        my.printers.remoteDiscovery = mkDefault false;
+
         services.libinput = {
           enable = true;
           touchpad = {

@@ -48,6 +48,7 @@
   ];
 
   my.profiles.laptop.enable = true;
+  my.power-management.cpuVendor = "intel";
   my.graphics = {
     intel.enable = true;
     # intel.generation = "modern"; # Set to "legacy" or "arc" if needed

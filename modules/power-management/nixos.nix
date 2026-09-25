@@ -105,9 +105,13 @@ in
 
     powerModes = {
       ac = mkOption {
-        description = "Default system power governor on AC";
+        description = ''
+          CPU scaling governor on AC. With amd_pstate/intel_pstate active,
+          "powersave" lets the energy-performance preference (balance_performance
+          on AC) steer; "performance" pins the preference to performance.
+        '';
         type = types.str;
-        default = "performance";
+        default = "powersave";
       };
 
       battery = mkOption {
@@ -146,9 +150,26 @@ in
       };
 
       battery = mkOption {
-        description = "amdgpu DPM performance level on battery";
+        description = "amdgpu DPM performance level on battery (\"low\" pins the lowest clocks)";
         type = types.str;
-        default = "low";
+        default = "auto";
+      };
+    };
+
+    amdgpuAbmLevel = {
+      ac = mkOption {
+        description = "amdgpu Adaptive Backlight Management on AC (0 = off)";
+        type = types.ints.between 0 4;
+        default = 0;
+      };
+      battery = mkOption {
+        description = ''
+          amdgpu Adaptive Backlight Management on battery (0-4): lowers the
+          panel backlight and compensates contrast; the panel is usually the
+          largest single consumer on battery.
+        '';
+        type = types.ints.between 0 4;
+        default = 3;
       };
     };
 
@@ -171,6 +192,9 @@ in
     # powerManagement.cpuFreqGovernor would only race it.
 
     services.upower.enable = true;
+
+    # Intel thermal daemon: keeps the package within limits before firmware throttling kicks in
+    services.thermald.enable = mkIf (cfg.cpuVendor == "intel") (mkDefault true);
 
     # Ryzen power/boost tuning CLI
     environment.systemPackages = optional (cfg.cpuVendor == "amd") pkgs.ryzenadj;
@@ -247,10 +271,12 @@ in
 
         # AMD GPU-specific settings
         (mkIf (cfg.gpuVendor == "amd") {
-          AMDGPU_POWER_DPM_STATE_ON_AC = "balanced";
-          AMDGPU_POWER_DPM_STATE_ON_BAT = "battery";
-          AMDGPU_DPM_PERF_LEVEL_ON_AC = cfg.amdgpuPerfLevel.ac;
-          AMDGPU_DPM_PERF_LEVEL_ON_BAT = cfg.amdgpuPerfLevel.battery;
+          # TLP's names for amdgpu (the AMDGPU_*DPM* keys used before don't
+          # exist in TLP and were silently ignored)
+          RADEON_DPM_PERF_LEVEL_ON_AC = cfg.amdgpuPerfLevel.ac;
+          RADEON_DPM_PERF_LEVEL_ON_BAT = cfg.amdgpuPerfLevel.battery;
+          AMDGPU_ABM_LEVEL_ON_AC = cfg.amdgpuAbmLevel.ac;
+          AMDGPU_ABM_LEVEL_ON_BAT = cfg.amdgpuAbmLevel.battery;
         })
       ];
     };

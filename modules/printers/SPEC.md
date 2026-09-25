@@ -13,7 +13,7 @@ my.printers.enable = true;
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable printers |
-| remoteDiscovery | bool | true | Run `cups-browsed` to discover printers shared by other machines on the LAN |
+| remoteDiscovery | bool | true (false with the laptop profile) | Run `cups-browsed` to discover printers shared by other machines on the LAN |
 
 ## Notes
 
@@ -26,3 +26,4 @@ my.printers.enable = true;
 - Disabling it does not affect Avahi itself, which other modules use for SMB share
   discovery. Only the discovery of *remote shared printers* is lost; directly configured
   printers are unaffected.
+- Local printers are not shared or advertised (`browsing`/`defaultShared` off); nothing in the fleet prints through another host.
