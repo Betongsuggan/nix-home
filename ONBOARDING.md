@@ -43,6 +43,8 @@ Rules of thumb:
 - **Configure things once.** If two hosts need the same setting, it belongs in a module or profile default, not in both host files. Identity (hostnames, accounts, SSH access, domains) always comes from `lib/default.nix`.
 - **A user feature is enabled in one place.** If it needs system support, the module's `nixos.nix` derives it from the users (`inputs.self.lib.anyHomeUser`).
 - **Backends are interchangeable.** Window managers, launchers, terminals, shells, notification daemons and file managers sit behind one interface. Keybinds are defined once in `my.window-manager.keybinds` (`modules/window-manager/home.nix`) and rendered for every compositor.
+- **One color scheme per user.** `my.theming.scheme` (`gruvbox` or `kanagawa`, defined in `modules/theming/schemes.nix`) drives everything: stylix themes apps with the scheme's canonical base16 file, the editor loads the scheme's Neovim colorscheme, and modules stylix can't reach (waybar, niri, Hyprland borders) read `my.theming.colors`, which default to the scheme's terminal palette.
+- **The editor lives in its own repository.** nvim is the `nvim` flake input (`github:Betongsuggan/nvim`, a nixvim config); `modules/editor` (`my.editor`) builds it per user with `.extend`: languages follow `my.development` (Nix for admin accounts), colors follow the scheme, and nixd completes this host's NixOS/HM options. Editor behavior (plugins, keymaps, language servers) is changed in that repository, not here.
 
 ## 4. Day-to-day workflow
 
@@ -70,6 +72,10 @@ sudo nixos-rebuild switch --flake .#<host>   # keep it
 
 **Add a user to a host.** Add the person to `lib.accounts` if new, then create `hosts/<host>/user-<name>.nix`. The account, groups and git identity come from the registry.
 
+**Change the colors.** Set `my.theming.scheme` in the user's file. A new scheme is one entry in `modules/theming/schemes.nix` (its base16 file from `pkgs.base16-schemes`, its terminal palette, its Neovim colorscheme — which must exist in the nvim flake's `theme.colorscheme`).
+
+**Change the editor.** Language support per user: `my.editor.languages.<lang>` (defaults from `my.development`). Anything inside the editor: edit `~/Development/nvim` (every keymap in `config/keymaps.nix`, every language in `config/languages.nix`), run its `nix flake check`, push, then `nix flake update nvim` here. To try an unpushed editor change first: `nix build --no-write-lock-file --override-input nvim path:$HOME/Development/nvim …` (never `nix flake lock` with overrides).
+
 **Add a host.** Register it in `lib/default.nix`, create `hosts/<name>/system.nix` (choose a profile), and follow `modules/home-network/SPEC.md` to join the tailnet and enrol it in `nix-vault`.
 
 ## 6. Gotchas
@@ -78,6 +84,7 @@ sudo nixos-rebuild switch --flake .#<host>   # keep it
 - The locked `nix-vault` revision is what real rebuilds use; `nix flake update nix-vault` to pick up new secrets.
 - `nixos-rebuild --flake .#bits` with no trailing punctuation — `.#bits.` looks for a host literally named `bits.`.
 - Unused alternatives (sway, i3, waybar, polybar, …) are kept on purpose; `nix flake check` is what keeps them working.
+- A running nvim keeps the build it started with; reopen it after a rebuild to get a new editor.
 
 ## 7. Where to ask
 
