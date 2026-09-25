@@ -44,11 +44,6 @@
       inputs.elephant.follows = "elephant";
     };
 
-    vicinae = {
-      url = "github:Betongsuggan/vicinae-fork";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     vicinae-extensions = {
       url = "github:Betongsuggan/vicinae-extensions/add-hyprland-monitor-extension";
       flake = false;

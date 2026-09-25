@@ -1,111 +1,125 @@
 {
   config,
+  osConfig,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
-with lib;
-
 let
-  cfg = config.my.launcher;
+  inherit (lib)
+    concatStringsSep
+    literalExpression
+    mkEnableOption
+    mkIf
+    mkOption
+    optional
+    types
+    ;
 
+  cfg = config.my.launcher;
+  vcfg = cfg.vicinae;
+  vicinae = lib.getExe config.programs.vicinae.package;
+
+  # An extension from the vicinae-extensions input, installed under its own
+  # name. Its provider id in `vicinae://launch/<id>/<command>` is
+  # `@<author>/<name>` from its package.json (`vicinae cmd ls` lists them).
+  # Extensions whose tsconfig extends the repository root's lose it when
+  # built on their own, and the bundler then falls back to classic JSX (a
+  # bare `React` global vicinae doesn't provide); point it at the root's.
+  extension =
+    name:
+    (config.lib.vicinae.mkExtension {
+      inherit name;
+      src = "${inputs.vicinae-extensions}/extensions/${name}";
+    }).overrideAttrs
+      {
+        postPatch = ''
+          substituteInPlace tsconfig.json --replace-quiet \
+            '"../../tsconfig.json"' '"${inputs.vicinae-extensions}/tsconfig.json"'
+        '';
+      };
+
+  # vicinae's dmenu has no CLI flags for password, case-insensitive,
+  # multi-select or image modes; those arguments are accepted and ignored
   buildDmenuCmd =
     {
       prompt ? null,
-      password ? false,
-      insensitive ? false,
-      multiSelect ? false,
-      allowImages ? null,
       additionalArgs ? [ ],
+      ...
     }:
-    let
-      promptArg = optionalString (prompt != null) "-p '${prompt}'";
-      # Note: vicinae dmenu doesn't support password mode or case-insensitive search via CLI args
-      # These are handled through the UI
-      additionalArgsStr = concatStringsSep " " additionalArgs;
-    in
-    "${pkgs.vicinae}/bin/vicinae dmenu ${promptArg} ${additionalArgsStr}";
+    concatStringsSep " " (
+      [ "${vicinae} dmenu" ] ++ optional (prompt != null) "-p '${prompt}'" ++ additionalArgs
+    );
 
+  # The daemon must be running; menus are opened through deeplinks
+  deeplinks = {
+    clipboard = "vicinae://launch/clipboard/history";
+    symbols = "vicinae://launch/core/search-emojis";
+    emoji = "vicinae://launch/core/search-emojis";
+  };
   buildShowCmd =
     {
       mode ? "applications",
       additionalArgs ? [ ],
     }:
-    # Vicinae uses deeplinks for showing specific interfaces
-    # The daemon must be running for this to work
-    let
-      additionalArgsStr = concatStringsSep " " additionalArgs;
-      # Map mode names to vicinae deeplinks
-      deeplink =
-        if mode == "clipboard" then
-          "vicinae://extensions/vicinae/clipboard/history"
-        else if mode == "symbols" || mode == "emoji" then
-          "vicinae://extensions/vicinae/vicinae/search-emojis"
-        else if mode == "websearch" then
-          # Vicinae doesn't have a built-in websearch, just open normally
-          "vicinae://open"
-        else if mode == "desktopapplications" || mode == "applications" || mode == "drun" then
-          # Just open the main launcher for applications
-          "vicinae://open"
-        else
-          # For any other mode, just open vicinae
-          "vicinae://open";
-    in
-    "${pkgs.vicinae}/bin/vicinae deeplink ${deeplink} ${additionalArgsStr}";
+    concatStringsSep " " (
+      [ "${vicinae} deeplink ${deeplinks.${mode} or "vicinae://toggle"}" ] ++ additionalArgs
+    );
 
 in
 {
   options.my.launcher.vicinae = {
     config = mkOption {
-      type = types.attrs;
+      type = (pkgs.formats.json { }).type;
       default = { };
-      description = "Vicinae settings (JSON configuration)";
+      description = "Extra vicinae settings, merged into `programs.vicinae.settings` (settings.json)";
     };
 
     extensions = mkOption {
       type = types.listOf types.package;
       # The monitor extension drives hyprctl, so it only makes sense there
       default = [
-        pkgs.vicinae-wifi-commander
-        pkgs.vicinae-bluetooth
+        (extension "wifi-commander")
+        (extension "bluetooth")
       ]
-      ++ optional (
-        config.my.window-manager.enable && config.my.window-manager.backend == "hyprland"
-      ) pkgs.vicinae-monitor;
+      ++ optional (config.my.window-manager.enable && config.my.window-manager.backend == "hyprland") (
+        extension "hyprland-monitors"
+      );
       defaultText = literalExpression "wifi-commander and bluetooth, plus hyprland-monitors under Hyprland";
-      description = ''
-        List of Vicinae extensions to install.
-        Use mkVicinaeExtension from vicinae flake to create extensions.
-      '';
+      description = "Vicinae extensions to install (build more with `config.lib.vicinae.mkExtension`)";
     };
 
     themes = mkOption {
-      type = types.attrs;
+      type = (pkgs.formats.toml { }).type;
       default = { };
-      description = ''
-        Custom themes to add to vicinae.
-        Attribute name becomes the theme name.
-      '';
-      example = literalExpression ''
-        {
-          my-custom-theme = {
-            version = "1.0.0";
-            appearance = "dark";
-            name = "My Custom Theme";
-            palette = {
-              background = "#1e1e1e";
-              foreground = "#d4d4d4";
-            };
-          };
-        }
-      '';
+      description = "Extra vicinae themes (TOML), keyed by theme file name";
     };
 
     useLayerShell = mkOption {
       type = types.bool;
       default = true;
       description = "Whether vicinae should use layer shell";
+    };
+
+    fileIndex = {
+      enable = mkEnableOption ''
+        vicinae's background file indexer (file search). It walks every
+        configured path, including hidden directories, and re-sweeps them
+        periodically, so it is off unless enabled
+      '';
+      paths = mkOption {
+        type = types.listOf types.str;
+        default = [ config.home.homeDirectory ];
+        defaultText = literalExpression "[ config.home.homeDirectory ]";
+        description = "Directories to index";
+      };
+      exclude = mkOption {
+        type = types.listOf types.str;
+        default = [ ];
+        description = "Directories to leave out of the index";
+      };
     };
 
     buildDmenuCmd = mkOption {
@@ -128,27 +142,32 @@ in
     my.launcher.vicinae.buildShowCmd = buildShowCmd;
 
     # Theme vicinae from the base16 scheme (adds a "stylix" theme and
-    # selects it in services.vicinae.settings)
+    # selects it in programs.vicinae.settings)
     stylix.targets.vicinae.enable = true;
 
-    # Use vicinae's official home-manager module
-    services.vicinae = {
+    programs.vicinae = {
       enable = true;
-      package = pkgs.vicinae;
-      # Use systemd autostart for all window managers (graphical-session.target)
-      autoStart = true;
-      useLayerShell = cfg.vicinae.useLayerShell;
+      # Started with the graphical session, whichever window manager runs it
+      systemd.enable = true;
+      inherit (vcfg) extensions themes;
 
-      # Merge user-provided configuration
-      settings = cfg.vicinae.config;
-      extensions = cfg.vicinae.extensions;
-      themes = cfg.vicinae.themes;
+      # settings.json is a read-only store link, so changes made in the
+      # settings window don't persist; configure vicinae here instead
+      settings = lib.mkMerge [
+        {
+          launcher_window.layer_shell.enabled = vcfg.useLayerShell;
+          providers.files.preferences = {
+            autoIndexing = vcfg.fileIndex.enable;
+            indexingPaths = vcfg.fileIndex.paths;
+            excludedIndexingPaths = vcfg.fileIndex.exclude;
+          };
+          # A required preference, otherwise asked for on first launch; the
+          # tool follows the host's network stack
+          providers."@dagimg-dot/wifi-commander".preferences.network-cli-tool =
+            if osConfig.networking.networkmanager.enable then "nmcli" else "iwctl";
+        }
+        vcfg.config
+      ];
     };
-
-    # Vicinae uses external tools (iwmenu, bzmenu) so we ensure they're available
-    home.packages = with pkgs; [
-      unstable.bzmenu
-      unstable.iwmenu
-    ];
   };
 }

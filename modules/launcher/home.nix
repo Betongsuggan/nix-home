@@ -63,12 +63,12 @@ let
         {
           additionalArgs ? [ ],
         }:
-        "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/dagimg-dot/wifi-commander/scan-wifi' ${args additionalArgs}";
+        "${lib.getExe config.programs.vicinae.package} deeplink vicinae://launch/@dagimg-dot/wifi-commander/scan-wifi ${args additionalArgs}";
       bluetooth =
         {
           additionalArgs ? [ ],
         }:
-        "${pkgs.vicinae}/bin/vicinae deeplink 'vicinae://extensions/Gelei/bluetooth/devices' ${args additionalArgs}";
+        "${lib.getExe config.programs.vicinae.package} deeplink vicinae://launch/@Gelei/bluetooth/devices ${args additionalArgs}";
       audioOutput =
         {
           additionalArgs ? [ ],
