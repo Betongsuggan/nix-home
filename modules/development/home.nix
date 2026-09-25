@@ -18,7 +18,7 @@ in
     python.enable = mkEnableOption "Python toolchain";
     node.enable = mkEnableOption "Node.js toolchain";
     go.enable = mkEnableOption "Go toolchain";
-    kotlin.enable = mkEnableOption "Kotlin toolchain (installs JDK 25, Gradle 9, ktfmt, sets JAVA_HOME)";
+    kotlin.enable = mkEnableOption "Kotlin toolchain (installs the default JDK, Gradle 9, ktfmt, sets JAVA_HOME)";
     rust.enable = mkEnableOption "Rust toolchain";
     haskell.enable = mkEnableOption "Haskell toolchain";
   };
@@ -63,7 +63,9 @@ in
       ]
       ++ optionals cfg.kotlin.enable [
         kotlin
-        jdk25
+        # nixpkgs' default JDK, the one kotlin/ktfmt/gradle are built against,
+        # so only one JDK ends up in the closure
+        jdk
         gradle_9
         ktfmt
       ]
@@ -92,7 +94,7 @@ in
       PATH = "$HOME/node_modules/bin:$PATH";
     }
     // optionalAttrs cfg.kotlin.enable {
-      JAVA_HOME = "${pkgs.jdk25.home}";
+      JAVA_HOME = "${pkgs.jdk.home}";
     };
   };
 }

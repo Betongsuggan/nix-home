@@ -60,7 +60,7 @@ my.theming = {
   - `gnome` — sets dconf `color-scheme=prefer-dark`, which makes GTK4/libadwaita apps and Firefox follow dark mode (requires system-level `programs.dconf.enable`, set in `modules/common`)
   - `fontconfig` / `font-packages` — default font families and their packages
 - `my.theming.font` drives `stylix.fonts.monospace` and the application/desktop font sizes; `my.theming.cursor` drives `stylix.cursor` (which sets `home.pointerCursor` with x11+gtk integration). sansSerif/serif/emoji keep stylix defaults (DejaVu + Noto Color Emoji), matching the previous manual fontconfig defaults.
-- Installs Papirus icon theme (kept manual; `stylix.icons` unused), Nerd Font symbols as monospace fallback, and glibc locales. Font and cursor packages are installed via stylix.
+- Installs Papirus icon theme (kept manual; `stylix.icons` unused), and Nerd Font symbols as monospace fallback (locales come from NixOS). Font and cursor packages are installed via stylix.
 - The wallpaper is also written to `~/.background-image` for compatibility with tools that expect it there.
 - Modules for apps without a stylix target (niri focus ring, ghostty, walker, polybar) still reference `config.my.theming.*` directly.
 - `my.theming.colors` (`primary`, `normal`, `bright`, plus `gray` and `orange`) and `my.theming.font` are the only theme schema. The base16 scheme maps `gray` to base03 (comments, muted text) and `orange` to base09. Apps with a stylix target use it (alacritty, ghostty, sway, i3, swaylock, zellij, mako, xresources, vicinae, ...); the rest (hyprlock, niri focus ring, waybar and wofi CSS, polybar) read these options directly.

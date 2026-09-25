@@ -383,6 +383,9 @@ in
     # exposed on tailscale0 — they're loopback-only, called server-to-server
     # by Open WebUI.
 
+    # GPU compute runtime (ROCm OpenCL ICD) from the graphics module
+    my.graphics.compute = mkDefault true;
+
     environment.systemPackages = [ pkgs.rocmPackages.rocminfo ];
 
     # Some ROCm-aware tools expect a usable /opt/rocm/hip path.

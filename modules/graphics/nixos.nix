@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 with lib;
@@ -36,11 +37,23 @@ with lib;
       default = false;
       description = "Enable AMD graphics support";
     };
+
+    gaming = mkOption {
+      type = types.bool;
+      default = inputs.self.lib.anyHomeUser config (u: u.my.games.enable);
+      defaultText = literalExpression "any Home Manager user has my.games.enable";
+      description = "32-bit graphics drivers (Steam, Wine), the MangoHud Vulkan layer and vulkan-tools.";
+    };
+
+    compute = mkOption {
+      type = types.bool;
+      default = false;
+      description = "OpenCL runtimes (ROCm for AMD, compute-runtime for Intel), for GPU compute workloads.";
+    };
   };
 
   config = mkIf config.my.graphics.enable {
-    # Make vulkan-tools available system-wide
-    environment.systemPackages = with pkgs; [ vulkan-tools ];
+    environment.systemPackages = optional config.my.graphics.gaming pkgs.vulkan-tools;
 
     # Configure video drivers based on hardware
     # Note: "modesetting" is preferred for Intel (the "intel" driver is deprecated)
@@ -52,7 +65,7 @@ with lib;
     hardware = {
       graphics = {
         enable = true;
-        enable32Bit = true;
+        enable32Bit = config.my.graphics.gaming;
         extraPackages =
           with pkgs;
           [
@@ -60,23 +73,27 @@ with lib;
             libva-utils
             libva-vdpau-driver
             libvdpau-va-gl
-            mangohud
           ]
-          ++ (optionals config.my.graphics.amd [
+          ++ optional config.my.graphics.gaming mangohud
+          ++ (optionals (config.my.graphics.amd && config.my.graphics.compute) [
             rocmPackages.clr.icd # OpenCL for AMD
           ])
-          ++ (optionals (config.my.graphics.intel.enable && config.my.graphics.intel.generation == "legacy") [
-            intel-vaapi-driver
-            intel-ocl
-          ])
-          ++ (optionals (config.my.graphics.intel.enable && config.my.graphics.intel.generation != "legacy") [
-            intel-media-driver
-            intel-compute-runtime
-          ])
+          ++ (
+            optionals (config.my.graphics.intel.enable && config.my.graphics.intel.generation == "legacy") [
+              intel-vaapi-driver
+            ]
+            ++ optional config.my.graphics.compute intel-ocl
+          )
+          ++ (
+            optionals (config.my.graphics.intel.enable && config.my.graphics.intel.generation != "legacy") [
+              intel-media-driver
+            ]
+            ++ optional config.my.graphics.compute intel-compute-runtime
+          )
           ++ (optionals config.my.graphics.nvidia [
             nvidia-vaapi-driver
           ]);
-        extraPackages32 = with pkgs; [ mangohud ];
+        extraPackages32 = optional config.my.graphics.gaming pkgs.mangohud;
       };
     };
 

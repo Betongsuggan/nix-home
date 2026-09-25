@@ -210,7 +210,6 @@ in
     home.packages = with pkgs; [
       papirus-icon-theme
       nerd-fonts.symbols-only
-      glibcLocales
     ];
 
     home.file.".background-image".source = cfg.wallpaper;

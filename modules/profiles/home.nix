@@ -33,7 +33,6 @@ with lib;
         imv
         kdePackages.okular
         vlc
-        wine
       ];
 
       my = {

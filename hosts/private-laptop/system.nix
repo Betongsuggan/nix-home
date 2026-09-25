@@ -2,7 +2,8 @@
 
 {
   boot = {
-    kernelPackages = pkgs.linuxPackages_latest;
+    # The default LTS series: far fewer kernel updates than _latest
+    kernelPackages = pkgs.linuxPackages;
     supportedFilesystems = [ "ntfs" ];
     initrd.availableKernelModules = [
       "xhci_pci"

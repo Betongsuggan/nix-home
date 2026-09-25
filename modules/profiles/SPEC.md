@@ -23,7 +23,7 @@ Hardware specifics (GPU vendor, CPU vendor, disks, kernel modules) stay in the h
 ## Home Manager (`home.nix`)
 
 - Every user: `my.{general,git,shell,starship,terminal,theming}` enabled; the git identity comes from `lib.accounts`.
-- `my.profiles.desktop` (turned on by the NixOS `workstation` profile): `my.{chromium,communication,file-manager,launcher,window-manager}` enabled, plus the desktop apps gimp, gedit, gparted, imv, okular, vlc and wine.
+- `my.profiles.desktop` (turned on by the NixOS `workstation` profile): `my.{chromium,communication,file-manager,launcher,window-manager}` enabled, plus the desktop apps gimp, gedit, gparted, imv, okular and vlc (wine comes with `my.games`).
 
 ## Notes
 

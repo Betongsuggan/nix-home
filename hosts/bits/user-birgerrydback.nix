@@ -26,14 +26,7 @@
     enable = true;
     cad.enable = true;
   };
-  my.file-manager = {
-    networkShares.enable = true;
-    # Shares on the tailnet can't be discovered via mDNS (multicast doesn't
-    # route over Tailscale), so bookmark them directly instead
-    bookmarks = [
-      "smb://${inputs.self.lib.tailnet.fqdn "controller"}/emulation-roms ROMs (controller)"
-    ];
-  };
+  my.file-manager.networkShares.enable = true;
 
   my.notifications.enable = true;
   my.network-monitor.enable = true;
@@ -72,11 +65,6 @@
   #    }
   #  ];
   #};
-
-  my.emulation-client = {
-    enable = true;
-    server.address = inputs.self.lib.tailnet.fqdn "controller";
-  };
 
   # Work project shortcuts
   my.shell.aliases = {

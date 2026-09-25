@@ -18,7 +18,8 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Bluetooth and printer support; `printers.remoteDiscovery = false` drops `cups-browsed` so `cupsd` stays socket-activated instead of running from boot
 - LocalSend for local file sharing (with CLI)
 - 3D printing toolchain: PrusaSlicer, OpenSCAD (dev snapshot), FreeCAD (`my.printing-3d` with `cad.enable`, see `modules/printing-3d/SPEC.md`)
-- SMB network share browsing in Thunar (GVFS + Avahi/mDNS discovery); the controller's `emulation-roms` share is bookmarked directly since tailnet shares can't be mDNS-discovered
+- SMB network share browsing in Thunar (GVFS + Avahi/mDNS discovery)
+- No emulation client or Syncthing on this work laptop (dropped for lightness)
 - Colemak keyboard layout
 - Stylix theming (gruvbox dark via the theming module's `my.theming.*` picker) with Banana cursor
 - sops-nix integration: SSH keys delivered from the external `nix-vault` flake input; OpenSSH and pcscd auto-enabled by `my.sops`

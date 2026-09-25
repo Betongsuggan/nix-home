@@ -3,7 +3,11 @@
   home.stateVersion = "24.05";
 
   my.game-streaming.client.enable = true;
-  my.games.enable = true;
+  # Steam and Moonlight only; no store launchers/Wine prefix managers here
+  my.games = {
+    enable = true;
+    tools.enable = false;
+  };
   my.notifications.enable = true;
   my.network-monitor.enable = true;
   my.kanshi.enable = true;

@@ -80,6 +80,7 @@ in
         sc-controller
         vulkan-tools
         mesa-demos
+        wine
       ]
       ++ (optionals cfg.tools.enable [
         protonup-qt # Proton-GE version manager

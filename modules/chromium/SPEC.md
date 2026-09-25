@@ -15,6 +15,7 @@ my.chromium.enable = true;
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable Ungoogled Chromium browser |
+| widevine | bool | true | Bundle the Widevine CDM for DRM streaming; the Widevine build is a second full copy of Chromium (~800 MB) |
 
 ## Notes
 
