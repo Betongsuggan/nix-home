@@ -40,6 +40,7 @@
     brightness.backend = "brightnessctl";
   };
 
+  my.theming.scheme = "kanagawa";
   my.window-manager = {
     composeKey = "ralt";
     # No autostart: Chromium and Slack are both Electron apps that cost ~1-1.5 W

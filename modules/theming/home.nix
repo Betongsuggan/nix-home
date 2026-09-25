@@ -9,6 +9,7 @@ with lib;
 
 let
   cfg = config.my.theming;
+  schemes = import ./schemes.nix;
 in
 {
   options.my.theming = {
@@ -67,133 +68,29 @@ in
       };
     };
 
-    colors = {
-      primary = {
-        background = mkOption {
-          type = types.str;
-          description = "Primary background color";
-          default = "#282828";
-        };
-
-        foreground = mkOption {
-          type = types.str;
-          description = "Primary foreground color";
-          default = "#ebdbb2";
-        };
-      };
-
-      normal = {
-        black = mkOption {
-          type = types.str;
-          description = "Normal black color";
-          default = "#282828";
-        };
-
-        red = mkOption {
-          type = types.str;
-          description = "Normal red color";
-          default = "#cc241d";
-        };
-
-        green = mkOption {
-          type = types.str;
-          description = "Normal green color";
-          default = "#98971a";
-        };
-
-        yellow = mkOption {
-          type = types.str;
-          description = "Normal yellow color";
-          default = "#d79921";
-        };
-
-        blue = mkOption {
-          type = types.str;
-          description = "Normal blue color";
-          default = "#458588";
-        };
-
-        magenta = mkOption {
-          type = types.str;
-          description = "Normal magenta color";
-          default = "#b16286";
-        };
-
-        cyan = mkOption {
-          type = types.str;
-          description = "Normal cyan color";
-          default = "#458588";
-        };
-
-        white = mkOption {
-          type = types.str;
-          description = "Normal white color";
-          default = "#cccccc";
-        };
-      };
-
-      bright = {
-        black = mkOption {
-          type = types.str;
-          description = "Bright black color";
-          default = "#3c3836";
-        };
-
-        red = mkOption {
-          type = types.str;
-          description = "Bright red color";
-          default = "#fb4934";
-        };
-
-        green = mkOption {
-          type = types.str;
-          description = "Bright green color";
-          default = "#b8bb26";
-        };
-
-        yellow = mkOption {
-          type = types.str;
-          description = "Bright yellow color";
-          default = "#fabd2f";
-        };
-
-        blue = mkOption {
-          type = types.str;
-          description = "Bright blue color";
-          default = "#83a598";
-        };
-
-        magenta = mkOption {
-          type = types.str;
-          description = "Bright magenta color";
-          default = "#d3869b";
-        };
-
-        cyan = mkOption {
-          type = types.str;
-          description = "Bright cyan color";
-          default = "#83a598";
-        };
-
-        white = mkOption {
-          type = types.str;
-          description = "Bright white color";
-          default = "#ffffff";
-        };
-      };
-
-      gray = mkOption {
-        type = types.str;
-        description = "Muted text: comments, placeholders, inactive items (base16 base03)";
-        default = "#928374";
-      };
-
-      orange = mkOption {
-        type = types.str;
-        description = "Orange accent: constants, numbers, warnings (base16 base09)";
-        default = "#d65d0e";
-      };
+    scheme = mkOption {
+      type = types.enum (attrNames schemes);
+      default = "gruvbox";
+      description = ''
+        The color scheme (schemes.nix): stylix themes apps with its base16
+        scheme, the editor uses its colorscheme plugin, and `colors` defaults
+        to its terminal palette.
+      '';
     };
+
+    # The scheme's terminal palette, for modules stylix doesn't theme
+    # (waybar, wofi, polybar, niri, Hyprland borders); override single colors
+    # per host if needed
+    # (every scheme has the same palette shape; the defaults read the chosen one)
+    colors = mapAttrsRecursive (
+      path: _:
+      mkOption {
+        type = types.str;
+        default = getAttrFromPath path schemes.${cfg.scheme}.terminal;
+        defaultText = literalMD "the ${concatStringsSep "." path} color of `scheme`";
+        description = "The ${concatStringsSep " " path} color";
+      }
+    ) schemes.gruvbox.terminal;
   };
 
   config = mkIf cfg.enable {
@@ -221,24 +118,7 @@ in
       autoEnable = false;
 
       image = cfg.wallpaper;
-      base16Scheme = {
-        base00 = cfg.colors.primary.background;
-        base01 = cfg.colors.normal.black;
-        base02 = cfg.colors.bright.black;
-        base03 = cfg.colors.gray;
-        base04 = cfg.colors.bright.white;
-        base05 = cfg.colors.primary.foreground;
-        base06 = cfg.colors.bright.white;
-        base07 = cfg.colors.bright.white;
-        base08 = cfg.colors.normal.red;
-        base09 = cfg.colors.orange;
-        base0A = cfg.colors.normal.yellow;
-        base0B = cfg.colors.normal.green;
-        base0C = cfg.colors.normal.cyan;
-        base0D = cfg.colors.normal.blue;
-        base0E = cfg.colors.normal.magenta;
-        base0F = cfg.colors.normal.red;
-      };
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/${schemes.${cfg.scheme}.base16}.yaml";
 
       polarity = "dark";
 
