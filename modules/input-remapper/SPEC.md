@@ -1,6 +1,6 @@
 # Input Remapper
 
-Declarative key remapping via input-remapper. This is a system-level module that enables the `services.input-remapper` daemon, deploys config to `/root/.config/input-remapper-2/`, and auto-applies presets when devices are connected (via udev hotplug rules).
+Declarative key remapping via input-remapper. This is a system-level module that enables the `services.input-remapper` daemon, links the generated config and presets into `/root/.config/input-remapper-2/` with `systemd.tmpfiles` (`L+`, so they are refreshed on every activation and boot; presets created in the GUI next to them are kept), and auto-applies presets when devices are connected (via udev hotplug rules).
 
 ## Usage
 

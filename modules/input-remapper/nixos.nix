@@ -123,21 +123,19 @@ let
     }
   );
 
-  presetLinks = concatStringsSep "\n" (
-    mapAttrsToList (
-      deviceName: device:
-      let
-        sanitized = sanitizeDeviceName deviceName;
-        presetFile = pkgs.writeText "${sanitized}-${device.preset}.json" (
-          builtins.toJSON (map mkMappingEntry device.mappings)
-        );
-      in
-      ''
-        mkdir -p "/root/.config/input-remapper-2/presets/${sanitized}"
-        ln -sf "${presetFile}" "/root/.config/input-remapper-2/presets/${sanitized}/${device.preset}.json"
-      ''
-    ) cfg.devices
-  );
+  configDir = "/root/.config/input-remapper-2";
+
+  # One `L+` (replace) symlink per device preset
+  presetRules = mapAttrsToList (
+    deviceName: device:
+    let
+      sanitized = sanitizeDeviceName deviceName;
+      presetFile = pkgs.writeText "${sanitized}-${device.preset}.json" (
+        builtins.toJSON (map mkMappingEntry device.mappings)
+      );
+    in
+    "L+ \"${configDir}/presets/${sanitized}/${device.preset}.json\" - - - - ${presetFile}"
+  ) cfg.devices;
 
 in
 {
@@ -160,12 +158,13 @@ in
       enableUdevRules = true;
     };
 
-    # Deploy config to /root so the root-level daemon can read it
-    system.activationScripts.input-remapper-config = ''
-      mkdir -p /root/.config/input-remapper-2/presets
-      ln -sf "${configFile}" /root/.config/input-remapper-2/config.json
-      ${presetLinks}
-    '';
+    # The root daemon reads its config and presets from /root; link the
+    # generated files there (parent directories are created as needed).
+    # Presets made in the GUI next to them are left alone.
+    systemd.tmpfiles.rules = [
+      "L+ ${configDir}/config.json - - - - ${configFile}"
+    ]
+    ++ presetRules;
 
     # Autoload presets for already-connected devices after service restart
     systemd.services.input-remapper.postStart = ''
