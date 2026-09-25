@@ -28,15 +28,19 @@
     };
 
     # Own flakes and NUR build against the fleet's nixpkgs. walker/elephant
-    # and niri keep their own pins so their Cachix caches keep hitting;
-    # audiomenu/monitormenu keep theirs because their locked rust-overlay
-    # toolchains don't unpack on nixpkgs 26.05 (bump rust-overlay upstream first).
+    # and niri keep their own pins so their Cachix caches keep hitting.
     awscli-local = {
       url = "github:Betongsuggan/awscli-local";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    audiomenu.url = "github:Betongsuggan/audiomenu";
-    monitormenu.url = "github:Betongsuggan/monitormenu";
+    audiomenu = {
+      url = "github:Betongsuggan/audiomenu";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    monitormenu = {
+      url = "github:Betongsuggan/monitormenu";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     elephant.url = "github:abenz1267/elephant/v2.16.1";
 
     walker = {

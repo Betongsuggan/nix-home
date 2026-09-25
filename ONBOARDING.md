@@ -75,7 +75,6 @@ sudo nixos-rebuild switch --flake .#<host>   # keep it
 ## 6. Gotchas
 
 - **Never run `nix flake lock --override-input nix-vault ...`.** It writes your local path into `flake.lock`. If you relock, restore the `nix-vault` node from `HEAD` afterwards.
-- `audiomenu` and `monitormenu` keep their own nixpkgs (their pinned rust-overlay does not build on 26.05); a relock can silently re-point them. They are pinned via the lock nodes `nixpkgs-audiomenu` / `nixpkgs-monitormenu`.
 - The locked `nix-vault` revision is what real rebuilds use; `nix flake update nix-vault` to pick up new secrets.
 - `nixos-rebuild --flake .#bits` with no trailing punctuation — `.#bits.` looks for a host literally named `bits.`.
 - Unused alternatives (sway, i3, waybar, polybar, …) are kept on purpose; `nix flake check` is what keeps them working.
