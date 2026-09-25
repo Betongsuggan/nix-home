@@ -183,9 +183,6 @@ in
   my.emulation-server = {
     enable = true;
     user = "betongsuggan";
-    dataDir = "/var/lib/emulation";
-    lanInterface = "enp1s0";
-    lanSubnet = self.lan.subnet;
     tailnetOnly = true;
     syncthing = {
       devices = inputs.self.lib.allSyncthingDevices;

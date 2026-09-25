@@ -2,11 +2,14 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 with lib;
 
 let
+  # IPv4 tailnet range (Samba `hosts allow`)
+  tailnetCidr = builtins.head inputs.self.lib.tailnet.sources;
   cfg = config.my.emulation-server;
 
   deviceType = types.submodule {
@@ -66,7 +69,7 @@ in
 
     user = mkOption {
       type = types.str;
-      default = "betongsuggan";
+      example = "betongsuggan";
       description = "User account that owns the emulation data";
     };
 
@@ -77,15 +80,17 @@ in
     };
 
     lanInterface = mkOption {
-      type = types.str;
-      default = "enp1s0";
-      description = "LAN network interface that should expose Syncthing/Samba ports";
+      type = types.nullOr types.str;
+      default = null;
+      example = "enp1s0";
+      description = "LAN interface to also expose Syncthing/Samba on (ignored with tailnetOnly; null = tailnet only).";
     };
 
     lanSubnet = mkOption {
-      type = types.str;
-      default = "192.168.50.0/24";
-      description = "LAN subnet allowed to reach Samba shares";
+      type = types.nullOr types.str;
+      default = null;
+      example = "192.168.50.0/24";
+      description = "LAN subnet allowed to reach the Samba shares (ignored with tailnetOnly).";
     };
 
     systems = mkOption {
@@ -130,8 +135,9 @@ in
         Restrict both Syncthing and Samba to the tailnet only. Concretely:
         - Firewall: Syncthing and Samba ports are opened only on `tailscale0`,
           not on `lanInterface`.
-        - Samba: binds only to `tailscale0` (`bind interfaces only = yes`)
-          and `hosts allow` is reduced to the Headscale tailnet CIDR.
+        - Samba: `hosts allow` is reduced to the Headscale tailnet CIDR. It
+          still binds to all interfaces (binding to tailscale0 races tailscaled
+          at boot); the firewall and `hosts allow` are the actual locks.
         - Syncthing: global discovery, relays, NAT-PMP, and LAN multicast
           announce are all disabled; peer addresses are pinned to each
           peer's tailnet FQDN.
@@ -176,7 +182,7 @@ in
         enable = true;
         user = cfg.user;
         dataDir = cfg.dataDir;
-        configDir = "/home/${cfg.user}/.config/syncthing";
+        configDir = "${config.users.users.${cfg.user}.home}/.config/syncthing";
         openDefaultPorts = false;
 
         settings = {
@@ -216,14 +222,9 @@ in
         samba = {
           enable = true;
           openFirewall = false;
-          allowedSubnets =
-            if cfg.tailnetOnly then
-              [ "100.64.0.0/10" ]
-            else
-              [
-                cfg.lanSubnet
-                "100.64.0.0/10"
-              ];
+          allowedSubnets = optional (!cfg.tailnetOnly && cfg.lanSubnet != null) cfg.lanSubnet ++ [
+            tailnetCidr
+          ];
           # Intentionally NOT setting samba.interfaces here even in tailnet-only
           # mode: `bind interfaces only = yes` combined with `interfaces =
           # tailscale0` makes smbd panic and nmbd time out at boot, because
@@ -269,7 +270,7 @@ in
           ];
         };
       }
-      // lib.optionalAttrs (!cfg.tailnetOnly) {
+      // lib.optionalAttrs (!cfg.tailnetOnly && cfg.lanInterface != null) {
         ${cfg.lanInterface} = {
           allowedTCPPorts = [
             22000

@@ -29,10 +29,10 @@ my.emulation-server = {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable the emulation server |
-| user | string | "betongsuggan" | User account that owns the emulation data and runs Syncthing |
+| user | string | (required) | User account that owns the emulation data and runs Syncthing |
 | dataDir | path | /var/lib/emulation | Root directory for emulation data (roms, saves, bios) |
-| lanInterface | string | "enp1s0" | LAN network interface to open Syncthing/Samba ports on (ignored when `tailnetOnly = true`) |
-| lanSubnet | string | "192.168.50.0/24" | LAN subnet allowed to reach Samba shares (ignored when `tailnetOnly = true`) |
+| lanInterface | null or string | null | LAN interface to also open Syncthing/Samba ports on; null = tailnet only (ignored when `tailnetOnly = true`) |
+| lanSubnet | null or string | null | LAN subnet allowed to reach Samba shares (ignored when `tailnetOnly = true`) |
 | systems | list of string | 18 systems (see below) | ROM subdirectories to create |
 | standaloneEmulators | list of string | ["retroarch" "ppsspp" "dolphin" "switch"] | Save subdirectories to create |
 | tailnetOnly | bool | false | Restrict Syncthing + Samba to the tailnet — see notes below. |
