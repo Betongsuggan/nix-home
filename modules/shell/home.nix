@@ -35,7 +35,7 @@ with lib;
     editor = mkOption {
       description = "Default editor";
       type = types.str;
-      default = "nix run github:/Betongsuggan/nvim";
+      default = "nvim";
     };
 
     viMode = mkOption {
@@ -109,10 +109,12 @@ with lib;
     my.shell.aliases = mapAttrs (_: mkDefault) {
       ll = "ls -la --color=auto";
       ls = "ls --color=auto";
-      vim = "nix run github:/Betongsuggan/nvim --refresh";
       gw = "./gradlew --no-daemon";
     };
 
     home.sessionPath = config.my.shell.extraPaths;
+
+    # The editor from the nvim flake input (update with `nix flake update nvim`)
+    home.packages = [ pkgs.nvim-config ];
   };
 }

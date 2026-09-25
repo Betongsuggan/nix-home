@@ -10,7 +10,6 @@ my.shell = {
   backend = "fish";
   aliases = {
     ll = "ls -la --color=auto";
-    vim = "nix run github:/Betongsuggan/nvim --refresh";
   };
   viMode = true;
 };
@@ -22,8 +21,8 @@ my.shell = {
 |--------|------|---------|-------------|
 | enable | bool | false | Enable shell configuration |
 | backend | enum ["bash" "fish" "nushell"] | "bash" | Shell backend to use |
-| aliases | attrsOf str | ll, ls, vim, gw (each mkDefault) | Shell aliases shared across all shells; hosts add their own (e.g. bits' work-project shortcuts) |
-| editor | str | "nix run github:/Betongsuggan/nvim" | Default editor |
+| aliases | attrsOf str | ll, ls, gw (each mkDefault) | Shell aliases shared across all shells; hosts add their own (e.g. bits' work-project shortcuts) |
+| editor | str | "nvim" | Default editor (`EDITOR`) |
 | viMode | bool | true | Enable vi mode in shells |
 | extraPaths | listOf str | ["${config.home.homeDirectory}/.cargo/bin"] | Extra paths to add to PATH via `home.sessionPath` (use absolute paths) |
 | bash.enable | bool | (true if backend == "bash") | Enable bash shell |
@@ -39,3 +38,4 @@ my.shell = {
 
 - Setting `backend` automatically enables the corresponding shell sub-module.
 - You can override individual shell enables independently of `backend` if you want multiple shells configured simultaneously.
+- The editor is the `nvim` flake input (nixvim, `github:Betongsuggan/nvim`) installed as a package, providing `nvim`, `vim` and `vi`. Update it with `nix flake update nvim`; it is no longer fetched and evaluated on every invocation.
