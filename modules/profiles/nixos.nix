@@ -50,6 +50,15 @@ in
         # No cups-browsed daemon from boot; cupsd stays socket-activated
         my.printers.remoteDiscovery = mkDefault false;
 
+        # Compressed swap in RAM first; a disk swap partition stays as the
+        # lower-priority overflow (and keeps its encrypted-disk IO for real
+        # memory pressure only)
+        zramSwap = {
+          enable = mkDefault true;
+          algorithm = mkDefault "zstd";
+          memoryPercent = mkDefault 25;
+        };
+
         services.libinput = {
           enable = true;
           touchpad = {
