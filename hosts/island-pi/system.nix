@@ -90,15 +90,9 @@ in
     allowedTCPPorts = [ 22 ];
   };
 
-  # --- Wake-on-LAN relay -------------------------------------------------------
-  # Wake island-stationary over the summer-place LAN, then ssh it directly via
-  # its own tailnet address: `ssh island-pi wake-island-stationary`.
-  environment.systemPackages = [
-    pkgs.wakeonlan
-    (pkgs.writeShellScriptBin "wake-island-stationary" ''
-      exec ${pkgs.wakeonlan}/bin/wakeonlan ${inputs.self.lib.hosts.island-stationary.wol.mac}
-    '')
-  ];
+  # Wake-on-LAN relay for island-stationary: `ssh island-pi
+  # wake-island-stationary` (generated from lib.hosts.*.wol.relay, see
+  # modules/common)
 
   # --- Stage 2 (uncomment after nix-vault enrollment; see SPEC.md) ------------
   # This host never evaluates nix itself, so it skips bootstrap mode entirely:

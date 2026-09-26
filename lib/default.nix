@@ -70,8 +70,11 @@ let
     island-stationary = {
       addresses = [ "island-stationary" ];
       # FIXME: placeholder — real MAC from `ip -br link` on island-stationary
-      # (the wired NIC). Consumed by island-pi's wake-island-stationary script.
-      wol.mac = "00:00:00:00:00:00";
+      # (the wired NIC). Woken from island-pi: `ssh island-pi wake-island-stationary`
+      wol = {
+        mac = "00:00:00:00:00:00";
+        relay = "island-pi";
+      };
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFadvK7ZRpD4sA+aHutNTz9c6AP8KWWjcSfbKRDmI+Ow root@island-stationary";
       users.betongsuggan = {
         # The FIDO resident key works before /run/secrets exists (onboarding)
@@ -104,7 +107,12 @@ let
       tailnetIp = "100.64.0.5";
       addresses = [ "desktop" ];
       # USB-Ethernet adapter; reaches the host through the current KVM setup.
-      wol.mac = "34:1b:22:84:72:67";
+      # Woken from controller: `ssh controller wake-desktop` (also by
+      # controller's wake-proxy for the AI services)
+      wol = {
+        mac = "34:1b:22:84:72:67";
+        relay = "controller";
+      };
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgyXzp0dQ+uwIHBV6RGsNASeKgMMQb9NFX5Dv/xPrvE root@desktop";
       users.betongsuggan = {
         sshFrom = [

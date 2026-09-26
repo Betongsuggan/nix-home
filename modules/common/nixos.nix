@@ -134,14 +134,22 @@ with lib;
       };
     });
 
-    # Basic common system packages for all devices
-    environment.systemPackages = with pkgs; [
-      git
-      vim
-      wget
-      curl
-      sshfs
-    ];
+    # Basic common system packages for all devices, plus `wake-<host>` for
+    # every host this one wakes (lib.hosts.<host>.wol.relay): the relay sits
+    # on the target's LAN, where the magic packet has to be sent, e.g.
+    # `ssh controller wake-desktop`
+    environment.systemPackages =
+      with pkgs;
+      [
+        git
+        vim
+        wget
+        curl
+        sshfs
+      ]
+      ++ mapAttrsToList (
+        name: h: writeShellScriptBin "wake-${name}" "exec ${wakeonlan}/bin/wakeonlan ${h.wol.mac}"
+      ) (filterAttrs (_: h: (h.wol.relay or null) == config.my.common.host) inputs.self.lib.hosts);
 
     # System-side dconf/gsettings plumbing, required for the home-manager
     # stylix gtk/gnome targets' dark-mode preference to reach GTK apps
