@@ -517,11 +517,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790365957,
-        "narHash": "sha256-dInlD1rj1v0EsX+lsFuXOX5D+m3ircV/bdW5Z5EDKX8=",
+        "lastModified": 1790432658,
+        "narHash": "sha256-HmBMUcc4HGFebBUYK7/SrBWeUzZXo5trndJGgPmPSFM=",
         "owner": "Betongsuggan",
         "repo": "monitormenu",
-        "rev": "9d4a094bcf2ed83cb2a52838fa2e7e2ceb091471",
+        "rev": "52693f3c5881677815076a12c9b280c99dd2411d",
         "type": "github"
       },
       "original": {
