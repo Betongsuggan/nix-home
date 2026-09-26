@@ -167,6 +167,17 @@ in
               type = types.number;
               default = 1;
             };
+            transform = mkOption {
+              type = types.ints.between 0 7;
+              default = 0;
+              description = "wl_output transform: 0-3 rotate by 0/90/180/270 degrees (counter-clockwise), 4-7 the same flipped.";
+            };
+            mirror = mkOption {
+              type = types.nullOr types.str;
+              default = null;
+              example = "eDP-1";
+              description = "Show the same picture as this output (Hyprland, i3).";
+            };
             vrr = mkOption {
               type = types.bool;
               default = false;
@@ -333,6 +344,18 @@ in
   };
 
   config = mkIf config.my.window-manager.enable {
+    assertions = [
+      {
+        assertion =
+          elem cfg.backend [
+            "hyprland"
+            "i3"
+          ]
+          || all (m: m.mirror == null) (attrValues cfg.monitors);
+        message = "my.window-manager.monitors.<name>.mirror is supported on Hyprland and i3 only";
+      }
+    ];
+
     home.packages = [
       screenRecord
       screenshot

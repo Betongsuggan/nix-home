@@ -31,6 +31,14 @@ let
           (if m.position == null then "auto" else "${toString m.position.x}x${toString m.position.y}")
           (wmLib.fmtNum m.scale)
         ]
+        ++ optionals (m.transform != 0) [
+          "transform"
+          (toString m.transform)
+        ]
+        ++ optionals (m.mirror != null) [
+          "mirror"
+          m.mirror
+        ]
         ++ optionals m.vrr [
           "vrr"
           "1"

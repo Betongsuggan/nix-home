@@ -15,6 +15,20 @@ rec {
   toFloat = n: n * 1.0;
 
   # Named outputs of my.window-manager.monitors, as a list of { name, ... }
+  # A wl_output transform number in sway's and niri's spelling
+  transformName =
+    t:
+    builtins.elemAt [
+      "normal"
+      "90"
+      "180"
+      "270"
+      "flipped"
+      "flipped-90"
+      "flipped-180"
+      "flipped-270"
+    ] t;
+
   outputList = monitors: lib.mapAttrsToList (name: m: m // { inherit name; }) monitors;
 
   # "Mod+Ctrl+P" -> { mods = [ "Mod" "Ctrl" ]; key = "P"; }

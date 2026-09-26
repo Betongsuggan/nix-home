@@ -27,6 +27,18 @@ let
         )
         ++ optional (m.position != null) "--pos ${toString m.position.x}x${toString m.position.y}"
         ++ optional (m.scale != 1) "--scale ${wmLib.fmtNum m.scale}x${wmLib.fmtNum m.scale}"
+        # xrandr rotates counter-clockwise like wl_output; flips reflect in x
+        ++ optional (m.transform != 0) (
+          "--rotate "
+          + builtins.elemAt [
+            "normal"
+            "left"
+            "inverted"
+            "right"
+          ] (lib.mod m.transform 4)
+          + optionalString (m.transform >= 4) " --reflect x"
+        )
+        ++ optional (m.mirror != null) "--same-as ${m.mirror}"
       );
   xrandrCommand =
     "${pkgs.xrandr}/bin/xrandr "

@@ -26,6 +26,7 @@ let
         )
         ++ optional (m.position != null) "position ${toString m.position.x} ${toString m.position.y}"
         ++ [ "scale ${wmLib.fmtNum m.scale}" ]
+        ++ optional (m.transform != 0) "transform ${wmLib.transformName m.transform}"
         ++ optional m.vrr "adaptive_sync on"
       );
   monitorOutputs = concatMapStringsSep "\n" swayOutput (

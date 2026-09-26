@@ -26,6 +26,12 @@ let
       // optionalAttrs (m.mode.refresh != null) { refresh = wmLib.toFloat m.mode.refresh; };
     }
     // optionalAttrs (m.position != null) { position = { inherit (m.position) x y; }; }
+    // optionalAttrs (m.transform != 0) {
+      transform = {
+        rotation = 90 * (lib.mod m.transform 4);
+        flipped = m.transform >= 4;
+      };
+    }
   ) config.my.window-manager.monitors;
 
 in
