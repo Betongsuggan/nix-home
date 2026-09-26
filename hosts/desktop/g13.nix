@@ -12,10 +12,6 @@ let
     ];
     inherit output;
   };
-  # Space down 35 ms, up 25 ms: each press and each gap spans at least one
-  # game frame (16.7 ms at 60 fps), so every jump registers as a new one
-  jump = "modify(KEY_SPACE, wait(35)).wait(25)";
-
   key = code: output: {
     input = [
       {
@@ -57,11 +53,12 @@ in
   (key 676 "KEY_F11") # G21
   (key 677 "KEY_F12") # G22
 
-  # M1 -> WoW wall climbing: W stays down for as long as M1 is held, and
-  # Space is spammed underneath it so every landing frame on a slope starts
-  # a new jump. One jump always happens at once (a quick tap = one hop),
-  # then hold() repeats it until M1 is released
-  (key 691 "modify(KEY_W, wait(10).${jump}.hold(${jump}))")
+  # M1 -> WoW wall climbing: W, then Space 10 ms later, both held for as
+  # long as M1 is. A held Space makes WoW jump again on the first frame it
+  # counts the character as standing, which on a wall can be a single frame;
+  # spamming Space instead could leave that frame in a gap between presses.
+  # Space stays down at least 40 ms, so a quick tap is still a hop
+  (key 691 "modify(KEY_W, wait(10).modify(KEY_SPACE, wait(40).hold()))")
 
   # Thumbstick buttons -> modifiers
   (key 294 "KEY_LEFTCTRL") # Left button
