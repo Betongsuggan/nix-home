@@ -1,6 +1,9 @@
 # input-remapper mappings for the Logitech G13 (keypad + thumbstick, which
 # input-remapper groups as one device "Logitech G13 Thumbstick")
 let
+  inherit (builtins) concatStringsSep;
+  concatMapStrings = f: l: concatStringsSep "" (map f l);
+
   # Thumbstick axis past `threshold` percent (negative = below center)
   stick = code: threshold: output: {
     input = [
@@ -12,6 +15,20 @@ let
     ];
     inherit output;
   };
+  # One wall-jump cycle: jump first, forward 10 ms later (the order WoW's
+  # wall jump needs: "jump must always be first"), both held 50 ms, then a
+  # 30 ms gap so the next cycle is a fresh jump and a fresh forward press.
+  # `extra` keys (a strafe) go down and up with forward
+  climb =
+    extra:
+    let
+      keys = [ "KEY_W" ] ++ extra;
+      down = concatMapStrings (k: ".key_down(${k})") keys;
+      up = concatMapStrings (k: ".key_up(${k})") keys;
+      cycle = "key_down(KEY_SPACE).wait(10)${down}.wait(50).key_up(KEY_SPACE)${up}.wait(30)";
+    in
+    "${cycle}.hold(${cycle})";
+
   key = code: output: {
     input = [
       {
@@ -53,16 +70,11 @@ in
   (key 676 "KEY_F11") # G21
   (key 677 "KEY_F12") # G22
 
-  # M1 -> WoW wall climbing: W, then Space 10 ms later, both held for as
-  # long as M1 is. A held Space makes WoW jump again on the first frame it
-  # counts the character as standing, which on a wall can be a single frame;
-  # spamming Space instead could leave that frame in a gap between presses.
-  # Space stays down at least 40 ms, so a quick tap is still a hop
-  (key 691 "modify(KEY_W, wait(10).modify(KEY_SPACE, wait(40).hold()))")
-
-  # M2 -> the same, strafing right into the wall (W + D; D as the
-  # thumbstick's right), for slopes that need an angled approach
-  (key 692 "modify(KEY_W, modify(KEY_D, wait(10).modify(KEY_SPACE, wait(40).hold())))")
+  # M1 -> WoW wall climbing, M2 -> the same while strafing right (+ D).
+  # One cycle per press, repeated while the button is held (a tap is one
+  # cycle); the cycle is finished even when released mid-way
+  (key 691 (climb [ ]))
+  (key 692 (climb [ "KEY_D" ]))
 
   # Thumbstick buttons -> modifiers
   (key 294 "KEY_LEFTCTRL") # Left button
