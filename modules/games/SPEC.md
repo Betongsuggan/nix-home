@@ -444,6 +444,8 @@ shortcut's `icon` vdf field). Behavior:
 
 ## Notes
 
+- Wine for launchers outside Steam (Lutris, Bottles) is nixpkgs' `wineWowPackages.staging` (32- and 64-bit, staging patchset, from the binary cache). nix-gaming's wine-tkg was considered but isn't in any binary cache, so every nix-gaming update would compile Wine locally; Steam games use Proton-GE either way.
+
 - MangoHud is hidden by default and can be toggled with Shift_R+F9.
 - MangoHud is session-wide by default (`mangohud.sessionWide`), which the streamed Big Picture session needs for the controller toggle; with it off (private-laptop) only games launched with `mangohud` load it.
 - Base packages always installed: chiaki, discord, evtest, gamemode, lutris, steam, steam-run, sc-controller, vulkan-tools, mesa-demos.

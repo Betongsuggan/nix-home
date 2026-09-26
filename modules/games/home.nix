@@ -81,7 +81,9 @@ in
         sc-controller
         vulkan-tools
         mesa-demos
-        wine
+        # For launchers outside Steam (Lutris, Bottles); Steam games use
+        # Proton-GE. Staging patchset, 32- and 64-bit, from the binary cache
+        wineWowPackages.staging
       ]
       ++ (optionals cfg.tools.enable [
         protonup-qt # imperative extra Proton-GE builds (next to protonGE.packages)
