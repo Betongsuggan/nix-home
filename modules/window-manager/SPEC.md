@@ -46,6 +46,10 @@ my.window-manager = {
 | touchOutput | nullOr str | null | Output name to map touchscreen input to (e.g., "eDP-1") |
 | idle.dimAfter / lockAfter / screenOffAfter / suspendAfter | int (s); suspendAfter nullOr int | 240 / 300 / 330 / 900 | Idle timeouts, shared by hypridle (Hyprland) and swayidle (niri) |
 
+## Session services
+
+- **Polkit agent** (Wayland backends): `hyprpolkitagent` runs as a user service with the Wayland session, so polkit prompts (`pkexec`, mounting, Bitwarden's system unlock) get a dialog. It accepts the fingerprint or the password when `my.fingerprint` is on.
+
 ## Keymap
 
 One keymap, `my.window-manager.keybinds` (internal, defined in `home.nix`), rendered by every backend in its own syntax: Hyprland `bind`/`binde`, niri `binds`, and i3/sway `keybindings` on top of their defaults. An entry is either a command run the same way everywhere (`spawn`) or a native action per compositor; a compositor without one leaves the chord unbound, as does a launcher menu the launcher backend lacks.

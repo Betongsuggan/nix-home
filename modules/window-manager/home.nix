@@ -338,6 +338,11 @@ in
       screenshot
     ];
 
+    # Graphical polkit prompts (pkexec, mounts, Bitwarden's unlock): nothing
+    # answers them without an agent in the session. Qt, and fine on any Wayland
+    # compositor; started with the Wayland session target
+    services.hyprpolkitagent.enable = cfg.backend != "i3";
+
     # grim and wf-recorder don't create missing folders
     systemd.user.tmpfiles.rules = [
       "d ${screenshotDir} - - - -"
