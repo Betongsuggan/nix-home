@@ -40,6 +40,7 @@ my.input-remapper = {
 | input | listOf inputEventType | (required) | Input event combination |
 | output | string | (required) | Output symbol (e.g. `KEY_1`) or macro (e.g. `key(KEY_LEFTCTRL + KEY_C)`) |
 | target | enum | "keyboard" | One of: `keyboard`, `mouse`, `gamepad`, `keyboard + mouse` |
+| macroKeySleepMs | int or null | null | Pause between a macro's key events in ms (input-remapper's `macro_key_sleep_ms`; its default is 0, i.e. back to back) |
 
 ### Input event options
 
@@ -78,6 +79,17 @@ The G13 kernel driver (`hid-lg-g15`) exposes keys as `KEY_MACRO` codes:
 | G20   | 675       | KEY_MACRO20   |
 | G21   | 676       | KEY_MACRO21   |
 | G22   | 677       | KEY_MACRO22   |
+
+The M keys and the LCD keys are keys too (no layers: input-remapper has none and the driver switches nothing):
+
+| Key | evdev code | Kernel symbol |
+|-----|-----------|---------------|
+| M1 | 691 | KEY_MACRO_PRESET1 |
+| M2 | 692 | KEY_MACRO_PRESET2 |
+| M3 | 693 | KEY_MACRO_PRESET3 |
+| MR | 688 | KEY_MACRO_RECORD_START |
+| LCD keys | 696-700 | KEY_KBD_LCD_MENU1-5 |
+| Backlight | 542 | KEY_LIGHTS_TOGGLE |
 
 ### G13 Special Keys
 

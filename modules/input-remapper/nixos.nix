@@ -85,6 +85,11 @@ let
         default = "keyboard";
         description = "Target uinput device type";
       };
+      macroKeySleepMs = mkOption {
+        type = types.nullOr types.ints.unsigned;
+        default = null;
+        description = "Pause between a macro's key events, in ms (input-remapper's default: 0).";
+      };
     };
   };
 
@@ -103,18 +108,23 @@ let
     };
   };
 
-  mkMappingEntry = mapping: {
-    input_combination = map (
-      input:
-      {
-        inherit (input) type code;
-      }
-      // optionalAttrs (input.origin_hash != null) { inherit (input) origin_hash; }
-      // optionalAttrs (input.analog_threshold != null) { inherit (input) analog_threshold; }
-    ) mapping.input;
-    target_uinput = mapping.target;
-    output_symbol = mapping.output;
-  };
+  mkMappingEntry =
+    mapping:
+    {
+      input_combination = map (
+        input:
+        {
+          inherit (input) type code;
+        }
+        // optionalAttrs (input.origin_hash != null) { inherit (input) origin_hash; }
+        // optionalAttrs (input.analog_threshold != null) { inherit (input) analog_threshold; }
+      ) mapping.input;
+      target_uinput = mapping.target;
+      output_symbol = mapping.output;
+    }
+    // optionalAttrs (mapping.macroKeySleepMs != null) {
+      macro_key_sleep_ms = mapping.macroKeySleepMs;
+    };
 
   configFile = pkgs.writeText "input-remapper-config.json" (
     builtins.toJSON {
