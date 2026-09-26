@@ -123,7 +123,10 @@
 
       # Launch Hyprland on TTY1 (if not already in a graphical session)
       if [[ "$XDG_VTNR" = "1" && -z "$WAYLAND_DISPLAY" ]]; then
-        exec Hyprland
+        # start-hyprland (Hyprland >= 0.53): a watchdog that relaunches
+        # Hyprland in safe mode after a crash instead of dropping the
+        # autologin session to a bare TTY
+        exec start-hyprland
       fi
     '';
   };

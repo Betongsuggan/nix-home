@@ -31,3 +31,4 @@ Personal Intel-based laptop for daily use, development, light gaming, and game s
 - Timezone: Europe/Stockholm
 - Colemak keyboard layout
 - Nothing autostarts; MangoHud only for games launched with `mangohud`; game store/prefix tools are off (Steam and Moonlight stay)
+- Steam comes from `programs.steam` (the games module's NixOS half, since `my.games.enable` is set), with nix-gaming's SteamOS sysctls; no Remote Play ports are opened on this host

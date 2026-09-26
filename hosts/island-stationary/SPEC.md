@@ -6,7 +6,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 
 - `my.profiles.gaming-station` (implies workstation): autologin `gamer` session, zen kernel and gaming tuning, gamemode, secure boot, DualSense wake, restic target for controller (see `modules/profiles/SPEC.md`); this file only keeps what is specific to this machine
 - Two-user setup: `betongsuggan` (development/daily use) and `gamer` (dedicated gaming)
-- Gamer user auto-logs in on TTY1 and launches Hyprland automatically
+- Gamer user auto-logs in on TTY1 and launches Hyprland automatically via `start-hyprland` (the upstream watchdog: relaunches Hyprland in safe mode after a crash rather than leaving a bare TTY)
 - Hyprland compositor on both users with auto-detected monitors
 - NVIDIA RTX 2070 GPU with proprietary drivers
 - Console-mode with Gamescope session for Steam Deck-like experience

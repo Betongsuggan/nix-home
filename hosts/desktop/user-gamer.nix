@@ -13,7 +13,14 @@
       fontSize = 22;
     };
     vkbasalt.enable = true;
-    protonGE.enable = true;
+    protonGE = {
+      enable = true;
+      # nixos-unstable's GE (11-7 or newer) rather than 26.05's 11-1: 11-7
+      # carries the crypt32 backport Warcraft III: Reforged 3.0 needs to log in
+      # ("Please check your VPN" otherwise, proton-ge-custom PR #765). The
+      # Steam name stays "GE-Proton", so per-game choices roll forward.
+      packages = [ pkgs.unstable.proton-ge-bin ];
+    };
     tools.enable = true;
     emulators = {
       enable = true;
@@ -157,9 +164,11 @@
       DXVK_LOG_LEVEL = "none";
       VKD3D_LOG_LEVEL = "none";
       STAGING_SHARED_MEMORY = "1";
-      PROTON_ENABLE_WAYLAND = "1";
-
-      PROTON_ENABLE_NVAPI = "1";
+      # No PROTON_ENABLE_WAYLAND: Wine's Wayland driver renders CEF launchers
+      # (Battle.net) as a white, flickering window under GE-Proton 11; opt in
+      # per game with `PROTON_ENABLE_WAYLAND=1 %command%`. No
+      # PROTON_ENABLE_NVAPI: this is an AMD GPU, NVAPI only makes games probe
+      # for a missing NVIDIA card.
     };
 
     createDesktopEntry = true;
@@ -207,7 +216,10 @@
       # Launch Hyprland on TTY1 (if not already in a graphical session)
       # Hyprland auto-starts Steam Big Picture and Sunshine
       if [[ "$XDG_VTNR" = "1" && -z "$WAYLAND_DISPLAY" ]]; then
-        exec Hyprland
+        # start-hyprland (Hyprland >= 0.53): a watchdog that relaunches
+        # Hyprland in safe mode after a crash instead of dropping the
+        # autologin session to a bare TTY
+        exec start-hyprland
       fi
     '';
   };
@@ -220,9 +232,8 @@
     STEAM_FRAME_FORCE_CLOSE = "1";
     STEAM_USE_DYNAMIC_VRS = "0";
 
-    # Proton/Wine
+    # Proton/Wine (no PROTON_ENABLE_NVAPI on AMD, see console-mode above)
     DXVK_ASYNC = "1";
-    PROTON_ENABLE_NVAPI = "1";
 
     # Controller
     SDL_JOYSTICK_HIDAPI = "0";
@@ -240,7 +251,7 @@
     DXVK_LOG_LEVEL = "none";
     VKD3D_LOG_LEVEL = "none";
     STAGING_SHARED_MEMORY = "1";
-    PROTON_ENABLE_WAYLAND = "1";
+    # PROTON_ENABLE_WAYLAND deliberately unset, see console-mode above
   };
 
 }

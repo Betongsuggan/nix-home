@@ -6,7 +6,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 
 - `my.profiles.gaming-station` (implies workstation): autologin `gamer` session, zen kernel and gaming tuning, gamemode, secure boot, DualSense wake, restic target for controller (see `modules/profiles/SPEC.md`); this file only keeps what is specific to this machine
 - Two-user setup: `betongsuggan` (development/daily use) and `gamer` (dedicated gaming)
-- Gamer user auto-logs in on TTY1 and launches Hyprland automatically
+- Gamer user auto-logs in on TTY1 and launches Hyprland automatically via `start-hyprland` (the upstream watchdog: relaunches Hyprland in safe mode after a crash rather than leaving a bare TTY)
 - Hyprland compositor on both users with HDR-enabled ultrawide (3440x1440@240) and 4K HDMI monitors
 - Sunshine game streaming server with virtual SUNSHINE monitor for headless streaming, scoped to the `gamer` session (`game-streaming.server.user = "gamer"`) so betongsuggan's session doesn't spawn a competing instance
 - Console-mode with Gamescope session for Steam Deck-like experience
@@ -16,6 +16,8 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - GameMode with GPU optimizations and CPU renicing for gaming performance
 - MangoHud overlay with detailed mode and vkBasalt post-processing
 - Steam from `programs.steam` (the games module's NixOS half, since gamer sets `my.games.enable`), with Proton-GE through `programs.steam.extraCompatPackages` and the SteamOS sysctls from nix-gaming's `platformOptimizations`
+- Proton-GE comes from `pkgs.unstable.proton-ge-bin` (`my.games.protonGE.packages`), not 26.05's GE-Proton11-1: Warcraft III: Reforged 3.0 needs the Wine 11.6 `CERT_CHAIN_ENGINE_CONFIG` backport first shipped in GE-Proton11-7 (proton-ge-custom PR #765; without it the login fails with a misleading "Please check your VPN"). It keeps the Steam name "GE-Proton", so per-game choices roll forward with `nix flake update nixpkgs-unstable`
+- Proton runs through XWayland: `PROTON_ENABLE_WAYLAND` is deliberately not set for gamer (Wine's Wayland driver renders CEF launchers like Battle.net as a white, flickering window); opt in per game with `PROTON_ENABLE_WAYLAND=1 %command%`. `PROTON_ENABLE_NVAPI` is unset too on this AMD host
 - Vulkan environment uses Mesa/RADV defaults (only HDR + present-mode vars); RDNA2-era tuning vars (`RADV_PERFTEST`, `VKD3D_CONFIG=dxr*`, etc.) were removed after they caused severe UE5 performance regressions — see `modules/graphics/SPEC.md`
 - RetroArch with 10 libretro cores (SNES, NES, GB/GBC/GBA, N64, NDS, PSX, Mega Drive, Dreamcast, Saturn, Arcade), saves/states declaratively inside the synced `~/emulation/saves/retroarch/{saves,states}` tree, a baked udev autoconfig for the Sunshine virtual pad (locally-connected pads like the DualSense come from the upstream autoconfig DB), and a controller-independent Start+Select quit combo (menu opens via each pad's Guide/PS button)
 - Standalone emulators: PCSX2 (PS2), Dolphin (GameCube/Wii), PPSSPP (PSP); PSX is covered by the beetle-psx-hw core (Duckstation left nixpkgs 26.05)
