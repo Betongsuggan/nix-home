@@ -81,8 +81,6 @@
   # to the client's resolution and turns the physical outputs off.
   my.window-manager = {
     monitors = {
-      DP-2.vrr = true;
-      HDMI-A-2.vrr = true;
       SUNSHINE = {
         mode = {
           width = 1920;

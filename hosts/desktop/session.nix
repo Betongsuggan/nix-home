@@ -12,7 +12,11 @@
 # The gamer session adds the SUNSHINE streaming output (user-gamer.nix).
 { lib, ... }:
 let
+  # Both screens: HDR, 10-bit and VRR. Without VRR the top of DP-2 flickered
+  # white in HDR (betongsuggan's session, 2026-09-26); gamer had it on and
+  # never did
   hdr = {
+    vrr = true;
     bitdepth = 10;
     hdr = true;
     sdrBrightness = 1.0;
