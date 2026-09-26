@@ -76,6 +76,11 @@ with lib;
     # emulate themselves.
     boot.binfmt.emulatedSystems = mkIf pkgs.stdenv.hostPlatform.isx86_64 [ "aarch64-linux" ];
 
+    # /tmp is on disk, not tmpfs (builds such as Go's need more room than RAM
+    # should hold), so whatever killed builds leave behind would otherwise
+    # pile up forever
+    boot.tmp.cleanOnBoot = mkDefault true;
+
     nix = {
       # Enable features in Nix commands
       extraOptions = ''
