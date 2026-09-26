@@ -76,6 +76,8 @@ sudo nixos-rebuild switch --flake .#<host>   # keep it
 
 **Change the editor.** Language support per user: `my.editor.languages.<lang>` (defaults from `my.development`). Anything inside the editor: edit `~/Development/nvim` (every keymap in `config/keymaps.nix`, every language in `config/languages.nix`), run its `nix flake check`, push, then `nix flake update nvim` here. To try an unpushed editor change first: `nix build --no-write-lock-file --override-input nvim path:$HOME/Development/nvim …` (never `nix flake lock` with overrides).
 
+**Fingerprint and Bitwarden on a laptop.** Set `my.fingerprint` in the host's `system.nix` (driver per `modules/fingerprint/SPEC.md`), rebuild, then run `fprintd-enroll`. Login (ReGreet), hyprlock, sudo and polkit prompts all take the finger or the password. Bitwarden (on for admins) unlocks with it after the one-time app and extension settings in `modules/password-manager/SPEC.md`.
+
 **Add a host.** Register it in `lib/default.nix`, create `hosts/<name>/system.nix` (choose a profile), and follow `modules/home-network/SPEC.md` to join the tailnet and enrol it in `nix-vault`.
 
 ## 6. Gotchas
