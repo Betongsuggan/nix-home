@@ -11,7 +11,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - Sunshine game streaming server with virtual SUNSHINE monitor for headless streaming, scoped to the `gamer` session (`game-streaming.server.user = "gamer"`). SUNSHINE always exists in that session but sits at 20000x0, away from the other outputs so the cursor can't reach it, and only holds workspace 10. A stream sets it to the client's mode and turns DP-2 and the TV off; disconnecting reloads the Hyprland config, which brings them back with HDR/VRR/10-bit. Remote use: `ssh controller wake-desktop`, then Moonlight so betongsuggan's session doesn't spawn a competing instance
 - Console-mode with Gamescope session for Steam Deck-like experience
 - Steam Big Picture auto-start on gamer session with SteamOS 3 features
-- Logitech G13 gaming keypad with declarative key remapping via input-remapper (auto-applies on connect; `g13.nix`). M1 holds W while tapping Space (a macro, 8 ms between events)
+- Logitech G13 gaming keypad with declarative key remapping via input-remapper (auto-applies on connect; `g13.nix`). M1 holds W and presses Space 10 ms later, held 50 ms so every frame rate sees it (a macro)
 - PS5 DualSense controller support with rumble and MangoHud toggle
 - GameMode with GPU optimizations and CPU renicing for gaming performance
 - MangoHud overlay with detailed mode and vkBasalt post-processing

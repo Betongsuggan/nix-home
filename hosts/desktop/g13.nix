@@ -53,15 +53,11 @@ in
   (key 676 "KEY_F11") # G21
   (key 677 "KEY_F12") # G22
 
-  # M1 -> hold W while tapping Space: W down, Space down, Space up, W up,
-  # 8 ms apart (24 ms in all), close enough for a game to see both together
-  # but each event on its own frame at >= 125 fps
-  (
-    key 691 "modify(KEY_W, key(KEY_SPACE))"
-    // {
-      macroKeySleepMs = 8;
-    }
-  )
+  # M1 -> hold W, press Space right after, release both: W down, 10 ms,
+  # Space down, 50 ms, Space up, W up. Space stays down for 50 ms because
+  # games read the keyboard once per frame (16.7 ms at 60 fps): a shorter
+  # press can fall between two reads and never count as a jump
+  (key 691 "modify(KEY_W, wait(10).modify(KEY_SPACE, wait(50)))")
 
   # Thumbstick buttons -> modifiers
   (key 294 "KEY_LEFTCTRL") # Left button
