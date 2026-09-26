@@ -2,11 +2,16 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 with lib;
 
 {
+  # nix-gaming's low-latency PipeWire module (min quantum, the RT module,
+  # pulse client request/quantum and node latency), maintained upstream
+  imports = [ inputs.nix-gaming.nixosModules.pipewireLowLatency ];
+
   options.my.audio = {
     enable = mkEnableOption "Enable sound hardware";
     lowLatency = mkEnableOption "Low-latency mode for gaming";
@@ -44,16 +49,9 @@ with lib;
       };
       pulse.enable = true;
 
-      extraConfig.pipewire = mkIf config.my.audio.lowLatency {
-        "99-low-latency" = {
-          "context.properties" = {
-            "default.clock.rate" = 48000;
-            "default.clock.quantum" = 64;
-            "default.clock.min-quantum" = 32;
-            "default.clock.max-quantum" = 256;
-          };
-        };
-      };
+      # nix-gaming's defaults: 48 kHz, quantum 64. Its ALSA-level overrides
+      # stay off: forcing S32LE and a rate breaks HDMI sinks
+      lowLatency.enable = config.my.audio.lowLatency;
     };
 
     environment.systemPackages = with pkgs; [
