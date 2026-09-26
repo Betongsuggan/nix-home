@@ -173,7 +173,7 @@ in
         prefer-no-csd = true;
 
         # Screenshot path
-        screenshot-path = "~/media/images/%Y-%m-%d_%H-%M-%S.png";
+        screenshot-path = "${config.my.window-manager.screenshotDir}/%Y-%m-%d_%H-%M-%S.png";
 
         # Input configuration
         input = {

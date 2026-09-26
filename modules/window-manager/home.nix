@@ -20,8 +20,12 @@ let
     }
     .${cfg.backend};
 
+  # Where captures go: subfolders of the XDG Pictures and Videos folders
+  screenshotDir = "${config.xdg.userDirs.pictures}/Screenshots";
+  recordingDir = "${config.xdg.userDirs.videos}/Recordings";
+
   # `screen-record region|output`: toggles a wf-recorder capture of a selected
-  # region or the focused output into ~/media/videos
+  # region or the focused output into the recordings folder
   screenRecord = pkgs.writeShellScriptBin "screen-record" ''
     if ${pkgs.procps}/bin/pkill -SIGINT wf-recorder; then
       ${config.my.notifications.send {
@@ -40,13 +44,13 @@ let
       summary = "Recording started";
     }}
     exec ${pkgs.wf-recorder}/bin/wf-recorder "''${target[@]}" -c libx264 -p crf=23 -p preset=fast \
-      --pixel-format yuv420p -f ~/media/videos/$(${pkgs.coreutils}/bin/date -Iseconds).mkv
+      --pixel-format yuv420p -f "${recordingDir}/$(${pkgs.coreutils}/bin/date -Iseconds).mkv"
   '';
 
-  # `screenshot region|output` into ~/media/images (wlroots compositors; niri
-  # uses its built-in screenshot UI instead)
+  # `screenshot region|output` into the screenshots folder (wlroots
+  # compositors; niri uses its built-in screenshot UI instead)
   screenshot = pkgs.writeShellScriptBin "screenshot" ''
-    file=~/media/images/$(${pkgs.coreutils}/bin/date -Iseconds).png
+    file="${screenshotDir}/$(${pkgs.coreutils}/bin/date -Iseconds).png"
     case "$1" in
       region) geometry=$(${pkgs.slurp}/bin/slurp) || exit 0; exec ${pkgs.grim}/bin/grim -g "$geometry" "$file" ;;
       *) exec ${pkgs.grim}/bin/grim -o "$(${focusedOutput})" "$file" ;;
@@ -71,6 +75,13 @@ in
 
   options.my.window-manager = {
     enable = mkEnableOption "Enable window manager configuration";
+
+    screenshotDir = mkOption {
+      type = types.str;
+      readOnly = true;
+      default = screenshotDir;
+      description = "Folder screenshots are saved to (for backends with their own screenshot tool)";
+    };
 
     backend = mkOption {
       description = "Window manager backend to use";
@@ -325,6 +336,12 @@ in
     home.packages = [
       screenRecord
       screenshot
+    ];
+
+    # grim and wf-recorder don't create missing folders
+    systemd.user.tmpfiles.rules = [
+      "d ${screenshotDir} - - - -"
+      "d ${recordingDir} - - - -"
     ];
 
     my.window-manager.keybinds = {

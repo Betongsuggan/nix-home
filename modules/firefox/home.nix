@@ -78,7 +78,11 @@ with lib;
           "browser.sessionstore.interval" = 30000;
 
           # UI/UX improvements
+          # Ask where to save, starting in the XDG Downloads folder
           "browser.download.useDownloadDir" = false;
+          "browser.download.folderList" = 2;
+          "browser.download.dir" = config.xdg.userDirs.download;
+          "browser.download.lastDir" = config.xdg.userDirs.download;
           "browser.urlbar.suggest.quicksuggest.sponsored" = false;
           "browser.urlbar.suggest.quicksuggest.nonsponsored" = false;
           "browser.newtabpage.activity-stream.showSponsored" = false;

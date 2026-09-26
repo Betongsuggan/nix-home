@@ -26,6 +26,14 @@ with lib;
     }
 
     (mkIf config.my.profiles.desktop.enable {
+      # The standard folders (Desktop, Documents, Downloads, Music, Pictures,
+      # Videos, Templates, Public), written to user-dirs.dirs so every
+      # XDG-aware app (browsers, Slack, file dialogs, the portal) uses them
+      xdg.userDirs = {
+        enable = mkDefault true;
+        createDirectories = mkDefault true;
+      };
+
       home.packages = with pkgs; [
         gedit
         gimp

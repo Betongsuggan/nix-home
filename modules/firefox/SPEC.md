@@ -24,3 +24,4 @@ my.firefox.enable = true;
 - Performance settings include: disk cache disabled (memory-only, 512 MB), WebRender enabled, session store interval set to 30 seconds.
 - Enables `toolkit.legacyUserProfileCustomizations.stylesheets` for Stylix theming support.
 - Enables the stylix firefox target for the `default` profile (`profileNames = [ "default" ]`), theming the browser chrome with the base16 palette. Dark mode for page content additionally follows the system `color-scheme=prefer-dark` preference set by the stylix gnome target.
+- Downloads: asks where to save, starting in the XDG Downloads folder (`browser.download.dir`/`lastDir` = `xdg.userDirs.download`), so saves don't drift into a second downloads folder.

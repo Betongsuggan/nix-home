@@ -23,7 +23,7 @@ Hardware specifics (GPU vendor, CPU vendor, disks, kernel modules) stay in the h
 ## Home Manager (`home.nix`)
 
 - Every user: `my.{general,git,shell,starship,terminal,theming}` enabled; the git identity comes from `lib.accounts`.
-- `my.profiles.desktop` (turned on by the NixOS `workstation` profile): `my.{chromium,communication,file-manager,launcher,window-manager}` enabled, plus the desktop apps gimp, gedit, gparted, imv, okular and vlc (wine comes with `my.games`).
+- `my.profiles.desktop` (turned on by the NixOS `workstation` profile): `my.{chromium,communication,file-manager,launcher,window-manager}` enabled, plus the desktop apps gimp, gedit, gparted, imv, okular and vlc (wine comes with `my.games`), and the standard XDG folders (`xdg.userDirs`: Desktop, Documents, Downloads, Music, Pictures, Videos, Templates, Public), written to `user-dirs.dirs` and created, so browsers, Slack and file dialogs all save to the same `~/Downloads` etc.
 
 ## Notes
 
