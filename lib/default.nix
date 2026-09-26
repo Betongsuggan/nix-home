@@ -219,6 +219,8 @@ rec {
     nginxAllowOnly =
       extra: lib.concatMapStrings (s: "allow ${s};\n") (extra ++ tailnet.sources) + "deny all;\n";
     fqdn = host: "${hosts.${host}.hostName}.${baseDomain}";
+    # Each host's status JSON (modules/fleet-status), tailnet only
+    statusPort = 9099;
   };
 
   allSshKeys =

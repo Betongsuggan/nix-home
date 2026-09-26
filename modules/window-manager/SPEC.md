@@ -74,6 +74,7 @@ Screenshots are saved to `~/Pictures/Screenshots` (`my.window-manager.screenshot
 | Mod+B, Mod+Space, Mod+W, Mod+T | battery, system, workspace, clock notifiers |
 | Mod+S, Mod+N, Mod+P (+ XF86 media keys) | play/pause, next, previous |
 | Mod+O, D, E, C, U, Z, M, A, Shift+A | launcher: apps, web search, symbols, clipboard, wifi, bluetooth, monitors, audio out/in |
+| Mod+G | fleet dashboard (`modules/fleet-status`; users with `my.fleet-status.dashboard`) |
 | Hyprland only: Mod+R, Mod+Ctrl+C, Mod+Shift+B/C | cycle column widths, center column, QWERTY/Colemak |
 | niri only: Mod+Tab, Mod+Shift+E | overview, quit |
 

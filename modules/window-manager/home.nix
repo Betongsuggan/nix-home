@@ -526,6 +526,12 @@ in
       "Mod+Z".spawn = launch "bluetooth" { };
       "Mod+M".spawn = launch "monitor" { };
       "Mod+A".spawn = launch "audioOutput" { };
+      # The fleet dashboard (modules/fleet-status), for the users that have it
+      "Mod+G".spawn =
+        if config.my.fleet-status.dashboard.enable then
+          [ (getExe config.my.fleet-status.dashboard.package) ]
+        else
+          null;
       "Mod+Shift+A".spawn = launch "audioInput" { };
 
       ## Layout: left/right walks columns, up/down walks workspaces, Ctrl acts
