@@ -31,6 +31,12 @@
     cad.enable = true;
   };
   my.file-manager.networkShares.enable = true;
+  # Top-level folders of ~ that belong there (see modules/home-check)
+  my.home-check.allowed = [
+    "Games"
+    "emulation"
+    "roms"
+  ];
 
   my.notifications.enable = true;
   my.network-monitor.enable = true;
