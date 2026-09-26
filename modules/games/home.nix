@@ -82,8 +82,9 @@ in
         vulkan-tools
         mesa-demos
         # For launchers outside Steam (Lutris, Bottles); Steam games use
-        # Proton-GE. Staging patchset, 32- and 64-bit, from the binary cache
-        wineWowPackages.staging
+        # Proton-GE. Staging patchset in WoW64 mode (32-bit programs run in
+        # the 64-bit build); unlike wineWowPackages, Hydra builds it
+        wineWow64Packages.staging
       ]
       ++ (optionals cfg.tools.enable [
         protonup-qt # imperative extra Proton-GE builds (next to protonGE.packages)
