@@ -75,7 +75,8 @@ in
         evtest
         gamemode
         lutris
-        steam
+        # Not `steam`: it comes from programs.steam (nixos.nix), whose wrapper
+        # carries the Proton-GE compat-tool paths; a copy here would shadow it
         steam-run
         sc-controller
         vulkan-tools
@@ -83,9 +84,8 @@ in
         wine
       ]
       ++ (optionals cfg.tools.enable [
-        protonup-qt # Proton-GE version manager
+        protonup-qt # imperative extra Proton-GE builds (next to protonGE.packages)
         winetricks
-        protontricks
         goverlay # MangoHud/vkBasalt GUI
         bottles # Wine prefix manager
         unstable.heroic # GOG/Epic launcher (stable pulls insecure electron-39)

@@ -64,10 +64,8 @@
     secretsFile = "${inputs.nix-vault}/secrets/island.yaml";
   };
 
-  programs.steam = {
-    enable = true;
-    gamescopeSession.enable = true;
-  };
+  # Steam comes from the games module (gamer sets my.games.enable)
+  programs.steam.gamescopeSession.enable = true;
 
   my.graphics.nvidia = true;
 

@@ -634,11 +634,6 @@ in
         switchRunEmulator
       ]);
 
-    # Install Proton-GE to Steam's compatibility tools directory
-    home.file = mkIf cfg.protonGE.enable {
-      ".steam/root/compatibilitytools.d/proton-ge".source = pkgs.proton-ge-bin;
-    };
-
     # Switch setup: copy keys from the BIOS share into Ryujinx's data dir.
     # Steam shortcuts are generated on demand by switch-apply-shortcuts (which
     # must stop Steam first), not at activation time. Firmware is a one-time

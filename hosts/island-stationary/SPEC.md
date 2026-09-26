@@ -14,7 +14,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 - PS5 DualSense controller support with rumble and MangoHud toggle
 - GameMode with CPU renicing for gaming performance
 - MangoHud overlay with detailed mode and vkBasalt post-processing
-- Proton-GE for enhanced Windows game compatibility
+- Steam from `programs.steam` (the games module's NixOS half, since gamer sets `my.games.enable`), with Proton-GE through `programs.steam.extraCompatPackages` and the SteamOS sysctls from nix-gaming's `platformOptimizations`
 - NVIDIA-optimized environment variables (shader caching, NVAPI)
 - Zen kernel optimized for desktop/gaming
 - ZRAM swap (zstd, 50% memory) for memory efficiency

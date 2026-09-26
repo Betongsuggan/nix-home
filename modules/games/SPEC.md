@@ -2,6 +2,16 @@
 
 Provides a full Linux gaming setup including Steam, Lutris, MangoHud performance overlay, vkBasalt post-processing, Proton-GE compatibility, emulators (RetroArch + standalone), per-ROM Steam tiles written directly into `shortcuts.vdf` (`emulators.steamShortcuts`), Steam library integration for store launchers (BoilR), and various gaming utilities.
 
+The module has two halves: `home.nix`/`options.nix`/`emulation.nix`/`mangohud.nix` per user, and `nixos.nix`, which a host gets automatically as soon as any of its Home Manager users sets `my.games.enable`. The NixOS half owns Steam itself:
+
+- `programs.steam` (FHS wrapper with the GPU driver paths, `steam-hardware` udev rules), so there is no Home Manager `steam` package: a second copy on `PATH` would shadow the wrapper
+- `programs.steam.extraCompatPackages`: the union of every gaming user's `protonGE.packages`, which is how Proton-GE shows up in Steam's compatibility-tool list (nixpkgs' `proton-ge-bin` only ships it as a `steamcompattool` output)
+- `programs.steam.protontricks` when any gaming user has `tools.enable`, wrapped with the same compat-tool paths
+- `programs.steam.extest`: Steam Input's desktop-mode keyboard/mouse emulation uses X11 XTest, which under Wayland only reaches XWayland clients; extest turns it into uinput events (plus `hardware.uinput` and the `uinput` group for gaming users). Needed for the Steam Controller on Hyprland/niri (steam-for-linux#13185)
+- nix-gaming's `programs.steam.platformOptimizations`: the SteamOS sysctls (`vm.max_map_count`, `kernel.split_lock_mitigate = 0`, `net.ipv4.tcp_fin_timeout = 5`, CFS bandwidth slice). Hosts and profiles must not set `vm.max_map_count` themselves; `boot.kernel.sysctl` rejects duplicate definitions
+
+Remote Play firewall ports are the host's choice: `programs.steam.remotePlay.openFirewall = true` in `hosts/<host>/system.nix`.
+
 ## Usage
 
 ```nix
@@ -14,7 +24,7 @@ my.games = {
     fontSize = 24;
   };
   vkbasalt.enable = true;
-  protonGE.enable = true;
+  protonGE.enable = true;  # protonGE.packages = [ pkgs.unstable.proton-ge-bin ]; for the newest GE
   tools.enable = true;
   emulators = {
     enable = true;
@@ -55,8 +65,9 @@ my.games = {
 | mangohud.position | enum | "top-left" | MangoHud overlay position. One of: "top-left", "top-right", "bottom-left", "bottom-right", "top-center", "bottom-center" |
 | mangohud.fontSize | int | 24 | MangoHud font size |
 | vkbasalt.enable | bool | false | Enable vkBasalt post-processing |
-| protonGE.enable | bool | false | Enable Proton-GE (installs to Steam compatibility tools directory) |
-| tools.enable | bool | true | Install gaming tools (goverlay, protonup-qt, winetricks, protontricks, bottles, heroic) |
+| protonGE.enable | bool | false | Offer Proton-GE in Steam's compatibility-tool list (through `programs.steam.extraCompatPackages`, NixOS half) |
+| protonGE.packages | listOf package | `[ pkgs.proton-ge-bin ]` | Proton-GE builds to offer; each must expose a `steamcompattool` output. Give parallel builds distinct `steamDisplayName`s via `overrideAttrs` |
+| tools.enable | bool | true | Install gaming tools (goverlay, protonup-qt, winetricks, bottles, heroic); also turns on `programs.steam.protontricks` |
 | emulators.enable | bool | false | Enable emulators (RetroArch + standalone) |
 | emulators.dataDir | str | "emulation" | Directory name under $HOME for emulation data (ROMs, saves, BIOS) |
 | emulators.retroarch.enable | bool | true | Enable RetroArch with libretro cores |

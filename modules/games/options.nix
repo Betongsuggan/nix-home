@@ -59,14 +59,25 @@ with lib;
     };
 
     protonGE = {
-      enable = mkEnableOption "Proton-GE";
+      enable = mkEnableOption "Proton-GE in Steam's compatibility tools (through programs.steam, see nixos.nix)";
+      packages = mkOption {
+        type = types.listOf types.package;
+        default = [ pkgs.proton-ge-bin ];
+        defaultText = literalExpression "[ pkgs.proton-ge-bin ]";
+        example = literalExpression "[ pkgs.unstable.proton-ge-bin ]";
+        description = ''
+          Proton-GE builds to offer in Steam. Each must expose a `steamcompattool`
+          output (nixpkgs proton-ge-bin does); give parallel builds distinct
+          `steamDisplayName`s (via overrideAttrs) to tell them apart.
+        '';
+      };
     };
 
     tools = {
       enable = mkOption {
         type = types.bool;
         default = true;
-        description = "Install gaming tools (goverlay, protonup-qt, etc.)";
+        description = "Install gaming tools (goverlay, protonup-qt, winetricks, bottles, heroic; protontricks through programs.steam)";
       };
     };
 

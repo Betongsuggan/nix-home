@@ -219,21 +219,15 @@
   };
 
   my.docker.enable = true;
+  # Steam Remote Play ports (TCP 27036-27037, UDP 27031-27036)
+  programs.steam.remotePlay.openFirewall = true;
   networking.firewall = {
     allowedTCPPorts = [
       8080
-      27036
-      27037
-      53317
+      53317 # LocalSend
     ];
     allowedUDPPorts = [
-      27031
-      27032
-      27033
-      27034
-      27035
-      27036
-      53317
+      53317 # LocalSend
     ];
   };
   my.amd-overdrive.enable = true;

@@ -58,7 +58,8 @@
     autoStart = false;
 
     gamescopeBin = "${pkgs.unstable.gamescope}/bin/gamescope";
-    steamBin = "${pkgs.steam}/bin/steam";
+    # steamBin unset: `steam` from PATH is the programs.steam wrapper, which
+    # carries the Proton-GE compat-tool paths (a raw pkgs.steam would not)
     steamArgs = [ "-steamos3" ];
 
     environmentVariables = {

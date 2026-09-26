@@ -64,6 +64,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Gaming NixOS modules (Steam platform optimizations, low-latency
+    # PipeWire) and wine-tkg. Keeps its own nixpkgs so its Cachix cache hits
+    nix-gaming.url = "github:fufexan/nix-gaming";
+
     niri = {
       url = "github:sodiboo/niri-flake";
       inputs.niri-stable.url = "github:YaLTeR/niri/v26.04";

@@ -15,7 +15,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - PS5 DualSense controller support with rumble and MangoHud toggle
 - GameMode with GPU optimizations and CPU renicing for gaming performance
 - MangoHud overlay with detailed mode and vkBasalt post-processing
-- Proton-GE for enhanced Windows game compatibility
+- Steam from `programs.steam` (the games module's NixOS half, since gamer sets `my.games.enable`), with Proton-GE through `programs.steam.extraCompatPackages` and the SteamOS sysctls from nix-gaming's `platformOptimizations`
 - Vulkan environment uses Mesa/RADV defaults (only HDR + present-mode vars); RDNA2-era tuning vars (`RADV_PERFTEST`, `VKD3D_CONFIG=dxr*`, etc.) were removed after they caused severe UE5 performance regressions — see `modules/graphics/SPEC.md`
 - RetroArch with 10 libretro cores (SNES, NES, GB/GBC/GBA, N64, NDS, PSX, Mega Drive, Dreamcast, Saturn, Arcade), saves/states declaratively inside the synced `~/emulation/saves/retroarch/{saves,states}` tree, a baked udev autoconfig for the Sunshine virtual pad (locally-connected pads like the DualSense come from the upstream autoconfig DB), and a controller-independent Start+Select quit combo (menu opens via each pad's Guide/PS button)
 - Standalone emulators: PCSX2 (PS2), Dolphin (GameCube/Wii), PPSSPP (PSP); PSX is covered by the beetle-psx-hw core (Duckstation left nixpkgs 26.05)
@@ -36,7 +36,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - Bluetooth with wake support for DualSense controller
 - Secure boot via Lanzaboote
 - FreeSync enabled on all displays via kernel parameter
-- Firewall with ports for Steam streaming and LocalSend
+- Firewall: LocalSend (53317) and 8080 listed by hand; Steam Remote Play ports (TCP 27036-27037, UDP 27031-27036) through `programs.steam.remotePlay.openFirewall`
 - Restic backup target: receives snapshots from controller into `/var/lib/restic-repos/controller/repo` via chrooted SFTP user `restic-controller` (key sourced from `lib/default.nix`). See `modules/restic-target/SPEC.md`.
 - AI lab: Ollama (ROCm), Open WebUI, ComfyUI (custom `rocm/pytorch:latest`-based container), and Speaches (STT + TTS) per `modules/ai-server/SPEC.md`. Wake-on-LAN enabled so the host can sleep; controller fronts the services over HTTPS at `chat.rydback.net` / `llm.rydback.net` / `images.rydback.net` / `voice.rydback.net` (tailnet-only).
 - Auto-suspend after 30 min of session-idle via `services.logind.settings.Login.IdleAction = "suspend"`. Local input, Sunshine streaming and SSH sessions all keep it awake via the normal logind idle-hint path; the rare gap is a long-running AI generation interrupted mid-stream — recovered by a client retry through controller's wake-proxy.

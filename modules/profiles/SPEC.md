@@ -16,7 +16,7 @@ my.profiles.gaming-station.enable = true;  # desktop, island-stationary
 |---------|---------|------|
 | `workstation` | | all firmware, fwupd, `my.{audio,bluetooth,graphics,network-manager,printers,wayland-security}`, and the Home Manager `desktop` profile for every user on the host |
 | `laptop` | workstation | `my.power-management`, libinput touchpad (tap, flat accel, disable-while-typing), video-group backlight access, `my.battery-monitor` for every user, at most 2 parallel Nix builds, zstd zram swap (25% of RAM) ahead of any disk swap, and nothing resident that is only occasionally needed: sshd per connection, fwupd only when run (no refresh timer), no cups-browsed, no gvfs GOA/afc/gphoto2 monitors |
-| `gaming-station` | workstation | `gamer` account (unprivileged; groups for input, audio and gamemode) with getty autologin on tty1, secure boot, zen kernel, gaming kernel params and sysctls, zram, performance governor, gamemode (+ mangohud), low-latency audio, DualSense Bluetooth wake, restic target for controller's backups |
+| `gaming-station` | workstation | `gamer` account (unprivileged; groups for input, audio and gamemode) with getty autologin on tty1, secure boot, zen kernel, gaming kernel params and sysctls (`vm.max_map_count` comes from the games module's nix-gaming `platformOptimizations`), zram, performance governor, gamemode (+ mangohud), low-latency audio, DualSense Bluetooth wake, restic target for controller's backups |
 
 Hardware specifics (GPU vendor, CPU vendor, disks, kernel modules) stay in the host.
 
