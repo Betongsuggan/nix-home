@@ -60,6 +60,10 @@ in
   # Space stays down at least 40 ms, so a quick tap is still a hop
   (key 691 "modify(KEY_W, wait(10).modify(KEY_SPACE, wait(40).hold()))")
 
+  # M2 -> the same, strafing right into the wall (W + D; D as the
+  # thumbstick's right), for slopes that need an angled approach
+  (key 692 "modify(KEY_W, modify(KEY_D, wait(10).modify(KEY_SPACE, wait(40).hold())))")
+
   # Thumbstick buttons -> modifiers
   (key 294 "KEY_LEFTCTRL") # Left button
   (key 295 "KEY_ESC") # Right button
