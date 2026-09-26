@@ -27,16 +27,19 @@ let
     echo "  Resolution: ''${WIDTH}x''${HEIGHT}@''${FPS}" >> "$LOG"
     echo "  Target workspace: $WORKSPACE" >> "$LOG"
 
-    # Save current monitor config for restoration
-    ${pkgs.hyprland}/bin/hyprctl monitors -j > /tmp/monitors-backup.json
-    echo "  Saved monitor config to /tmp/monitors-backup.json" >> "$LOG"
+    # Keep the machine awake for the whole stream: logind's idle suspend
+    # doesn't see gamepad input. Released by restore-monitors.
+    ${pkgs.systemd}/bin/systemd-run --user --unit=streaming-inhibit --collect \
+      ${pkgs.systemd}/bin/systemd-inhibit --what=idle:sleep --who=sunshine \
+        --why="Streaming session" --mode=block ${pkgs.coreutils}/bin/sleep infinity \
+      >> "$LOG" 2>&1 || true
 
-    # Create virtual monitor for streaming
+    # Make sure the virtual monitor exists (it normally does since login)
     ${pkgs.hyprland}/bin/hyprctl output create headless "$VIRTUAL_MON"
-    echo "  Created headless monitor: $VIRTUAL_MON" >> "$LOG"
 
-    # Disable physical monitors (get list from backup, exclude the virtual one)
-    PHYSICAL_MONITORS=$(${pkgs.jq}/bin/jq -r '.[].name' /tmp/monitors-backup.json | grep -v "^$VIRTUAL_MON$")
+    # Turn the physical monitors off for the stream; restore-monitors brings
+    # them back from the config
+    PHYSICAL_MONITORS=$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[].name' | grep -v "^$VIRTUAL_MON$")
     DISABLE_CMD=""
     for mon in $PHYSICAL_MONITORS; do
       DISABLE_CMD="$DISABLE_CMD keyword monitor $mon,disable ;"
@@ -66,45 +69,19 @@ let
     echo "  Streaming session ready" >> "$LOG"
   '';
 
-  # Script to restore monitors after streaming ends.
-  # NOTE: we deliberately do NOT remove the headless virtual monitor here.
-  # `hypr-virtual-monitors.service` is a Type=oneshot that only runs at
-  # graphical-session start, so nothing would re-create it for the next
-  # session — and sunshine probes encoders against the live monitor list at
-  # startup, so an empty list (no virtual monitor + no physical monitors
-  # connected on a headless host) makes every encoder "fail" and sunshine
-  # rejects subsequent /launch requests with 503. Leaving the headless
-  # monitor alive keeps Hyprland's monitor list non-empty, and the next
-  # prepare-streaming-session's `hyprctl output create headless` is
-  # idempotent for our purposes.
+  # Script to restore monitors after streaming ends: reloading the Hyprland
+  # config re-applies the declared monitor rules (modes, positions, HDR, VRR,
+  # 10-bit) and drops the stream's runtime overrides. The headless monitor is
+  # kept: sunshine probes encoders against the live monitor list, and without
+  # any output (no physical monitor connected on a headless host) it rejects
+  # the next /launch with 503. Its config rule puts it back out of reach.
   restore-monitors = pkgs.writeShellScriptBin "restore-monitors" ''
     #!/usr/bin/env bash
     LOG="/tmp/streaming-session.log"
-    VIRTUAL_MON="${cfg.display}"
-
-    echo "$(date): restore-monitors started" >> "$LOG"
-
-    # Restore physical monitors from backup
-    if [[ -f /tmp/monitors-backup.json ]]; then
-      # Re-enable each physical monitor with its resolution/refresh but use 'auto' for position
-      # This avoids overlap issues from absolute positioning
-      ${pkgs.jq}/bin/jq -r '.[] | "\(.name),\(.width)x\(.height)@\(.refreshRate),auto,\(.scale)"' /tmp/monitors-backup.json | while read -r mon_config; do
-        MON_NAME=$(echo "$mon_config" | cut -d',' -f1)
-        if [[ "$MON_NAME" != "$VIRTUAL_MON" ]]; then
-          echo "  Restoring monitor: $mon_config" >> "$LOG"
-          ${pkgs.hyprland}/bin/hyprctl keyword monitor "$mon_config"
-        fi
-      done
-      rm /tmp/monitors-backup.json
-      echo "  Removed backup file" >> "$LOG"
-    else
-      echo "  No backup file found" >> "$LOG"
-    fi
-
-    # Switch back to workspace 1
+    echo "$(date): restore-monitors: reloading the Hyprland config" >> "$LOG"
+    ${pkgs.systemd}/bin/systemctl --user stop streaming-inhibit.service 2>/dev/null || true
+    ${pkgs.hyprland}/bin/hyprctl reload
     ${pkgs.hyprland}/bin/hyprctl dispatch workspace 1
-    echo "  Switched to workspace 1" >> "$LOG"
-    echo "  Monitors restored" >> "$LOG"
   '';
 
 in

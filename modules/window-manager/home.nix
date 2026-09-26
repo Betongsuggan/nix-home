@@ -299,9 +299,9 @@ in
         description = "Seconds before the outputs are powered off.";
       };
       suspendAfter = mkOption {
-        type = types.int;
+        type = types.nullOr types.int;
         default = 900;
-        description = "Seconds before the machine suspends.";
+        description = "Seconds before the machine suspends; null leaves suspending to the host (e.g. logind's IdleAction).";
       };
     };
 

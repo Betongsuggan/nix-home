@@ -1,5 +1,7 @@
 { pkgs, inputs, ... }:
 {
+  imports = [ ./session.nix ];
+
   home.stateVersion = "25.05";
 
   my.games.enable = true;
@@ -35,21 +37,8 @@
     };
   };
 
+  # Monitors and workspace placement: session.nix
   my.window-manager = {
-    monitors = {
-      DP-2 = {
-        mode = {
-          width = 3440;
-          height = 1440;
-          refresh = 240;
-        };
-        bitdepth = 10;
-        hdr = true;
-        sdrBrightness = 1.0;
-        sdrSaturation = 1.5;
-      };
-      HDMI-A-1.enable = false;
-    };
     autostartApps = {
       chromium = {
         command = "chromium";

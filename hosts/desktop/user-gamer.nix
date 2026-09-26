@@ -1,6 +1,7 @@
 { pkgs, inputs, ... }:
 
 {
+  imports = [ ./session.nix ];
 
   home.stateVersion = "25.05";
 
@@ -80,39 +81,25 @@
     "1, gapsin:0, gapsout:0" # No gaps on Steam workspace so maximize fills entire screen
   ];
 
+  # The PC monitor and TV come from session.nix; the gamer session adds the
+  # SUNSHINE streaming output. It always exists (Sunshine's /launch fails
+  # without it), but sits far from the others so the cursor can't reach it,
+  # and only holds the streaming workspace; prepare-streaming-session sets it
+  # to the client's resolution and turns the physical outputs off.
   my.window-manager = {
     monitors = {
+      DP-2.vrr = true;
+      HDMI-A-2.vrr = true;
       SUNSHINE = {
         mode = {
           width = 1920;
           height = 1080;
           refresh = 120;
         };
-        vrr = true;
-        bitdepth = 10;
-        hdr = true;
-        sdrBrightness = 1.0;
-        sdrSaturation = 1.5;
-      };
-      DP-2 = {
-        mode = {
-          width = 3440;
-          height = 1440;
-          refresh = 240;
+        position = {
+          x = 20000;
+          y = 0;
         };
-        vrr = true;
-        bitdepth = 10;
-        hdr = true;
-        sdrBrightness = 1.0;
-        sdrSaturation = 1.5;
-      };
-      HDMI-A-1 = {
-        mode = {
-          width = 3840;
-          height = 2160;
-          refresh = 120;
-        };
-        scale = 2;
         vrr = true;
         bitdepth = 10;
         hdr = true;
@@ -120,6 +107,13 @@
         sdrSaturation = 1.5;
       };
     };
+    workspaceBindings = [
+      {
+        workspace = 10;
+        monitor = "SUNSHINE";
+        default = true;
+      }
+    ];
 
     # Virtual monitor for headless streaming
     virtualMonitors = [ "SUNSHINE" ];

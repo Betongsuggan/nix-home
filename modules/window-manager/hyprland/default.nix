@@ -307,11 +307,11 @@ in
             on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
             on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
           }
-          {
-            timeout = config.my.window-manager.idle.suspendAfter;
-            on-timeout = "${pkgs.systemd}/bin/systemctl suspend";
-          }
-        ];
+        ]
+        ++ optional (config.my.window-manager.idle.suspendAfter != null) {
+          timeout = config.my.window-manager.idle.suspendAfter;
+          on-timeout = "${pkgs.systemd}/bin/systemctl suspend";
+        };
       };
     };
 
@@ -425,7 +425,7 @@ in
           # Launcher daemons (walker, vicinae) are started via systemd services
         ]
         # Create persistent virtual/headless monitors at startup as a fast path.
-        # A dedicated systemd-user unit (see modules/game-streaming/system.nix)
+        # A dedicated systemd-user unit (see modules/game-streaming/nixos.nix)
         # is the authoritative creator and is what sunshine.service orders
         # against — these exec-once lines just shorten the window in the common
         # case where Hyprland's IPC comes up immediately.

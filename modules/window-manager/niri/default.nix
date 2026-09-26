@@ -86,11 +86,11 @@ in
           command = "niri msg action power-off-monitors";
           resumeCommand = "niri msg action power-on-monitors";
         }
-        {
-          timeout = config.my.window-manager.idle.suspendAfter;
-          command = "${pkgs.systemd}/bin/systemctl suspend";
-        }
-      ];
+      ]
+      ++ optional (config.my.window-manager.idle.suspendAfter != null) {
+        timeout = config.my.window-manager.idle.suspendAfter;
+        command = "${pkgs.systemd}/bin/systemctl suspend";
+      };
       events =
         if cfg.lockscreen.enable then
           {

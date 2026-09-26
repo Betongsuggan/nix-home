@@ -38,13 +38,13 @@ my.window-manager = {
 | autostartApps.\<name\>.workspace | nullOr int | null | Workspace number to launch the application in |
 | monitors | attrsOf submodule | {} | Outputs by connector name: `enable`, `mode` ({ width, height, refresh }; null = the highest resolution at its highest refresh rate on Hyprland (`highres`), the preferred mode elsewhere), `position` ({ x, y }; null = auto), `scale`, `vrr`, and the Hyprland-only `hdr`, `bitdepth`, `sdrBrightness`, `sdrSaturation`. Unlisted outputs get the same mode choice at scale 1. Each backend renders this itself (Hyprland `monitor` rules, niri `outputs`, sway `output` lines, xrandr for i3). |
 | virtualMonitors | listOf str | [] | Virtual/headless monitor names to create at startup (e.g., for Sunshine streaming) |
-| workspaceBindings | listOf submodule | [] | Bind workspaces to specific monitors |
+| workspaceBindings | listOf submodule | [] | Bind workspaces to specific monitors. Hyprland gives every output the next free workspace, so binding 1-9 to the main monitor and a dedicated default workspace to each other output keeps extra outputs (a TV, a virtual monitor) from taking 2, 3, ... |
 | workspaceBindings.*.workspace | int | (required) | Workspace number |
 | workspaceBindings.*.monitor | str | (required) | Monitor name (e.g., DP-1) |
 | workspaceBindings.*.default | bool | false | Make this the default workspace for the monitor |
 | composeKey | str | "ralt" | Keyboard key to use as the compose key for special characters |
 | touchOutput | nullOr str | null | Output name to map touchscreen input to (e.g., "eDP-1") |
-| idle.dimAfter / lockAfter / screenOffAfter / suspendAfter | int (s) | 240 / 300 / 330 / 900 | Idle timeouts, shared by hypridle (Hyprland) and swayidle (niri) |
+| idle.dimAfter / lockAfter / screenOffAfter / suspendAfter | int (s); suspendAfter nullOr int | 240 / 300 / 330 / 900 | Idle timeouts, shared by hypridle (Hyprland) and swayidle (niri) |
 
 ## Keymap
 
