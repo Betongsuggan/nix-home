@@ -123,19 +123,28 @@ let
     }
   );
 
-  configDir = "/root/.config/input-remapper-2";
-
-  # One `L+` (replace) symlink per device preset
-  presetRules = mapAttrsToList (
-    deviceName: device:
-    let
-      sanitized = sanitizeDeviceName deviceName;
-      presetFile = pkgs.writeText "${sanitized}-${device.preset}.json" (
+  # The whole config tree (config.json + presets/<device>/<preset>.json) as one
+  # store path, exposed at a stable location under /etc so the daemon can be
+  # pointed at it and the unit doesn't change when mappings do.
+  configDir = pkgs.linkFarm "input-remapper-config" (
+    [
+      {
+        name = "config.json";
+        path = configFile;
+      }
+    ]
+    ++ mapAttrsToList (deviceName: device: {
+      name = "presets/${sanitizeDeviceName deviceName}/${device.preset}.json";
+      path = pkgs.writeText "${sanitizeDeviceName deviceName}-${device.preset}.json" (
         builtins.toJSON (map mkMappingEntry device.mappings)
       );
-    in
-    "L+ \"${configDir}/presets/${sanitized}/${device.preset}.json\" - - - - ${presetFile}"
-  ) cfg.devices;
+    }) cfg.devices
+  );
+
+  etcConfigDir = "/etc/input-remapper-2";
+
+  busctl = "${config.systemd.package}/bin/busctl";
+  dbusCall = "${busctl} call inputremapper.Control /inputremapper/Control inputremapper.Control";
 
 in
 {
@@ -156,20 +165,31 @@ in
     services.input-remapper = {
       enable = true;
       enableUdevRules = true;
+      # nixpkgs wants the daemon by graphical.target, which hosts that autologin
+      # on a getty and start the compositor from the shell (no display manager)
+      # never reach, so it never started and every udev hotplug autoload failed
+      # with "Daemon missing" (exit 5). It is a root uinput injector with no
+      # graphical-session dependency.
+      serviceWantedBy = [ "multi-user.target" ];
     };
 
-    # The root daemon reads its config and presets from /root; link the
-    # generated files there (parent directories are created as needed).
-    # Presets made in the GUI next to them are left alone.
-    systemd.tmpfiles.rules = [
-      "L+ ${configDir}/config.json - - - - ${configFile}"
-    ]
-    ++ presetRules;
+    environment.etc."input-remapper-2".source = configDir;
 
-    # Autoload presets for already-connected devices after service restart
-    systemd.services.input-remapper.postStart = ''
-      sleep 1
-      ${pkgs.input-remapper}/bin/input-remapper-control --command autoload || true
-    '';
+    # The root daemon loads no config on its own under systemd: it waits for a
+    # *user session* to call set_config_dir over D-Bus (upstream does this from
+    # an XDG autostart entry) and skips root callers such as the udev hook, so
+    # files under /root/.config were never read. This is a system-wide setup,
+    # so tell the daemon about the /etc tree directly at startup (Type=dbus
+    # guarantees the name is owned before ExecStartPost). From then on the
+    # udev rule's autoload_single covers hotplug; the autoload here covers
+    # devices attached at boot.
+    systemd.services.input-remapper = {
+      postStart = ''
+        ${dbusCall} set_config_dir s "${etcConfigDir}"
+        ${dbusCall} autoload
+      '';
+      # Re-inject on rebuild when mappings change (the unit itself is stable)
+      restartTriggers = [ configDir ];
+    };
   };
 }

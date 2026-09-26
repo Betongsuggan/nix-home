@@ -1,6 +1,6 @@
 # Input Remapper
 
-Declarative key remapping via input-remapper. This is a system-level module that enables the `services.input-remapper` daemon, links the generated config and presets into `/root/.config/input-remapper-2/` with `systemd.tmpfiles` (`L+`, so they are refreshed on every activation and boot; presets created in the GUI next to them are kept), and auto-applies presets when devices are connected (via udev hotplug rules).
+Declarative key remapping via input-remapper. This is a system-level module that enables the `services.input-remapper` daemon, builds the config tree (`config.json` + `presets/<device>/<preset>.json`) as a single store path exposed at `/etc/input-remapper-2`, points the daemon at it over D-Bus when the service starts, and auto-applies presets when devices are connected (via udev hotplug rules). No per-user setup is needed; remapping is identical for every user session on the host.
 
 ## Usage
 
@@ -102,6 +102,10 @@ cat /proc/bus/input/devices | grep -A 3 "G13"
 ## Notes
 
 - Device names in preset paths are sanitized: `/\?%*:|"<>` become `_`
-- The system service auto-starts at `graphical.target`
+- The system service is wanted by `multi-user.target` (not the nixpkgs default `graphical.target`): hosts without a display manager (getty autologin + compositor started from the shell, like `desktop`) never reach `graphical.target`, so the daemon would never start and hotplugged devices would not be remapped. The daemon is a root-level uinput injector and needs no graphical session
+- Config is handed to the daemon over D-Bus, not discovered from a home directory: input-remapper's root daemon deliberately loads nothing on its own and waits for a *user session* to call `set_config_dir` (upstream does this from an XDG autostart entry). Root-run callers such as the udev hook are skipped by that logic, so a config under `/root/.config` (the previous design of this module) was never read and every autoload was rejected with "before a user told the service about their session". The module's `postStart` calls `set_config_dir /etc/input-remapper-2` and then `autoload` via `busctl`; from that point the udev rule's per-device `autoload_single` works for hotplug. Hosts migrated from the old design may still have dead symlinks under `/root/.config/input-remapper-2`, which can be deleted
+- Changing mappings restarts the daemon on rebuild (`restartTriggers` on the config tree), so the new preset is injected without a reboot or replug
+- Hotplug troubleshooting: `systemctl status input-remapper` must be `active`. If udev logs `input-remapper-control ... failed with exit code 5`, the daemon is not running ("Daemon missing"). If the daemon logs "Request to autoload ... before a user told the service about their session", `set_config_dir` was not called; check `journalctl -u input-remapper` for the `postStart` `busctl` calls. A working injection shows `input-remapper <device> forwarded` entries in `/proc/bus/input/devices`. Exit code 2 on `--device ''` lines is harmless noise from parent `inputNN` nodes that have no `DEVNAME`
 - Udev rules trigger autoload when devices are hotplugged
+- Output symbols are evdev key names, i.e. physical key positions, not letters in the user's layout. On a non-QWERTY compositor layout the mapped keys come out translated (Colemak: `KEY_W/A/S/D` -> "wars") unless the compositor gives the daemon's virtual keyboard a plain US layout. The hyprland window-manager backend does this with `device` blocks for `input-remapper-keyboard`; see `modules/window-manager/SPEC.md`
 - Input combinations (multiple simultaneous keys) are supported via multiple entries in `input`

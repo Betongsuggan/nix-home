@@ -573,6 +573,24 @@ in
             output = config.my.window-manager.touchOutput;
           };
         };
+
+        # input-remapper (my.input-remapper) injects mapped keys through virtual
+        # uinput keyboards. Its mapping symbols are evdev key names (KEY_S = the
+        # physical S key), so those devices must be read with plain US: under
+        # the global Colemak keymap a G13 thumbstick mapped to KEY_W/A/S/D came
+        # out as "wars". Per-device settings win over `input:` and aren't
+        # touched by the QWERTY/Colemak toggle; harmless when absent.
+        device =
+          map
+            (name: {
+              inherit name;
+              kb_layout = "us";
+              kb_variant = "";
+            })
+            [
+              "input-remapper-keyboard"
+              "input-remapper-keyboard-+-mouse"
+            ];
       };
     };
   };
