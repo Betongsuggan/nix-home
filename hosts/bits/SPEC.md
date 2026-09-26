@@ -9,7 +9,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Firefox browser (home-manager managed, `my.firefox.enable`) with Slack and other communication apps
 - Alacritty terminal with Bash shell and Starship prompt
 - Disk encryption enabled for security
-- Fingerprint support is configured but switched off (`my.fingerprint.enable = false`)
+- Fingerprint reader (Goodix `27c6:658c`, libfprint's built-in driver: `driver = "generic"`): fingerprint or password at the same prompt for login, sudo and polkit; hyprlock reads it natively. With the lid closed fprintd is stopped and everything takes the password (`clamshellAware`)
 - `my.profiles.laptop` (implies workstation): touchpad, backlight, TLP power management, battery notifications, audio, bluetooth, printing, firmware updates
 - Battery monitoring and power management (TLP, see `modules/power-management/SPEC.md`). The diagnostic posture that chased the hard power-offs — AC capped to `low-power` / `low` amdgpu DPM plus `forensics.enable` — has been **retired**, because the telemetry it collected identified the cause: the pack reports empty at 0.5 Wh and then runs for another 100 minutes, i.e. a degraded cell stack *and* a fuel gauge that has lost calibration, so reported percentages and time-remaining figures are meaningless. **The pack is the outstanding hardware item**; BIOS and EC were updated to 0.1.81 / 0.1.67 on 2026-09-25.
 - Tuned for a light login: nothing autostarts (LocalSend included), Docker (rootless and rootful), CUPS, sshd and fwupd start on demand, and Hyprland drops blur/shadows on battery. Measured idle draw is ~3.4 W with the screen off against ~10 W with the panel at full brightness, so the display dominates everything else on this machine.

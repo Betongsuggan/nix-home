@@ -108,7 +108,10 @@
     startOnBoot = false;
   };
   my.fingerprint = {
-    enable = false;
+    enable = true;
+    # Goodix 27c6:658c is supported by libfprint itself (goodixmoc); the
+    # Goodix TOD driver doesn't list it
+    driver = "generic";
     clamshellAware = true;
     lidStatePath = "/proc/acpi/button/lid/LID/state";
   };

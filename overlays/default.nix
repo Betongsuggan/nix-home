@@ -4,5 +4,6 @@ inputs: [
   (import ./flake-inputs.nix inputs)
   (import ./unstable.nix inputs)
   (import ./aws-cdk.nix)
+  (import ./pam-fprint-grosshack.nix)
   (import ./niri.nix inputs)
 ]

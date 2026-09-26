@@ -68,11 +68,21 @@ in
           { }
       );
 
-      security.pam.services.login.fprintAuth = true;
-      security.pam.services.sudo.fprintAuth = true;
-      security.pam.services.su.fprintAuth = true;
-      security.pam.services.polkit-1.fprintAuth = true;
-      # Note: hyprlock uses native D-Bus fprintd integration, not PAM
+      # Fingerprint or password at the same prompt, whichever comes first:
+      # the stock pam_fprintd asks for the finger and only falls back to the
+      # password after a timeout. The grosshack module takes NixOS's fprintd
+      # rule slot (sufficient, before pam_unix with try_first_pass); a typed
+      # password is handed on to pam_unix
+      security.pam.services =
+        genAttrs [ "login" "greetd" "sudo" "su" "polkit-1" ] (_: {
+          fprintAuth = true;
+          rules.auth.fprintd.modulePath = mkForce "${pkgs.pam-fprint-grosshack}/lib/security/pam_fprintd_grosshack.so";
+        })
+        // {
+          # hyprlock reads the finger itself over D-Bus while taking the
+          # password through PAM; a PAM fingerprint step would ask twice
+          hyprlock.fprintAuth = false;
+        };
     }
 
     (mkIf config.my.fingerprint.clamshellAware {

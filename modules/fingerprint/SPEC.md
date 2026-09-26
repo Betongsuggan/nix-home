@@ -1,6 +1,6 @@
 # Fingerprint
 
-Enables fingerprint authentication via fprintd with support for multiple sensor drivers. Configures PAM integration for login, sudo, su, and polkit.
+Enables fingerprint authentication via fprintd with support for multiple sensor drivers. Login, the greetd login screen, sudo, su and polkit accept the fingerprint **or** the password at the same prompt, whichever comes first (`pam_fprintd_grosshack`, packaged in `overlays/pam-fprint-grosshack.nix`).
 
 ## Usage
 
@@ -22,9 +22,10 @@ my.fingerprint = {
 
 ## Notes
 
-- After enabling, enroll fingerprints with `fprintd-enroll`.
-- The `goodix` and `elan` drivers use TOD (Touch OEM Drivers) packages. Use `generic` for sensors supported by libfprint's built-in drivers.
-- PAM fingerprint authentication is enabled for login, sudo, su, and polkit-1. Hyprlock uses native D-Bus fprintd integration rather than PAM.
+- After enabling, enroll fingerprints with `fprintd-enroll` (one finger per run; `fprintd-enroll -f left-index-finger` for another) and test with `fprintd-verify`.
+- The `goodix` and `elan` drivers use TOD (Touch OEM Drivers) packages. Use `generic` for sensors supported by libfprint's built-in drivers; check the sensor's USB id (`lsusb`) against libfprint's `lib/udev/hwdb.d/60-autosuspend-libfprint-2.hwdb` first. Newer Goodix sensors (e.g. `27c6:658c` on bits) are built in, and the Goodix TOD driver doesn't know them.
+- PAM: with fprintd on, NixOS gives every PAM service a `pam_fprintd` step that asks for the finger first and only takes the password after a timeout. This module swaps that step's module for grosshack on login, greetd, sudo, su and polkit-1 (same slot: `sufficient`, before `pam_unix` with `try_first_pass`, which receives a typed password). hyprlock reads the finger itself over D-Bus while taking the password through PAM, so its PAM stack has no fingerprint step (it would ask twice).
+- GUI prompts (polkit, e.g. Bitwarden's unlock) need a polkit agent in the session; the window-manager module starts one.
 
 ## Clamshell mode
 
