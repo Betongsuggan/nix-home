@@ -62,9 +62,13 @@ with lib;
       enable = mkEnableOption "Proton-GE in Steam's compatibility tools (through programs.steam, see nixos.nix)";
       packages = mkOption {
         type = types.listOf types.package;
-        default = [ pkgs.proton-ge-bin ];
-        defaultText = literalExpression "[ pkgs.proton-ge-bin ]";
-        example = literalExpression "[ pkgs.unstable.proton-ge-bin ]";
+        # nixos-unstable's build: 26.05 stays on an old GE (11-1), while
+        # games need current ones (Warcraft III: Reforged logs in only from
+        # 11-7). The Steam name stays "GE-Proton", so per-game choices roll
+        # forward with `nix flake update nixpkgs-unstable`.
+        default = [ pkgs.unstable.proton-ge-bin ];
+        defaultText = literalExpression "[ pkgs.unstable.proton-ge-bin ]";
+        example = literalExpression "[ pkgs.proton-ge-bin ]";
         description = ''
           Proton-GE builds to offer in Steam. Each must expose a `steamcompattool`
           output (nixpkgs proton-ge-bin does); give parallel builds distinct

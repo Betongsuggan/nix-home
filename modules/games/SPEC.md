@@ -24,7 +24,7 @@ my.games = {
     fontSize = 24;
   };
   vkbasalt.enable = true;
-  protonGE.enable = true;  # protonGE.packages = [ pkgs.unstable.proton-ge-bin ]; for the newest GE
+  protonGE.enable = true;  # nixos-unstable's GE by default (protonGE.packages)
   tools.enable = true;
   emulators = {
     enable = true;
@@ -66,7 +66,7 @@ my.games = {
 | mangohud.fontSize | int | 24 | MangoHud font size |
 | vkbasalt.enable | bool | false | Enable vkBasalt post-processing |
 | protonGE.enable | bool | false | Offer Proton-GE in Steam's compatibility-tool list (through `programs.steam.extraCompatPackages`, NixOS half) |
-| protonGE.packages | listOf package | `[ pkgs.proton-ge-bin ]` | Proton-GE builds to offer; each must expose a `steamcompattool` output. Give parallel builds distinct `steamDisplayName`s via `overrideAttrs` |
+| protonGE.packages | listOf package | `[ pkgs.unstable.proton-ge-bin ]` | Proton-GE builds to offer; each must expose a `steamcompattool` output. The default is nixos-unstable's (26.05 stays on GE-Proton11-1); it keeps the Steam name "GE-Proton", so per-game choices roll forward with `nix flake update nixpkgs-unstable`. Give parallel builds distinct `steamDisplayName`s via `overrideAttrs` |
 | tools.enable | bool | true | Install gaming tools (goverlay, protonup-qt, winetricks, bottles, heroic); also turns on `programs.steam.protontricks` |
 | emulators.enable | bool | false | Enable emulators (RetroArch + standalone) |
 | emulators.dataDir | str | "emulation" | Directory name under $HOME for emulation data (ROMs, saves, BIOS) |

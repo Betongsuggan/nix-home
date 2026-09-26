@@ -14,14 +14,7 @@
       fontSize = 22;
     };
     vkbasalt.enable = true;
-    protonGE = {
-      enable = true;
-      # nixos-unstable's GE (11-7 or newer) rather than 26.05's 11-1: 11-7
-      # carries the crypt32 backport Warcraft III: Reforged 3.0 needs to log in
-      # ("Please check your VPN" otherwise, proton-ge-custom PR #765). The
-      # Steam name stays "GE-Proton", so per-game choices roll forward.
-      packages = [ pkgs.unstable.proton-ge-bin ];
-    };
+    protonGE.enable = true;
     tools.enable = true;
     emulators = {
       enable = true;
@@ -184,7 +177,8 @@
       gamescopeUnstable = unstable.gamescope;
     in
     [
-      steam
+      # `steam` comes from programs.steam (games module, NixOS half): a copy
+      # here would shadow its wrapper, which carries the Proton-GE paths
       steam-run
       htop
       pulseaudio
