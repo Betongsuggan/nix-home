@@ -74,7 +74,7 @@ in
       # rule slot (sufficient, before pam_unix with try_first_pass); a typed
       # password is handed on to pam_unix
       security.pam.services =
-        genAttrs [ "login" "greetd" "sudo" "su" "polkit-1" ] (_: {
+        genAttrs [ "login" "sudo" "su" "polkit-1" ] (_: {
           fprintAuth = true;
           rules.auth.fprintd.modulePath = mkForce "${pkgs.pam-fprint-grosshack}/lib/security/pam_fprintd_grosshack.so";
         })
