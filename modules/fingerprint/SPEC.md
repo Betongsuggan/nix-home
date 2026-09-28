@@ -17,8 +17,6 @@ my.fingerprint = {
 |--------|------|---------|-------------|
 | enable | bool | false | Enable fingerprint reader |
 | driver | enum: "goodix" "elan" "generic" | "goodix" | Fingerprint reader driver to use |
-| clamshellAware | bool | false | Stop fprintd when lid is closed so auth falls back to password |
-| lidStatePath | string | "/proc/acpi/button/lid/LID0/state" | Path to ACPI lid state file |
 
 ## Notes
 
@@ -28,20 +26,4 @@ my.fingerprint = {
 - Never put grosshack on a greetd greeter. It ends the PAM conversation under greetd, which then logs the greeter's pending answer (the typed password) in plain text in the journal (seen with the DMS greeter, 2026-09-26).
 - GUI prompts (polkit, e.g. Bitwarden's unlock) need a polkit agent in the session; the window-manager module starts one.
 
-## Clamshell mode
-
-When `clamshellAware = true`, acpid monitors lid events and stops/starts fprintd accordingly. When fprintd is stopped, `pam_fprintd.so` fails immediately and PAM falls through to password authentication — no fingerprint prompt appears.
-
-A oneshot systemd service (`fprintd-lid-check`) also runs at boot to stop fprintd if the lid is already closed when the system starts.
-
-If your hardware uses a different lid state path (e.g. `LID` instead of `LID0`), override `lidStatePath`:
-
-```nix
-my.fingerprint = {
-  enable = true;
-  clamshellAware = true;
-  lidStatePath = "/proc/acpi/button/lid/LID/state";
-};
-```
-
-Check the correct path with: `ls /proc/acpi/button/lid/`
+- No clamshell mode: with the lid closed the password is typed at the same prompt. Stopping fprintd on lid events (the removed `clamshellAware`) broke hyprlock, whose device claim died with the restarted daemon when resume replayed the lid close/open events, so fingerprint unlock failed until a password unlock.
