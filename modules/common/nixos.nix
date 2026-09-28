@@ -146,6 +146,7 @@ with lib;
         wget
         curl
         sshfs
+        magic-wormhole
       ]
       ++ mapAttrsToList (
         name: h: writeShellScriptBin "wake-${name}" "exec ${wakeonlan}/bin/wakeonlan ${h.wol.mac}"
