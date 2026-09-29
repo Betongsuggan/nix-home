@@ -532,6 +532,9 @@ in
           [ (getExe config.my.fleet-status.dashboard.package) ]
         else
           null;
+      # Send the clipboard to a tailnet device (modules/taildrop)
+      "Mod+Shift+S".spawn =
+        if config.my.taildrop.enable then [ (getExe config.my.taildrop.package) ] else null;
       "Mod+Shift+A".spawn = launch "audioInput" { };
 
       ## Layout: left/right walks columns, up/down walks workspaces, Ctrl acts

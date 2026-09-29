@@ -17,6 +17,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Offline media for travel: `media` (mpv + yt-dlp) for DRM-free sources. **Waydroid is currently disabled** (see below); when it was on it provided Netflix's Android app for offline downloads — SD only, with Disney+/HBO Max hard-blocked (see `modules/waydroid/SPEC.md`)
 - Bluetooth and printer support; the laptop profile drops `cups-browsed` so `cupsd` stays socket-activated instead of running from boot
 - LocalSend for local file sharing (with CLI)
+- Taildrop (`my.taildrop`, on by default for the admin user): Mod+Shift+S sends the clipboard to any tailnet device, phones included; received files land in `~/Downloads/taildrop` and received clipboards go straight to the clipboard. The admin user is the host's tailscale operator
 - 3D printing toolchain: PrusaSlicer, OpenSCAD (dev snapshot), FreeCAD (`my.printing-3d` with `cad.enable`, see `modules/printing-3d/SPEC.md`)
 - SMB network share browsing in Thunar (GVFS + Avahi/mDNS discovery)
 - No emulation client or Syncthing on this work laptop (dropped for lightness)

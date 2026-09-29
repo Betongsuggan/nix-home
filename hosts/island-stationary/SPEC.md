@@ -22,6 +22,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 - Development environment on betongsuggan user with Docker support
 - Vicinae launcher with wifi, bluetooth, and monitor extensions on both users
 - Chromium, communication apps, and LocalSend on both users
+- Taildrop (`my.taildrop`, on by default for the admin user): Mod+Shift+S sends the clipboard to any tailnet device, phones included; received files land in `~/Downloads/taildrop` and received clipboards go straight to the clipboard. The admin user is the host's tailscale operator
 - Alacritty terminal with Bash shell and Starship prompt
 - Bluetooth with wake support for DualSense controller
 - Secure boot via Lanzaboote
