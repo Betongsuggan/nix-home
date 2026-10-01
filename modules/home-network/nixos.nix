@@ -17,6 +17,9 @@ let
   isTailnetMember = isController || isOnboarded;
 
   preauthBlobPath = "/var/lib/home-network/preauth.age";
+  # Left by the bootstrap join: tailscaled's node is the ephemeral one, which
+  # the onboarded autoconnect logs out so the key registers a permanent node
+  bootstrapMarker = "/var/lib/home-network/bootstrap-node";
 
   # Hardcoded: matches the comment on the operator's FIDO resident SSH key
   # authorized in hosts/controller/system.nix. Changing this only makes sense
@@ -39,7 +42,6 @@ let
       tailscale
       curl
       coreutils
-      util-linux
       openssh
     ];
     text = ''
@@ -63,12 +65,13 @@ let
         step "Fetching and decrypting preauth blob from $blob_url (touch the YubiKey)..."
         preauth_key=$(curl -fsSL "$blob_url" | age -d -i <(printf '%s' "$identity"))
 
+        # Under the OS hostname: headscale names the machine at its first
+        # join and keeps that name when the onboarded host registers again
         step "Joining tailnet (login server $login_server)..."
-        hostname="installer-$(uuidgen | tr -d - | head -c8)"
         sudo tailscale up \
           --login-server "$login_server" \
-          --authkey "$preauth_key" \
-          --hostname "$hostname"
+          --authkey "$preauth_key"
+        sudo install -D -m 0644 /dev/null ${bootstrapMarker}
 
         unset identity preauth_key
       fi
@@ -330,11 +333,27 @@ in
         # is Running and times out after 90 s on every boot without network
         # (laptops that join Wi-Fi after login). The prefs are readable
         # offline; if the check itself fails, the unit runs as before.
-        systemd.services.tailscaled-autoconnect.serviceConfig.ExecCondition =
-          pkgs.writeShellScript "tailscale-needs-login" ''
-            ! ${getExe config.services.tailscale.package} debug prefs \
-              | ${getExe pkgs.jq} -e '.LoggedOut == false and (.Config.NodeID // "") != ""' >/dev/null
-          '';
+        #
+        # The bootstrap join's node is ephemeral: headscale deletes it once the
+        # host has been offline for a while. While its marker is there, the
+        # node is logged out first so the key registers a permanent one.
+        systemd.services.tailscaled-autoconnect.serviceConfig =
+          let
+            tailscale = getExe config.services.tailscale.package;
+          in
+          {
+            ExecCondition = pkgs.writeShellScript "tailscale-needs-login" ''
+              [ -e ${bootstrapMarker} ] || ! ${tailscale} debug prefs \
+                | ${getExe pkgs.jq} -e '.LoggedOut == false and (.Config.NodeID // "") != ""' >/dev/null
+            '';
+            # Offline, the logout fails, the marker stays and the next boot retries
+            ExecStartPre = pkgs.writeShellScript "tailscale-drop-bootstrap-node" ''
+              if [ -e ${bootstrapMarker} ]; then
+                echo "Logging out the ephemeral bootstrap node"
+                ${pkgs.coreutils}/bin/timeout 15 ${tailscale} logout && rm -f ${bootstrapMarker} || true
+              fi
+            '';
+          };
         sops.secrets."headscale-preauthkey" = {
           key = "services/headscale-preauthkey";
           owner = "root";
@@ -415,10 +434,10 @@ in
           fi
 
           # `--ephemeral` makes headscale auto-remove the joining node a few
-          # minutes after it goes offline. The temporary `installer-XXXXXXXX`
-          # node a new host registers as is purged once that host rebuilds
-          # into `onboarded` mode and tailscaled re-registers under its real
-          # hostname. No accumulation in `headscale nodes list`.
+          # minutes after it goes offline. A new host's bootstrap node is
+          # replaced by a permanent one once it rebuilds into `onboarded` mode
+          # and tailscaled registers again. No accumulation in
+          # `headscale nodes list`.
           key=$(headscale preauthkeys create \
                   --user "$uid" \
                   --ephemeral \

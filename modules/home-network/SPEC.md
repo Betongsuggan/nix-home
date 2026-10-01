@@ -8,7 +8,7 @@ This is **the primary onboarding document** for the fleet. The bootstrapping doc
 
 `controller` exposes port 22 only on `tailscale0`. That creates a chicken-and-egg for new hosts: they cannot reach `controller` to clone `nix-vault` until they are on the tailnet, but the preauth key that gets them onto the tailnet lives in `nix-vault` (encrypted to the new host's age identity, which is itself derived from a key that does not exist yet).
 
-The module breaks the cycle by having controller publish a continuously rotated, single-use, ephemeral, short-TTL preauth key — age-encrypted to the operator's YubiKey — at a public HTTPS path. A new host fetches the blob, decrypts it locally with the inserted YubiKey, and joins the tailnet on its own as a temporary `installer-XXXXXXXX` node. Port 22 stays tailnet-only. No preexisting tailnet member is required to onboard a new one — only the YubiKey and `controller` being up.
+The module breaks the cycle by having controller publish a continuously rotated, single-use, ephemeral, short-TTL preauth key — age-encrypted to the operator's YubiKey — at a public HTTPS path. A new host fetches the blob, decrypts it locally with the inserted YubiKey, and joins the tailnet on its own as a temporary, ephemeral node under its own hostname. Port 22 stays tailnet-only. No preexisting tailnet member is required to onboard a new one — only the YubiKey and `controller` being up.
 
 The trust model mirrors the sops material already checked into `nix-vault`: ciphertext is publicly readable; security comes from the YubiKey, not from access control.
 
@@ -93,7 +93,7 @@ home-network-bootstrap
 ```
 
 Idempotently:
-- joins the tailnet via the YubiKey-decrypted rotated blob (as a temporary `installer-XXXXXXXX` node),
+- joins the tailnet via the YubiKey-decrypted rotated blob (as a temporary, ephemeral node under the OS hostname), and leaves the marker `/var/lib/home-network/bootstrap-node` behind,
 - materializes the FIDO resident SSH key with `ssh-keygen -K`,
 - `exec`s into an interactive SSH session on `controller` using that FIDO key.
 
@@ -108,7 +108,7 @@ cd ~/nix-home && git pull && sudo nixos-rebuild switch --flake .#controller
 sudo headscale preauthkeys create --user birger --reusable --expiration 8760h
 ```
 
-The rebuild pulls in the lib changes from step 2 — controller now trusts the new host's user keys for SSH (controller's account has `sshFromFleet = true` in lib) and for git access to `nix-vault.git` (via `git-server.authorizedKeys = lib.allSshKeys`). Copy the printed preauth key string. **One-time cleanup** of any zombie installer nodes left over from before the rotator was switched to ephemeral keys:
+The rebuild pulls in the lib changes from step 2 — controller now trusts the new host's user keys for SSH (controller's account has `sshFromFleet = true` in lib) and for git access to `nix-vault.git` (via `git-server.authorizedKeys = lib.allSshKeys`). Copy the printed preauth key string. **One-time cleanup** of any zombie `installer-…` nodes, left over from before the rotator switched to ephemeral keys and before the bootstrap joined under the real hostname:
 
 ```bash
 sudo headscale nodes list --output json \
@@ -191,7 +191,7 @@ sudo nixos-rebuild switch --flake .#<host> \
   --override-input nix-vault git+file:///home/<you>/nix-vault
 ```
 
-The host now joins the tailnet permanently under its real hostname using the sops-decrypted preauth key. The ephemeral `installer-XXXXXXXX` node from step 3 disappears from headscale within a few minutes of the old tailscaled session ending.
+The host now joins the tailnet permanently under its real hostname using the sops-decrypted preauth key. tailscaled's state still holds the ephemeral node from step 3, so `tailscaled-autoconnect` logs it out first and then registers a permanent node (see *Member wiring*). Headscale keeps the name the machine got at its first join, which is why the bootstrap joins under the real hostname. Check with `tailscale status`: the host should be listed under its own name.
 
 ## Headless remote-managed hosts (no bootstrap mode)
 
@@ -213,7 +213,7 @@ What `controller` mode wires up beyond regular tailnet membership:
 - `systemd.timers.home-network-rotate-preauth`: triggers the rotator every `controller.bootstrap.rotateInterval` (default 15 min), plus 30s after boot.
 - Adds a `location` block to the existing nginx virtual host named by `controller.bootstrap.publicDomain` (default `rydback.net`) that serves the blob over HTTPS as `application/octet-stream` with `Cache-Control: no-store` and `GET`-only access.
 
-The `--ephemeral` flag is what makes the `installer-XXXXXXXX` nodes auto-clean: headscale removes ephemeral nodes a few minutes after they go offline, so when the new host rebuilds into `onboarded` mode (step 7) and tailscaled re-registers under its real hostname, the installer node disappears on its own.
+The `--ephemeral` flag is what makes bootstrap nodes auto-clean: headscale removes ephemeral nodes a few minutes after they go offline. A host that rebuilds into `onboarded` mode (step 7) replaces its bootstrap node with a permanent one, and one that never gets there doesn't linger in `headscale nodes list`.
 
 ### Threat model
 
@@ -243,7 +243,10 @@ The `--ephemeral` flag is what makes the `installer-XXXXXXXX` nodes auto-clean: 
 ## Member wiring (controller and onboarded modes)
 
 - tailscaled logs in to `lib.tailnet.loginServer` with `--accept-routes --accept-dns`, using the sops secret `services/headscale-preauthkey` when sops is enabled.
-- `tailscaled-autoconnect` (which sends that key) is skipped when the node is already registered (`tailscale debug prefs`: not logged out, has a NodeID), so boots without network don't wait 90 s for it and it doesn't leave a failed unit. A logged-out or new node still gets the key.
+- `tailscaled-autoconnect` (which sends that key) is skipped when the node is already registered (`tailscale debug prefs`: not logged out, has a NodeID) and isn't the bootstrap node. That way, boots without network don't wait 90 s for it, and it doesn't leave a failed unit. A logged-out or new node still gets the key.
+- While `/var/lib/home-network/bootstrap-node` exists, the node is the bootstrap's ephemeral one. The unit's `ExecStartPre` logs it out (15 s timeout) and removes the marker, so the key registers a permanent node under the same name. Offline, the logout fails, the marker stays and the next boot tries again. Without this, the host keeps the ephemeral node until headscale deletes it after an offline period. The host then sits in `NeedsLogin` while its local prefs still look registered.
+- Headscale names a machine (its MagicDNS name, what the fleet dashboard and restic reach) when it first joins, from the hostname it reports then. Registering again with the same machine key keeps that name, so a host whose bootstrap ran under another name keeps it: fix it with `sudo headscale nodes rename -i <id> <host>` on controller.
+- The skip trusts local state: a node deleted on the headscale side that still has the right name stays logged out. Recover with `sudo tailscale logout && sudo systemctl start tailscaled-autoconnect`.
 - sshd is enabled with the global firewall closed; port 22 is open on `tailscale0` only.
 - Each account's `authorized_keys` gets the peer keys its registry entry allows (`sshFrom`, or `sshFromFleet` on controller).
 - root (nix-daemon) fetches `nix-vault` from `git@controller` with the host SSH key (`Match localuser root user git`).
