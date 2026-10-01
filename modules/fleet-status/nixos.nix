@@ -23,8 +23,10 @@ let
       systemd
     ];
     text = ''
-      # The request line; nothing in it matters
-      read -r -t 2 _ || true
+      # Read the whole request (nothing in it matters): closing the socket
+      # with unread headers makes the kernel send a reset, which discards the
+      # response before the client has read it
+      while IFS= read -r -t 2 line && [ -n "''${line%$'\r'}" ]; do :; done
 
       battery=null
       for b in /sys/class/power_supply/BAT*; do
