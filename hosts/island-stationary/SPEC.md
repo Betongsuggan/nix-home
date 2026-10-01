@@ -16,7 +16,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 - MangoHud overlay with detailed mode and vkBasalt post-processing
 - Steam from `programs.steam` (the games module's NixOS half, since gamer sets `my.games.enable`), with Proton-GE through `programs.steam.extraCompatPackages` and the SteamOS sysctls from nix-gaming's `platformOptimizations`
 - NVIDIA-optimized environment variables (shader caching, NVAPI)
-- Zen kernel optimized for desktop/gaming
+- Zen kernel optimized for desktop/gaming, pinned to 7.0.9 (see Notes)
 - ZRAM swap (zstd, 50% memory) for memory efficiency
 - CPU governor set to performance mode
 - Development environment on betongsuggan user with Docker support
@@ -65,6 +65,72 @@ Prerequisite: the host must be onboarded to the tailnet (it is — `home-network
 
 - Hardware: AMD Ryzen CPU with NVIDIA RTX 2070 GPU
 - Kernel: Zen kernel with `mitigations=off` and `preempt=full` for maximum gaming performance
+
+### Peripheral topology and the kernel pin
+
+The keyboard and mouse receivers live in the BenQ EX3501R's internal USB hub, and that hub
+reaches the machine only through the monitor's USB-C cable into the RTX 2070's USB-C
+(VirtualLink) port — so all HID input depends on the GPU's own xHCI controller
+(`0a:00.2`). There is no alternative routing on this desk; treat this as a fixed constraint
+when changing kernel or GPU configuration.
+
+### USB disconnects: the actual discriminator is the GPU's root-hub port
+
+Peripherals behind that hub disconnect intermittently. The GPU's xHCI root hub exposes **two
+ports**, and which one the monitor's hub lands on tracks the fault exactly:
+
+| hub enumerates as | kernel | sampled | disconnects |
+|-------------------|--------|---------|-------------|
+| `usb 3-1` | 7.0.9-zen1 | May 23 → Aug 11 (~2.5 months) | **0** |
+| `usb 3-1` | 7.0.9-zen1 | 30 min | **0** |
+| `usb 3-2` | 7.0.9-zen1 | 20 h | 1 |
+| `usb 3-2` | 7.1.5-zen1 | 32 min | 4 |
+| `usb 3-2` | 7.1.5-zen1 | 32 min | 5 |
+| `usb 3-2` | 7.0.9-zen1 | 5 min | 4 |
+
+**The kernel is not the cause.** The pinned 7.0.9 build is the byte-identical store path
+(`zash60j4si01w8zijfchf37zspk5wgaj-linux-zen-7.0.9`) that ran the 2.5-month clean boot, and it
+still drops on port `3-2`. The same hub, receiver and monitor are also stable on the `bits`
+host. Port `3-1` is the only configuration that has ever been clean.
+
+Failure mode varies — sometimes only the Logitech receiver (`3-2.2`) drops, sometimes the
+whole link goes (`3-2` plus every child, plus `4-2` on the SuperSpeed side of the same
+controller) — which is consistent with a marginal physical link rather than a driver bug.
+
+**If disconnects appear: reseat the monitor's USB-C cable at the GPU, flipping it 180°, then
+check `lsusb -t` shows the hub on `Bus 003.Port 001`.** A Type-C receptacle carries a
+USB 2.0 pair per orientation, so flipping the connector moves which root-hub port is used.
+
+`ucsi_ccg` and `typec_ucsi` are blacklisted because 7.1.x fails to initialise the GPU's
+Cypress CCGx Type-C controller. This is unrelated to the disconnects (it does not occur on
+7.0.9, which drops anyway) but the probe is broken either way, and DP alt mode is negotiated
+by the controller's own firmware.
+
+### The kernel pin (provisional)
+
+`boot.kernelPackages` is pinned to zen 7.0.9 via the `nixpkgs-kernel` flake input rather than
+tracking `pkgs.linuxPackages_zen`. **This pin did not fix the disconnects and is retained only
+so the cable change can be tested against one variable at a time — it should be reverted once
+port `3-1` is confirmed stable.** Mechanics, for whoever unpins:
+
+- 7.1.x fails to initialise the GPU's Cypress CCGx Type-C controller
+  (`ucsi_ccg 0-0008: error -ETIMEDOUT: PPM init failed`), which 7.0.9 does not log.
+- Only the **kernel derivation** is taken from the pinned input; it is then wrapped in
+  `pkgs.linuxPackagesFor` so the surrounding module set (and therefore the NVIDIA driver,
+  which `modules/graphics` derives from `config.boot.kernelPackages.nvidiaPackages.stable`)
+  still comes from 26.05 — currently `nvidia-kernel-modules-595.71.05-7.0.9`. Taking the
+  pinned `linuxPackages_zen` wholesale instead pulls in its 580.x driver, which lacks the
+  `.mod` attribute the 26.05 nvidia module expects, and fails to evaluate.
+- The pinned tree is `import`ed with `config.allowUnfree = true` rather than read from
+  `legacyPackages`: out-of-tree modules build with the *kernel's* stdenv, so the pinned
+  tree's `check-meta` is what vets the unfree NVIDIA derivation, and a bare `legacyPackages`
+  carries a default config that rejects it.
+
+To unpin: delete the `boot.kernelPackages` override here — `my.profiles.gaming-station` already
+sets `pkgs.linuxPackages_zen` as an `mkDefault`, which this host overrides — then drop the
+`nixpkgs-kernel` input from `flake.nix` and rebuild. Keep the `blacklistedKernelModules`
+entries — they only matter on 7.1.x.
+
 - NTFS filesystem support enabled for accessing Windows drives
 - Timezone: Europe/Stockholm
 - Colemak keyboard layout

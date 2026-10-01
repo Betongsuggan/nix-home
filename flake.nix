@@ -5,6 +5,16 @@
     nixpkgs.url = "nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "nixpkgs/nixos-unstable";
 
+    # Kernel pin for island-stationary. Its keyboard and mouse receivers sit in
+    # the monitor's USB hub, which reaches the machine only through the RTX
+    # 2070's USB-C (VirtualLink) port. Zen 7.1.x intermittently drops the
+    # Logitech receiver behind that hub (7 disconnects in ~40min, vs zero over
+    # 2.5 months on 7.0.9), and also fails to init the GPU's Cypress Type-C
+    # controller: "ucsi_ccg 0-0008: error -ETIMEDOUT: PPM init failed". This rev
+    # is the last one that ran the host cleanly. Re-test on zen 7.2 and drop
+    # this input if the receiver stays connected.
+    nixpkgs-kernel.url = "github:NixOS/nixpkgs/687f05a9184cad4eaf905c48b63649e3a86f5433";
+
     nur = {
       url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";

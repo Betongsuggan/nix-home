@@ -1,7 +1,5 @@
 {
-  config,
   pkgs,
-  lib,
   inputs,
   ...
 }:
@@ -13,6 +11,27 @@
   my.profiles.gaming-station.enable = true;
 
   boot = {
+    # Overrides the profile's zen kernel, pinning it to 7.0.9 — zen 7.1.x drops
+    # the USB HID receivers sitting in the monitor's hub behind the GPU's USB-C
+    # port. See the nixpkgs-kernel comment in flake.nix.
+    #
+    # Only the kernel derivation comes from the pinned input; the module set
+    # around it is built by the current nixpkgs via linuxPackagesFor, so the
+    # NVIDIA driver stays on 26.05's 595.x. Taking the pinned
+    # `linuxPackages_zen` wholesale would drag in its 580.x driver, which lacks
+    # the `.mod` attribute the 26.05 nvidia module expects.
+    #
+    # The pinned tree is `import`ed rather than read from `legacyPackages`
+    # because out-of-tree modules are built with the *kernel's* stdenv, so its
+    # check-meta is what vets the unfree NVIDIA derivation — a bare
+    # `legacyPackages` carries a default config and would reject it.
+    kernelPackages = pkgs.linuxPackagesFor (
+      (import inputs.nixpkgs-kernel {
+        inherit (pkgs.stdenv.hostPlatform) system;
+        config.allowUnfree = true;
+      }).linuxPackages_zen.kernel
+    );
+
     initrd.availableKernelModules = [
       "nvme"
       "xhci_pci"
@@ -28,6 +47,15 @@
       "nvidia_modeset"
       "nvidia_uvm"
       "nvidia_drm"
+    ];
+
+    blacklistedKernelModules = [
+      # The RTX 2070's Cypress CCGx Type-C controller fails PPM init, leaving
+      # the GPU's USB-C port half-managed. Nothing on a desktop needs Type-C
+      # port management, and DP alt mode is negotiated by the controller's own
+      # firmware — the panel already works today with this driver timing out.
+      "ucsi_ccg"
+      "typec_ucsi"
     ];
 
     kernelParams = [
