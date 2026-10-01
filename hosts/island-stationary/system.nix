@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   inputs,
   ...
@@ -96,6 +97,18 @@
   programs.steam.gamescopeSession.enable = true;
 
   my.graphics.nvidia = true;
+  # 595.84 fixed delayed wakeups of threads waiting on the same Vulkan
+  # semaphore, which made vkd3d-proton games stutter; 26.05 is still on
+  # 595.71.05. Built by 26.05's driver expression against the pinned kernel.
+  # Drop once 26.05's nvidiaPackages.stable reaches this.
+  hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.mkDriver {
+    version = "595.104.02";
+    sha256_64bit = "sha256-5CHCAuTHn1jDx/MWG75xRU67PYiTb4ggWg4yfNBMWco=";
+    sha256_aarch64 = "sha256-PafStmwNMufeDp3VtpTGGCoW+53Gor/mieO1m1pI7gI=";
+    openSha256 = "sha256-FWk5ra2yjz8VAxAA8GXrSoeBj/XC1BKvsKsBKR09joE=";
+    settingsSha256 = "sha256-4Kxro6tvI5aX4nu2RspgyBsW+Jq3/VYjSAS5UGdzTCU=";
+    persistencedSha256 = "sha256-JsMLPqJuZwAtHngsQODMsmgO7F2tVkQ2arc7fYa2bwo=";
+  };
 
   # Tailnet membership. Start in `bootstrap` for the first pass; run
   # `home-network-bootstrap` on the host to join, follow the steps in

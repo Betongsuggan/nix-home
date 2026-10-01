@@ -8,7 +8,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 - Two-user setup: `betongsuggan` (development/daily use) and `gamer` (dedicated gaming)
 - Gamer user auto-logs in on TTY1 and launches Hyprland automatically via `start-hyprland` (the upstream watchdog: relaunches Hyprland in safe mode after a crash rather than leaving a bare TTY)
 - Hyprland compositor on both users; the single output and its mode are pinned in `session.nix`, shared by both users (see Notes)
-- NVIDIA RTX 2070 GPU with proprietary drivers
+- NVIDIA RTX 2070 GPU with proprietary drivers, overridden to 595.104.02 (see Notes)
 - Console-mode with Gamescope session for Steam Deck-like experience
 - Steam Big Picture auto-start on gamer session with SteamOS 3 features
 - PS5 DualSense controller support with rumble and MangoHud toggle
@@ -147,6 +147,15 @@ To unpin: delete the `boot.kernelPackages` override here — `my.profiles.gaming
 sets `pkgs.linuxPackages_zen` as an `mkDefault`, which this host overrides — then drop the
 `nixpkgs-kernel` input from `flake.nix` and rebuild. Keep the `blacklistedKernelModules`
 entries — they only matter on 7.1.x.
+
+### The NVIDIA driver override
+
+26.05 ships 595.71.05, which has a Vulkan bug that 595.84 fixed: threads waiting on the same
+semaphore wake late, so apps "stutter or experience reduced performance". vkd3d-proton (DX12
+games, e.g. WoW) waits on semaphores heavily, so `system.nix` builds 595.104.02 (the current
+production release) with 26.05's own `nvidiaPackages.mkDriver`, against the pinned kernel. The
+hashes come from nixpkgs master. Drop the override once 26.05's `nvidiaPackages.stable`
+catches up.
 
 - NTFS filesystem support enabled for accessing Windows drives
 - Timezone: Europe/Stockholm
