@@ -1,6 +1,7 @@
 { pkgs, inputs, ... }:
 
 {
+  imports = [ ./session.nix ];
 
   home.stateVersion = "25.05";
 

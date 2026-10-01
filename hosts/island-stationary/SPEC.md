@@ -7,7 +7,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 - `my.profiles.gaming-station` (implies workstation): autologin `gamer` session, zen kernel and gaming tuning, gamemode, secure boot, DualSense wake, restic target for controller (see `modules/profiles/SPEC.md`); this file only keeps what is specific to this machine
 - Two-user setup: `betongsuggan` (development/daily use) and `gamer` (dedicated gaming)
 - Gamer user auto-logs in on TTY1 and launches Hyprland automatically via `start-hyprland` (the upstream watchdog: relaunches Hyprland in safe mode after a crash rather than leaving a bare TTY)
-- Hyprland compositor on both users with auto-detected monitors
+- Hyprland compositor on both users; the single output and its mode are pinned in `session.nix`, shared by both users (see Notes)
 - NVIDIA RTX 2070 GPU with proprietary drivers
 - Console-mode with Gamescope session for Steam Deck-like experience
 - Steam Big Picture auto-start on gamer session with SteamOS 3 features
@@ -59,12 +59,29 @@ Prerequisite: the host must be onboarded to the tailnet (it is — `home-network
 - NVIDIA RTX 2070 GPU instead of AMD RDNA4 (no AMD GPU env vars, no undervolting, no mesa unstable overlay)
 - No game streaming server (Sunshine)
 - No emulation server (Syncthing/WireGuard)
-- Auto-detect monitors instead of hardcoded resolution/refresh rates
+- One pinned ultrawide output instead of desktop's two-screen HDR/VRR layout
 
 ## Notes
 
 - Hardware: AMD Ryzen CPU with NVIDIA RTX 2070 GPU
 - Kernel: Zen kernel with `mitigations=off` and `preempt=full` for maximum gaming performance
+
+### The monitor mode is pinned, because the EDID lies
+
+The BenQ EX3501R is a 3440x1440 ultrawide, but its EDID also advertises 3840x2160 (plus
+several other) modes the panel cannot actually display. Unpinned, the window-manager
+module's catch-all rule (`,highres,auto,1`) picks the largest *advertised* mode and the
+session comes up at 3840x2160@59.94.
+
+`hosts/island-stationary/session.nix` pins the real panel mode (3440x1440@99.982, the
+monitor's 100 Hz mode) at scale 1, and is imported by both `user-betongsuggan.nix` and
+`user-gamer.nix` so the two sessions cannot drift apart — the same split desktop uses.
+
+It is keyed by `desc:` rather than a connector name. The panel reaches the GPU through the
+RTX 2070's USB-C (VirtualLink) port, which the kernel enumerates as the unnamed connector
+`Unknown-2` (`/sys/class/drm/card1-Unknown-2`) — a name tied to probe order that carries no
+meaning, whereas the description is the panel's own identity. Hyprland matches a `desc:`
+prefix against the `description` field of `hyprctl monitors`.
 
 ### Peripheral topology and the kernel pin
 
