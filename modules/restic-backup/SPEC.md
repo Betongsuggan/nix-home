@@ -113,6 +113,7 @@ restic \
 
 ## Notes
 
+- **Sleeping targets are woken.** When this host is a target's WoL relay (`hosts.<target>.wol.relay` in `lib/default.nix`, with a real MAC), each run first sends a magic packet and waits up to 2 minutes for the target's SSH port (`backupPrepareCommand`, which runs before the repo is initialised). A target that stays down fails the run. The target may still suspend during a long run if its idle detection doesn't count the SFTP session as activity.
 - **Host keys are pinned.** Each target's host key defaults to `lib.hosts.<target>.ssh.host`, and SFTP runs with `StrictHostKeyChecking=yes` against a store-generated known_hosts file, so a changed or spoofed receiver is refused. Only targets with no key in the registry (and no explicit `hostKey`) fall back to trust-on-first-use in `/var/lib/restic/known_hosts`.
 - **Initial snapshot size.** `/var/lib/emulation` is potentially many GB. The first push to `island-stationary.ts.rydback.net` over residential upload is slow; consider seeding island-stationary over LAN on a visit, then letting incremental snapshots take over.
 - **One password, multiple repos.** The single `passwordFile` is reused across every target — each repo is initialised with the same password. Restic's threat model treats each repo independently, so this is fine; the only operational cost is that rotating the password means rotating every repo.

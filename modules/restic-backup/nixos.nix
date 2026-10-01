@@ -10,6 +10,30 @@ with lib;
 
 let
   cfg = config.my.restic-backup;
+  selfLib = inputs.self.lib;
+
+  # A target this host wakes (its WoL relay in the registry) is woken before
+  # each run, and the run waits for its SSH port
+  wakeCommand =
+    name: target:
+    let
+      wol = selfLib.hosts.${name}.wol or null;
+      port = "/dev/tcp/${target.sftpHost}/22";
+    in
+    if wol != null && wol.relay == config.my.common.host && wol.mac != "00:00:00:00:00:00" then
+      ''
+        up() { ${pkgs.coreutils}/bin/timeout 3 ${pkgs.bash}/bin/bash -c "< ${port}" 2>/dev/null; }
+        up && exit 0
+        ${pkgs.wakeonlan}/bin/wakeonlan ${wol.mac}
+        for _ in $(${pkgs.coreutils}/bin/seq 60); do
+          up && exit 0
+          ${pkgs.coreutils}/bin/sleep 2
+        done
+        echo "${name} did not wake up" >&2
+        exit 1
+      ''
+    else
+      null;
 in
 {
   options.my.restic-backup = {
@@ -143,6 +167,7 @@ in
         repository = "sftp:${target.sftpUser}@${target.sftpHost}:${target.sftpPath}";
         passwordFile = cfg.passwordFile;
         initialize = true;
+        backupPrepareCommand = wakeCommand name target;
         extraBackupArgs = concatMap (p: [
           "--exclude"
           p
