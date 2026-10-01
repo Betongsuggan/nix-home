@@ -493,7 +493,7 @@ in
           rounding = config.my.theming.cornerRadius;
         };
 
-        bind = keybindsWhere (e: !(e.repeat or false));
+        bind = keybindsWhere (e: !(e.repeat or false) && !(e.bypassInhibit or false));
         binds = {
           movefocus_cycles_fullscreen = true;
           # Don't hop focus to the adjacent monitor at the strip end — niri
@@ -501,6 +501,7 @@ in
           window_direction_monitor_fallback = false;
         };
         binde = keybindsWhere (e: e.repeat or false);
+        bindp = keybindsWhere (e: e.bypassInhibit or false);
 
         # Lid switch bindings: external-display-aware lock/panel handling
         bindl = lib.optionals config.my.window-manager.hyprland.lockscreen.enable [

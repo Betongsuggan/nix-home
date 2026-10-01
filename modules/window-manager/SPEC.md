@@ -52,11 +52,12 @@ my.window-manager = {
 
 ## Keymap
 
-One keymap, `my.window-manager.keybinds` (internal, defined in `home.nix`), rendered by every backend in its own syntax: Hyprland `bind`/`binde`, niri `binds`, and i3/sway `keybindings` on top of their defaults. An entry is either a command run the same way everywhere (`spawn`) or a native action per compositor; a compositor without one leaves the chord unbound, as does a launcher menu the launcher backend lacks.
+One keymap, `my.window-manager.keybinds` (internal, defined in `home.nix`), rendered by every backend in its own syntax: Hyprland `bind`/`binde`/`bindp`, niri `binds`, and i3/sway `keybindings` on top of their defaults. An entry is either a command run the same way everywhere (`spawn`) or a native action per compositor; a compositor without one leaves the chord unbound, as does a launcher menu the launcher backend lacks. `bypassInhibit = true` keeps a bind working while an app inhibits shortcuts, as fullscreen games do (Hyprland `bindp`, niri `allow-inhibiting=false`; ignored by i3/sway).
 
 | Keys | Action |
 |---|---|
 | Mod+Return / Mod+Shift+Q | terminal / close window |
+| Mod+Ctrl+Shift+Q | force-kill the focused window (Hyprland `forcekillactive`, SIGKILL; works while a game inhibits shortcuts) |
 | Mod+H/L, Mod+K/J | focus column left/right, workspace up/down |
 | Mod+Shift+H/L, Mod+Shift+K/J | move column left/right, to workspace up/down |
 | Mod+Ctrl+K/J, Mod+Ctrl+Shift+K/J | focus / move window within the column |

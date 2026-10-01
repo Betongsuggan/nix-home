@@ -343,21 +343,23 @@ in
             how = wmLib.entryFor "niri" e;
           in
           optionalAttrs (how != null) {
-            ${chord}.action =
-              if how ? spawn then
-                {
-                  spawn =
-                    if isList how.spawn then
-                      how.spawn
-                    else
-                      [
-                        "sh"
-                        "-c"
+            ${chord} = optionalAttrs (e.bypassInhibit or false) { allow-inhibiting = false; } // {
+              action =
+                if how ? spawn then
+                  {
+                    spawn =
+                      if isList how.spawn then
                         how.spawn
-                      ];
-                }
-              else
-                how.native;
+                      else
+                        [
+                          "sh"
+                          "-c"
+                          how.spawn
+                        ];
+                  }
+                else
+                  how.native;
+            };
           }
         ) config.my.window-manager.keybinds;
 

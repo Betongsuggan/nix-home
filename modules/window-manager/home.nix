@@ -326,8 +326,10 @@ in
         the same way everywhere, or native actions per compositor
         (`{ hyprland = "dispatcher, args"; niri = { <action> = ...; }; sway =
         "command"; i3 = "command"; }`); a compositor without an entry leaves
-        the chord unbound. `repeat = true` repeats while held; `spawn = null`
-        (e.g. a launcher menu the backend lacks) is skipped.
+        the chord unbound. `repeat = true` repeats while held;
+        `bypassInhibit = true` works while an app inhibits shortcuts (a
+        fullscreen game; Hyprland and niri); `spawn = null` (e.g. a launcher
+        menu the backend lacks) is skipped.
       '';
     };
 
@@ -380,6 +382,12 @@ in
         niri.close-window = { };
         sway = "kill";
         i3 = "kill";
+      };
+      # SIGKILL for a hung client, which ignores the close request above; a
+      # crashed fullscreen game may still be inhibiting shortcuts
+      "Mod+Ctrl+Shift+Q" = {
+        hyprland = "forcekillactive,";
+        bypassInhibit = true;
       };
 
       # Lock directly (Mod+Ctrl+X goes through power-control)
