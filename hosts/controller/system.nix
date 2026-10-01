@@ -382,11 +382,9 @@ in
       desktop = {
         sftpUser = "restic-controller";
       };
-      # Off until island-stationary is on the tailnet (it can't be reached
-      # yet, so every run failed)
-      # island-stationary = {
-      #   sftpUser = "restic-controller";
-      # };
+      island-stationary = {
+        sftpUser = "restic-controller";
+      };
     };
   };
 

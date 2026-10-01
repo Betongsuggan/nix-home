@@ -69,10 +69,9 @@ let
 
     island-stationary = {
       addresses = [ "island-stationary" ];
-      # FIXME: placeholder — real MAC from `ip -br link` on island-stationary
-      # (the wired NIC). Woken from island-pi: `ssh island-pi wake-island-stationary`
+      # The wired NIC (eth0). Woken from island-pi: `ssh island-pi wake-island-stationary`
       wol = {
-        mac = "00:00:00:00:00:00";
+        mac = "e0:d5:5e:2b:06:d6";
         relay = "island-pi";
       };
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFadvK7ZRpD4sA+aHutNTz9c6AP8KWWjcSfbKRDmI+Ow root@island-stationary";
