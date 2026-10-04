@@ -27,6 +27,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and NVIDIA RTX 2070 G
 - Bluetooth with wake support for DualSense controller
 - Secure boot via Lanzaboote
 - Firewall with ports for LocalSend
+- Moonlight client (`my.game-streaming.client` on `gamer`): streams the desktop's Sunshine session at 3440x1440@60 (the panel's resolution; 60 rather than 100 fps to keep the WAN bitrate manageable). Pairing is a one-time manual step: wake the desktop with `ssh controller wake-desktop`, add `desktop.ts.rydback.net` in Moonlight, then approve the PIN at `https://desktop.ts.rydback.net:47990`. See the network note below
 - Tailnet membership via `home-network` module, `onboarded` mode. Joins under its real hostname with the sops-decrypted preauth key from `nix-vault/secrets/island.yaml`. Off the home LAN, so `controller` is reached only over the tailnet — the user SSH `matchBlock` targets `controller.ts.rydback.net` and offers both `~/.ssh/id_rsa` (sops-provisioned) and the FIDO resident key from the onboarding pass.
 - Restic backup target: receives snapshots from controller into `/var/lib/restic-repos/controller/repo` via chrooted SFTP user `restic-controller` (key sourced from `lib/default.nix`). Off-site copy in the interim backup topology — requires island-stationary to be onboarded to the tailnet for controller to reach it. See `modules/restic-target/SPEC.md`.
 - Wake-on-LAN: the wired NIC has `wakeOnLan.enable = true` so the always-on `island-pi` host at the same location can wake this machine remotely (`ssh island-pi wake-island-stationary`, then ssh island-stationary directly). The MAC is registered as `wol.mac` in `lib/default.nix`; WoL must also be enabled in BIOS. The NIC is `eth0` (Realtek r8169), which only wakes the machine when it is cabled: the host otherwise runs on Wi-Fi.
@@ -57,7 +58,7 @@ Prerequisite: the host must be onboarded to the tailnet (it is — `home-network
 ## Differences from desktop
 
 - NVIDIA RTX 2070 GPU instead of AMD RDNA4 (no AMD GPU env vars, no undervolting, no mesa unstable overlay)
-- No game streaming server (Sunshine)
+- No game streaming server (Sunshine); this host is a Moonlight *client* of the desktop's
 - No emulation server (Syncthing/WireGuard)
 - One pinned ultrawide output instead of desktop's two-screen HDR/VRR layout
 
@@ -65,6 +66,7 @@ Prerequisite: the host must be onboarded to the tailnet (it is — `home-network
 
 - Hardware: AMD Ryzen CPU with NVIDIA RTX 2070 GPU
 - Kernel: Zen kernel with `mitigations=off` and `preempt=full` for maximum gaming performance
+- Streaming path: desktop ↔ island-stationary is DERP-relayed on the tailnet (measured 2026-10-04: `tailscale ping island-stationary` from desktop goes via `DERP(controller)`; desktop sits behind a hard NAT with no port mapping). `hosts/desktop/SPEC.md` warns DERP is too slow for video, so measure with Moonlight's stats overlay (Ctrl+Alt+Shift+S) first. If jitter drops show up, a UDP 41641 forward on *either* side gives Tailscale a direct path: at home through both NAT layers to the desktop (see `hosts/desktop/SPEC.md`), or on the summer-place router to this host. Lowering `my.game-streaming.client.bitrate` (e.g. 40000) is the fallback
 
 ### The monitor mode is pinned, because the EDID lies
 

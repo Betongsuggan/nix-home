@@ -20,6 +20,19 @@
 
   my.localsend.enable = true;
 
+  # Moonlight client for the desktop's Sunshine session. The panel is
+  # 3440x1440@100; 60 fps keeps the WAN bitrate manageable (the desktop is
+  # reached over the tailnet, currently DERP-relayed). Pair once via the
+  # Sunshine web UI, see modules/game-streaming/SPEC.md.
+  my.game-streaming.client = {
+    enable = true;
+    resolution = {
+      width = 3440;
+      height = 1440;
+    };
+    fps = 60;
+  };
+
   my.controller = {
     enable = true;
     type = "ps5";
