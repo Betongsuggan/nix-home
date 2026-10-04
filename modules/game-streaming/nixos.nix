@@ -2,6 +2,7 @@
   pkgs,
   config,
   lib,
+  inputs,
   ...
 }:
 with lib;
@@ -233,6 +234,13 @@ in
         # from any tailnet device.
         origin_pin_allowed = "wan";
         origin_web_ui_allowed = "wan";
+        # The web UI's CSRF check only trusts localhost origins, so pairing
+        # (POST /api/pin) from the browser at the tailnet address fails with
+        # "Pairing failed" even with the right PIN. Allow this host's tailnet
+        # origin. The web UI listens on the base port + 1; the base port is
+        # upstream's default 47989 (reading `settings.port` from inside
+        # `settings` would recurse).
+        csrf_allowed_origins = "https://${inputs.self.lib.tailnet.fqdn config.my.common.host}:47990";
         # Never ask the router to forward ports to us
         upnp = "disabled";
       };
