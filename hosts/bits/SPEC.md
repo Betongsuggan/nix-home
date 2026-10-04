@@ -17,6 +17,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - Offline media for travel: `media` (mpv + yt-dlp) for DRM-free sources. **Waydroid is currently disabled** (see below); when it was on it provided Netflix's Android app for offline downloads — SD only, with Disney+/HBO Max hard-blocked (see `modules/waydroid/SPEC.md`)
 - Bluetooth and printer support; the laptop profile drops `cups-browsed` so `cupsd` stays socket-activated instead of running from boot
 - LocalSend for local file sharing (with CLI)
+- Moonlight client (`my.game-streaming.client`, 1920x1200@60 to match the panel, otherwise module defaults: 100 Mbps, HDR, auto codec/decoder) for streaming the desktop's Sunshine session over the tailnet. Pairing is a one-time manual step: wake the desktop with `ssh controller wake-desktop`, add `desktop.ts.rydback.net` in Moonlight, then approve the PIN at `https://desktop.ts.rydback.net:47990`
 - Taildrop (`my.taildrop`, on by default for the admin user): Mod+Shift+S sends the clipboard to any tailnet device, phones included; received files land in `~/Downloads/taildrop` and received clipboards go straight to the clipboard. The admin user is the host's tailscale operator
 - 3D printing toolchain: PrusaSlicer, OpenSCAD (dev snapshot), FreeCAD (`my.printing-3d` with `cad.enable`, see `modules/printing-3d/SPEC.md`)
 - SMB network share browsing in Thunar (GVFS + Avahi/mDNS discovery)

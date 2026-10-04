@@ -20,6 +20,18 @@
   my.chromium.widevine = false;
   my.firefox.enable = true;
   my.media.enable = true;
+  # Moonlight client for the desktop's Sunshine session (pair once via the
+  # Sunshine web UI, see modules/game-streaming/SPEC.md)
+  my.game-streaming.client = {
+    enable = true;
+    # The panel is 1920x1200@60: a 120 fps request makes Moonlight disable
+    # frame pacing ("target 60 Hz with 120 FPS stream")
+    resolution = {
+      width = 1920;
+      height = 1200;
+    };
+    fps = 60;
+  };
   my.localsend = {
     enable = true;
     cli = true;
