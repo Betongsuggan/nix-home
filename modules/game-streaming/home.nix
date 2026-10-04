@@ -27,21 +27,39 @@ let
     "software" = 2;
   };
 
-  # Generate Moonlight config file content (Qt INI format)
-  moonlightConfig = ''
-    [General]
-    SER_WIDTH=${toString cfg.client.resolution.width}
-    SER_HEIGHT=${toString cfg.client.resolution.height}
-    SER_FPS=${toString cfg.client.fps}
-    SER_BITRATE=${toString cfg.client.bitrate}
-    SER_VIDEOCFG=${toString (codecValue.${cfg.client.codec})}
-    SER_VSYNC=${if cfg.client.vsync then "true" else "false"}
-    SER_HDR=${if cfg.client.hdr then "true" else "false"}
-    SER_VIDEODEC=${toString (decoderValue.${cfg.client.decoder})}
-    SER_FRAMEPACING=${if cfg.client.framePacing then "true" else "false"}
-    SER_AUTOADJUSTBITRATE=${if cfg.client.autoBitrate then "true" else "false"}
-    SER_SHOWPERFOVERLAY=${if cfg.client.showPerfOverlay then "true" else "false"}
-  '';
+  # Moonlight's settings keys (StreamingPreferences in moonlight-qt). The
+  # names are the lower-case ones Moonlight itself writes; it ignores
+  # anything else in the section.
+  moonlightSettings = {
+    width = cfg.client.resolution.width;
+    height = cfg.client.resolution.height;
+    fps = cfg.client.fps;
+    bitrate = cfg.client.bitrate;
+    videocfg = codecValue.${cfg.client.codec};
+    vsync = cfg.client.vsync;
+    hdr = cfg.client.hdr;
+    videodec = decoderValue.${cfg.client.decoder};
+    framepacing = cfg.client.framePacing;
+    showperfoverlay = cfg.client.showPerfOverlay;
+  };
+
+  # Earlier versions of this module wrote these names, which Moonlight never
+  # read; drop them from existing configs.
+  staleKeys = [
+    "SER_WIDTH"
+    "SER_HEIGHT"
+    "SER_FPS"
+    "SER_BITRATE"
+    "SER_VIDEOCFG"
+    "SER_VSYNC"
+    "SER_HDR"
+    "SER_VIDEODEC"
+    "SER_FRAMEPACING"
+    "SER_AUTOADJUSTBITRATE"
+    "SER_SHOWPERFOVERLAY"
+  ];
+
+  moonlightConfig = lib.generators.toINI { } { General = moonlightSettings; };
 
 in
 {
@@ -119,12 +137,6 @@ in
         description = "Enable frame pacing for smoother playback";
       };
 
-      autoBitrate = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Auto-adjust bitrate based on network (disable for consistent LAN quality)";
-      };
-
       showPerfOverlay = mkOption {
         type = types.bool;
         default = false;
@@ -143,6 +155,9 @@ in
       conf="${config.xdg.configHome}/Moonlight Game Streaming Project/Moonlight.conf"
       run mkdir -p "$(dirname "$conf")"
       if [ -L "$conf" ]; then run rm "$conf"; fi
+      for key in ${toString staleKeys}; do
+        run ${pkgs.crudini}/bin/crudini --ini-options=nospace --del "$conf" General "$key" 2>/dev/null || true
+      done
       run ${pkgs.crudini}/bin/crudini --ini-options=nospace --merge "$conf" \
         < ${pkgs.writeText "moonlight-general.conf" moonlightConfig}
     '';

@@ -43,7 +43,6 @@ my.game-streaming.client.enable = true;
 | client.hdr | bool | true | Enable HDR streaming when available |
 | client.decoder | enum | "auto" | Video decoder: "auto", "hardware", "software" |
 | client.framePacing | bool | true | Enable frame pacing for smoother playback |
-| client.autoBitrate | bool | false | Auto-adjust bitrate based on network (disable for consistent LAN quality) |
 | client.showPerfOverlay | bool | false | Show performance overlay by default |
 
 ## Notes
@@ -57,5 +56,5 @@ my.game-streaming.client.enable = true;
 - Because of that, the firewall is what keeps Sunshine private: the upstream `openFirewall` is off and the streaming/web UI ports are accepted only from `server.allowedNetworks` (RFC1918, link-local, ULA and the Tailscale ranges by default). UPnP is explicitly disabled so the router is never asked to forward ports.
 - The `uinput` kernel module is loaded automatically for virtual input device support.
 - After enabling the server, pair clients by visiting the Sunshine web UI at `https://localhost:47990` (or `https://<host>.ts.rydback.net:47990` over tailnet). The tailnet origin is added to `csrf_allowed_origins` (derived from the registry FQDN): without it the web UI's CSRF check rejects the PIN form with "Pairing failed" even when the PIN is right (visible in the journal as `CSRF protection blocked request from origin`). Other origins (LAN IP, plain hostname) are still rejected; use the tailnet name or an SSH tunnel to localhost.
-- The client settings are merged into the `[General]` section of `~/.config/Moonlight Game Streaming Project/Moonlight.conf` on every Home Manager activation. The file stays writable, so pairing data and other settings Moonlight saves are kept; only the declared keys are overwritten.
+- The client settings are merged into the `[General]` section of `~/.config/Moonlight Game Streaming Project/Moonlight.conf` on every Home Manager activation. The file stays writable, so pairing data and other settings Moonlight saves are kept; only the declared keys are overwritten. The keys are Moonlight's own lower-case names (`width`, `height`, `fps`, `bitrate`, `videocfg`, `videodec`, `vsync`, `hdr`, `framepacing`, `showperfoverlay`); an earlier version wrote `SER_*` names that Moonlight ignored (so every client silently streamed with Moonlight's own saved resolution), and the activation deletes those leftovers.
 - HDR streaming requires HEVC or AV1 codec support on both host and client.
