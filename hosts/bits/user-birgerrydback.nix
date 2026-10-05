@@ -19,6 +19,8 @@
   # Firefox handles DRM streaming here; skip the second (Widevine) Chromium build
   my.chromium.widevine = false;
   my.firefox.enable = true;
+  # No games module on this machine, so Discord comes from here
+  my.communication.discord = true;
   my.media.enable = true;
   # Moonlight client for the desktop's Sunshine session (pair once via the
   # Sunshine web UI, see modules/game-streaming/SPEC.md)

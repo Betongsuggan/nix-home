@@ -6,7 +6,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 
 - Hyprland compositor using the built-in scrolling layout configured to mimic niri's scrollable tiling (see `modules/window-manager/SPEC.md` for the niri-equivalent keybinds), with Vicinae launcher (wifi and bluetooth extensions; monitors through monitormenu)
 - Development tooling with direnv, git, and SSH agent
-- Firefox browser (home-manager managed, `my.firefox.enable`) with Slack and other communication apps
+- Firefox browser (home-manager managed, `my.firefox.enable`) with Slack and Discord (`my.communication.discord`, since the games module that normally brings Discord isn't on this machine)
 - Alacritty terminal with Bash shell and Starship prompt
 - Disk encryption enabled for security
 - Fingerprint reader (Goodix `27c6:658c`, libfprint's built-in driver: `driver = "generic"`): fingerprint or password at the same prompt for login, sudo and polkit; hyprlock reads it natively
