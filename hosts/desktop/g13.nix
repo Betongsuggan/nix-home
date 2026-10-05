@@ -28,11 +28,14 @@ let
   };
 in
 [
-  # Thumbstick -> WASD
-  (stick 1 (-40) "KEY_W") # Up
-  (stick 1 40 "KEY_S") # Down
-  (stick 0 (-40) "KEY_A") # Left
-  (stick 0 40 "KEY_D") # Right
+  # Thumbstick -> the letters w/a/r/s: what the physical WASD keys type under
+  # Colemak, which is how the games' movement binds were recorded. Output
+  # symbols are literal here because Hyprland reads input-remapper's virtual
+  # keyboard with a US layout (modules/window-manager/hyprland).
+  (stick 1 (-40) "KEY_W") # Up    -> w
+  (stick 1 40 "KEY_R") # Down     -> r
+  (stick 0 (-40) "KEY_A") # Left  -> a
+  (stick 0 40 "KEY_S") # Right    -> s
 
   # G-keys
   (key 656 "KEY_1") # G1
