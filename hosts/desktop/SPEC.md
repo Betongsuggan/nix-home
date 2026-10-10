@@ -26,6 +26,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - BoilR for store-launcher (Heroic/Lutris) Steam library integration; Steam ROM Manager is installed but unused (headless CLI hangs — the direct writer replaces it)
 - Emulation mounts: controller's `emulation-roms` + `emulation-bios` shares auto-mount for both `betongsuggan` and `gamer` at `~/emulation/{roms,bios}`
 - Emulation client (gamer user): Syncthing save sync to controller (RetroArch + Switch saves under `~/emulation/saves`) and the `mount-emulation-roms` helper, both targeting controller's tailnet FQDN (controller is tailnet-only; its LAN IP does not serve Samba/Syncthing). gamer@desktop's Syncthing device ID is registered in `lib/default.nix`, which is what lets controller accept the peer.
+- Philips Hue screen sync (gamer user, `my.hue-sync`): HyperHDR captures DP-2 through the Hyprland portal and streams the screen edges to the Hue bridge's entertainment area. Bridge keys from the vault (`desktop.yaml` → `/run/secrets/hue-{app,client}-key`, owner `gamer`); bridge address, area id and the per-channel screen regions are declared in `user-gamer.nix`. First start needs one pick in the share dialog (DP-2, "allow restore token"), after that it is silent. See `modules/hue-sync/SPEC.md`.
 - Zen kernel optimized for desktop/gaming with ryzen-smu monitoring
 - ZRAM swap (zstd, 50% memory) for memory efficiency
 - CPU governor set to performance mode with undervolting enabled

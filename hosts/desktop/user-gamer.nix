@@ -46,6 +46,26 @@
 
   my.localsend.enable = true;
 
+  # Philips Hue lights follow the screen edges (HyperHDR over the Hue
+  # Entertainment API). The bridge keys come from the vault (desktop.yaml,
+  # hue/app-key + hue/client-key, owner gamer, declared in system.nix);
+  # the area id and bridge address are plain config. Setup:
+  # modules/hue-sync/SPEC.md.
+  my.hue-sync = {
+    enable = true;
+    bridge = {
+      address = "192.168.50.164"; # bridge ecb5fa17771a (ecb5fa17771a.local)
+      appKeyFile = "/run/secrets/hue-app-key";
+      clientKeyFile = "/run/secrets/hue-client-key";
+    };
+    entertainmentArea = "FIXME-entertainment-area-id"; # hue-sync-setup areas
+    # One region per channel of the area, in channel order
+    channels = [
+      "left"
+      "right"
+    ];
+  };
+
   my.controller = {
     enable = true;
     type = "ps5";

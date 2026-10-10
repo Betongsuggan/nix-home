@@ -122,14 +122,29 @@
   # existence so the host still evaluates before common.yaml lands in the
   # vault (sops-nix asserts the sopsFile path at eval time); until then
   # switch-apply-shortcuts just warns and skips artwork.
-  sops.secrets = lib.optionalAttrs (builtins.pathExists "${inputs.nix-vault}/secrets/common.yaml") {
-    "steamgriddb-api-key" = {
-      sopsFile = "${inputs.nix-vault}/secrets/common.yaml";
-      key = "accounts/steamgriddb/apikey";
-      owner = "gamer";
-      mode = "0400";
+  sops.secrets =
+    lib.optionalAttrs (builtins.pathExists "${inputs.nix-vault}/secrets/common.yaml") {
+      "steamgriddb-api-key" = {
+        sopsFile = "${inputs.nix-vault}/secrets/common.yaml";
+        key = "accounts/steamgriddb/apikey";
+        owner = "gamer";
+        mode = "0400";
+      };
+    }
+    # Hue bridge registration for the gamer session's screen sync
+    # (my.hue-sync in user-gamer.nix): `hue-sync-setup pair` prints both.
+    // {
+      "hue-app-key" = {
+        key = "hue/app-key";
+        owner = "gamer";
+        mode = "0400";
+      };
+      "hue-client-key" = {
+        key = "hue/client-key";
+        owner = "gamer";
+        mode = "0400";
+      };
     };
-  };
 
   my.home-network = {
     enable = true;
