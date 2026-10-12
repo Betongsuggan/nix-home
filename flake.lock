@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790361832,
-        "narHash": "sha256-EBy3za3hayBVKM9dCb0u+8rGArRF11oH7ertttsUVNs=",
+        "lastModified": 1791814415,
+        "narHash": "sha256-0hd4L2ncTwY9/S1NNT4xpFOA8zIgr9fuaKDROJWrqaE=",
         "owner": "Betongsuggan",
         "repo": "audiomenu",
-        "rev": "4865558ae8ea63239bd2b6e423008a807c29a6a8",
+        "rev": "737d1d57ebfcd01bec32141b46620060d05f670e",
         "type": "github"
       },
       "original": {

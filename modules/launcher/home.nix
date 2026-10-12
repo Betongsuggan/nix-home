@@ -12,6 +12,19 @@ let
 
   args = additionalArgs: concatStringsSep " " additionalArgs;
 
+  # audiomenu's last entry opens wiremix, a full PipeWire mixer
+  audiomenu =
+    mode: launcher: additionalArgs:
+    escapeShellArgs [
+      (getExe pkgs.audiomenu)
+      mode
+      "--launcher"
+      launcher
+      "--mixer"
+      "${config.my.terminal.command} -e ${getExe pkgs.wiremix}"
+    ]
+    + " ${args additionalArgs}";
+
   # What each backend provides. A missing entry means the backend has no such
   # menu, and the corresponding API function below is null.
   backends = {
@@ -44,12 +57,12 @@ let
         {
           additionalArgs ? [ ],
         }:
-        "${pkgs.audiomenu}/bin/audiomenu sink --launcher walker ${args additionalArgs}";
+        audiomenu "sink" "walker" additionalArgs;
       audioInput =
         {
           additionalArgs ? [ ],
         }:
-        "${pkgs.audiomenu}/bin/audiomenu source --launcher walker ${args additionalArgs}";
+        audiomenu "source" "walker" additionalArgs;
       monitor =
         {
           additionalArgs ? [ ],
@@ -73,12 +86,12 @@ let
         {
           additionalArgs ? [ ],
         }:
-        "${pkgs.audiomenu}/bin/audiomenu sink --launcher vicinae ${args additionalArgs}";
+        audiomenu "sink" "vicinae" additionalArgs;
       audioInput =
         {
           additionalArgs ? [ ],
         }:
-        "${pkgs.audiomenu}/bin/audiomenu source --launcher vicinae ${args additionalArgs}";
+        audiomenu "source" "vicinae" additionalArgs;
       monitor =
         {
           additionalArgs ? [ ],
