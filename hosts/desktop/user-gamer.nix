@@ -58,11 +58,15 @@
       appKeyFile = "/run/secrets/hue-app-key";
       clientKeyFile = "/run/secrets/hue-client-key";
     };
-    entertainmentArea = "FIXME-entertainment-area-id"; # hue-sync-setup areas
-    # One region per channel of the area, in channel order
+    # "Gaming desk" (hue-sync-setup areas)
+    entertainmentArea = "8a5355ef-7380-4044-80f9-675c20de3c98";
+    # One region per channel of the area, in channel order: channel 0 sits
+    # left of the screen (x=-0.97), 1 right (x=0.81), 2 above the middle
+    # (x=-0.09, z=1).
     channels = [
       "left"
       "right"
+      "top"
     ];
   };
 

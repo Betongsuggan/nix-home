@@ -135,12 +135,12 @@
     # (my.hue-sync in user-gamer.nix): `hue-sync-setup pair` prints both.
     // {
       "hue-app-key" = {
-        key = "hue/app-key";
+        key = "services/hue/app-key";
         owner = "gamer";
         mode = "0400";
       };
       "hue-client-key" = {
-        key = "hue/client-key";
+        key = "services/hue/client-key";
         owner = "gamer";
         mode = "0400";
       };

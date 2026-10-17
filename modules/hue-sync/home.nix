@@ -148,6 +148,14 @@ let
       systemInstancePriority = 245;
       cecControl = false;
     };
+    # ... and keeps the USB video grabber out of it. HyperHDR auto-picks any
+    # V4L2 device (a webcam) and that source outranks the screen (240 < 245),
+    # so without this the lights follow the camera, not the monitor.
+    videoControl = {
+      videoInstanceEnable = false;
+      videoInstancePriority = 240;
+      cecControl = false;
+    };
     systemGrabber = {
       device = "auto";
       videoMode = cfg.capture.width;
@@ -342,8 +350,8 @@ let
           reply=$(curl -fsS -X POST "http://$bridge/api" \
             -d "{\"devicetype\":\"hyperhdr#$(hostname)\",\"generateclientkey\":true}")
           if jq -e '.[0].success' <<< "$reply" >/dev/null; then
-            echo "Add to the vault (sops nix-vault/secrets/<host>.yaml):"
-            jq -r '.[0].success | "hue:\n  app-key: \(.username)\n  client-key: \(.clientkey)"' <<< "$reply"
+            echo "Add to the vault (sops nix-vault/secrets/<host>.yaml), under services:"
+            jq -r '.[0].success | "services:\n  hue:\n    app-key: \(.username)\n    client-key: \(.clientkey)"' <<< "$reply"
           else
             jq -r '.[0].error.description' <<< "$reply" >&2
             exit 1
@@ -364,6 +372,209 @@ let
       esac
     '';
   };
+
+  # A no-op for users without notifications (enabling them from here would
+  # recurse: the notification backends read the launcher)
+  notify =
+    if !config.my.notifications.enable then
+      ":"
+    else
+      config.my.notifications.send {
+        appName = "Hue Sync";
+        icon = "preferences-desktop-color";
+        summary = "$1";
+        body = "$2";
+      };
+
+  presetsJson = pkgs.writeText "hue-sync-presets.json" (builtins.toJSON cfg.presets);
+
+  # CLIP v2 lives on https://<bridge>/ whatever REST port `address` names
+  bridgeHost = head (splitString ":" cfg.bridge.address);
+
+  # Runtime control over HyperHDR's JSON-RPC (no token needed from localhost:
+  # `network.localApiAuth` is off by default). Adjustments are live only;
+  # the declared `color` row is the baseline again after a service start.
+  control = pkgs.writeShellApplication {
+    name = "hue-sync";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.curl
+      pkgs.jq
+    ];
+    text = ''
+      usage() {
+        cat <<USAGE
+      usage: hue-sync status | on | off | toggle | reconnect
+             hue-sync preset <name>        (${concatStringsSep ", " (attrNames cfg.presets)})
+             hue-sync brightness <0-100|up|down>
+
+      on/off     resume / pause the sync (off restores the lamps' previous state)
+      reconnect  restart the screen capture and re-open the entertainment
+                 stream, e.g. after the Hue app took the lamps over
+      preset     brightness / saturation / luminance from my.hue-sync.presets
+      USAGE
+      }
+
+      notify() { ${notify}; }
+      say() { echo "$1: $2"; notify "$1" "$2"; }
+      api() {
+        curl -fsS -m 5 -X POST "http://localhost:${toString cfg.webUi.port}/json-rpc" \
+          -H 'Content-Type: application/json' -d "$1"
+      }
+      component() {
+        api "{\"command\":\"componentstate\",\"componentstate\":{\"component\":\"$1\",\"state\":$2}}" >/dev/null
+      }
+      adjust() { api "{\"command\":\"adjustment\",\"adjustment\":$1}" >/dev/null; }
+      serverinfo() { api '{"command":"serverinfo"}'; }
+      led_enabled() { serverinfo | jq -r '.info.components[] | select(.name == "LEDDEVICE") | .enabled'; }
+      last_error() { serverinfo | jq -r '.info.lastError // ""'; }
+      # The bridge's own view of the area: "active <owner>", "inactive -",
+      # or "unknown -" when the bridge or the app key is out of reach
+      bridge_state() {
+        [ -r "${cfg.bridge.appKeyFile}" ] || { echo "unknown -"; return; }
+        (
+          curl -fsSk -m 5 "https://${bridgeHost}/clip/v2/resource/entertainment_configuration/${cfg.entertainmentArea}" \
+            -H "hue-application-key: $(tr -d '\n' < "${cfg.bridge.appKeyFile}")" \
+            | jq -r '.data[0] | "\(.status) \(.active_streamer.rid // "-")"'
+        ) 2>/dev/null || echo "unknown -"
+      }
+      # Wait up to $1 seconds for the stream to be open
+      wait_streaming() {
+        for _ in $(seq 1 "$(( $1 * 2 ))"); do
+          [ "$(led_enabled)" = true ] && return 0
+          sleep 0.5
+        done
+        return 1
+      }
+      fail() { notify "Hue sync" "$1"; echo "$1" >&2; exit 1; }
+
+      cmd=''${1:-}
+      [ -n "$cmd" ] || { usage; exit 1; }
+
+      serverinfo >/dev/null 2>&1 || fail "HyperHDR is not reachable: is the hue-sync service running?"
+
+      case "$cmd" in
+        status)
+          info=$(serverinfo)
+          led=$(jq -r '.info.components[] | select(.name == "LEDDEVICE") | .enabled' <<< "$info")
+          source=$(jq -r '[.info.priorities[] | select(.visible)] | first | .owner // "none"' <<< "$info")
+          brightness=$(jq -r '.info.adjustment[0].brightness' <<< "$info")
+          saturation=$(jq -r '.info.adjustment[0].saturationGain' <<< "$info")
+          bridge=$(bridge_state)
+          read -r bstatus _ <<< "$bridge"
+          if [ "$led" = true ] && [ "$bstatus" != inactive ]; then
+            msg="Streaming to the lamps (bridge: $bstatus). Source: $source. Brightness $brightness, saturation $saturation."
+          elif [ "$led" = true ]; then
+            msg="HyperHDR is streaming but the bridge says the area is inactive: run reconnect."
+          else
+            err=$(jq -r '.info.lastError // ""' <<< "$info")
+            msg="Paused (bridge: $bstatus).''${err:+ Last error: $err}"
+          fi
+          say "Hue sync" "$msg"
+          ;;
+        on)
+          component ALL true
+          component LEDDEVICE true
+          if wait_streaming 10; then
+            say "Hue sync on" "The lamps follow the screen again."
+          else
+            fail "Could not start the stream: $(last_error)"
+          fi
+          ;;
+        off)
+          component ALL false
+          say "Hue sync paused" "The lamps are back to normal Hue control."
+          ;;
+        toggle)
+          if [ "$(led_enabled)" = true ]; then exec "$0" off; else exec "$0" on; fi
+          ;;
+        reconnect)
+          # Fresh portal/PipeWire session for the grabber (it dies with "no
+          # more input formats" when the session's outputs go away, e.g. a
+          # VT switch or a Sunshine output change) and a fresh bridge stream
+          component LEDDEVICE false
+          component SYSTEMGRABBER false
+          sleep 1
+          component ALL true
+          component SYSTEMGRABBER true
+          component LEDDEVICE true
+          if wait_streaming 10; then
+            say "Hue sync reconnected" "Streaming to the lamps again."
+          else
+            fail "Reconnect failed: $(last_error)"
+          fi
+          ;;
+        preset)
+          name=''${2:-}
+          values=$(jq -ce --arg n "$name" '.[$n] // empty' "${presetsJson}") \
+            || fail "Unknown preset '$name' (have: $(jq -r 'keys | join(", ")' "${presetsJson}"))"
+          adjust "$values"
+          say "Hue sync preset: $name" "$(jq -r 'to_entries | map("\(.key) \(.value)") | join(", ")' <<< "$values")"
+          ;;
+        brightness)
+          arg=''${2:-}
+          current=$(serverinfo | jq -r '.info.adjustment[0].brightness')
+          case "$arg" in
+            up) value=$(( current + ${toString cfg.brightnessStep} )) ;;
+            down) value=$(( current - ${toString cfg.brightnessStep} )) ;;
+            "") fail "brightness needs a value, up or down" ;;
+            *) value=$arg ;;
+          esac
+          [ "$value" -ge 0 ] 2>/dev/null || value=0
+          [ "$value" -le 100 ] || value=100
+          adjust "{\"brightness\":$value}"
+          say "Hue sync brightness" "$value %"
+          ;;
+        *)
+          usage
+          exit 1
+          ;;
+      esac
+    '';
+  };
+
+  presetType = types.submodule {
+    options = {
+      brightness = mkOption {
+        type = types.ints.between 0 100;
+        default = 100;
+        description = "Brightness, percent.";
+      };
+      saturationGain = mkOption {
+        type = types.numbers.between 0 10;
+        default = 1.0;
+        description = "Saturation gain (1.0 = as captured).";
+      };
+      luminanceGain = mkOption {
+        type = types.numbers.between 0 10;
+        default = 1.0;
+        description = "Luminance gain (1.0 = as captured).";
+      };
+    };
+  };
+
+  # One launcher entry per action, so typing "hue" lists them all
+  launcherEntries =
+    let
+      entry = id: name: args: {
+        "hue-sync-${id}" = {
+          name = "Hue Sync: ${name}";
+          comment = "Philips Hue screen sync";
+          exec = "${getExe control} ${args}";
+          icon = "preferences-desktop-color";
+          terminal = false;
+          categories = [ "Utility" ];
+        };
+      };
+      capitalize = s: toUpper (substring 0 1 s) + substring 1 (-1) s;
+    in
+    entry "on" "On" "on"
+    // entry "off" "Off" "off"
+    // entry "reconnect" "Reconnect" "reconnect"
+    // entry "status" "Status" "status"
+    // entry "brighter" "Brighter" "brightness up"
+    // entry "dimmer" "Dimmer" "brightness down"
+    // concatMapAttrs (n: _: entry "preset-${n}" (capitalize n) "preset ${n}") cfg.presets;
 in
 {
   options.my.hue-sync = {
@@ -489,6 +700,45 @@ in
       description = "HyperHDR's user data directory (settings DB, LUTs, logs).";
     };
 
+    command = mkOption {
+      type = types.package;
+      readOnly = true;
+      default = control;
+      description = "The `hue-sync` control command (for keybinds).";
+    };
+
+    presets = mkOption {
+      type = types.attrsOf presetType;
+      default = {
+        subtle = {
+          brightness = 40;
+          saturationGain = 0.8;
+        };
+        normal = { };
+        vivid = {
+          saturationGain = 1.5;
+          luminanceGain = 1.2;
+        };
+      };
+      description = ''
+        Runtime looks selectable with `hue-sync preset <name>` (and one
+        launcher entry each). Live only: a service start returns to the
+        declared `color` settings.
+      '';
+    };
+
+    brightnessStep = mkOption {
+      type = types.ints.between 1 100;
+      default = 10;
+      description = "Step for `hue-sync brightness up|down`, percent.";
+    };
+
+    launcherEntries = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Install the \"Hue Sync: ...\" desktop entries for the launcher.";
+    };
+
     extraSettings = mkOption {
       type = types.attrsOf types.anything;
       default = { };
@@ -519,9 +769,22 @@ in
     ];
 
     home.packages = [
+      control
       setup
       applyConfig
     ];
+
+    xdg.desktopEntries = mkIf cfg.launcherEntries launcherEntries;
+
+    # HyperHDR's PipeWire grabber only takes 8-bit formats, and Hyprland
+    # hands screencopy clients the monitor's own format: on a 10-bit output
+    # that is XBGR2101010, so the stream dies with "no more input formats"
+    # whenever the output is in 10-bit (immediately, or at the next HDR /
+    # fullscreen transition). This makes Hyprland read back 8-bit for every
+    # screencopy client in the session; Sunshine's KMS capture is unaffected.
+    wayland.windowManager.hyprland.settings.misc.screencopy_force_8b = mkIf (
+      config.my.window-manager.enable && config.my.window-manager.backend == "hyprland"
+    ) true;
 
     systemd.user.services.hue-sync = {
       Unit = {
