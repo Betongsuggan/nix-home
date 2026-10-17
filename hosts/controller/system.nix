@@ -246,7 +246,10 @@ in
 
   my.git-server = {
     enable = true;
-    repositories = [ "nix-vault" ];
+    repositories = [
+      "nix-vault"
+      "wow-leveling" # the WoW Forever leveling guide: nix-home flake input `wow-guide`, served at /wow
+    ];
     authorizedKeys = inputs.self.lib.allSshKeys ++ [
       # Operator's YubiKey (FIDO resident, touch-only). Kept inline because
       # it's the bootstrap credential used *before* a new host has its own
@@ -364,6 +367,7 @@ in
       "/var/lib/vaultwarden"
       "/var/lib/headscale"
       "/var/lib/git/nix-vault.git"
+      "/var/lib/git/wow-leveling.git"
       "/var/lib/emulation"
       "/var/lib/nextcloud"
       "/var/backups/postgresql"
