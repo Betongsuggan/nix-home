@@ -258,6 +258,10 @@ in
     ];
   };
 
+  # https://rydback.net/wow/ — the WoW Forever leveling guide, built from the
+  # `wow-guide` flake input (overlays/flake-inputs.nix). Public on purpose.
+  my.static-sites.sites.wow.package = pkgs.wow-guide;
+
   my.reverse-proxy =
     let
       # Tailnet-only at the nginx layer. ACME HTTP-01 challenges still work

@@ -11,4 +11,23 @@ in
   monitormenu = fromInput inputs.monitormenu;
   console-mode = fromInput inputs.console-mode;
   nvim-config = fromInput inputs.nvim; # nixvim build, provides `nvim`
+
+  # Static site: run the guide's stdlib-only Python build inside the sandbox
+  # and keep only what nginx serves. Not reproducible to the byte (the footer
+  # stamps the build date); harmless.
+  wow-guide =
+    prev.runCommand "wow-guide"
+      {
+        nativeBuildInputs = [ prev.python3 ];
+        src = inputs.wow-guide;
+      }
+      ''
+        cp -r "$src" site
+        chmod -R u+w site
+        cd site
+        python3 build.py
+        mkdir -p "$out"
+        cp index.html level-*.html guide.css guide.js "$out"/
+        cp -r maps "$out"/maps
+      '';
 }

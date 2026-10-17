@@ -104,6 +104,14 @@
     # Bootstrap an installer via `--override-input nix-vault path:...` if the
     # host hasn't joined the tailnet yet.
     nix-vault.url = "git+ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git?ref=main";
+
+    # The WoW Forever leveling guide (static site, built by its build.py in
+    # overlays/flake-inputs.nix and served at rydback.net/wow by
+    # modules/static-sites). Same git server and tailnet path as nix-vault.
+    wow-guide = {
+      url = "git+ssh://git@controller.ts.rydback.net/var/lib/git/wow-leveling.git?ref=main";
+      flake = false;
+    };
   };
 
   outputs =

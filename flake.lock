@@ -899,7 +899,8 @@
         "stylix": "stylix",
         "terranix": "terranix",
         "vicinae-extensions": "vicinae-extensions",
-        "walker": "walker"
+        "walker": "walker",
+        "wow-guide": "wow-guide"
       }
     },
     "rust-overlay": {
@@ -1213,6 +1214,23 @@
         "ref": "v2.11.2",
         "repo": "walker",
         "type": "github"
+      }
+    },
+    "wow-guide": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792251494,
+        "narHash": "sha256-pe+W8Ozmsf9VYQXfIe3fR7QLllCiRVjCi5Mku7XKpk8=",
+        "ref": "main",
+        "rev": "a7b3a0c5d2bf3816d59245ac1256cbad0f2796c8",
+        "revCount": 1,
+        "type": "git",
+        "url": "ssh://git@controller.ts.rydback.net/var/lib/git/wow-leveling.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "ssh://git@controller.ts.rydback.net/var/lib/git/wow-leveling.git"
       }
     },
     "xwayland-satellite-stable": {
