@@ -18,16 +18,21 @@ in
   wow-guide =
     prev.runCommand "wow-guide"
       {
-        nativeBuildInputs = [ prev.python3 ];
+        nativeBuildInputs = [
+          prev.python3
+          prev.zip
+        ];
         src = inputs.wow-guide;
       }
       ''
         cp -r "$src" site
         chmod -R u+w site
         cd site
-        python3 build.py
-        mkdir -p "$out"
+        python3 build.py            # pages + addon/ForsakenDuo/Data.lua
+        mkdir -p "$out/addon"
         cp index.html level-*.html guide.css guide.js "$out"/
         cp -r maps "$out"/maps
+        # the in-game addon, zipped so it unpacks straight into Interface/AddOns
+        (cd addon && zip -qr "$out/addon/ForsakenDuo.zip" ForsakenDuo -x '*.luacheckrc')
       '';
 }
