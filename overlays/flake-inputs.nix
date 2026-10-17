@@ -23,6 +23,7 @@ in
           prev.zip
         ];
         src = inputs.wow-guide;
+        FD_VERSION = inputs.wow-guide.shortRev or "unknown"; # stamped into the addon TOC, Data.lua and the index page
       }
       ''
         cp -r "$src" site
