@@ -1,220 +1,152 @@
-# De‑Google Migration Plan — `rydback.net`
+# De-Google — `rydback.net`
 
-A private‑life initiative to regain control over where data lives, reduce dependence on US Big Tech, and make any remaining use (e.g. YouTube) a *conscious* choice rather than a default. Work is private only — work devices/accounts stay on Google and are out of scope.
+A private-life initiative to regain control over where data lives, reduce dependence on US Big Tech, and make any remaining use (e.g. YouTube) a *conscious* choice rather than a default. Work is private only; work devices and accounts stay on Google and are out of scope.
 
-> Track this in git. Tick boxes as you go. Each phase lists its **blockers** so you don't start something that depends on an earlier piece. Suggested cadence: one workstream at a time, no deadline pressure.
-
----
-
-## 0. Guiding principles
-
-- **Ownership tiers.** Self‑host the crown jewels (passwords, 2FA, eventually mail, files, photos, calendar). Use a *trusted, transparent* third party for less‑critical things, knowing where/how data is stored. Keep a few conscious‑choice conveniences (YouTube, payments).
-- **Own your address, not your provider.** Identity = `you@rydback.net`. The backend behind it is swappable. This is the key that makes "try self‑hosting, fall back to Proton" painless.
-- **Tailnet‑first.** Self‑hosted services are reachable only inside the Headscale network by default. Public exposure is the exception, used only where unavoidable (inbound mail, sharing with non‑tailnet people).
-- **Dependency order.** Password manager and account inventory come *before* detaching any Google SSO. Email comes *last* because it's the recovery anchor for everything else.
-- **NixOS everywhere is an asset.** Most of this is declarative: `services.vaultwarden`, `services.nextcloud`, `services.immich`, `services.radicale`, `services.headscale`, `services.kanidm`, `services.restic`, `services.searx`. Keep the whole stack in your flake.
+Re-baselined 2026-10-18 against what the repo actually runs. The earlier phase/checkbox layout is gone; this file now holds the decisions that are locked, a status board of what is live, and an ordered backlog. History stays in the progress log at the bottom.
 
 ---
 
-## Architecture decisions to lock early
+## 1. Guiding principles
 
-These three forks determine everything downstream. Decide them before building.
-
-- [ ] **Email backend path** — choose A, B, or "decide later behind aliasing":
-  - **A. Self‑host on a clean‑IP VPS** (e.g. Hetzner ~€4/mo, port 25 open, rDNS set). Run Stalwart (modern all‑in‑one, mature enough for personal use in 2026) or a bundle like Mailcow/Mailu. You control software + data; the box is rented. Best balance of ownership and deliverability.
-  - **B. Privacy provider with your domain** — Proton Mail (Swiss), Tuta or Mailbox.org (German). Point `rydback.net` at them; import via their IMAP/Easy‑Switch tooling. Least effort, EU/Swiss jurisdiction, you still own the address.
-  - **Recommended start:** put aliasing in front of your domain *now* (path below), run a VPS Stalwart instance as a trial in parallel with Gmail, and keep Proton as the documented fallback. Switching = DNS only.
-- [ ] **Access model** — confirm tailnet‑only for personal services. Note the two friction points (Android VPN slot; sharing with your wife) addressed in the Headscale section.
-- [ ] **Backup topology** — 3‑2‑1 using the NUC + summer‑house PC over Headscale as off‑site, plus dedicated hardware (see Backup workstream). **Get this running before putting critical data on the server.**
+- **Ownership tiers.** Self-host the crown jewels (passwords, files, calendar, photos). Use a *trusted, transparent* third party where self-hosting buys little ownership for a lot of babysitting (mail, off-site storage). Keep a few conscious-choice conveniences (YouTube, payments).
+- **Own the address, not the provider.** Identity is `you@rydback.net`. The backend behind it is swappable by DNS.
+- **Tailnet-first.** Self-hosted services are reachable only inside the headscale network. Public exposure is the exception (`rydback.net/wow`, the bootstrap blob), never for personal data.
+- **Dependency order.** Password manager before detaching any Google login. Mail last, because it is the recovery anchor for everything else.
+- **NixOS everywhere.** Every service is a module under `modules/`, enabled on `controller`, in the restic set, documented in a SPEC.
+- **A backup that was never restored is hope, not a backup.** Verification is automated, the runbook is exercised.
 
 ---
 
-## Phase 0 — Foundations (do first; everything depends on these)
+## 2. Decisions (locked)
 
-**Blockers:** none.
+Record the *why* here so future-you does not re-litigate.
 
-- [ ] **Stand up backups first** (see Backup workstream). Don't host anything critical on a box with no restore path — you've already lost disks once.
-  - [ ] **Write the disaster-recovery runbook alongside backup setup.** "Backups exist" ≠ "I can recover" — the runbook *is* the restore path. Detailed scope in the Backup workstream. Write it now, exercise it once, *then* treat Phase 0 as done.
-- [x] **Deploy a password manager: Vaultwarden** (Bitwarden‑compatible, `services.vaultwarden` on NixOS, behind Headscale).
-  - [x] Bitwarden clients cache an encrypted local copy and work offline, so tailnet‑only is fine day‑to‑day — you only need the server to *sync*. This removes the usual "what if home is down" worry.
-  - [ ] Keep an **encrypted emergency export** somewhere offline (e.g. on a USB key in a drawer) as break‑glass recovery.
-  - [ ] Install clients on all devices; on /e/OS get the Bitwarden app from F‑Droid/Aurora.
-- [ ] **Inventory every account** and flag which use "Sign in with Google."
-  - [ ] Google account → Security → "Sign in with Google" / connected accounts gives you the list to work from.
-  - [ ] Record each in the password manager as you go.
-- [ ] **Move 2FA off Google Authenticator → Aegis** (open source, encrypted, F‑Droid). Re‑enroll TOTP secrets per site; keep encrypted Aegis backups.
-
----
-
-## Phase 1 — Identity & access plumbing
-
-**Blockers:** Phase 0 password manager.
-
-- [ ] **Decide on a self‑hosted IdP — optional, lower priority.** Reality check: you *cannot* point third‑party consumer sites (Spotify, forums, etc.) at your own IdP — those only accept fixed providers. So de‑Googling consumer SSO = converting each site to email + unique password in Vaultwarden. An IdP only unifies login for services *you* host and apps that speak generic OIDC.
-  - [ ] If you want one: **Kanidm** (Rust, has a clean `services.kanidm` NixOS module, lightweight) or **Authentik** (heavier, more features, usually run via container). Kanidm fits your NixOS‑native preference better.
-  - [ ] Defer this until you actually have a few self‑hosted services worth unifying.
-- [ ] **Harden and finalize Headscale** (see Headscale analysis below). Enroll every personal device.
-
-### Headscale‑only access — analysis
-
-Pros: services never exposed publicly, tiny attack surface, MagicDNS gives you nice hostnames. Watch these:
-
-- [x] **Android client works, but mind the details.** Use the official Tailscale app from **F‑Droid** (no Play Store needed on /e/OS); in settings set your custom server URL (`https://headscale.rydback.net`). The login‑to‑custom‑server UX has been rough historically and was improved in recent releases — if a login window misbehaves, close it and use the main‑screen Log in, per Headscale's Android docs.
-- [ ] **VPN‑slot conflict (important).** Android allows only **one** active VPN. Tailscale uses it; /e/OS **Advanced Privacy "hide my IP"** also uses it. You can't run both at once. Decide: keep Tailscale always‑on for service access and leave Advanced Privacy's IP‑hiding off (tracker blocking via other means), or toggle. Test this early on the phone — it's the most likely day‑to‑day annoyance.
-- [x] **Battery / always‑on.** WireGuard is efficient; always‑on Tailscale is fine, but set it deliberately. — Tailscale runs always-on on both ayn-thor and fairphone; deliberate choice made (the tailnet-only emulation stack assumes it).
-- [ ] **Single point of coordination.** If the box running Headscale is down, *new* connections can't be coordinated (existing peer links may persist). Consider running **Headscale itself on the cheap mail VPS** — it's tiny (~60 MB RAM), gets you a reliable public control plane and clean reachability, and keeps coordination up when home is offline.
-- [x] **MagicDNS** so you reach services by name on all platforms; enable subnet routes for any LAN‑only boxes you want reachable. — `<host>.ts.rydback.net` resolves from every Linux host and both Android phones; the tailnet-only emulation stack uses it exclusively (no LAN IP fallbacks).
-- [ ] **Sharing with your wife (and future shared things).** A tailnet‑only service means she must be enrolled on the tailnet to reach it — friction for a non‑technical partner. For the shared calendar specifically, either enroll her device in the tailnet, or expose *just* that one service via an authenticated public endpoint on the VPS. Flagged again in the calendar step.
+| Fork | Decision | Why | Revisit when |
+|---|---|---|---|
+| Mail backend | **Hybrid: hosted provider now (Migadu or mailbox.org) with `rydback.net`; `hosts/mail` self-host parked** | Self-hosting mail buys little ownership (the VPS is rented anyway) at a permanent deliverability + ops cost, and the paused Hetzner trial blocked the identity migration for five months. A provider gives standard IMAP/SMTP, aliases/catch-all, and an SMTP relay for Vaultwarden/Nextcloud on day one. Proton rejected (no plain IMAP). | After Immich and backups are done, if provider policy or price becomes a problem. Switch is MX + IMAP import. |
+| Aliasing | **Provider aliases / catch-all on `rydback.net`; no addy.io / SimpleLogin** | Own domain + provider aliases give per-service addresses with no third party. | Never, unless the provider drops aliases. |
+| Access model | **Tailnet-only for every personal service** | Tiny attack surface; proven on Linux and both Android devices. | Never for personal data. |
+| Partner access | **Second headscale user + her phone on the tailnet + a Nextcloud account** | Enrolling one phone is less risk than exposing `cloud.rydback.net` publicly; the shared calendar lives in Nextcloud either way. | If a non-tailnet person ever needs a share: Nextcloud share links on a public, auth-only endpoint, decided then. |
+| Off-site backup | **Hetzner Storage Box (SFTP, restic client-side encrypted)**; `island-stationary` stays as a bonus copy | Always online, EU, ~€4/mo for 1 TB. The summer-house PC is a gaming machine that is off most of the time and controller cannot wake it. | If Hetzner becomes unacceptable: any SFTP/S3 target, same module. |
+| Local redundancy | **No NAS.** 3-2-1 is met across copies (controller, desktop, Storage Box, island) rather than by a mirror at one site. | Hardware that would sit idle to protect one copy of data that already has three. | If controller's data outgrows 1 TB. |
+| Headscale location | **Stays on controller** | If controller is down, Vaultwarden/Nextcloud are down anyway; a separate control plane does not help. No VPS exists to host it. | Only if a VPS exists for another reason. |
+| Photos | **Immich on controller** (`services.immich`) | Best Google Photos replacement (timeline, ML search, faces, auto-upload app). Library < 200 GB fits the 1 TB NVMe. | If the library outgrows the disk. |
+| Search | **Native `services.searx` on controller**, tailnet-only | The existing SearXNG is a loopback sidecar for Open WebUI on `desktop`, which sleeps. A user-facing instance belongs on the always-on host. | — |
+| Identity provider | **Deferred** | Consumer sites cannot use a self-hosted IdP; it only unifies login across self-hosted services, of which there are two. | When there are enough self-hosted services with their own user DBs to hurt. |
 
 ---
 
-## Phase 2 — Own your email address (then swap the backend)
+## 3. Status board (2026-10-18)
 
-**Blockers:** Phase 0 (password manager + 2FA moved, since email currently anchors recovery). Do the address move early, the Gmail decommission *last*.
+Everything below runs on `controller` unless noted. ✅ live and declarative · 🟡 live with a known gap · ❌ not started.
 
-- [ ] **Set up aliasing in front of `rydback.net`** — addy.io or SimpleLogin (both self‑hostable later; start with hosted to move fast). Gives you per‑service aliases and means you never hand out a "real" address again.
-- [ ] **Start migrating your identity to `rydback.net`** — change the email on accounts to your domain alias, highest‑value/most‑used first. This is the slow, ongoing part; spread it out.
-- [ ] **Stand up the chosen backend:**
-  - [ ] *Path A:* clean‑IP VPS, port 25 confirmed open, rDNS = `mail.rydback.net`. Deploy Stalwart (or Mailcow/Mailu). Nail DNS: A/AAAA, MX, **PTR**, SPF, DKIM (2048‑bit), DMARC (start `p=none`), MTA‑STS, TLS‑RPT. Warm slowly; watch Gmail Postmaster Tools.
-  - [ ] *Path B:* point `rydback.net` MX/SPF/DKIM/DMARC at Proton/Tuta/Mailbox; use their import tool.
-- [ ] **Run in parallel with Gmail.** Forward Gmail → `rydback.net`. Define a **cutover criterion** (e.g. "two weeks of clean delivery to Gmail/Outlook/Fastmail recipients, no spam‑foldering").
-- [ ] **Decommission Gmail — last of all.** Only once nothing depends on it for password resets and `rydback.net` is proven. Keep Gmail as a dormant forward‑only fallback for a while before full removal.
+| Area | State | Where |
+|---|---|---|
+| Passwords — Vaultwarden | 🟡 Live (May 2026). Clients on all devices. No SMTP yet. Encrypted emergency export to USB has no cadence. | `modules/vaultwarden`, `hosts/controller/system.nix` |
+| 2FA — Aegis | ❌ TOTP still on Google Authenticator | phone |
+| Account inventory | ❌ Not done | Vaultwarden |
+| Tailnet — headscale, MagicDNS, DERP, subnet router, bootstrap blob | ✅ Linux hosts + both Android devices (`ayn-thor`, `fairphone`), always-on | `modules/home-network`, `modules/headscale` |
+| Android VPN slot (Tailscale vs /e/OS Advanced Privacy IP hiding) | ❌ Not decided | phone |
+| Files / Calendar / Contacts / Notes / Tasks — Nextcloud 33 + OnlyOffice | 🟡 Live (June 2026) at `cloud.` / `office.rydback.net`. No SMTP. DAVx5 on the phone not confirmed. | `modules/nextcloud`, `modules/onlyoffice` |
+| Photos — Immich | ❌ | — |
+| Mail — `@rydback.net` receiving | ❌ Nothing receives for the domain. `hosts/mail` is a parked scaffold. Identity anchors in the repo (`operator.email`, git email, ACME) are still Gmail. | `hosts/mail/SPEC.md`, `lib/default.nix` |
+| Backup copy 1 (source) | ✅ restic daily 01:45: `/var/lib/{vaultwarden,headscale,emulation,nextcloud}`, both git bare repos, `/var/backups/postgresql` (pg dumps 01:15) | `modules/restic-backup` |
+| Backup copy 2 — `desktop`, on-site | ✅ Chrooted SFTP, WoL-woken by controller before each run | `modules/profiles` (gaming-station), `modules/restic-target` |
+| Backup copy 3 — `island-stationary`, off-site | 🟡 Target wired (2026-10-01) but controller cannot wake it (its relay is `island-pi`); runs fail while it sleeps. Best effort. | `hosts/island-stationary/SPEC.md` |
+| Backup copy 3 — Hetzner Storage Box | ❌ Decided, not built | backlog 1 |
+| `restic check` / restore test | ❌ Never run | backlog 1 |
+| Disaster-recovery runbook | ✅ `docs/disaster-recovery.md` (2026-10-18), not yet exercised | — |
+| Search — SearXNG | 🟡 Exists only as Open WebUI's loopback sidecar on `desktop` | `modules/ai-server` |
+| Maps, app stores, YouTube frontend | ❌ Not confirmed | phone |
+| Payments | ❌ Not started (Swish + bank app cover most of Sweden already) | phone |
+| Partner access | ❌ One headscale user (`birger`), allow-all ACL | `hosts/controller/system.nix` |
+| Google account removed from microG | ❌ Finish line | phone |
 
----
-
-## Phase 3 — Personal data services (self‑host the crown jewels)
-
-**Blockers:** backups live (Phase 0), Headscale enrolled (Phase 1).
-
-- [ ] **Drive → Nextcloud** (`services.nextcloud`) or Seafile if you want pure file‑sync performance. Nextcloud also covers calendar/contacts/notes in one, simplifying the stack.
-- [ ] **Photos → Immich** (`services.immich`). Strong Google Photos replacement: timeline, ML search, faces, mobile auto‑backup app (F‑Droid). Point its uploads at the NUC; make sure photos are in your backup set.
-- [ ] **Calendar & Contacts → CalDAV/CardDAV** via Nextcloud or a lightweight Radicale/Baïkal.
-  - [ ] On /e/OS, sync with **DAVx5** (F‑Droid).
-  - [ ] **Shared calendar with your wife:** simplest is a shared CalDAV calendar she subscribes to. If she's not on the tailnet, expose only the CalDAV endpoint publicly on the VPS behind auth, or enroll her phone in Headscale. Decide per the Headscale sharing note.
-- [ ] **Notes (if used)** → Joplin (self‑syncable) or Nextcloud Notes.
-
----
-
-## Phase 4 — Ancillary services (third‑party OK where transparent)
-
-**Blockers:** none hard; do alongside Phase 3.
-
-- [ ] **Maps → Organic Maps or OsmAnd** (offline OSM, no account, F‑Droid). Zero dependency, good first win.
-- [ ] **Search → SearXNG** (`services.searx`/searxng), self‑hosted metasearch behind the tailnet; or use a reputable public instance.
-- [ ] **YouTube → conscious choice.** Options, in order of "least Google":
-  - [ ] *No login:* NewPipe / FreeTube / Grayjay (F‑Droid). No account, no Google services; subscriptions kept locally. Best privacy, loses real‑account sync.
-  - [ ] *Your account, isolated:* on a standard ROM you'd use ReVanced + isolated microG. On /e/OS you already have system microG, so a logged‑in YouTube there *is* phone‑wide by nature — which cuts against your goal. Prefer a no‑login frontend on the phone and save real‑account YouTube for the desktop if you want it.
-- [ ] **App sources on /e/OS:** Aurora Store (anonymous Play access) + F‑Droid, so you avoid a Google account for app installs entirely.
+The original plan said "no critical data on controller before the runbook, an off-site copy and a restore test exist". Nextcloud has held real data since June without any of the three. The runbook now exists; the other two are backlog item 1 and nothing else goes on controller before it is done.
 
 ---
 
-## Phase 5 — Payments (Google Wallet replacement)
+## 4. Backlog (ordered; blockers inline)
 
-**Blockers:** none. Region: Sweden/EU.
+Each item is one working session. Repo work is named; operator work (phone, provider dashboards, DNS) is marked *op*.
 
-Reality: tap‑to‑pay via Google Wallet does **not** work on /e/OS (Google attestation). Routes that do work:
+1. **Off-site backup that is always there.** *Blocks everything that adds data to controller.*
+   - *op* Hetzner account → Storage Box (BX11, 1 TB) → enable SSH, upload controller's restic public key (`hosts.controller.users.restic.ssh.id_ed25519` in `lib/default.nix`) to the box's `.ssh/authorized_keys` in RFC4716 format.
+   - `modules/restic-backup`: add `targets.<name>.sftpPort` (Storage Box speaks SFTP on 23) feeding both the repository URL and the wake probe; pin the box's published host key through `hostKey` (a non-fleet target otherwise falls back to trust-on-first-use). Add a `verify` timer: monthly `restic check --read-data-subset=5%` per target plus a `restore latest --path /var/lib/vaultwarden` smoke into a tmp dir. Update the SPEC.
+   - `hosts/controller/system.nix`: add the target. Confirm with `restic-hetzner snapshots`.
+   - Run the runbook's **drill** once (see `docs/disaster-recovery.md`) and log the result there.
 
-- [ ] **Curve** — European (EEA+UK) fintech; links your Visa/Mastercard and pays via the phone without Google Pay. Confirmed to work on /e/OS (and /e/OS Advanced Privacy can block its trackers). Pragmatic primary option.
-- [ ] **Garmin Pay on a supported Garmin watch** — phone‑independent, works offline, widely the most reliable de‑Googled tap‑to‑pay. Depends on your bank supporting it.
-- [ ] **Your bank's own NFC, if any** — region/bank‑dependent; check your Swedish bank's app.
-- [ ] **Swish (Sweden)** — app + BankID, ubiquitous for P2P and many merchants; no Google dependency. Covers a large share of real‑world Swedish payments even without card tap‑to‑pay.
-- [ ] **Loyalty cards / passes** → Catima (F‑Droid) replaces the Wallet "passes" function.
+2. **Mail: `@rydback.net` receives, Gmail becomes a forwarder.**
+   - *op* Sign up (Migadu assumed), verify the domain, add MX/SPF/DKIM/DMARC (`p=none` to start) in Route 53. Forward Gmail → `rydback.net`. Send/receive test against Gmail, Outlook, one other.
+   - `modules/vaultwarden`: SMTP via the existing `environmentFile` (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURITY`, `SMTP_FROM`, `SMTP_USERNAME`, `SMTP_PASSWORD`), so no new secret plumbing. `modules/nextcloud`: `services.nextcloud.settings.mail_*` + `secrets.mail_smtppassword` (see that SPEC's mail note). Nextcloud Mail app pointed at the provider's IMAP.
+   - `lib/default.nix`: `operator.email` and `accounts.betongsuggan.git.email` → `@rydback.net` (ACME follows). `hosts/mail/system.nix` comment likewise when it is next touched.
+   - *op* Start the long tail: change email-of-record per account, most valuable first, per-service alias each time. Keep a list in Vaultwarden. Gmail stays as a dormant forward-only fallback until nothing depends on it.
 
----
+3. **Phone hygiene (no repo work).** Aegis with encrypted backups; Organic Maps; Aurora Store + F-Droid as the only sources; NewPipe or Grayjay for YouTube; decide the VPN slot (recommendation: Tailscale always-on, Advanced Privacy IP hiding off, tracker blocking kept); DAVx5 against `cloud.rydback.net`; Catima for passes. Encrypted Vaultwarden export to a USB stick, then a calendar reminder every quarter.
 
-## Phase 6 — Finish line
+4. **Photos: Immich.** *Blocked by 1.*
+   - New `modules/immich/{nixos.nix,SPEC.md}` on the Nextcloud module's pattern: `services.immich`, local PostgreSQL, `/var/lib/immich`, tailnet-only vhost through `lib.tailnet.nginxAllowOnly`, `photos.rydback.net` in `extraDnsRecords`. Add the data dir and DB to the restic set and `postgresqlBackup.databases`. ML stays on controller (CPU; fine for a personal library, can be switched off).
+   - *op* Immich app on the phone with background upload over the tailnet. One-time Google Takeout import. Keep Google Photos read-only until the import is verified, then stop uploading there.
 
-**Blockers:** all of the above proven.
+5. **Partner access.** One line: a second user in `controller.headscale.users`; *op* enroll her phone with the Tailscale app (`https://vpn.rydback.net`), create her Nextcloud user, share the calendar. Document in `hosts/controller/SPEC.md`.
 
-- [ ] Confirm nothing private depends on the Google account (SSO migrated, mail moved, data moved, 2FA off Authenticator).
-- [ ] **Remove the Google account from the phone's microG** (microG Settings → Accounts). This is the milestone.
-- [ ] Decide microG posture: keep it for non‑Google push/maps shims, or trim further. (System microG remaining is fine — your account is what you wanted gone.)
-- [ ] Final verification: reboot, confirm services reachable over tailnet, confirm mail send/receive, confirm backups ran and a test restore works.
+6. **Search on controller.** `my.searx` (or a plain `services.searx` block) at `search.rydback.net`, tailnet-only, settings from `modules/ai-server/searxng/settings.yml` as the starting point. Set it as the default engine in Firefox/Chromium through the existing modules.
 
----
+7. **Finish line.** Confirm nothing private depends on the Google account (inventory from Vaultwarden, mail moved, photos moved, 2FA off Authenticator). Remove the account from microG. Reboot, check services over the tailnet, check mail both ways, check the last restic run and the last verify run.
 
-## Backup workstream (cross‑cutting — set up in Phase 0, maintain forever)
-
-Your current state: ASUS NUC 14 Essential, 1 TB NVMe (main host); two gaming PCs at two locations (one same residence, one summer house); previous backup box's disks failed. The summer‑house PC over Headscale is a natural **off‑site** copy.
-
-Target: **3‑2‑1** — 3 copies, 2 media types, 1 off‑site.
-
-- [x] **Engine:** restic or Borg (`services.restic` on NixOS), encrypted, deduplicated, scheduled. Restic plays nicely with multiple destinations. — **restic chosen**; declarative module at `modules/restic-backup/`, daily systemd timer, `keep-daily 7 / keep-weekly 4 / keep-monthly 12` retention.
-- [x] **Copy 1 (primary):** the NUC's working data. — Live on controller; paths captured: `/var/lib/{vaultwarden,headscale,emulation}`, `/var/lib/git/nix-vault.git`.
-- [ ] **Copy 2 (local, redundant media):** a dedicated box at home with **redundancy** — a small 2‑bay NAS with mirrored disks, or DIY with **ZFS mirror**. Remember: RAID/ZFS is *not* a backup, it's availability; you still need the off‑site copy. (Your last failure is exactly why mirroring matters.)
-  - **Interim partial:** snapshots are landing on `desktop` (verified 2026-05-31). It's an on-site second copy, but on a single non-NAS disk — the redundant-media requirement isn't met and this bullet stays unticked until dedicated hardware lands.
-- [ ] **Copy 3 (off‑site):** restic/Borg repo on the **summer‑house PC** over Headscale. Truly owned, no third party.
-  - **Blocker:** `island-stationary` is not yet onboarded to the tailnet (no `home-network` enabled, sops not configured). The receiver module is wired and ready — flip `island.mode = "onboarded"` + add sops, and the first push will land there.
-- [ ] **Optional cloud off‑site (encrypted):** Hetzner Storage Box or Backblaze B2 if you want a second off‑site without relying on the summer house being powered/online. Client‑side encrypted, so the provider sees ciphertext only.
-- [ ] **Dedicated hardware suggestions (resilience):**
-  - Small low‑power NAS (2‑bay, mirrored) as the always‑on local redundant target.
-  - Or DIY mini‑PC/NAS running NixOS + ZFS mirror — fits your stack, declarative, scrub on schedule.
-  - Use **CMR (not SMR)** NAS‑rated drives; buy two from different batches to avoid simultaneous failure.
-- [ ] **Disaster recovery runbook for controller** (e.g. `docs/disaster-recovery.md`). What to actually do if controller's disk dies, the box is stolen, or the building burns. Must cover, end-to-end:
-  - NixOS install on replacement hardware (which flake host config to reuse, what to rename if hardware differs).
-  - **sops bootstrap on the replacement.** Operator's YubiKey decrypts a fresh `nix-vault` clone (every onboarded host has a working copy — clone from desktop, not from a dead controller). This step yields the restic repo password without it needing to live anywhere else.
-  - **Restic restore** of `/var/lib/{vaultwarden,headscale,emulation}` and `/var/lib/git/nix-vault.git` from whichever target is reachable (desktop on-site, island off-site). Spell out the exact `restic` invocation since the source-side `restic-<target>` wrappers don't exist on a fresh box.
-  - **Headscale recovery.** `/var/lib/headscale` is in the backup set, so most state restores cleanly; document the gotchas (DERP server identity, any ephemeral keys, fleet re-registration if state restore fails).
-  - **Vaultwarden recovery.** `ADMIN_TOKEN` comes back via the restored sops env file; data is just the restored `/var/lib/vaultwarden` dir. Clients keep working from local cache during the outage.
-  - **TLS certs.** Don't restore — let nginx re-acquire via HTTP-01 on first start once DNS resolves to the new box.
-  - **The real disaster scenario:** what to do if the YubiKey *and* controller are lost simultaneously. Be honest about whether a backstop exists (e.g. a second YubiKey in a fireproof safe, or printed BIP39 of the operator's age identity) or whether that loss is acceptable.
-- [ ] **Test restores quarterly.** An untested backup is hope, not a backup — and an untested runbook is fiction. The runbook above is what you exercise; a step that fails on the dry run is a real problem to fix before you need it for real.
+Parked, not deleted: `hosts/mail` (self-host trial; reactivation criteria in its SPEC), Kanidm/Authentik (see Decisions).
 
 ---
 
-## Tracking
+## 5. Replacement map
 
-- Treat each `[ ]` as a unit of work; commit progress so you have history.
-- Keep an `decisions.md` next to this for the forks you lock (email path, IdP choice, exposure rules) so future‑you remembers *why*.
-- Re‑evaluate the email backend after a month: if VPS Stalwart is more babysitting than it's worth, switch DNS to Proton — your `@rydback.net` address doesn't change.
+| Google service | Self-host (tier 1) | Trusted third party (tier 2) | State |
+|---|---|---|---|
+| Passwords | Vaultwarden | — | live |
+| 2FA | Aegis (local) | — | todo |
+| Email | *(parked: Stalwart on a VPS)* | Migadu / mailbox.org with `rydback.net` | todo |
+| Drive / Docs | Nextcloud + OnlyOffice | — | live |
+| Calendar / Contacts | Nextcloud (+ DAVx5) | — | live, phone unconfirmed |
+| Notes / Tasks | Nextcloud Notes / Tasks | — | live |
+| Photos | Immich | — | todo |
+| Maps | — | Organic Maps / OsmAnd (offline) | todo |
+| Search | SearXNG | — | sidecar only |
+| YouTube | — | NewPipe / Grayjay (no login) | todo |
+| Payments | — | Swish / bank app / Curve / Garmin Pay | todo |
+| App store | — | Aurora Store + F-Droid | todo |
+| Networking | Headscale | — | live |
+| Off-site storage | — | Hetzner Storage Box (ciphertext only) | todo |
 
-## Progress log
+---
+
+## 6. Progress log
+
+### 2026-10-18 — re-baseline
+
+- Re-read the plan against the repo. Since the last entry: Nextcloud 33 + OnlyOffice live on controller (June), tailnet subnet routing, Taildrop, git-server with two repos, static site at `rydback.net/wow`, Nextcloud data + Postgres dumps added to the restic set, island-stationary restored as an off-site restic target (2026-10-01).
+- Called out what never happened: the DR runbook, any restore test, a reliably reachable off-site copy. Nextcloud has held real data for four months behind a gate that was never closed. Wrote `docs/disaster-recovery.md` today; the off-site copy and verification are now backlog item 1 and gate everything else.
+- Locked the mail fork as **hybrid**: hosted provider on `rydback.net` now, self-host parked. The Hetzner trial had been paused since 2026-05-30 on identity verification and had blocked the entire identity migration, which never depended on the backend in the first place. Dropped addy.io/SimpleLogin (provider aliases cover it).
+- Dropped the NAS and the headscale-on-VPS items; added the Storage Box, Immich-on-controller, SearXNG-on-controller and the partner-access design. Restructured this file into decisions / status / backlog.
 
 ### 2026-05-31 (even later) — tailnet-only emulation stack + Android proven end-to-end
 
 - Migrated 36 GB of emulation data (ROMs/BIOS/saves) from `desktop` to controller's `/var/lib/emulation`. Controller is now the canonical source.
-- Made the emulation stack fully tailnet-only:
-  - Samba shares (`emulation-roms`, `emulation-bios`) are guest-readable, writable, delete-protected via `vfs_recycle`, exposed only on `tailscale0` + `hosts allow = 100.64.0.0/10`.
-  - Syncthing has `globalAnnounceEnabled`, `relaysEnabled`, `natEnabled`, `localAnnounceEnabled` all off; peer addresses pinned to `<peer>.ts.rydback.net:22000`. Zero public-internet chatter.
-- Declarative client wiring: betongsuggan@desktop's Syncthing comes up paired with controller and the `emulation-saves` folder pre-configured on rebuild (no web-UI clicking). System-level `emulation-mounts` module gives `x-systemd.automount` for `~/emulation/{roms,bios}` — Samba shares lazy-mount on access.
-- Lib schema refactored: per-user identity bits (SSH + Syncthing) now live under `hosts.<h>.users.<u>.{ssh,syncthing}.*`. Source of truth for cross-host references is consistent and extensible.
-- Android Syncthing proven end-to-end: both ayn-thor and fairphone connect to controller over the tailnet via MagicDNS, exchange the `emulation-saves` folder, bidirectional sync confirmed by adding files on each side.
-- This is what unlocked the three Headscale-analysis ticks above (Android client, battery/always-on, MagicDNS) — they weren't checkboxes I was aiming for, but the whole tailnet-first architecture now stands on them, so they're proven.
+- Made the emulation stack fully tailnet-only: Samba shares exposed only on `tailscale0` + `hosts allow = 100.64.0.0/10`; Syncthing with all discovery/relays off, peers pinned to `<peer>.ts.rydback.net:22000`.
+- Declarative client wiring on desktop; Android Syncthing proven end-to-end on `ayn-thor` and `fairphone` over MagicDNS. This is what proved the Android client, always-on battery posture, and MagicDNS items.
+- Lib schema refactored: per-user identity bits (SSH + Syncthing) live under `hosts.<h>.users.<u>.{ssh,syncthing}.*`.
 
 ### 2026-05-31 (later) — first restic snapshot landed on desktop
 
-- Verified end-to-end: controller's daily restic timer is active, first push to `desktop.ts.rydback.net` ran cleanly, `sudo restic-desktop snapshots` from controller shows a snapshot containing all four expected paths. The receiver side (chrooted SFTP user `restic-controller`, repo at `/var/lib/restic-repos/controller/repo`) is functioning as designed — desktop sees only encrypted pack files, which is the point.
-- Backup workstream: **Engine** and **Copy 1** ticked. **Copy 2** stays unticked (single-disk desktop ≠ redundant media). **Copy 3** stays unticked (island not yet on the tailnet).
-- Phase 0's "Stand up backups first" overall remains unticked: Copy 3 missing, DR runbook missing, no quarterly restore drill yet. The point is to not host critical data on controller until those are *also* true — not just until "a backup ran once".
-- Next: write the disaster-recovery runbook (new Backup-workstream bullet, prioritised in Phase 0), then onboard `island-stationary` to home-network so Copy 3 lights up.
+- Controller's daily restic timer is active, first push to `desktop.ts.rydback.net` ran cleanly, snapshot contains all expected paths. Receiver side (chrooted SFTP user `restic-controller`) works as designed.
+- Copy 2 stayed unticked for "redundant media" (single-disk desktop); copy 3 unticked (island not yet on the tailnet). Next: DR runbook, onboard island-stationary.
 
 ### 2026-05-31 — Vaultwarden live; pivoting to backup workstream
 
-- Vaultwarden deployed declaratively on `controller` (`modules/vaultwarden/`). Tailnet-only at the nginx vhost layer (allow `100.64.0.0/10` + `fd7a:115c:a1e0::/48`, deny all), sops-encrypted `ADMIN_TOKEN`, data at `/var/lib/vaultwarden`. Phase 0 password-manager checklist closed at the infra level.
-- Two sub-bullets remain *intentionally* unticked as operator habits, not infra work: encrypted emergency export to USB (manual weekly cadence — see `modules/vaultwarden/SPEC.md`), and "clients on all devices" (per-device install, out of repo scope).
-- Pivoting next to the **backup workstream**, since the de-Google plan blocks Nextcloud/Immich/etc. on having a working restore path. Interim topology, picked deliberately to avoid stalling on hardware procurement: `restic` pushing from `controller` → `desktop` (on-site copy) and `island-stationary` (off-site, summer house) over SFTP-on-tailnet. Receiving side is a chrooted SFTP user per source. Initial path set: `/var/lib/vaultwarden`, `/var/lib/headscale`, `/var/lib/git/nix-vault.git`, `/var/lib/emulation`.
-- This does not yet satisfy the 3-2-1 "redundant media" requirement (no mirror at either end). Deferred until dedicated NAS hardware lands; tracked in the Backup workstream section.
+- Vaultwarden deployed declaratively on `controller` (`modules/vaultwarden/`), tailnet-only at the nginx vhost, sops-encrypted `ADMIN_TOKEN`, data at `/var/lib/vaultwarden`.
+- Interim backup topology chosen to avoid stalling on hardware: restic from controller → desktop (on-site) and island-stationary (off-site) over SFTP-on-tailnet, chrooted SFTP user per source.
 
 ### 2026-05-30 — mail trial scaffolded, paused awaiting passport verification
 
-- Mail host (Option A) scaffolded under `hosts/mail/`: NixOS config (`system.nix`), disko layout (`hardware.nix`), and terranix-driven Hetzner resources (`terraform.nix`). Flake evaluates; nothing deployed.
-- Decisions locked (record in `decisions.md` when that file lands): Hetzner Cloud as VPS provider (~€4/mo CX22, Falkenstein), terranix co-located with the NixOS host rather than a separate `infra/` tree, Route 53 records remain manual through the trial (IaC for DNS deferred until Option A is proven), encrypted state via sops-nix once provisioned.
-- **Paused:** Hetzner account creation requires a passport for identity verification, which isn't on hand. Resume when passport is available — port-25 unblock request and first `tofu apply` are next.
-- Pivoting to **Phase 0 → Vaultwarden** in the interim — independent of the mail track and unblocks the rest of the de-Google work since identity migration depends on the password manager being in place first.
-
-### Quick reference — replacement map
-
-| Google service | Self‑host (tier 1) | Trusted 3rd‑party (tier 2) |
-|---|---|---|
-| Passwords | Vaultwarden | — |
-| 2FA | Aegis (local) | — |
-| Email | Stalwart/Mailcow on VPS | Proton / Tuta / Mailbox.org |
-| Drive | Nextcloud / Seafile | — |
-| Photos | Immich | — |
-| Calendar/Contacts | Nextcloud / Radicale (+ DAVx5) | — |
-| Maps | — | Organic Maps / OsmAnd (offline) |
-| Search | SearXNG | public SearXNG instance |
-| YouTube | NewPipe / FreeTube / Grayjay | (conscious‑choice logged‑in) |
-| Payments | — | Curve / Garmin Pay / Swish / bank app |
-| App store | — | Aurora Store + F‑Droid |
-| Networking | Headscale (you already run this) | — |
+- Mail host (self-host option) scaffolded under `hosts/mail/`: NixOS config, disko layout, terranix-driven Hetzner resources. Flake evaluates; nothing deployed.
+- Decisions at the time: Hetzner Cloud CX22 Falkenstein, terranix co-located with the host, Route 53 records manual through the trial, encrypted state via sops-nix once provisioned.
+- Paused on Hetzner identity verification. Pivoted to Vaultwarden.
