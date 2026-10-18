@@ -13,6 +13,17 @@ let
   self = inputs.self.lib.hosts.${config.my.common.host};
   lan = self.lan or null;
 
+  # Tailnet members by name: the router knows nothing about 100.64.0.0/10,
+  # so these come from the registry (hosts and devices with a tailnetIp)
+  tailnetClients =
+    let
+      named = lib.filterAttrs (_: x: x ? tailnetIp);
+    in
+    lib.mapAttrs' (_: h: lib.nameValuePair h.hostName [ h.tailnetIp ]) (named inputs.self.lib.hosts)
+    // lib.mapAttrs' (name: d: lib.nameValuePair (d.tailnetName or name) [ d.tailnetIp ]) (
+      named inputs.self.lib.devices
+    );
+
   hagezi =
     name:
     "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/${name}-onlydomains.txt";
@@ -97,6 +108,16 @@ in
       description = ''
         LAN router, asked for reverse lookups so clients appear by name
         (DHCP hostname) in the query log and metrics instead of by IP.
+      '';
+    };
+
+    clientNames = mkOption {
+      type = types.attrsOf (types.listOf types.str);
+      default = tailnetClients;
+      defaultText = literalExpression "<every lib host and device with a tailnetIp, by hostName / tailnetName>";
+      description = ''
+        Static client name → addresses, consulted before the reverse lookup
+        via `router`. Covers tailnet members, which no router can name.
       '';
     };
 
@@ -239,7 +260,10 @@ in
 
         # Client names from the router's DHCP table, both for the
         # per-client log/metrics and for in-addr.arpa lookups.
-        clientLookup = mkIf (cfg.router != null) { upstream = cfg.router; };
+        clientLookup = {
+          clients = cfg.clientNames;
+        }
+        // optionalAttrs (cfg.router != null) { upstream = cfg.router; };
         conditional = mkIf (cfg.router != null && cfg.reverseZones != [ ]) {
           mapping = genAttrs cfg.reverseZones (_: cfg.router);
         };

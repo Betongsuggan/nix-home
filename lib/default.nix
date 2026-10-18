@@ -23,6 +23,7 @@ let
   hostEntries = {
     bits = {
       hostName = "bits-nixos";
+      tailnetIp = "100.64.0.1";
       addresses = [ "bits" ];
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILcnHOXC9oIhImCClI4g+TpRtEUTf3l2V7U3JQOtId/i root@bits-nixos";
       users.birgerrydback = {
@@ -69,6 +70,7 @@ let
     };
 
     island-stationary = {
+      tailnetIp = "100.64.0.4";
       addresses = [ "island-stationary" ];
       # The wired NIC (eth0). Woken from island-pi: `ssh island-pi wake-island-stationary`
       wol = {
@@ -181,6 +183,7 @@ let
       type = "android";
       description = "Ayn Odin 2 Thor -- Android gaming handheld";
       tailnetName = "ayn-thor";
+      tailnetIp = "100.64.0.6";
       syncthing.id = "2VW22JQ-ARR4C4E-6DMSO7O-TW64TDQ-DYBJNXX-7HICKTH-EMEI2R5-QTAUTAH";
     };
     fairphone = {
@@ -188,6 +191,7 @@ let
       description = "Fairphone -- daily driver";
       syncthing.id = "NR2V5JP-3M7XOZ7-KRDE5KF-FHI7AT7-P4NJBYH-VAEDY63-5QEDLN5-UA7SIQ4";
       tailnetName = "fairphone";
+      tailnetIp = "100.64.0.7";
     };
   };
 in
