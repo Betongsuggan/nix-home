@@ -52,6 +52,20 @@ in
       '';
     };
 
+    nameservers = mkOption {
+      type = types.listOf types.str;
+      default = [
+        "1.1.1.1"
+        "9.9.9.9"
+      ];
+      description = ''
+        Global nameservers pushed to every tailnet client (headscale
+        `dns.nameservers.global`). Clients accept them with `--accept-dns`
+        and, since headscale overrides local DNS, use nothing else: a single
+        entry here makes that resolver the only one the client has.
+      '';
+    };
+
     extraDnsRecords = mkOption {
       type = types.listOf (
         types.submodule {
@@ -141,10 +155,7 @@ in
         dns = {
           magic_dns = true;
           base_domain = cfg.baseDomain;
-          nameservers.global = [
-            "1.1.1.1"
-            "9.9.9.9"
-          ];
+          nameservers.global = cfg.nameservers;
           extra_records = cfg.extraDnsRecords;
         };
 

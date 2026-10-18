@@ -38,6 +38,7 @@ sudo tailscale up --login-server=https://headscale.example.com --auth-key=<preau
 | listenPort | port | 8080 | Loopback port headscale listens on |
 | metricsPort | port | 9090 | Loopback port for Prometheus metrics |
 | users | list of string | [ ] | Users to provision idempotently via `headscale users create` |
+| nameservers | list of string | `[ "1.1.1.1" "9.9.9.9" ]` | Global nameservers pushed to every client (`dns.nameservers.global`). Headscale overrides clients' local DNS, so these are the only resolvers a member uses; tailscale races all of them, so list one filtering resolver alone (see `modules/dns-filter`) or none of the answers are reliably filtered |
 | autoApprovedRoutes | attrs of list of string | { } | Subnet routes to auto-approve, keyed by CIDR, each listing trusted advertisers — users (`name@`, trailing `@` required by policy v2), `group:x`, or `tag:x` |
 | derp.enable | bool | true | Run an embedded DERP relay region |
 | derp.stunPort | port | 3478 | UDP STUN port for the embedded DERP server |

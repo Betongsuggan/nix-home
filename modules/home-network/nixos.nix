@@ -218,6 +218,19 @@ in
           default = [ ];
           description = "Headscale users to provision idempotently on startup.";
         };
+        nameservers = mkOption {
+          type = types.listOf types.str;
+          default = [
+            "1.1.1.1"
+            "9.9.9.9"
+          ];
+          description = ''
+            Global nameservers pushed to tailnet clients, forwarded to
+            `headscale.nameservers`. Point this at a tailnet-reachable
+            resolver (e.g. a `dns-filter` host) to filter DNS for every
+            member, phones included, wherever they are.
+          '';
+        };
         extraDnsRecords = mkOption {
           type = types.listOf (
             types.submodule {
@@ -384,6 +397,7 @@ in
           domain
           baseDomain
           users
+          nameservers
           extraDnsRecords
           autoApprovedRoutes
           ;

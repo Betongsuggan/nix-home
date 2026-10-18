@@ -123,6 +123,14 @@ in
       owner = "nginx";
       mode = "0400";
     };
+
+    # GF_SECURITY_ADMIN_PASSWORD + GF_SECURITY_SECRET_KEY, read by systemd
+    # as Grafana's EnvironmentFile (see modules/monitoring/SPEC.md).
+    "grafana-env" = {
+      key = "services/grafana-env";
+      owner = "root";
+      mode = "0400";
+    };
   };
 
   my.home-network = {
@@ -138,6 +146,12 @@ in
 
       headscale = {
         users = [ "birger" ];
+        # Every tailnet member resolves through the dns-filter below, so the
+        # phones are filtered on mobile data too. The flip side: with
+        # controller down, tailnet members have no DNS at all (headscale
+        # overrides local DNS and tailscale races every listed resolver, so
+        # a public fallback here would also leak unfiltered answers).
+        nameservers = [ self.tailnetIp ];
         extraDnsRecords =
           # Public A records point at controller's WAN IP so ACME HTTP-01 works.
           # For tailnet members these overrides resolve to controller's tailnet IP
@@ -157,6 +171,8 @@ in
               "voice"
               "cloud"
               "office"
+              "dns"
+              "grafana"
             ]
           ++ [
             # Home-LAN devices, reachable from tailnet peers via the subnet
@@ -219,14 +235,16 @@ in
       connection = {
         id = "enp1s0-static";
         type = "ethernet";
-        interface-name = "enp1s0";
+        interface-name = self.lan.interface;
         autoconnect = true;
         autoconnect-priority = 100;
       };
       ipv4 = {
         method = "manual";
         address1 = "192.168.50.5/24,192.168.50.1";
-        dns = "192.168.50.1;1.1.1.1;";
+        # Controller resolves through its own dns-filter (tailscale then
+        # overrides this with MagicDNS, whose global resolver is the same).
+        dns = "127.0.0.1;";
       };
       ipv6.method = "auto";
     };
@@ -283,6 +301,8 @@ in
         "llm.${domain}"
         "images.${domain}"
         "voice.${domain}"
+        "dns.${domain}"
+        "grafana.${domain}"
       ];
       vhosts.vaultwarden = {
         domain = "vault.${domain}";
@@ -309,7 +329,36 @@ in
         upstream = "http://127.0.0.1:8000";
         extraConfig = tailnetOnly;
       };
+      # blocky's HTTP API + /metrics (the Grafana dashboard's blocking
+      # on/off buttons call it from the browser)
+      vhosts.dns = {
+        domain = "dns.${domain}";
+        upstream = "http://127.0.0.1:${toString config.my.dns-filter.httpPort}";
+        extraConfig = tailnetOnly;
+      };
+      vhosts.grafana = {
+        domain = "grafana.${domain}";
+        upstream = "http://127.0.0.1:${toString config.my.monitoring.port}";
+        extraConfig = tailnetOnly;
+      };
     };
+
+  # Filtering resolver for the LAN (router hands it out via DHCP, and
+  # DNSFilter forces hardcoded-DNS devices through it) and for the tailnet
+  # (headscale nameservers above). Lists, client groups and the query log
+  # are described in modules/dns-filter/SPEC.md.
+  my.dns-filter = {
+    enable = true;
+    apiUrl = "https://dns.${domain}";
+  };
+
+  # Prometheus + Grafana at grafana.rydback.net; dns-filter feeds it its
+  # metrics, query log and dashboards.
+  my.monitoring = {
+    enable = true;
+    domain = "grafana.${domain}";
+    environmentFile = config.sops.secrets."grafana-env".path;
+  };
 
   my.vaultwarden = {
     enable = true;

@@ -36,6 +36,7 @@ Exactly one mode applies per host. Set `my.home-network.mode` explicitly — the
 | `controller.headscale.domain` | string | `lib.tailnet.controlDomain` | Public domain for headscale (`server_url` host) |
 | `controller.headscale.baseDomain` | string | `lib.tailnet.baseDomain` | MagicDNS base domain, must differ from `domain` |
 | `controller.headscale.users` | list str | `[ ]` | Headscale users to provision idempotently |
+| `controller.headscale.nameservers` | list str | `[ "1.1.1.1" "9.9.9.9" ]` | Global nameservers pushed to every member, forwarded to `my.headscale.nameservers`. Point at a tailnet-reachable `dns-filter` to filter DNS for phones wherever they are |
 | `controller.headscale.extraDnsRecords` | list submod | `[ ]` | MagicDNS overrides pushed to tailnet clients |
 | `controller.headscale.autoApprovedRoutes` | attrs of list str | `{ }` | Subnet routes to auto-approve, forwarded to `my.headscale.autoApprovedRoutes` (installs an allow-all ACL policy — see that module's SPEC) |
 | `controller.bootstrap.publicDomain` | string | `"rydback.net"` | Existing nginx vhost that serves the blob |

@@ -45,6 +45,7 @@ let
     controller = {
       tailnetIp = "100.64.0.2";
       lan = {
+        interface = "enp1s0";
         subnet = "192.168.50.0/24";
         gateway = "192.168.50.1";
       };
