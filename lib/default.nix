@@ -137,8 +137,19 @@ let
       };
     };
 
-    # Not on the tailnet (yet): no keys or Syncthing IDs.
-    private-laptop = { };
+    # Onboarding in progress (hosts/private-laptop/SPEC.md); no tailnetIp yet.
+    private-laptop = {
+      addresses = [ "private-laptop" ];
+      ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDSozWvQAQEu4w2+BbElLwyWCRN/0YgBE73iTkT40XBr root@private-laptop";
+      users.betongsuggan = {
+        # The FIDO resident key works before /run/secrets exists (onboarding)
+        sshIdentities = [
+          "id_rsa"
+          "id_ed25519_sk_rk_nix-vault"
+        ];
+        ssh.id_rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDbDSO1aMonfOqDJ4MJg5E53OXjdpeU3gSmlHBArGOJJX0nNr5iyFgyiMKLEFuPVufBnYezHcoE1vXbewUBbHDAUtqKMOmgPyGyoOV70/m3BXeyBQs1YSv4drQmHNQwPsI6LJ4CrOKlXh3QmV7D62esh7fbDUC75BQv4G9fMVoHhoy5XPxID4FmM+s7Ew2csFPk01D58eplAurGnhpWZJWWK0dJ6SSFIquHN6uQjP3+0IMqpDAcTYU96nl4UbS5FmASdT1LDQBYZ8AZ+nKQ9b9aN23NJscPcv9Fl1qd+im5zCq5JoBes6ZgLocy4/EGSEQsBA8g3uTDj/L6DWyh2H0+T1YyiIVX+bbZ96/eCPqAd/WwDUsY9JWZC6+NbkXlIpr7OHTWXHImxUelC0m8XvFNt2hP/p37zvvCm97zsdBkNGx5q4aRWbhCfNKGB2B1KssU5fc6DXm3hbLJf9DquAmbd/v1Z4sa+M9/undDI6FCD1mFqAjJqSsnHpieM//676M= betongsuggan@nixos";
+      };
+    };
     mail.users.betongsuggan = { };
   };
 

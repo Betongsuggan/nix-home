@@ -23,6 +23,11 @@ Personal Intel-based laptop for daily use, development, light gaming, and game s
 - Intel graphics with firmware updates via fwupd
 - Firewall with port 8080 open for development
 
+## Tailnet onboarding (in progress)
+
+`my.home-network.mode = "bootstrap"`: not yet a tailnet member and no `nix-vault` access. Follow the runbook in
+`modules/home-network/SPEC.md`; flip to `onboarded` + `my.sops` once `secrets/private-laptop.yaml` exists in nix-vault.
+
 ## Notes
 
 - Hardware: Intel CPU with KVM support (`kvm-intel` module) and Intel WiFi (`iwlwifi`)

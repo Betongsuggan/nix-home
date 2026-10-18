@@ -54,6 +54,15 @@
     # intel.generation = "modern"; # Set to "legacy" or "arc" if needed
   };
   my.docker.enable = true;
+
+  # Tailnet onboarding stage 1: run `home-network-bootstrap` (YubiKey
+  # inserted), follow `modules/home-network/SPEC.md`, then flip to
+  # `onboarded` + my.sops and rebuild.
+  my.home-network = {
+    enable = true;
+    mode = "bootstrap";
+  };
+
   networking.firewall = {
     allowedTCPPorts = [ 8080 ];
   };
