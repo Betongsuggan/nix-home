@@ -77,6 +77,8 @@
     backend = "niri";
   };
 
+  my.sops.enable = true;
+
   my.secrets = {
     enable = true;
     keyProviders = [

@@ -13,6 +13,10 @@ let
       ssh = "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAII8ur6g8BqxDaC2/PQngQa/eEBHT7RrDtukpiacTByKaAAAADXNzaDpuaXgtdmF1bHQ= yubikey-bootstrap";
       # age recipient of the same YubiKey, the admin recipient in nix-vault
       ageRecipient = "age1yubikey1qtzynkrvd7yxa8zvnx2jd036uvklyvzmsfmq8zhpqppr3g6phfvlwc6lyd3";
+      # age-plugin-yubikey identity stub (`age-plugin-yubikey --identity`):
+      # names the YubiKey slot, holds no key material. Written to the sops
+      # keys.txt of every vault editor (modules/sops/home.nix).
+      ageIdentity = "AGE-PLUGIN-YUBIKEY-1AGVAZQYZ7KZ95KSQWM48G";
     };
   };
 

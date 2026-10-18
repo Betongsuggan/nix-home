@@ -21,7 +21,7 @@ Deploying as root is what makes unsigned closure copies acceptable to the Pi's n
 ## Hardware / boot
 
 - U-Boot + `generic-extlinux-compatible`, mainline kernel (default `linuxPackages`). No systemd-boot (`my.common.systemd-boot = false`) and no secure boot.
-- SD layout comes from the flake-built image (`packages.aarch64-linux.island-pi-sd-image`, nixpkgs `sd-image-aarch64.nix`): vfat `FIRMWARE` partition (Pi firmware + U-Boot) + ext4 `NIXOS_SD` root. Deploys only rewrite `/boot/extlinux`; the firmware partition is never touched.
+- SD layout comes from the flake-built image (`packages.aarch64-linux.island-pi-sd-image`, nixpkgs `sd-image-aarch64.nix`): vfat `FIRMWARE` partition (Pi firmware + U-Boot) + ext4 `NIXOS_SD` root. Deploys only rewrite `/boot/extlinux`; the firmware partition is never touched. `/boot/firmware`'s mount options are `mkForce`d so the image's fstab matches the deployed one (a merged duplicate list made the first deploy's switch fail on `boot-firmware.mount`; images flashed before this fix need one reboot after the first deploy).
 - zram swap (zstd, 100% of RAM) instead of SD-card swap; journald capped at 100M.
 - Wired ethernet with plain DHCP — no NetworkManager.
 

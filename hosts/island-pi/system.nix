@@ -45,7 +45,10 @@ in
     "/boot/firmware" = {
       device = "/dev/disk/by-label/FIRMWARE";
       fsType = "vfat";
-      options = [
+      # mkForce: the sd-image module defines the same options, and the merged
+      # duplicate list in the image's fstab makes the first deploy's switch
+      # fail restarting the never-loaded boot-firmware.mount.
+      options = lib.mkForce [
         "nofail"
         "noauto"
       ];
