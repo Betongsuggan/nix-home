@@ -22,7 +22,11 @@ let
     lib.mapAttrs' (_: h: lib.nameValuePair h.hostName [ h.tailnetIp ]) (named inputs.self.lib.hosts)
     // lib.mapAttrs' (name: d: lib.nameValuePair (d.tailnetName or name) [ d.tailnetIp ]) (
       named inputs.self.lib.devices
-    );
+    )
+    # This host's own lookups arrive over loopback
+    // {
+      ${self.hostName} = [ "127.0.0.1" ] ++ lib.optional (self ? tailnetIp) self.tailnetIp;
+    };
 
   hagezi =
     name:
