@@ -252,6 +252,8 @@ in
           target = "postgres://blocky@/blocky?host=/run/postgresql";
           logRetentionDays = cfg.queryLog.retentionDays;
           flushInterval = "30s";
+          creationAttempts = 10;
+          creationCooldown = "5s";
         };
 
         log.level = "info";
@@ -275,9 +277,13 @@ in
       ++ optional config.my.monitoring.enable { name = "grafana"; };
     };
 
-    systemd.services.blocky = {
-      after = optional cfg.queryLog.enable "postgresql.service";
-      requires = optional cfg.queryLog.enable "postgresql.service";
+    # The role and database come from postgresql-setup (ensure*), not from
+    # the server being up. Wait for it, but never depend on it: a broken
+    # database setup must not take the house's DNS down (blocky falls back
+    # to console logging after `creationAttempts`).
+    systemd.services.blocky = mkIf cfg.queryLog.enable {
+      after = [ "postgresql-setup.service" ];
+      wants = [ "postgresql-setup.service" ];
     };
 
     # Grafana reads the query log: a read-only grant on whatever tables
