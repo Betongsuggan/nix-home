@@ -42,19 +42,42 @@ let
       target=''${target%% · *}
       [ -n "$target" ] || exit 0
 
-      if [ "$#" -gt 0 ]; then
-        what="$# file(s)"
-        tailscale file cp "$@" "$target:" || {
+      files=("$@")
+      types=""
+      if [ "''${#files[@]}" -eq 0 ]; then
+        types=$(wl-paste --list-types 2>/dev/null) || {
+          ${notify "Nothing to send" "The clipboard is empty"}
+          exit 0
+        }
+        # Files copied in a file manager are a list of file:// URIs (CRLF
+        # separated, percent-encoded, optionally with a host): send the files
+        if grep -qx 'text/uri-list' <<<"$types"; then
+          while IFS= read -r uri; do
+            uri=''${uri%$'\r'}
+            [[ "$uri" == file://* ]] || continue
+            path=''${uri#file://}
+            path=/''${path#*/}
+            files+=("$(printf '%b' "''${path//%/\\x}")")
+          done < <(wl-paste --type text/uri-list)
+        fi
+      fi
+
+      if [ "''${#files[@]}" -gt 0 ]; then
+        if [ "''${#files[@]}" -eq 1 ]; then what=$(basename "''${files[0]}"); else what="''${#files[@]} files"; fi
+        # Taildrop sends regular files only
+        for f in "''${files[@]}"; do
+          [ -f "$f" ] || {
+            ${notify "Could not send to $target" "$f is not a regular file (folders can't be sent)"}
+            exit 1
+          }
+        done
+        tailscale file cp "''${files[@]}" "$target:" || {
           ${notify "Could not send to $target" "$what"}
           exit 1
         }
       else
         # Clipboard: an image as PNG, anything else as text
         name="clipboard-$(date +%Y%m%d-%H%M%S)"
-        types=$(wl-paste --list-types 2>/dev/null) || {
-          ${notify "Nothing to send" "The clipboard is empty"}
-          exit 0
-        }
         if grep -qx 'image/png' <<<"$types"; then
           what="clipboard image"
           wl-paste --type image/png | tailscale file cp --name "$name.png" - "$target:"
