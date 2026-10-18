@@ -58,7 +58,13 @@ in
 
     users.groups.${cfg.user} = { };
 
-    environment.systemPackages = [ pkgs.git ];
+    # /etc/gitconfig, read by git-upload-pack: serve any commit reachable from
+    # a branch, not only branch tips. Nix fetches a flake input's locked rev by
+    # SHA when it isn't cached, which fails once the branch has moved past it.
+    programs.git = {
+      enable = true;
+      config.uploadpack.allowReachableSHA1InWant = true;
+    };
 
     systemd.tmpfiles.rules = [
       "d ${cfg.dataDir} 0750 ${cfg.user} ${cfg.user} -"

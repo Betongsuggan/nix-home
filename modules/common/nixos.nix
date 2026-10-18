@@ -167,15 +167,19 @@ with lib;
       };
     };
 
-    # Controller's SSH host key, trusted on every host so new installs don't
-    # hit a TOFU prompt when fetching nix-vault via the tailnet.
-    programs.ssh.knownHosts."controller" = {
-      hostNames = [
-        (inputs.self.lib.tailnet.fqdn "controller")
-        "controller"
-      ]
-      ++ inputs.self.lib.hosts.controller.addresses;
-      publicKey = inputs.self.lib.hosts.controller.ssh.host;
-    };
+    # Every registry host's SSH host key, trusted everywhere: fleet SSH
+    # (`ssh <host>`, the fleet dashboard) and new installs fetching nix-vault
+    # from controller never hit a TOFU prompt.
+    programs.ssh.knownHosts = mapAttrs (name: h: {
+      hostNames = unique (
+        [
+          name
+          h.hostName
+          (inputs.self.lib.tailnet.fqdn name)
+        ]
+        ++ h.addresses or [ ]
+      );
+      publicKey = h.ssh.host;
+    }) (filterAttrs (_: h: (h.ssh.host or null) != null) inputs.self.lib.hosts);
   };
 }

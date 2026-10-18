@@ -31,6 +31,7 @@ Clone with `git clone git@<host>:myrepo.git`.
 ## Notes
 
 - Requires `openssh.enable = true` on the same host.
+- Any commit reachable from a branch can be fetched by SHA (`uploadpack.allowReachableSHA1InWant` in `/etc/gitconfig`). Nix needs this to fetch a flake input's locked rev once the branch has moved past it.
 - The git user's shell is `git-shell`, which only permits git protocol commands. Interactive SSH (`ssh git@host`) is rejected.
 - Repositories are bare (`git init --bare`) and created idempotently by a oneshot systemd unit (`git-server-init.service`) on activation. Existing repos are never modified, so you can safely add new entries to `repositories` later.
 - No firewall changes are made by this module; port 22 must be reachable (e.g. via `openssh.openFirewall = true`).

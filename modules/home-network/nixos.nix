@@ -330,11 +330,9 @@ in
             IdentitiesOnly yes
         '';
 
-        # Peer keys for each account, from its sshFrom / sshFromFleet in lib
+        # Peer keys for each account, from lib.sshFrom (the admin mesh by default)
         users.users = genAttrs config.my.common.accounts (user: {
-          openssh.authorizedKeys.keys = concatMap (
-            p: collect isString (selfLib.hosts.${p.host}.users.${p.user}.ssh or { })
-          ) (selfLib.sshFrom config.my.common.host user);
+          openssh.authorizedKeys.keys = selfLib.sshPeerKeys (selfLib.sshFrom config.my.common.host user);
         });
       }
 

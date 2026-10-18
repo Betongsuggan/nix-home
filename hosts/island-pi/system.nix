@@ -8,14 +8,10 @@
 
 let
   # Deploys run as root over SSH (nixos-rebuild --target-host root@…) and must
-  # work from ANY fleet machine, so every human user key is authorized. This is
-  # the same expansion modules/home-network does from sshFrom — inlined here
-  # because it must also hold in stage 1, before home-network is enabled.
-  # Deliberately not allUserPeers: that would include service identities like
-  # controller's restic user.
-  deployKeys = lib.concatMap (
-    p: lib.collect lib.isString (inputs.self.lib.hosts.${p.host}.users.${p.user}.ssh or { })
-  ) (inputs.self.lib.allPeersFor "betongsuggan" ++ inputs.self.lib.allPeersFor "birgerrydback");
+  # work from ANY fleet machine, so every admin identity's key is authorized
+  # (lib.fleetPeers, never service users). Set here because it must also hold
+  # in stage 1, before home-network is enabled.
+  deployKeys = inputs.self.lib.sshPeerKeys inputs.self.lib.fleetPeers;
 in
 {
   system.stateVersion = "26.05";

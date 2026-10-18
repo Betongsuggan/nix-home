@@ -16,7 +16,7 @@ nixos-rebuild switch --flake .#island-pi --target-host root@island-pi.ts.rydback
 
 With `--target-host` and no `--build-host`, evaluation and building happen on the deploying machine; only the closure is copied over SSH. Any x86 fleet host works as the deployer: `modules/common` enables `boot.binfmt.emulatedSystems = [ "aarch64-linux" ]` on all x86_64 hosts (active after that host's next rebuild). Most of the aarch64 closure substitutes straight from cache.nixos.org; only evaluation and small local derivations run under qemu emulation.
 
-Deploying as root is what makes unsigned closure copies acceptable to the Pi's nix-daemon (no `trusted-users` needed). Root and `betongsuggan` authorize every human user key in the fleet (`lib.allPeersFor`), so deploys work from any machine, in both onboarding stages.
+Deploying as root is what makes unsigned closure copies acceptable to the Pi's nix-daemon (no `trusted-users` needed). Root and `betongsuggan` authorize every admin identity's key in the fleet (`lib.fleetPeers`), so deploys work from any machine, in both onboarding stages.
 
 ## Hardware / boot
 

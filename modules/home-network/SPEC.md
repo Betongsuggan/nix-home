@@ -109,7 +109,7 @@ cd ~/nix-home && git pull && sudo nixos-rebuild switch --flake .#controller
 sudo headscale preauthkeys create --user birger --reusable --expiration 8760h
 ```
 
-The rebuild pulls in the lib changes from step 2 — controller now trusts the new host's user keys for SSH (controller's account has `sshFromFleet = true` in lib) and for git access to `nix-vault.git` (via `git-server.authorizedKeys = lib.allSshKeys`). Copy the printed preauth key string. **One-time cleanup** of any zombie `installer-…` nodes, left over from before the rotator switched to ephemeral keys and before the bootstrap joined under the real hostname:
+The rebuild pulls in the lib changes from step 2 — controller now trusts the new host's user keys for SSH (admin accounts accept every admin identity by default, `lib.sshFrom`) and for git access to `nix-vault.git` (via `git-server.authorizedKeys = lib.allSshKeys`). Copy the printed preauth key string. **One-time cleanup** of any zombie `installer-…` nodes, left over from before the rotator switched to ephemeral keys and before the bootstrap joined under the real hostname:
 
 ```bash
 sudo headscale nodes list --output json \
@@ -249,5 +249,5 @@ The `--ephemeral` flag is what makes bootstrap nodes auto-clean: headscale remov
 - Headscale names a machine (its MagicDNS name, what the fleet dashboard and restic reach) when it first joins, from the hostname it reports then. Registering again with the same machine key keeps that name, so a host whose bootstrap ran under another name keeps it: fix it with `sudo headscale nodes rename -i <id> <host>` on controller.
 - The skip trusts local state: a node deleted on the headscale side that still has the right name stays logged out. Recover with `sudo tailscale logout && sudo systemctl start tailscaled-autoconnect`.
 - sshd is enabled with the global firewall closed; port 22 is open on `tailscale0` only.
-- Each account's `authorized_keys` gets the peer keys its registry entry allows (`sshFrom`, or `sshFromFleet` on controller).
+- Each account's `authorized_keys` gets the peer keys its registry entry allows (`lib.sshFrom`: every other host's admin identities for an admin account, unless the account sets an explicit `sshFrom`).
 - root (nix-daemon) fetches `nix-vault` from `git@controller` with the host SSH key (`Match localuser root user git`).

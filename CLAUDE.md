@@ -28,14 +28,16 @@ profile follows `workstation`) and only set `mkDefault`s; `modules/common` is th
 a profile or module over repeating a setting in several hosts.
 
 Identity is registry-driven: hostnames (`hosts.<name>.hostName`), login accounts and git identity (`accounts`), who may SSH
-where (`hosts.<host>.users.<user>.sshFrom` / `sshFromFleet`), SSH public keys (which also drive sops key placement) and
+where (every admin identity to every admin account by default, `lib.sshFrom`; `hosts.<host>.users.<user>.sshFrom` overrides), SSH public keys (which also drive sops key placement) and
 fleet constants (`domain`, `operator`, `tailnet`) all come from `lib/default.nix`. Never hardcode these in a host or module.
 
 Window-manager keybinds are defined once in `my.window-manager.keybinds` (`modules/window-manager/home.nix`) and rendered by
 each backend; add or change binds there, not in a backend. Multi-backend modules dispatch through an attrset of backends.
 
-Verify every change: `nix flake check --no-build --all-systems` (all hosts plus `checks/backends.nix`), and for refactors
-compare `scripts/baseline.sh` output before and after; a pure refactor must leave every drvPath unchanged. Never run
+Verify every change by evaluating only what it touches: the affected hosts'
+`nix eval .#nixosConfigurations.<host>.config.system.build.toplevel.drvPath`, or the specific option/lib value changed.
+Don't run the full `nix flake check` unless asked. For refactors compare `scripts/baseline.sh` output before and after;
+a pure refactor must leave every drvPath unchanged. Never run
 `nix flake lock --override-input nix-vault ...`: it writes the local path into `flake.lock`.
 
 When we're creating new modules, it is important that TO AS BIG EXTENT POSSIBLE use the nix programming language to define it.

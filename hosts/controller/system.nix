@@ -18,7 +18,7 @@ in
       # Kept inline because it's a bootstrap credential, not a tailnet peer.
       # See hosts/controller/SPEC.md for the full flow.
       inputs.self.lib.operator.yubikey.ssh
-      # Tailnet peer keys come from lib (sshFromFleet on this account).
+      # Tailnet peer keys come from lib (lib.sshFrom, the admin mesh).
     ];
   };
 
@@ -137,9 +137,9 @@ in
     enable = true;
     mode = "controller";
 
-    # Every user pubkey in `lib/default.nix` may SSH in as `betongsuggan`
-    # (sshFromFleet there): new hosts get access by being added to lib and
-    # rebuilding controller, with no edit of this file.
+    # Every admin identity in `lib/default.nix` may SSH in as `betongsuggan`
+    # (lib.sshFrom's default mesh): new hosts get access by being added to lib
+    # and rebuilding controller, with no edit of this file.
 
     controller = {
       headscaleUser = "birger";
