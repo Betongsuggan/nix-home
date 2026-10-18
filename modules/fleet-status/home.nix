@@ -63,9 +63,14 @@ let
       dir=$(mktemp -d)
       trap 'rm -rf "$dir"' EXIT
 
-      # Every host's status in parallel; sleeping hosts time out quickly
+      # The status of every host tailscale sees online, in parallel. Asleep or
+      # absent ones would only hit the timeout, so they aren't asked (all are
+      # when tailscale itself can't answer).
       tailscale status --json > "$dir/tailscale.json" 2>/dev/null || echo '{}' > "$dir/tailscale.json"
-      for fqdn in $(jq -r '.[].fqdn' "$hosts"); do
+      for fqdn in $(jq -r --slurpfile ts "$dir/tailscale.json" '
+        ($ts[0] | [(.Self // empty), ((.Peer // {}) | .[])] | map(select(.Online) | .HostName)) as $online
+        | .[] | select(($online | length) == 0 or (.tailnetName | IN($online[]))) | .fqdn
+      ' "$hosts"); do
         curl -sf -m 2 "http://$fqdn:${toString selfLib.tailnet.statusPort}/" > "$dir/$fqdn.json" &
       done
       wait

@@ -30,7 +30,7 @@ my.fleet-status.dashboard.enable = true;    # Home Manager: a non-admin user
   - `system`: the running system
   - `rebootPending`: the running system differs from the booted one
   - `rebuilt`: when the system profile last changed
-- **Dashboard rows**: the registry's hosts, fetched in parallel (2 s timeout). A host that doesn't answer shows tailscale's view instead: asleep since when, online but without a status service, or not on the tailnet.
+- **Dashboard rows**: the registry's hosts. Those tailscale reports online are fetched in parallel (2 s timeout); asleep or absent ones aren't asked, so they don't hold the menu up for the timeout (all are asked when `tailscale status` fails). A host without a status shows tailscale's view instead: asleep since when, online but without a status service, or not on the tailnet.
 - **Actions**, derived from the registry for this user on this host:
   - **SSH** where `sshFrom` allows it; it opens a terminal on the `ssh <host>` alias from `modules/ssh`
   - **Wake** where the host has a `wol` relay this user can reach (`ssh <relay> wake-<host>`)
