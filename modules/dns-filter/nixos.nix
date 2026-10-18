@@ -292,8 +292,8 @@ in
       mkIf (cfg.queryLog.enable && config.my.monitoring.enable)
         {
           description = "Grant Grafana read access to blocky's query log";
-          after = [ "postgresql.service" ];
-          requires = [ "postgresql.service" ];
+          after = [ "postgresql-setup.service" ];
+          requires = [ "postgresql-setup.service" ];
           wantedBy = [ "multi-user.target" ];
           serviceConfig = {
             Type = "oneshot";
