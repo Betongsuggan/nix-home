@@ -32,7 +32,7 @@ Any x86 fleet host can build the image and deploy, with two conditions:
 1. **aarch64 emulation must be active on the deployer.** `modules/common` turns it on for every x86 host, but only after that host has been rebuilt since. Check with `ls /proc/sys/fs/binfmt_misc | grep aarch64`; if nothing prints, `sudo nixos-rebuild switch` the deployer first.
 2. **Stage 2 needs `nix-vault`.** The deploy evaluates the flake, and the flake's `nix-vault` input is fetched from controller over the tailnet (`git+ssh://git@controller.ts.rydback.net/...`). A deployer that is **not on the tailnet** (`private-laptop` today) cannot fetch it. Either onboard that deployer first (`modules/home-network/SPEC.md`), or evaluate against a working clone copied onto it: `scp -r ~/nix-vault <deployer>:` from any onboarded host over the LAN, then add `--override-input nix-vault path:$HOME/nix-vault` to every `nixos-rebuild` / `nix build` below. Stage 1 (image, flash, first boot, host key) needs no secrets and works from any deployer.
 
-Session plan as of 2026-10-18: Pi is at home, no card flashed; summer-place subnet unknown (probably `192.168.1.0/24`, confirm from the Pi's own address once it is there); no restic target on the Pi for now.
+Status 2026-10-18: flashed and booted on the home LAN, host key registered, stage 2 (onboarded + sops) enabled in `system.nix`; `advertiseRoutes` stays commented until the Pi is at the summer place. Summer-place subnet unknown (probably `192.168.1.0/24`, confirm from the Pi's own address once it is there); no restic target on the Pi for now.
 
 ## First install (SD image)
 
@@ -71,7 +71,7 @@ The standard runbook (`modules/home-network/SPEC.md`) uses `mode = "bootstrap"` 
 
 `my.home-network.advertiseRoutes` advertises the summer-place LAN and enables IP forwarding. Caveats:
 
-- Flags apply at **registration only**. Changing routes later: `sudo tailscale set --advertise-routes=…` on the Pi.
+- Routes are re-applied on every tailscaled start (`set-flags`), so changing `advertiseRoutes` and deploying is enough.
 - Routes need headscale-side approval (step 6 above).
 - The summer-place subnet must not collide with the home LAN (`192.168.50.0/24`) — if both routers ship the same default subnet, renumber the summer one.
 

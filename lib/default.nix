@@ -98,11 +98,7 @@ let
       system = "aarch64-linux";
       users.betongsuggan = { };
       addresses = [ "island-pi" ];
-      # FIXME: fill in after first boot (onboarding step 2 in
-      # hosts/island-pi/SPEC.md): /etc/ssh/ssh_host_ed25519_key.pub. Feeds
-      # lib.allSshKeys -> controller's git-server authorized keys, per fleet
-      # convention. Left out until known so no bogus key lands on controller.
-      # ssh.host = "ssh-ed25519 AAAA... root@island-pi";
+      ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAVLZdSvoCGrRaHnh5jjXVnQ2lA9ppARq+jm38z/ct5A root@island-pi";
     };
 
     desktop = {

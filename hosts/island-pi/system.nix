@@ -94,22 +94,22 @@ in
   # wake-island-stationary` (generated from lib.hosts.*.wol.relay, see
   # modules/common)
 
-  # --- Stage 2 (uncomment after nix-vault enrollment; see SPEC.md) ------------
+  # --- Tailnet --------------------------------------------------------------
   # This host never evaluates nix itself, so it skips bootstrap mode entirely:
   # the deploying machine fetches nix-vault, the Pi only needs its host key
   # registered as an age recipient so sops can decrypt at activation.
-  #
-  # my.home-network = {
-  #   enable = true;
-  #   mode = "onboarded";
-  # };
-  #
-  # my.sops = {
-  #   enable = true;
-  #   secretsFile = "${inputs.nix-vault}/secrets/island-pi.yaml";
-  # };
-  #
-  # # Subnet router: advertise the summer-place LAN to the tailnet. Applied at
-  # # registration only; routes must be approved on controller (see SPEC.md).
-  # my.home-network.advertiseRoutes = [ "192.168.0.0/24" ]; # FIXME: real summer-place subnet
+  my.home-network = {
+    enable = true;
+    mode = "onboarded";
+  };
+
+  my.sops = {
+    enable = true;
+    secretsFile = "${inputs.nix-vault}/secrets/island-pi.yaml";
+  };
+
+  # Subnet router: advertise the summer-place LAN to the tailnet. Re-applied on
+  # every tailscaled start (set-flags); routes must be approved on controller
+  # (see SPEC.md). Enable once the Pi is there and the subnet is known.
+  # my.home-network.advertiseRoutes = [ "192.168.1.0/24" ]; # FIXME: real summer-place subnet
 }
