@@ -32,7 +32,6 @@
       cursor-style = "block";
       cursor-style-blink = false;
       mouse-hide-while-typing = true;
-      copy-on-select = "clipboard";
       unfocused-split-opacity = 0.8;
       focus-follows-mouse = true;
 

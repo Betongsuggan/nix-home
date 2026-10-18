@@ -41,6 +41,9 @@ in
         scrollback-limit = 10000;
         clipboard-read = "allow";
         clipboard-write = "allow";
+        # Highlighting text is the copy (clipboard, not only primary); see
+        # "Clipboard" in SPEC.md. A host's extraSettings still overrides.
+        copy-on-select = "clipboard";
 
         # Ghostty doesn't use fontconfig fallback: route emoji to a color font
         font-codepoint-map = map (range: "${range}=Noto Color Emoji") emojiRanges;

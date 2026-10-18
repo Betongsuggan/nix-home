@@ -14,6 +14,12 @@ in
     programs.alacritty = {
       enable = true;
       settings = mkMerge [
+        {
+          # Highlighting text is the copy: it lands in the clipboard (Ctrl+V
+          # anywhere), not only in the primary selection (middle click).
+          # See "Clipboard" in SPEC.md.
+          selection.save_to_clipboard = mkDefault true;
+        }
         # Explicit family override still supported; wins over stylix
         (mkIf (cfg.font.family != null) {
           font.normal.family = mkForce cfg.font.family;
