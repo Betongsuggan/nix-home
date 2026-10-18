@@ -53,12 +53,11 @@ Anything blocky supports but this module does not expose goes straight into `ser
 - **Does not block:** a device that ignores DHCP and asks `8.8.8.8` directly, unless the router redirects port 53 (below). A device using DNS-over-HTTPS, or talking to a hardcoded IP, bypasses DNS entirely; only a per-device firewall rule on the router stops that. The query log is what tells you whether any device does this: a TV that is "quiet" in the log while clearly online is talking around DNS.
 - **Does not isolate** IoT devices from the LAN. That is the router's guest network or VLANs.
 
-## Router setup (ASUS, stock firmware)
+## Router setup (ASUS)
 
-1. **LAN → DHCP Server → DNS Server 1** = this host's LAN IP; leave DNS Server 2 empty, or devices will fall back to it when they feel like it.
-2. **WAN → DNSFilter → Global Filter Mode** = *Custom 1*, with Custom DNS 1 = this host's LAN IP. This DNATs every outbound port-53 packet to the filter, which is what catches TVs with hardcoded resolvers.
-3. On the same page, add **this host's MAC with filter mode *No Filtering***. Blocky's own plain-DNS lookups (`router` for reverse zones) would otherwise be redirected back to itself.
-4. Renew DHCP on a client (or wait for leases to expire) and check with `nslookup ad.doubleclick.net`: the answer must be `0.0.0.0`.
+1. **LAN → DHCP Server → DNS Server 1** = this host's LAN IP; leave DNS Server 2 empty, or devices will fall back to it when they feel like it. Devices pick it up as their leases renew (toggle a device's network to force it).
+2. **Catching hardcoded resolvers** (a TV that asks `8.8.8.8` regardless of DHCP) needs the router to redirect every outbound port-53 packet to this host, with this host itself exempted so its own reverse lookups to the router do not loop. Stock ASUSWRT 3.0.0.4 had this as *AiProtection → Parental Controls → DNS Filtering* (Global Filter Mode *Custom 1*, client list entry *No Filtering* for this host). **The 3.0.0.6.102 firmware line dropped it.** On that firmware the options are Asuswrt-Merlin (*WAN → DNS Director*, same settings) or OpenWrt. Decide from evidence: a LAN device that is online but absent from the query log is bypassing DHCP, and only then is a firmware change worth it.
+3. Check from a client with `nslookup lgsmartad.com`: the answer must be `0.0.0.0`.
 
 Phones on the tailnet need nothing: headscale pushes the resolver.
 
