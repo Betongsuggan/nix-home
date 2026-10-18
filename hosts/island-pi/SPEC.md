@@ -25,6 +25,15 @@ Deploying as root is what makes unsigned closure copies acceptable to the Pi's n
 - zram swap (zstd, 100% of RAM) instead of SD-card swap; journald capped at 100M.
 - Wired ethernet with plain DHCP — no NetworkManager.
 
+## Deployer prerequisites (read before the first install)
+
+Any x86 fleet host can build the image and deploy, with two conditions:
+
+1. **aarch64 emulation must be active on the deployer.** `modules/common` turns it on for every x86 host, but only after that host has been rebuilt since. Check with `ls /proc/sys/fs/binfmt_misc | grep aarch64`; if nothing prints, `sudo nixos-rebuild switch` the deployer first.
+2. **Stage 2 needs `nix-vault`.** The deploy evaluates the flake, and the flake's `nix-vault` input is fetched from controller over the tailnet (`git+ssh://git@controller.ts.rydback.net/...`). A deployer that is **not on the tailnet** (`private-laptop` today) cannot fetch it. Either onboard that deployer first (`modules/home-network/SPEC.md`), or evaluate against a working clone copied onto it: `scp -r ~/nix-vault <deployer>:` from any onboarded host over the LAN, then add `--override-input nix-vault path:$HOME/nix-vault` to every `nixos-rebuild` / `nix build` below. Stage 1 (image, flash, first boot, host key) needs no secrets and works from any deployer.
+
+Session plan as of 2026-10-18: Pi is at home, no card flashed; summer-place subnet unknown (probably `192.168.1.0/24`, confirm from the Pi's own address once it is there); no restic target on the Pi for now.
+
 ## First install (SD image)
 
 On any x86 host with binfmt active (rebuild it once first):
