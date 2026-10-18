@@ -110,7 +110,7 @@ in
     blocklists = mkOption {
       type = types.attrsOf (types.listOf types.str);
       default = {
-        hagezi-pro = [ (hagezi "pro") ];
+        hagezi-pro = [ (hagezi "pro.plus") ];
         lg-webos = [ (hagezi "native.lgwebos") ];
         samsung = [ (hagezi "native.samsung") ];
         roku = [ (hagezi "native.roku") ];

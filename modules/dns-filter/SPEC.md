@@ -36,7 +36,7 @@ Then on the router (operator steps, see below): hand this host out as the DHCP D
 | bootstrapDns | list of attrs | IPs for the two defaults | How the upstream hostnames and the list URLs get resolved before blocky can resolve anything. Every hostname in `upstreams` needs an entry. |
 | router | null or str | `lib.hosts.<host>.lan.gateway` | Asked for reverse lookups so clients show up by DHCP hostname in the log and metrics. |
 | reverseZones | list of str | the `in-addr.arpa` zone of `lib.hosts.<host>.lan.subnet` (if a /24) | Reverse zones forwarded to `router`. |
-| blocklists | attrs of list of str | hagezi *Multi PRO* + the LG webOS, Samsung, Roku, Amazon and Xiaomi native-tracker lists | Named denylist groups: URLs, local files, or inline domains (`"example.com\n*.example.net"`). |
+| blocklists | attrs of list of str | hagezi *Multi PRO++* + the LG webOS, Samsung, Roku, Amazon and Xiaomi native-tracker lists | Named denylist groups: URLs, local files, or inline domains (`"example.com\n*.example.net"`). |
 | allowlists | attrs of list of str | `{ }` | Per-group exceptions. The escape hatch when a list breaks something. |
 | clientGroups | attrs of list of str | `{ default = <every blocklist>; }` | Which groups apply to which clients (blocky `clientGroupsBlock`): `default`, a client-name glob (`lg-*`), an IP, or a CIDR. |
 | customDomains | attrs of str | `{ }` | Static name → address answers. |
@@ -49,7 +49,7 @@ Anything blocky supports but this module does not expose goes straight into `ser
 
 ## What it blocks, and what it cannot
 
-- **Blocks:** any DNS name on the lists, for any device that asks this resolver. hagezi *Multi PRO* is a broad ads/tracking/telemetry/malware list ("works best if an admin nearby can unblock something"). The vendor *native* lists are small (a few hundred domains each) and target the trackers baked into those devices' firmware. Add more from [hagezi's `wildcard/`](https://github.com/hagezi/dns-blocklists/tree/main/wildcard) (`native.apple`, `native.tiktok`, `native.winoffice`, `native.huawei`, `tif` for pure threat intel, …) as `<name>-onlydomains.txt`.
+- **Blocks:** any DNS name on the lists, for any device that asks this resolver. hagezi *Multi PRO++* (`pro.plus`) is a broad ads/tracking/telemetry/malware list, one notch stricter than *PRO* (it also takes the ad-auction domains news sites use); hagezi's own note is that an admin should be nearby to unblock the occasional site feature. `pro` is the softer fallback, `ultimate` the harder one. The vendor *native* lists are small (a few hundred domains each) and target the trackers baked into those devices' firmware. Add more from [hagezi's `wildcard/`](https://github.com/hagezi/dns-blocklists/tree/main/wildcard) (`native.apple`, `native.tiktok`, `native.winoffice`, `native.huawei`, `tif` for pure threat intel, …) as `<name>-onlydomains.txt`.
 - **Does not block:** a device that ignores DHCP and asks `8.8.8.8` directly, unless the router redirects port 53 (below). A device using DNS-over-HTTPS, or talking to a hardcoded IP, bypasses DNS entirely; only a per-device firewall rule on the router stops that. The query log is what tells you whether any device does this: a TV that is "quiet" in the log while clearly online is talking around DNS.
 - **Does not isolate** IoT devices from the LAN. That is the router's guest network or VLANs.
 
