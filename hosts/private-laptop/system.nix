@@ -55,12 +55,14 @@
   };
   my.docker.enable = true;
 
-  # Tailnet onboarding stage 1: run `home-network-bootstrap` (YubiKey
-  # inserted), follow `modules/home-network/SPEC.md`, then flip to
-  # `onboarded` + my.sops and rebuild.
   my.home-network = {
     enable = true;
-    mode = "bootstrap";
+    mode = "onboarded";
+  };
+
+  my.sops = {
+    enable = true;
+    secretsFile = "${inputs.nix-vault}/secrets/private-laptop.yaml";
   };
 
   networking.firewall = {
