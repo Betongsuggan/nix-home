@@ -57,6 +57,7 @@ Everything below runs on `controller` unless noted. ✅ live and declarative · 
 | `restic check` / restore test | ❌ Never run | backlog 1 |
 | Disaster-recovery runbook | ✅ `docs/disaster-recovery.md` (2026-10-18), not yet exercised | — |
 | Search — SearXNG | 🟡 Exists only as Open WebUI's loopback sidecar on `desktop` | `modules/ai-server` |
+| Home-network telemetry — DNS filter + Grafana | 🟡 Live (2026-10-18): blocky on controller for LAN (DHCP) and tailnet, hagezi + vendor lists, encrypted upstreams, per-client query log, dashboards at `grafana.rydback.net`. Router cannot force hardcoded-DNS devices (102.x firmware has no DNS Filtering); watch the log for bypassing devices before deciding on Merlin | `modules/dns-filter`, `modules/monitoring` |
 | Maps, app stores, YouTube frontend | ❌ Not confirmed | phone |
 | Payments | ❌ Not started (Swish + bank app cover most of Sweden already) | phone |
 | Partner access | ❌ One headscale user (`birger`), allow-all ACL | `hosts/controller/system.nix` |
@@ -120,6 +121,12 @@ Parked, not deleted: `hosts/mail` (self-host trial; reactivation criteria in its
 ---
 
 ## 6. Progress log
+
+### 2026-10-18 (later) — the house resolves through controller
+
+- `modules/dns-filter` (blocky) and `modules/monitoring` (Prometheus + Grafana) live on controller. The router's DHCP hands out controller as DNS; headscale pushes it to every tailnet member, verified on `bits` (LG telemetry names answer `0.0.0.0` over the tailnet path). Upstreams are Quad9 and Mullvad over DNS-over-TLS.
+- Found and fixed on the way: PostgreSQL's setup unit had been failing since the 26.05 upgrade (glibc collation version 2.40 → 2.42), so no new database could be created; refreshed by hand and reindexed Nextcloud/OnlyOffice. A declarative `postgresql-collation-refresh` unit is a candidate for the next release upgrade.
+- Open: devices with hardcoded resolvers cannot be redirected on the ASUS 3.0.0.6.102 firmware. Read the query log after a day; flash Asuswrt-Merlin (DNS Director) only if a device is provably bypassing.
 
 ### 2026-10-18 — re-baseline
 
