@@ -184,9 +184,11 @@ in
               value = self.lan.gateway;
             }
           ];
-        # Auto-approve the LAN route advertised below. Trailing @ is
-        # headscale policy-v2 username syntax.
-        autoApprovedRoutes.${self.lan.subnet} = [ "birger@" ];
+        # Auto-approve every registry LAN (home: this host; summer place:
+        # island-pi). Trailing @ is headscale policy-v2 username syntax.
+        autoApprovedRoutes = lib.mapAttrs' (_: h: lib.nameValuePair h.lan.subnet [ "birger@" ]) (
+          lib.filterAttrs (_: h: h ? lan.subnet) inputs.self.lib.hosts
+        );
       };
     };
   };

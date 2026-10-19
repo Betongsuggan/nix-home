@@ -37,9 +37,8 @@ Any x86 fleet host can build the image and deploy, with two conditions:
 Status 2026-10-18: onboarded on the home LAN — on the tailnet as `island-pi` (100.64.0.8), sops working, reboot verified. Should come up on its own at the summer place (DHCP + saved tailnet login; DERP relay via controller if the router blocks direct connections). Left to do there:
 
 - [ ] **Host key backup** (if not done before leaving): `ssh root@island-pi.ts.rydback.net 'tar -C /etc/ssh -czf - ssh_host_ed25519_key ssh_host_ed25519_key.pub' > island-pi-hostkey.tgz`, stored privately. Needed to re-flash without re-enrolling (see Recovery).
-- [ ] **Find the subnet:** `ssh island-pi.ts.rydback.net ip -4 addr show eth0`. It must not be the home LAN `192.168.50.0/24` (renumber the summer router if it is).
-- [ ] **Advertise it:** uncomment `my.home-network.advertiseRoutes` in `system.nix` with the real subnet, then deploy from bits: `nixos-rebuild switch --flake .#island-pi --target-host root@island-pi.ts.rydback.net`.
-- [ ] **Approve the route on controller** (only the home subnet is auto-approved): `sudo headscale nodes list-routes`, then `sudo headscale nodes approve-routes --identifier <id> --routes <subnet>`. Check from another peer that a summer-LAN address answers.
+- [ ] **Check the subnet:** `ssh island-pi.ts.rydback.net ip -4 addr show`. The registry assumes `192.168.1.0/24` (`lib.hosts.island-pi.lan.subnet`); if the summer router uses something else, change that one value. It must never be the home LAN `192.168.50.0/24` (renumber the summer router if it is).
+- [ ] **Approve + advertise:** controller auto-approves every registry `lan.subnet`, so first `git pull && sudo nixos-rebuild switch --flake .#controller` on controller, then deploy the Pi from bits: `nixos-rebuild switch --flake .#island-pi --target-host root@island-pi.ts.rydback.net`. Verify with `sudo headscale nodes list-routes` on controller and ping a summer-LAN address from another peer.
 - [ ] **Wake-on-LAN:** confirm WoL is enabled in island-stationary's BIOS (`wakeOnLan` is already on in its config), shut it down, then `ssh island-pi wake-island-stationary` and `ssh island-stationary.ts.rydback.net`.
 - [ ] Remove this section and update the status once done.
 
@@ -67,22 +66,18 @@ The standard runbook (`modules/home-network/SPEC.md`) uses `mode = "bootstrap"` 
 2. **Register in `lib/default.nix`:** fill in the island-pi `ssh.host` entry. Commit, push.
 3. **Controller:** `git pull && sudo nixos-rebuild switch --flake .#controller` (trusts the new key via `allSshKeys`), then mint a preauth key: `sudo headscale preauthkeys create --user birger --reusable --expiration 8760h`.
 4. **nix-vault:** convert the host key (`ssh-to-age`), add the `age1…` recipient to `.sops.yaml`, create `secrets/island-pi.yaml` with `services.headscale-preauthkey`, `sops updatekeys`, commit, push.
-5. **Stage 2 flip in `system.nix`:** uncomment `my.home-network` (onboarded), `my.sops`, and `my.home-network.advertiseRoutes` (fill the real summer-place subnet). `services.openssh.openFirewall = true` stays: it no longer conflicts with the tailnet defaults and keeps LAN SSH as the recovery path. Then `nix flake update nix-vault` and deploy over LAN:
+5. **Stage 2 flip in `system.nix`:** uncomment `my.home-network` (onboarded) and `my.sops`; `advertiseRoutes` already follows `lib.hosts.island-pi.lan.subnet`. `services.openssh.openFirewall = true` stays: it no longer conflicts with the tailnet defaults and keeps LAN SSH as the recovery path. Then `nix flake update nix-vault` and deploy over LAN:
    `nixos-rebuild switch --flake .#island-pi --target-host root@<lan-ip>`
-6. **Approve routes on controller** (headscale ≥0.26 syntax; verify with `--help`):
-   ```bash
-   sudo headscale nodes list-routes
-   sudo headscale nodes approve-routes --identifier <node-id> --routes <subnet>
-   ```
+6. **Route approval** is automatic: controller's headscale policy auto-approves every registry `lan.subnet`, so rebuild controller after the registry change and check with `sudo headscale nodes list-routes`.
 7. **Reboot the Pi once while you still have physical access** — verifies the lean deployed initrd (without the image's all-hardware profile) still mounts the SD root.
 
 ## Subnet router
 
-`my.home-network.advertiseRoutes` advertises the summer-place LAN and enables IP forwarding. Caveats:
+`my.home-network.advertiseRoutes = [ lib.hosts.island-pi.lan.subnet ]` advertises the summer-place LAN (`192.168.1.0/24`) and enables IP forwarding. Caveats:
 
-- Routes are re-applied on every tailscaled start (`set-flags`), so changing `advertiseRoutes` and deploying is enough.
-- Routes need headscale-side approval (step 6 above).
+- The subnet lives in the registry only. Changing it means rebuilding controller (auto-approval policy) and then deploying the Pi; routes are re-applied on every tailscaled start (`set-flags`).
 - The summer-place subnet must not collide with the home LAN (`192.168.50.0/24`) — if both routers ship the same default subnet, renumber the summer one.
+- This is tailnet→LAN only: devices must run Tailscale to use the route. LAN→LAN (a non-Tailscale device at one site reaching the other) would additionally need static routes on both consumer routers; not set up.
 
 ## Wake-on-LAN relay
 

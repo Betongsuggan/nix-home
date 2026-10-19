@@ -12,6 +12,7 @@ let
   # (lib.fleetPeers, never service users). Set here because it must also hold
   # in stage 1, before home-network is enabled.
   deployKeys = inputs.self.lib.sshPeerKeys inputs.self.lib.fleetPeers;
+  self = inputs.self.lib.hosts.island-pi;
 in
 {
   system.stateVersion = "26.05";
@@ -107,8 +108,9 @@ in
     secretsFile = "${inputs.nix-vault}/secrets/island-pi.yaml";
   };
 
-  # Subnet router: advertise the summer-place LAN to the tailnet. Re-applied on
-  # every tailscaled start (set-flags); routes must be approved on controller
-  # (see SPEC.md). Enable once the Pi is there and the subnet is known.
-  # my.home-network.advertiseRoutes = [ "192.168.1.0/24" ]; # FIXME: real summer-place subnet
+  # Subnet router: advertise the summer-place LAN (lib.hosts.island-pi.lan.subnet)
+  # to the tailnet. Re-applied on every tailscaled start (set-flags) and
+  # auto-approved by controller's headscale policy, so changing the registry
+  # value and deploying both hosts is the whole procedure.
+  my.home-network.advertiseRoutes = [ self.lan.subnet ];
 }
