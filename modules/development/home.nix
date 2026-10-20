@@ -41,9 +41,8 @@ in
         terraform
         d2
 
-        # AI tools
+        # AI tools (opencode is configured via programs.opencode below)
         unstable.claude-code
-        aider-chat
       ]
       ++ optionals cfg.python.enable [
         python3
@@ -83,18 +82,36 @@ in
 
     programs.go.enable = cfg.go.enable;
 
-    home.sessionVariables = {
-      # Aider routes to llm.rydback.net (HTTPS, tailnet-only) which lands on
-      # controller's wake-proxy and wakes the AI host on demand. The ollama
-      # CLI isn't installed here — its `engine` binary collides with
-      # mesa-demos pulled in by the games module.
-      OLLAMA_API_BASE = ollamaBase;
-    }
-    // optionalAttrs cfg.node.enable {
-      PATH = "$HOME/node_modules/bin:$PATH";
-    }
-    // optionalAttrs cfg.kotlin.enable {
-      JAVA_HOME = "${pkgs.jdk.home}";
+    # Agentic coding CLI against the local models (aider is unmaintained
+    # since 2025). The provider is Ollama's OpenAI-compatible endpoint behind
+    # llm.rydback.net (HTTPS, tailnet-only), so the first request wakes the
+    # AI host via controller's wake-proxy. opencode needs each model listed
+    # by name; keep this in step with `my.ai-server.models` on desktop.
+    # The ollama CLI itself isn't installed here — its `engine` binary
+    # collides with mesa-demos pulled in by the games module.
+    programs.opencode = {
+      enable = true;
+      package = pkgs.unstable.opencode;
+      settings = {
+        model = "ollama/qwen2.5-coder:14b";
+        provider.ollama = {
+          npm = "@ai-sdk/openai-compatible";
+          name = "Ollama (${ollamaBase})";
+          options.baseURL = "${ollamaBase}/v1";
+          models = {
+            "qwen2.5-coder:14b".name = "Qwen2.5 Coder 14B";
+            "gpt-oss:20b".name = "gpt-oss 20B";
+          };
+        };
+      };
     };
+
+    home.sessionVariables =
+      optionalAttrs cfg.node.enable {
+        PATH = "$HOME/node_modules/bin:$PATH";
+      }
+      // optionalAttrs cfg.kotlin.enable {
+        JAVA_HOME = "${pkgs.jdk.home}";
+      };
   };
 }

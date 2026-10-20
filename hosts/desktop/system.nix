@@ -173,7 +173,12 @@
   my.ai-server = {
     enable = true;
     models = [
-      "qwen3:8b"
+      # Daily-chat candidates under evaluation (docs/ai-scorecard.md); all
+      # three do native tool calls, which Open WebUI's memory needs. Prune
+      # to one with `ollama rm` once the scorecard has numbers.
+      "gpt-oss:20b" # 14 GB MXFP4, 128k ctx, strongest tool calling at 16 GB
+      "gemma4:12b" # 8 GB, 256k ctx, vision
+      "qwen3.5:9b" # 7 GB, 256k ctx, vision
       "qwen2.5-coder:14b"
       "qwen2.5-coder:1.5b"
       "nomic-embed-text" # embeddings for RAG / memory / web-search ranking

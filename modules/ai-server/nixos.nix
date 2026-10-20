@@ -26,6 +26,20 @@ in
       description = "Open WebUI port; opened on the tailnet only.";
     };
 
+    contextLength = mkOption {
+      type = types.int;
+      default = 16384;
+      description = ''
+        Context window (tokens) Ollama gives every model, for every client.
+        Ollama's own default is 4096, which a system prompt plus injected
+        memories, RAG chunks and web-search results exhaust in a few turns;
+        after that the oldest tokens are dropped silently. 16k fits a 20B
+        MXFP4 model in 16 GB VRAM with the q8_0 KV cache set below; 32k is
+        fine for 8-12B models. Open WebUI's context compaction threshold is
+        derived from this value.
+      '';
+    };
+
     models = mkOption {
       type = types.listOf types.str;
       default = [ ];
@@ -236,7 +250,11 @@ in
   config = mkIf cfg.enable {
     services.ollama = {
       enable = true;
-      package = pkgs.ollama-rocm;
+      # Vulkan rather than ROCm: on RDNA4 (gfx1201) llama.cpp's Vulkan
+      # backend generates tokens 10-20 % faster than HIP in community
+      # benchmarks, and it has no ROCm version coupling. `pkgs.ollama-rocm`
+      # is the one-line fallback if the Vulkan build misbehaves.
+      package = pkgs.ollama-vulkan;
       host = "0.0.0.0";
       port = cfg.ollamaPort;
       loadModels = cfg.models;
@@ -246,7 +264,17 @@ in
         # turns don't re-load the model. The wake-proxy already handles the
         # initial cold-start latency.
         OLLAMA_KEEP_ALIVE = "5m";
-        OLLAMA_MAX_LOADED_MODELS = "1";
+        # Two: the chat model plus the embedding model. Open WebUI calls
+        # `nomic-embed-text` for memory recall, RAG and web-search reranking
+        # on most turns; with a limit of one each of those calls evicted the
+        # chat model and the reply reloaded it (two cold loads per turn).
+        # The embedder is ~300 MB, so this is still safe at 16 GB RAM.
+        OLLAMA_MAX_LOADED_MODELS = "2";
+        OLLAMA_CONTEXT_LENGTH = toString cfg.contextLength;
+        # Flash attention + 8-bit KV cache roughly halve the memory the
+        # larger context costs, with no measurable quality loss.
+        OLLAMA_FLASH_ATTENTION = "1";
+        OLLAMA_KV_CACHE_TYPE = "q8_0";
       };
     };
 
@@ -309,13 +337,34 @@ in
         ENABLE_TITLE_GENERATION = "True";
         ENABLE_TAGS_GENERATION = "True";
         ENABLE_FOLLOW_UP_GENERATION = "True";
-        ENABLE_AUTOCOMPLETE_GENERATION = "True";
+        # Off (upstream default): it fires an LLM call while you type, which
+        # competes with the real request on a single GPU.
+        ENABLE_AUTOCOMPLETE_GENERATION = "False";
+        # Long chats: once the estimated context passes the threshold, the
+        # chat model summarises the older turns and keeps the most recent
+        # 40 % verbatim, instead of Ollama silently dropping the oldest
+        # tokens. Threshold is ~70 % of the Ollama window so the summary
+        # itself plus memories/RAG still fit.
+        ENABLE_CONTEXT_COMPACTION = "True";
+        CONTEXT_COMPACTION_TOKEN_THRESHOLD = toString (cfg.contextLength * 7 / 10);
+        CONTEXT_COMPACTION_RETENTION_PERCENTAGE = "40";
         # UI niceties
         ENABLE_FOLDERS = "True";
         ENABLE_NOTES = "True";
       }
       // lib.optionalAttrs cfg.features.memory {
-        ENABLE_MEMORY = "True";
+        # Three mechanisms (Open WebUI >= 0.10), all on:
+        #  - the memory bank itself (ENABLE_MEMORIES; was ENABLE_MEMORY < 0.10),
+        #  - injection of stored memories into the system context each turn,
+        #  - background review: every N turns the chat model re-reads the
+        #    recent conversation and adds/updates memories on its own, so
+        #    nothing has to be said twice. Without it memories are only
+        #    written when the model calls the memory tools, which needs
+        #    "Function Calling: Native" per model (see SPEC.md).
+        ENABLE_MEMORIES = "True";
+        ENABLE_MEMORY_SYSTEM_CONTEXT = "True";
+        ENABLE_MEMORY_BACKGROUND_REVIEW = "True";
+        MEMORIES_REVIEW_INTERVAL_TURNS = "10";
       }
       // lib.optionalAttrs cfg.features.directConnections {
         # Lets users attach OpenAPI/MCP tool servers under Settings → Tools.
@@ -329,17 +378,11 @@ in
       // lib.optionalAttrs cfg.search.enable {
         # Web search via local SearXNG container, JSON output enabled by the
         # bundled settings.yml. The `<query>` placeholder is filled by Open
-        # WebUI per request. Both env-var prefixes are set because Open WebUI
-        # v0.4+ renamed RAG_WEB_SEARCH_* → WEB_SEARCH_*; we ship both so the
-        # module works across versions.
+        # WebUI per request.
         ENABLE_WEB_SEARCH = "True";
         WEB_SEARCH_ENGINE = "searxng";
         WEB_SEARCH_RESULT_COUNT = "3";
         WEB_SEARCH_CONCURRENT_REQUESTS = "10";
-        ENABLE_RAG_WEB_SEARCH = "True";
-        RAG_WEB_SEARCH_ENGINE = "searxng";
-        RAG_WEB_SEARCH_RESULT_COUNT = "3";
-        RAG_WEB_SEARCH_CONCURRENT_REQUESTS = "10";
         SEARXNG_QUERY_URL = "http://127.0.0.1:${toString cfg.search.port}/search?q=<query>&format=json";
       }
       // lib.optionalAttrs cfg.documents.enable {

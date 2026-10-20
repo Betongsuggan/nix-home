@@ -8,10 +8,13 @@ Update this file as you try things; it's the source of truth for which models ea
 
 | Model | Size (Q4) | Speed | VRAM | Notes | Verdict |
 |---|---|---|---|---|---|
-| `qwen3:8b`             | ~5 GB | ? tok/s | ? | Fast lane, always-loaded candidate. | test |
-| `qwen3:14b`            | ~9 GB | — | — | Best all-round dense at this tier; thinking mode. | candidate |
-| `gpt-oss:20b`          | ~12 GB | — | — | MoE; reported ~90 tok/s on this exact card. | candidate |
-| `gemma3:12b`           | ~8 GB | — | — | Strong writing tone, vision/image input. | candidate |
+| `gpt-oss:20b`          | ~14 GB (MXFP4) | ? tok/s | ? | MoE, 128k ctx, tools + thinking. Strongest tool-caller that fits; the memory-tools pick. Reported ~90 tok/s on this card. | test |
+| `gemma4:12b`           | ~8 GB | ? tok/s | ? | 256k ctx, vision, tools, thinking. Daily-chat candidate. | test |
+| `qwen3.5:9b`           | ~7 GB | ? tok/s | ? | 256k ctx, vision, tools, thinking. Daily-chat candidate. | test |
+| `qwen3:8b`             | ~5 GB | — | — | 2025 text-only; superseded by the three above. Removed from `ai-server.models` 2026-10-21; `ollama rm` on the host. | drop |
+| `qwen3.6:35b` / `gemma4:26b` | 18-24 GB | — | — | 3B-active MoEs; need a RAM upgrade (expert offload) before they can even load. | blocked |
+
+Fill `Speed` twice: once with `pkgs.ollama-vulkan` (current) and once with `pkgs.ollama-rocm`, same model and prompt; keep the faster package.
 
 ## Coding (Ollama)
 
@@ -43,7 +46,7 @@ Once evaluation settles, this is the lean set declared in `ai-server.models` + `
 
 | Slot | Current pick |
 |---|---|
-| Daily chat | — *(decide after comparing 8b/14b/20b)* |
+| Daily chat | — *(decide after comparing gpt-oss:20b / gemma4:12b / qwen3.5:9b)* |
 | Code chat / edit | qwen2.5-coder:14b |
 | Code autocomplete | qwen2.5-coder:1.5b |
 | Image baseline | sd_xl_base_1.0 |
