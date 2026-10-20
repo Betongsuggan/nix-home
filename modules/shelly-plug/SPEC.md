@@ -36,7 +36,7 @@ plug-desktop on|off|toggle
 - **Reachability**: controller advertises the home LAN into the tailnet and every member accepts routes, so `plug-*` talks to `http://<address>/rpc/…` directly from anywhere on the tailnet, with a 3 s timeout. No relay, unlike `wake-<host>` (a magic packet is an L2 broadcast). The plugs themselves stay LAN-only.
 - **Asserted settings** (`shelly-plug-config.service`, oneshot after network-online, on the managing host): `Sys.SetConfig` the device name from `description` for every plug, and `Switch.SetConfig initial_state = restore_last` for plugs that power a host. Without the latter a plug comes back *off* after a power cut and the host never boots (the factory default is `off`). The unit fails and retries every 5 min while a plug is unreachable, naming it in the journal. Plugs without an owner keep their own `initial_state`.
 - **Metrics**: nixpkgs' `json_exporter` on loopback (`services.prometheus.exporters.json`, port 7979) turns each plug's `Switch.GetStatus` into `shelly_switch_on`, `shelly_power_watts`, `shelly_voltage_volts`, `shelly_current_amperes`, `shelly_energy_watthours_total` (counter, Wh since the plug's own reset) and `shelly_temperature_celsius`, labelled `plug` (also `instance`) and `host` for owned plugs. One probe-style job `shelly` through `my.monitoring.scrapeConfigs`, 30 s like everything else.
-- **Dashboard** "Smart plugs" (uid `shelly`), generated in Nix: power, relay state, energy per day, voltage, temperature, one series per plug.
+- **Dashboard** "Smart plugs" (uid `shelly`), generated in Nix: power, relay state, energy per day (one series per plug), total power and total energy per day across all plugs, voltage, temperature.
 
 ## Setup and recovery
 

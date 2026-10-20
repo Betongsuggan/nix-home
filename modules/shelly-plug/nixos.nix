@@ -88,6 +88,7 @@ let
       expr,
       type ? "timeseries",
       unit ? null,
+      legend ? "{{plug}}",
       extra ? { },
     }:
     {
@@ -107,7 +108,7 @@ let
       targets = [
         {
           inherit expr;
-          legendFormat = "{{plug}}";
+          legendFormat = legend;
           refId = "A";
         }
       ];
@@ -162,6 +163,22 @@ let
           expr = "increase(shelly_energy_watthours_total[1d])";
           type = "bargauge";
           unit = "watth";
+          extra.options.reduceOptions.calcs = [ "lastNotNull" ];
+        }
+        {
+          title = "Total power";
+          expr = "sum(shelly_power_watts)";
+          type = "stat";
+          unit = "watt";
+          legend = "all plugs";
+          extra.options.reduceOptions.calcs = [ "lastNotNull" ];
+        }
+        {
+          title = "Total energy per day";
+          expr = "sum(increase(shelly_energy_watthours_total[1d]))";
+          type = "stat";
+          unit = "watth";
+          legend = "all plugs";
           extra.options.reduceOptions.calcs = [ "lastNotNull" ];
         }
         {
