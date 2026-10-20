@@ -160,9 +160,9 @@ let
         }
         {
           title = "Energy per day";
-          expr = "increase(shelly_energy_watthours_total[1d])";
+          expr = "increase(shelly_energy_watthours_total[1d]) / 1000";
           type = "bargauge";
-          unit = "watth";
+          unit = "kwatth";
           extra.options.reduceOptions.calcs = [ "lastNotNull" ];
         }
         {
@@ -175,9 +175,9 @@ let
         }
         {
           title = "Total energy per day";
-          expr = "sum(increase(shelly_energy_watthours_total[1d]))";
+          expr = "sum(increase(shelly_energy_watthours_total[1d])) / 1000";
           type = "stat";
-          unit = "watth";
+          unit = "kwatth";
           legend = "all plugs";
           extra.options.reduceOptions.calcs = [ "lastNotNull" ];
         }
