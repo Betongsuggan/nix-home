@@ -55,6 +55,7 @@ my.monitoring = mkIf config.my.monitoring.enable {
 | prometheusPort | port | 9091 | Prometheus loopback port. Not 9090: headscale's metrics live there. |
 | retention | str | `"90d"` | Prometheus TSDB retention. |
 | scrapeTargets | attrs of str | `{ }` | job name → `host:port` serving `/metrics`, scraped every 30 s. |
+| scrapeConfigs | list of attrs | `[ ]` | Raw Prometheus `scrape_config` entries for what `scrapeTargets` can't express (probe-style exporters: `metrics_path`, `params`, `relabel_configs`). First user: [[shelly-plug]]. |
 | dashboards | attrs of path | `{ }` | name → dashboard JSON, provisioned read-only. Datasource references must use provisioned uids (`prometheus`, or one from `datasources`). |
 | datasources | list of attrs | `[ ]` | Extra datasources in Grafana's provisioning format. Prometheus is always provisioned as the default with uid `prometheus`. |
 | anonymousRole | `Viewer` / `Editor` / `Admin` | `Viewer` | Role every visitor gets without logging in. |

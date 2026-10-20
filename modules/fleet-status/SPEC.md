@@ -30,10 +30,11 @@ my.fleet-status.dashboard.enable = true;    # Home Manager: a non-admin user
   - `system`: the running system
   - `rebootPending`: the running system differs from the booted one
   - `rebuilt`: when the system profile last changed
-- **Dashboard rows**: the registry's hosts. Those tailscale reports online are fetched in parallel (2 s timeout); asleep or absent ones aren't asked, so they don't hold the menu up for the timeout (all are asked when `tailscale status` fails). A host without a status shows tailscale's view instead: asleep since when, online but without a status service, or not on the tailnet.
+- **Dashboard rows**: the registry's hosts, with ` · power on 48 W` / ` · power off` appended when the host has a plug that answered (fetched in parallel with the statuses, so a powered-off host still shows it). Those tailscale reports online are fetched in parallel (2 s timeout); asleep or absent ones aren't asked, so they don't hold the menu up for the timeout (all are asked when `tailscale status` fails). A host without a status shows tailscale's view instead: asleep since when, online but without a status service, or not on the tailnet.
 - **Actions**, derived from the registry for this user on this host:
   - **SSH** where `sshFrom` allows it; it opens a terminal on the `ssh <host>` alias from `modules/ssh`
   - **Wake** where the host has a `wol` relay this user can reach (`ssh <relay> wake-<host>`)
+  - **Power on** / **Power off** where the host is powered through a smart plug (registry `hosts.<host>.plug`, [[shelly-plug]]): `plug-<name> on|off` straight from this host. Off asks "Cut power to <host>?" first, and is refused for the host the dashboard runs on. No toggle: it would race a stale row. A plug that is off gives the NIC no standby power, so Wake only works after Power on; whether Power on alone boots the host is the BIOS's "restore on AC loss" setting.
   - **Check if a rebuild is needed**: evaluates the host's toplevel from `dashboard.flake` with the locked inputs, and compares it with the system it runs
   - **Details**
   - **Copy address**

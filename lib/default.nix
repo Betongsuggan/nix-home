@@ -54,6 +54,8 @@ let
         "controller"
       ];
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBGf64nW+ZcG2TfzvS4Ql2yJD2/gNpNsRcUQrK0jNKb9 root@controller";
+      # The smart plug between the wall and this host (devices.<name>)
+      plug = "controller";
       users = {
         betongsuggan = {
           syncthing.id = "4AUKVSW-5SDSOZS-WLDB5LE-YJAVG3C-YMABN52-HEQTHJP-PCBEVCC-EEWM6AH";
@@ -104,6 +106,9 @@ let
         mac = "34:1b:22:84:72:67";
         relay = "controller";
       };
+      # The smart plug between the wall and this host (devices.<name>):
+      # `plug-desktop on|off` from any tailnet host, modules/shelly-plug
+      plug = "desktop";
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPgyXzp0dQ+uwIHBV6RGsNASeKgMMQb9NFX5Dv/xPrvE root@desktop";
       users.betongsuggan = {
         ssh.id_rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCvvJ1JmeY0gc1NgbsTgELa7on4xjtW3ZJfJ5MRMgrmQhg+yMWJyMpS6M0Z9b1aLRp1Fnvq7TDX40PiFlQZ+0rRHOty8JbwPoTchTSyg3ihxvtUP6slZsgJlsZuvEwDFZ42nB/U4oWD2i2o7smzB6T5fBIYmNgM2bzWLqAS+xHo+k8SsxOaimDmmxSuA+qhHkK9fdgfuu0phZAKfo/5dBXcHNyRWsT6o81KNUXhlNYMSagt9IZEx204dt7m9SKZG6SzHslrEPqf+RETP4sQyh+u5YfgpVgww8AHvJcveKsNkegjbwVSyekbANwJlU54lxnKR9Td6G7kYFf/z+QQt3whGKJJ89KvvqxPccCQfd/Es8IYSXJEMu1OFEL7yOFggSicnoYCUq6ZZAzTnabjB7uRflfTAjmJrT78jbWMIiyY/U30zgJ8ak6Ijho9i+3dqDk2zOWwatJ7CfV6/izDzcPI4tqne7L0MKy2Z7vExJ9rWCdP58dBR0LewuCQAb9E5MVTKcPRxmRjcrKuzkgrvGxtbDG4tbxsQ1KNtRmYAlTiiIFDVVmM1vckuAqV/aaPFaGN9qUppUajl/Dz0BLqEK0WJcQ3ZX6ChQeNOXZQrOQaofMwcQlGu+YSz+Xvus1a3Ygb1zoJvUukxYUU3KSomtx6Vvs1f3+sm4kJgFXOgL5Qmw== betongsuggan@desktop";
@@ -183,7 +188,39 @@ let
       tailnetName = "fairphone";
       tailnetIp = "100.64.0.7";
     };
+
+    # Shelly Plug S Gen3 smart plugs on the home LAN (modules/shelly-plug).
+    # Addresses are DHCP reservations on the router, keyed by `mac`; the
+    # plugs have no device password. `description` is written to the plug
+    # as its device name. A host names its plug in `hosts.<host>.plug`.
+    printer = {
+      type = "shelly-plug";
+      description = "Prusa printer plug";
+      address = "192.168.50.200";
+      mac = "90:70:69:4a:1f:e0";
+    };
+    desktop = {
+      type = "shelly-plug";
+      description = "Desktop host plug";
+      address = "192.168.50.201";
+      mac = "48:f6:ee:b6:39:50";
+    };
+    controller = {
+      type = "shelly-plug";
+      description = "Controller host plug";
+      address = "192.168.50.202";
+      mac = "d8:85:ac:1e:6c:c8";
+    };
   };
+
+  # The smart plugs, each with `owner`: the host it powers (hosts.<host>.plug), or null
+  plugs = lib.mapAttrs (
+    name: d:
+    d
+    // {
+      owner = lib.findFirst (h: (hosts.${h}.plug or null) == name) null (lib.attrNames hosts);
+    }
+  ) (lib.filterAttrs (_: d: (d.type or null) == "shelly-plug") devices);
 in
 rec {
   inherit
@@ -192,6 +229,7 @@ rec {
     domain
     hosts
     operator
+    plugs
     ;
 
   # For the NixOS half of a module whose switch lives in Home Manager: true

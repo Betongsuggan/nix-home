@@ -54,6 +54,16 @@ in
       description = "Prometheus scrape jobs: job name → `host:port` exposing `/metrics`. Modules add their own.";
     };
 
+    scrapeConfigs = mkOption {
+      type = types.listOf types.attrs;
+      default = [ ];
+      description = ''
+        Raw Prometheus `scrape_config` entries, for jobs `scrapeTargets`
+        can't express (probe-style exporters with `metrics_path`, `params`
+        or `relabel_configs`). Modules add their own.
+      '';
+    };
+
     dashboards = mkOption {
       type = types.attrsOf types.path;
       default = { };
@@ -98,10 +108,12 @@ in
       port = cfg.prometheusPort;
       retentionTime = cfg.retention;
       globalConfig.scrape_interval = "30s";
-      scrapeConfigs = mapAttrsToList (job: target: {
-        job_name = job;
-        static_configs = [ { targets = [ target ]; } ];
-      }) cfg.scrapeTargets;
+      scrapeConfigs =
+        mapAttrsToList (job: target: {
+          job_name = job;
+          static_configs = [ { targets = [ target ]; } ];
+        }) cfg.scrapeTargets
+        ++ cfg.scrapeConfigs;
     };
 
     services.grafana = {

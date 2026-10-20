@@ -14,6 +14,8 @@ let
   self = osConfig.my.common.host;
   targets = selfLib.sshTargetsOf self config.home.username;
   canSsh = host: any (t: t.host == host) targets;
+  # The plug-<name> commands (modules/shelly-plug), when this host has them
+  plugsEnabled = osConfig.my.shelly-plug.enable;
 
   # Every registry host with what this user can do there, from the registry:
   # SSH where sshFrom allows it, wake where its relay is reachable by SSH
@@ -33,6 +35,8 @@ let
           (if relay == self then "wake-${name}" else "ssh ${relay} wake-${name}")
         else
           null;
+      # The smart plug the host is powered through (registry hosts.<h>.plug)
+      plug = if plugsEnabled then h.plug or null else null;
     }
   ) selfLib.hosts;
 
@@ -48,15 +52,18 @@ let
 
   dashboard = pkgs.writeShellApplication {
     name = "fleet-dashboard";
-    runtimeInputs = with pkgs; [
-      coreutils
-      curl
-      jq
-      tailscale
-      wl-clipboard
-      openssh
-      git
-    ];
+    runtimeInputs =
+      with pkgs;
+      [
+        coreutils
+        curl
+        jq
+        tailscale
+        wl-clipboard
+        openssh
+        git
+      ]
+      ++ optional plugsEnabled osConfig.my.shelly-plug.package;
     # nix itself comes from the system (the one the flake is built with)
     text = ''
       hosts=${hostsJson}
@@ -73,13 +80,22 @@ let
       ' "$hosts"); do
         curl -sf -m 2 "http://$fqdn:${toString selfLib.tailnet.statusPort}/" > "$dir/$fqdn.json" &
       done
+      # And the plugs of hosts that have one: a powered-off host still shows
+      # its plug, which is the moment that matters
+      for plug in $(jq -r '.[] | .plug // empty' "$hosts"); do
+        "plug-$plug" status > "$dir/plug-$plug.json" 2>/dev/null &
+      done
       wait
 
       # One line per host: its status, or tailscale's view when it can't answer
       line() {
-        local name=$1 fqdn=$2 tsname=$3 self=$4 file="$dir/$2.json"
+        local name=$1 fqdn=$2 tsname=$3 self=$4 plug=$5 file="$dir/$2.json"
+        local power=""
+        if [ -n "$plug" ] && [ -s "$dir/plug-$plug.json" ]; then
+          power=$(jq -r 'if .output then "power on \(.apower | round) W" else "power off" end' "$dir/plug-$plug.json")
+        fi
         if [ -s "$file" ]; then
-          jq -r --arg name "$name" --arg self "$self" '
+          jq -r --arg name "$name" --arg self "$self" --arg power "$power" '
             def ago: (now - .) as $s
               | if $s < 3600 then "\($s / 60 | floor)m"
                 elif $s < 86400 then "\($s / 3600 | floor)h" else "\($s / 86400 | floor)d" end;
@@ -92,7 +108,8 @@ let
               "rebuilt \(.rebuilt | ago) ago",
               (.backups | map(select(.at != null)) | max_by(.at) | select(. != null)
                 | "backup \(.at | ago) ago" + (if .result != "success" then " (FAILED)" else "" end)),
-              (select(.rebootPending) | "reboot pending")
+              (select(.rebootPending) | "reboot pending"),
+              ($power | select(. != ""))
             ] | join(" · ")' "$file"
         else
           local state seen
@@ -101,25 +118,25 @@ let
             | if . == null then "absent -" elif .Online then "online -" else "asleep \(.LastSeen)" end
           ' "$dir/tailscale.json")
           case "$state" in
-            absent) echo "✗ $name · not on the tailnet" ;;
-            online) echo "◐ $name · online, no status" ;;
+            absent) echo "✗ $name · not on the tailnet''${power:+ · $power}" ;;
+            online) echo "◐ $name · online, no status''${power:+ · $power}" ;;
             *)
               local s
               s=$(( $(date +%s) - $(date -d "$seen" +%s 2>/dev/null || date +%s) ))
               if [ "$s" -lt 3600 ]; then s="$((s / 60))m"
               elif [ "$s" -lt 86400 ]; then s="$((s / 3600))h"
               else s="$((s / 86400))d"; fi
-              echo "○ $name · asleep · seen $s ago"
+              echo "○ $name · asleep · seen $s ago''${power:+ · $power}"
               ;;
           esac
         fi
       }
 
       names=() ; labels=()
-      while IFS=$'\t' read -r name fqdn tsname self; do
+      while IFS=$'\t' read -r name fqdn tsname self plug; do
         names+=("$name")
-        labels+=("$(line "$name" "$fqdn" "$tsname" "$self")")
-      done < <(jq -r '.[] | [.name, .fqdn, .tailnetName, (.isSelf | tostring)] | @tsv' "$hosts")
+        labels+=("$(line "$name" "$fqdn" "$tsname" "$self" "$plug")")
+      done < <(jq -r '.[] | [.name, .fqdn, .tailnetName, (.isSelf | tostring), (.plug // "")] | @tsv' "$hosts")
 
       choice=$(printf '%s\n' "''${labels[@]}" | ${dmenu "Fleet"}) || exit 0
       host=""
@@ -134,6 +151,8 @@ let
       actions=()
       if [ "$(jq -r .ssh <<<"$entry")" = true ]; then actions+=("SSH"); fi
       if [ "$(jq -r '.wake != null' <<<"$entry")" = true ]; then actions+=("Wake"); fi
+      plug=$(jq -r '.plug // empty' <<<"$entry")
+      if [ -n "$plug" ]; then actions+=("Power on" "Power off"); fi
       if [ -d ${escapeShellArg cfg.flake} ]; then actions+=("Check if a rebuild is needed"); fi
       if [ -s "$dir/$fqdn.json" ]; then actions+=("Details"); fi
       actions+=("Copy address")
@@ -148,6 +167,25 @@ let
             ${notify "Waking $host" "Magic packet sent"}
           else
             ${notify "Could not wake $host" "The relay didn't answer"}
+          fi
+          ;;
+        "Power on")
+          if "plug-$plug" on > /dev/null; then
+            ${notify "Powering on $host" "Plug $plug is on; Wake it if the BIOS doesn't start it"}
+          else
+            ${notify "Could not reach plug $plug" "No answer from the plug"}
+          fi
+          ;;
+        "Power off")
+          if [ "$(jq -r .isSelf <<<"$entry")" = true ]; then
+            ${notify "Refused" "Plug $plug powers this host"}
+            exit 0
+          fi
+          [ "$(printf 'No\nYes\n' | ${dmenu "Cut the power?"})" = Yes ] || exit 0
+          if "plug-$plug" off > /dev/null; then
+            ${notify "Powered off $host" "Plug $plug is off"}
+          else
+            ${notify "Could not reach plug $plug" "No answer from the plug"}
           fi
           ;;
         "Check if a rebuild is needed")
