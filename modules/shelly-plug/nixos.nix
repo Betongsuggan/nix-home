@@ -89,6 +89,9 @@ let
       type ? "timeseries",
       unit ? null,
       legend ? "{{plug}}",
+      # An instant query: one value at the end of the picker's range, for
+      # panels whose expression spans `$__range`
+      instant ? false,
       extra ? { },
     }:
     {
@@ -106,11 +109,17 @@ let
       };
       fieldConfig.defaults = optionalAttrs (unit != null) { inherit unit; };
       targets = [
-        {
-          inherit expr;
-          legendFormat = legend;
-          refId = "A";
-        }
+        (
+          {
+            inherit expr;
+            legendFormat = legend;
+            refId = "A";
+          }
+          // optionalAttrs instant {
+            instant = true;
+            range = false;
+          }
+        )
       ];
     }
     // extra;
@@ -179,6 +188,23 @@ let
           type = "stat";
           unit = "kwatth";
           legend = "all plugs";
+          extra.options.reduceOptions.calcs = [ "lastNotNull" ];
+        }
+        {
+          title = "Energy in the selected period";
+          expr = "increase(shelly_energy_watthours_total[$__range]) / 1000";
+          type = "bargauge";
+          unit = "kwatth";
+          instant = true;
+          extra.options.reduceOptions.calcs = [ "lastNotNull" ];
+        }
+        {
+          title = "Total energy in the selected period";
+          expr = "sum(increase(shelly_energy_watthours_total[$__range])) / 1000";
+          type = "stat";
+          unit = "kwatth";
+          legend = "all plugs";
+          instant = true;
           extra.options.reduceOptions.calcs = [ "lastNotNull" ];
         }
         {
