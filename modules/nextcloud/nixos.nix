@@ -217,6 +217,16 @@ in
       '';
     };
 
+    # The consumer owns its client registration at the identity provider
+    my.sso.clients.${cfg.sso.clientId} = mkIf cfg.sso.enable {
+      displayName = "Nextcloud";
+      redirectUrls = [
+        "https://${cfg.domain}/apps/user_oidc/code"
+        "https://${cfg.domain}/index.php/apps/user_oidc/code"
+      ];
+      landing = "https://${cfg.domain}/";
+    };
+
     sops.secrets = mkIf (cfg.sso.enable && builtins.pathExists vault) {
       "nextcloud-oidc-secret" = {
         sopsFile = vault;

@@ -119,14 +119,23 @@ in
           };
         }
       );
-      default = {
-        ${selfLib.operator.login} = {
-          inherit (selfLib.operator) displayName;
-          mail = selfLib.operator.email;
-        };
-      };
-      defaultText = literalMD "the operator from `lib/default.nix`";
-      description = "People who can log in, keyed by login name.";
+      default = { };
+      description = ''
+        People who can log in, keyed by login name. The operator from
+        `lib/default.nix` is always present; consumer modules add their role
+        groups to a person with `my.sso.persons.<login>.groups`.
+      '';
+    };
+
+    groups = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
+      example = [ "grafana_admins" ];
+      description = ''
+        Role groups to create besides `sso_users`. Membership is declared on
+        the person (`persons.<login>.groups`); a client maps the group to a
+        claim with `clients.<id>.settings.claimMaps`.
+      '';
     };
 
     admins = mkOption {
@@ -174,6 +183,13 @@ in
   };
 
   config = mkIf cfg.enable {
+    # Defined here rather than as the option default so that other modules
+    # can add to the operator (e.g. role groups) without replacing the entry
+    my.sso.persons.${selfLib.operator.login} = {
+      displayName = mkDefault selfLib.operator.displayName;
+      mail = mkDefault selfLib.operator.email;
+    };
+
     assertions = [
       {
         assertion = config.my.reverse-proxy.enable;
@@ -227,7 +243,8 @@ in
             members = cfg.admins;
             overwriteMembers = false;
           };
-        };
+        }
+        // genAttrs cfg.groups (_: { });
 
         persons = mapAttrs (_: p: {
           inherit (p) displayName;

@@ -361,6 +361,8 @@ in
     enable = true;
     domain = "grafana.${domain}";
     environmentFile = config.sops.secrets."grafana-env".path;
+    # Log in with Kanidm (my.sso client `grafana`); birger gets Admin
+    sso.enable = true;
   };
 
   my.vaultwarden = {
@@ -397,24 +399,12 @@ in
   };
 
   # Identity provider: Kanidm at id.rydback.net, one login for the services
-  # below. Clients are declared here because their secrets must exist before
-  # the consumer modules are switched to SSO. See modules/sso/SPEC.md.
+  # on the tailnet. Consumers on this host register their own client
+  # (my.nextcloud.sso, my.monitoring.sso); clients for services on other
+  # hosts are declared here. See modules/sso/SPEC.md.
   my.sso = {
     enable = true;
     clients = {
-      nextcloud = {
-        displayName = "Nextcloud";
-        redirectUrls = [
-          "https://cloud.${domain}/apps/user_oidc/code"
-          "https://cloud.${domain}/index.php/apps/user_oidc/code"
-        ];
-        landing = "https://cloud.${domain}/";
-      };
-      grafana = {
-        displayName = "Grafana";
-        redirectUrls = [ "https://grafana.${domain}/login/generic_oauth" ];
-        landing = "https://grafana.${domain}/";
-      };
       open-webui = {
         displayName = "Open WebUI";
         redirectUrls = [ "https://chat.${domain}/oauth/oidc/callback" ];

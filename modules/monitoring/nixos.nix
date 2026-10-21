@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -89,6 +90,36 @@ in
       description = "Role every visitor gets without logging in. Access control is the reverse proxy's job (tailnet-only).";
     };
 
+    sso = {
+      enable = mkEnableOption "logging in to Grafana through the identity provider (`my.sso`)";
+
+      clientId = mkOption {
+        type = types.str;
+        default = "grafana";
+        description = "Kanidm OAuth2 client id; also the vault key `sso/clients/<id>` in `common.yaml`.";
+      };
+
+      secretFile = mkOption {
+        type = types.str;
+        default = config.sops.secrets."grafana-oidc-secret".path;
+        defaultText = literalExpression ''config.sops.secrets."grafana-oidc-secret".path'';
+        description = "File with the client secret, readable by the `grafana` user.";
+      };
+
+      adminGroup = mkOption {
+        type = types.str;
+        default = "grafana_admins";
+        description = "Kanidm group whose members get Grafana's Admin role; everyone else who logs in is a Viewer.";
+      };
+
+      admins = mkOption {
+        type = types.listOf types.str;
+        default = [ inputs.self.lib.operator.login ];
+        defaultText = literalExpression "[ lib.operator.login ]";
+        description = "Persons put into `adminGroup`.";
+      };
+    };
+
     environmentFile = mkOption {
       type = types.nullOr types.path;
       default = null;
@@ -139,6 +170,32 @@ in
           admin_password = "$__env{GF_SECURITY_ADMIN_PASSWORD}";
           secret_key = "$__env{GF_SECURITY_SECRET_KEY}";
         };
+        # Kanidm issues one OIDC issuer per client; the role comes from the
+        # `grafana_role` claim the client's claim map builds from the groups
+        "auth.generic_oauth" =
+          let
+            idp = "https://${config.my.sso.domain}";
+            issuer = config.my.sso.issuerFor cfg.sso.clientId;
+          in
+          mkIf cfg.sso.enable {
+            enabled = true;
+            name = "Kanidm";
+            client_id = cfg.sso.clientId;
+            client_secret = "$__file{${cfg.sso.secretFile}}";
+            scopes = "openid profile email groups";
+            auth_url = "${idp}/ui/oauth2";
+            token_url = "${idp}/oauth2/token";
+            api_url = "${issuer}/userinfo";
+            use_pkce = true;
+            use_refresh_token = true;
+            allow_sign_up = true;
+            login_attribute_path = "preferred_username";
+            name_attribute_path = "name";
+            email_attribute_path = "email";
+            groups_attribute_path = "groups";
+            role_attribute_path = "contains(grafana_role[*], 'Admin') && 'Admin' || 'Viewer'";
+            allow_assign_grafana_admin = false;
+          };
       };
 
       provision = {
@@ -175,5 +232,47 @@ in
     systemd.services.grafana.serviceConfig.EnvironmentFile = mkIf (cfg.environmentFile != null) [
       cfg.environmentFile
     ];
+
+    # The consumer owns its registration at the identity provider: the
+    # client, the role group and who is in it
+    my.sso = mkIf cfg.sso.enable {
+      clients.${cfg.sso.clientId} = {
+        displayName = "Grafana";
+        redirectUrls = [ "https://${cfg.domain}/login/generic_oauth" ];
+        landing = "https://${cfg.domain}/";
+        scopes = [
+          "openid"
+          "profile"
+          "email"
+          "groups"
+        ];
+        settings.claimMaps.grafana_role = {
+          joinType = "array";
+          valuesByGroup.${cfg.sso.adminGroup} = [ "Admin" ];
+        };
+      };
+      groups = [ cfg.sso.adminGroup ];
+      persons = genAttrs cfg.sso.admins (_: {
+        groups = [ cfg.sso.adminGroup ];
+      });
+    };
+
+    assertions = [
+      {
+        assertion = cfg.sso.enable -> config.my.sso.enable;
+        message = "my.monitoring.sso needs my.sso on the same host (the client, group and role claim are provisioned there)";
+      }
+    ];
+
+    sops.secrets =
+      mkIf (cfg.sso.enable && builtins.pathExists "${inputs.nix-vault}/secrets/common.yaml")
+        {
+          "grafana-oidc-secret" = {
+            sopsFile = "${inputs.nix-vault}/secrets/common.yaml";
+            key = "sso/clients/${cfg.sso.clientId}";
+            owner = "grafana";
+            mode = "0400";
+          };
+        };
   };
 }
