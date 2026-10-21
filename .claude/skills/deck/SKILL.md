@@ -17,6 +17,8 @@ New boards only for a new long-running project with real task volume; otherwise 
 
 ## How to work
 
+Every task in this repository has a card (CLAUDE.md, "Project tracking"). If none exists, create it before starting; skip only when Deck is unreachable, and say so.
+
 1. Start by reading: `deck board <board>` (ids are in the first column), `deck card <id>` for the description and comments.
 2. Status changes are a `move` plus a one-line `comment` saying what happened and when, e.g. `deck move 42 Doing && deck comment 42 "Started: module skeleton on branch x"`. Never move without the comment.
 3. Progress inside a card: `deck edit <id> -d -` with the updated description (tick checklist boxes, keep the rest). Read it first; the PUT replaces the whole description.

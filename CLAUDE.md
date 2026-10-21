@@ -53,3 +53,11 @@ hosts/{host-name}/SPEC.md
 ```
 
 When your changes affect observable behavior (configuration changes, required dependencies, purpose of the module), update the corresponding `SPEC.md` to reflect the changes. A PostToolUse hook will remind you when you modify the files in a module or hosts that has a spec.
+
+## Project tracking
+All work in this repository is tracked in Nextcloud Deck on controller, through the `deck` CLI (`modules/deck/SPEC.md`;
+the `.claude/skills/deck` skill has the board conventions). This is not optional: before starting a task, find or create its
+card (a new project gets a card on the **Projects** board, a work item a card on the matching work board), move it to
+Doing with a comment, and when the work lands, comment the commit hash and move it to Done. Ideas the user mentions in
+passing become Idea cards. The only acceptable reason to skip this is that Deck is unreachable (no network, controller
+down); then say so and leave the update as the first step for when it is back.
