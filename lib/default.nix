@@ -241,6 +241,13 @@ rec {
   # without Home Manager (no user-*.nix) have no users, so it is false there.
   anyHomeUser = config: pred: lib.any pred (lib.attrValues (config.home-manager.users or { }));
 
+  # The identity provider (modules/sso): Kanidm issues one OIDC issuer per
+  # client. Consumers on any host derive their discovery URL from this.
+  sso = {
+    domain = "id.${domain}";
+    issuerFor = client: "https://id.${domain}/oauth2/openid/${client}";
+  };
+
   tailnet = {
     inherit baseDomain;
     # headscale, served by controller

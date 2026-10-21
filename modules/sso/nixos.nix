@@ -85,8 +85,8 @@ in
 
     domain = mkOption {
       type = types.str;
-      default = "id.${selfLib.domain}";
-      defaultText = literalExpression ''"id.''${lib.domain}"'';
+      default = selfLib.sso.domain;
+      defaultText = literalExpression "lib.sso.domain";
       description = ''
         Kanidm's hostname and WebAuthn relying-party id. Changing it later
         breaks every registered passkey, so pick it once.
@@ -177,8 +177,9 @@ in
     issuerFor = mkOption {
       type = types.functionTo types.str;
       readOnly = true;
-      default = client: "https://${cfg.domain}/oauth2/openid/${client}";
-      description = "The OIDC issuer URL of a client; discovery is at `<issuer>/.well-known/openid-configuration`.";
+      default = selfLib.sso.issuerFor;
+      defaultText = literalExpression "lib.sso.issuerFor";
+      description = "The OIDC issuer URL of a client; discovery is at `<issuer>/.well-known/openid-configuration`. Consumers on other hosts use `lib.sso.issuerFor` directly.";
     };
   };
 

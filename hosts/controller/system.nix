@@ -404,11 +404,28 @@ in
   # hosts are declared here. See modules/sso/SPEC.md.
   my.sso = {
     enable = true;
+    groups = [ "openwebui_admins" ];
+    persons.${inputs.self.lib.operator.login}.groups = [ "openwebui_admins" ];
     clients = {
       open-webui = {
         displayName = "Open WebUI";
         redirectUrls = [ "https://chat.${domain}/oauth/oidc/callback" ];
         landing = "https://chat.${domain}/";
+        scopes = [
+          "openid"
+          "profile"
+          "email"
+          "groups"
+        ];
+        # Open WebUI reads its role from this claim: everyone who may log
+        # in is a user, the admin group also admin (checked last, wins)
+        settings.claimMaps.openwebui_role = {
+          joinType = "array";
+          valuesByGroup = {
+            sso_users = [ "user" ];
+            openwebui_admins = [ "admin" ];
+          };
+        };
       };
       vaultwarden = {
         displayName = "Vaultwarden";

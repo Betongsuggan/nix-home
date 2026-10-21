@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -234,6 +235,36 @@ in
       };
     };
 
+    sso = {
+      enable = mkEnableOption "signing in to Open WebUI through the identity provider (`my.sso`, Kanidm)";
+
+      clientId = mkOption {
+        type = types.str;
+        default = "open-webui";
+        description = "Kanidm OAuth2 client id (declared on the host running `my.sso`); also the vault key `sso/clients/<id>` in `common.yaml`.";
+      };
+
+      publicUrl = mkOption {
+        type = types.str;
+        default = "https://chat.${inputs.self.lib.domain}";
+        defaultText = literalExpression ''"https://chat.''${lib.domain}"'';
+        description = "The URL users open Open WebUI at; the OIDC callback is `<publicUrl>/oauth/oidc/callback` and must be in the client's redirect URLs.";
+      };
+
+      discoveryUrl = mkOption {
+        type = types.str;
+        default = "${inputs.self.lib.sso.issuerFor cfg.sso.clientId}/.well-known/openid-configuration";
+        defaultText = literalExpression ''"''${lib.sso.issuerFor cfg.sso.clientId}/.well-known/openid-configuration"'';
+        description = "OpenID discovery document of the provider.";
+      };
+
+      rolesClaim = mkOption {
+        type = types.str;
+        default = "openwebui_role";
+        description = "Claim (a Kanidm claim map on the client) carrying `user` or `admin`.";
+      };
+    };
+
     features = {
       memory = mkOption {
         type = types.bool;
@@ -309,6 +340,27 @@ in
         # (like a user's chosen STT engine in their personal Settings)
         # still persist; only admin/system config is overridden.
         ENABLE_PERSISTENT_CONFIG = "False";
+      }
+      // lib.optionalAttrs cfg.sso.enable {
+        # Sign in with Kanidm. The client secret arrives through the
+        # EnvironmentFile below (sops template), never through the store.
+        # Roles come from a claim the identity provider builds from groups:
+        # every person is `user`, members of the admin group also `admin`.
+        WEBUI_URL = cfg.sso.publicUrl;
+        ENABLE_OAUTH_SIGNUP = "True";
+        OAUTH_MERGE_ACCOUNTS_BY_EMAIL = "True";
+        OAUTH_PROVIDER_NAME = "Kanidm";
+        OAUTH_CLIENT_ID = cfg.sso.clientId;
+        OPENID_PROVIDER_URL = cfg.sso.discoveryUrl;
+        OPENID_REDIRECT_URI = "${cfg.sso.publicUrl}/oauth/oidc/callback";
+        OAUTH_SCOPES = "openid email profile groups";
+        OAUTH_CODE_CHALLENGE_METHOD = "S256";
+        OAUTH_USERNAME_CLAIM = "name";
+        OAUTH_EMAIL_CLAIM = "email";
+        ENABLE_OAUTH_ROLE_MANAGEMENT = "True";
+        OAUTH_ROLES_CLAIM = cfg.sso.rolesClaim;
+        OAUTH_ALLOWED_ROLES = "user,admin";
+        OAUTH_ADMIN_ROLES = "admin";
       }
       // lib.optionalAttrs cfg.comfyui.enable {
         # Image generation via the local ComfyUI container. Server-to-server
@@ -429,7 +481,19 @@ in
     # code-interpreter feature is silently degraded instead of preventing
     # the rest of Open WebUI from starting.
     systemd.services.open-webui.serviceConfig.EnvironmentFile =
-      lib.mkIf cfg.codeInterpreter.enable "-/var/lib/ai-server/secrets/env";
+      lib.optional cfg.codeInterpreter.enable "-/var/lib/ai-server/secrets/env"
+      ++ lib.optional cfg.sso.enable config.sops.templates."open-webui-oauth".path;
+
+    # The OIDC client secret as an env file: systemd reads it as root before
+    # the service drops to its dynamic user, so root:0400 is right
+    sops.secrets."open-webui-oidc-secret" = lib.mkIf cfg.sso.enable {
+      sopsFile = "${inputs.nix-vault}/secrets/common.yaml";
+      key = "sso/clients/${cfg.sso.clientId}";
+    };
+    sops.templates."open-webui-oauth" = lib.mkIf cfg.sso.enable {
+      content = "OAUTH_CLIENT_SECRET=${config.sops.placeholder."open-webui-oidc-secret"}";
+      mode = "0400";
+    };
 
     # Open WebUI 0.9.x (nixpkgs 26.05) calls Python's Path.expanduser(), which
     # throws "Could not determine home directory" under DynamicUser when $HOME

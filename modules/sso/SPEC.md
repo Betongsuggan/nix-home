@@ -24,7 +24,7 @@ Requires `my.reverse-proxy` (the vhost and its Let's Encrypt cert) and `my.sops`
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Run Kanidm and provision it |
-| domain | str | `id.<lib.domain>` | Hostname and WebAuthn relying-party id. Changing it breaks every passkey |
+| domain | str | `lib.sso.domain` (`id.<lib.domain>`) | Hostname and WebAuthn relying-party id. Changing it breaks every passkey; consumers on other hosts derive URLs from `lib.sso`, so it is a fleet constant |
 | port | port | 8443 | Loopback port; nginx proxies `domain` to it over TLS |
 | tailnetOnly | bool | true | Tailnet sources only on the vhost |
 | persons | attrset | the operator (always present) | Who can log in: `displayName`, `mail`, extra `groups`. All are in `sso_users`. Other modules add role groups to a person with `persons.<login>.groups` |
@@ -34,7 +34,7 @@ Requires `my.reverse-proxy` (the vhost and its Let's Encrypt cert) and `my.sops`
 | adminPasswordFile | str | sops `sso-admin-password` | Kanidm `admin` password. Vault `services/sso/admin-password` |
 | idmAdminPasswordFile | str | sops `sso-idm-admin-password` | Kanidm `idm_admin` password. Vault `services/sso/idm-admin-password` |
 | backupDir | str | `/var/backups/kanidm` | Kanidm's own nightly snapshots (01:00, 7 kept); this is the restic path, not `/var/lib/kanidm` |
-| issuerFor | function (read-only) | | `client → https://<domain>/oauth2/openid/<client>` |
+| issuerFor | function (read-only) | `lib.sso.issuerFor` | `client → https://<domain>/oauth2/openid/<client>`; from another host use `inputs.self.lib.sso.issuerFor` |
 
 ## Setting up
 

@@ -179,6 +179,8 @@
   networking.interfaces.enp4s0.wakeOnLan.enable = true;
   my.ai-server = {
     enable = true;
+    # Sign in with Kanidm (client `open-webui`, declared on controller)
+    sso.enable = true;
     models = [
       # Daily-chat candidates under evaluation (docs/ai-scorecard.md); all
       # three do native tool calls, which Open WebUI's memory needs. Prune
