@@ -19,8 +19,15 @@
       "sd_mod"
     ];
 
-    # Add ryzen-smu module for Ryzen CPU monitoring and control
-    extraModulePackages = with pkgs.linuxPackages_zen; [ ryzen-smu ];
+    # ryzen-smu for Ryzen CPU monitoring and control. 26.05's snapshot
+    # (2025-10-22) predates the zen 7.2 kernel the channel now ships (the
+    # cpuid helpers moved headers), so build unstable's source against the
+    # stable kernel.
+    extraModulePackages = [
+      (pkgs.linuxPackages_zen.ryzen-smu.overrideAttrs {
+        inherit (pkgs.unstable.linuxPackages_zen.ryzen-smu) src version;
+      })
+    ];
     kernelModules = [
       "iwlwifi"
       "amdgpu"
