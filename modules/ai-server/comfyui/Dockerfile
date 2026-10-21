@@ -23,10 +23,15 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-# git is present in the base image; keep this minimal so layer churn stays low.
-
-WORKDIR /opt
-RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
+# A pinned ComfyUI release, fetched by Docker itself: the base image stopped
+# shipping git (Oct 2026), and a tag beats an unpinned clone of master.
+# Bump: change the tag; a Dockerfile edit changes the build context, so the
+# next `nixos-rebuild switch` rebuilds the image.
+ARG COMFYUI_VERSION=v0.42.3
+ADD https://github.com/comfyanonymous/ComfyUI/archive/refs/tags/${COMFYUI_VERSION}.tar.gz /tmp/comfyui.tar.gz
+RUN mkdir -p /opt/ComfyUI \
+ && tar -xzf /tmp/comfyui.tar.gz -C /opt/ComfyUI --strip-components=1 \
+ && rm /tmp/comfyui.tar.gz
 
 WORKDIR /opt/ComfyUI
 # Strip torch/torchvision/torchaudio from requirements so pip doesn't
