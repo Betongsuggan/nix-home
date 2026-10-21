@@ -217,8 +217,16 @@ in
         inherit (cfg) adminPasswordFile idmAdminPasswordFile;
 
         groups = {
-          sso_users.members = attrNames cfg.persons;
-          idm_admins.members = cfg.admins;
+          # Membership comes from each person's `groups` (the module derives
+          # `members` from them); the group only has to exist
+          sso_users = { };
+          # Built-in: add to it, never overwrite. Overwriting removes
+          # `idm_admin` itself and the rest of the provisioning run fails with
+          # Kanidm's "no matching entries" for the lost permission
+          idm_admins = {
+            members = cfg.admins;
+            overwriteMembers = false;
+          };
         };
 
         persons = mapAttrs (_: p: {

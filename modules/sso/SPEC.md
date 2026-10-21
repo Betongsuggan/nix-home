@@ -17,7 +17,7 @@ my.sso = {
 
 A consumer then points at `config.my.sso.issuerFor "grafana"` (discovery at `<issuer>/.well-known/openid-configuration`), uses the client id `grafana`, and reads the same secret from the vault (`sso/clients/grafana` in `common.yaml`) under its own owner.
 
-Requires `my.reverse-proxy` (the vhost and its Let's Encrypt cert) and `my.sops`. The host's `my.home-network.extraDnsRecords` list needs the `id` name so tailnet members resolve it to controller's tailnet address like the other service names.
+Requires `my.reverse-proxy` (the vhost and its Let's Encrypt cert) and `my.sops`. Like every other service name, `domain` needs a **public A record** (Route 53) pointing at controller's WAN address, or the HTTP-01 order fails and nginx serves a self-signed placeholder (browsers then refuse WebAuthn); and the `id` name in the host's `my.home-network.extraDnsRecords` so tailnet members resolve it to controller's tailnet address.
 
 ## Options
 
@@ -57,6 +57,7 @@ Requires `my.reverse-proxy` (the vhost and its Let's Encrypt cert) and `my.sops`
 - **Usernames.** `preferShortUsername` is on for every client, so `preferred_username` is `birger`, not `birger@id.rydback.net`. That is what lets an OIDC login land on an existing account of the same name (Nextcloud user `birger`).
 - **Scopes and groups.** Every person is in `sso_users`, which is granted `scopes` on each client; `supplementaryScopes` (default `groups`) ride along for role mapping. Per-service roles are Kanidm groups listed in a person's `groups` and mapped with `settings.claimMaps` on the client.
 - **PKCE and crypto.** Kanidm defaults to PKCE required and ES256 tokens. `disablePkce` and `legacyCrypto` exist for clients that cannot cope; both lower security and are set per client, never globally.
+- **Built-in groups.** `admins` is applied to `idm_admins` additively (`overwriteMembers = false`). Overwriting a built-in group's members removes `idm_admin` from it and locks the provisioner out half-way; this happened on the first deploy. If it ever happens again on a fresh instance, stop `kanidm.service`, wipe `/var/lib/kanidm`, start it: there is nothing to keep before the first login.
 - **Backups.** `/var/lib/kanidm` is 0700 and the database is live; back up `backupDir`, which Kanidm writes consistently at 01:00, before restic runs at 01:45. Restore: `kanidmd restore -c <config> <file>` (see the Kanidm book).
 - **Version.** `pkgs.kanidmWithSecretProvisioning_1_11`, pinned major. nixpkgs marks an end-of-life major insecure and evaluation stops; bump one major at a time after `kanidmd domain upgrade-check`.
 - **The `deck` CLI** and other API clients keep their app passwords; SSO covers interactive logins.
