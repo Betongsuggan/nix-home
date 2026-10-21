@@ -378,8 +378,9 @@ in
         #  - background review: every N turns the chat model re-reads the
         #    recent conversation and adds/updates memories on its own, so
         #    nothing has to be said twice. Without it memories are only
-        #    written when the model calls the memory tools, which needs
-        #    "Function Calling: Native" per model (see SPEC.md).
+        #    written when the model calls the memory tools (on by default
+        #    in 0.12: function calling is native unless a model is set to
+        #    legacy).
         ENABLE_MEMORIES = "True";
         ENABLE_MEMORY_SYSTEM_CONTEXT = "True";
         ENABLE_MEMORY_BACKGROUND_REVIEW = "True";
