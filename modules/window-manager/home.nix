@@ -47,14 +47,15 @@ let
       --pixel-format yuv420p -f "${recordingDir}/$(${pkgs.coreutils}/bin/date -Iseconds).mkv"
   '';
 
-  # `screenshot region|output` into the screenshots folder (wlroots
-  # compositors; niri uses its built-in screenshot UI instead)
+  # `screenshot region|output`: saves into the screenshots folder and puts the
+  # same image on the clipboard (wlroots compositors; niri's built-in UI does both)
   screenshot = pkgs.writeShellScriptBin "screenshot" ''
     file="${screenshotDir}/$(${pkgs.coreutils}/bin/date -Iseconds).png"
     case "$1" in
-      region) geometry=$(${pkgs.slurp}/bin/slurp) || exit 0; exec ${pkgs.grim}/bin/grim -g "$geometry" "$file" ;;
-      *) exec ${pkgs.grim}/bin/grim -o "$(${focusedOutput})" "$file" ;;
-    esac
+      region) geometry=$(${pkgs.slurp}/bin/slurp) || exit 0; ${pkgs.grim}/bin/grim -g "$geometry" "$file" ;;
+      *) ${pkgs.grim}/bin/grim -o "$(${focusedOutput})" "$file" ;;
+    esac || exit
+    exec ${pkgs.wl-clipboard}/bin/wl-copy --type image/png < "$file"
   '';
 
   # Launcher menus the chosen launcher backend doesn't provide are null

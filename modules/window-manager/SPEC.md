@@ -71,7 +71,7 @@ One keymap, `my.window-manager.keybinds` (internal, defined in `home.nix`), rend
 | Mod+Shift+P / Mod+Ctrl+P | screenshot region / focused output |
 | Mod+V / Mod+Shift+V | toggle recording of a region / the focused output (`screen-record`) |
 
-Screenshots are saved to `~/Pictures/Screenshots` (`my.window-manager.screenshotDir`, also niri's `screenshot-path`) and recordings to `~/Videos/Recordings`, both under the XDG folders and created on login.
+Screenshots are saved to `~/Pictures/Screenshots` (`my.window-manager.screenshotDir`, also niri's `screenshot-path`) and the same image is put on the clipboard as `image/png` (Hyprland/sway via `wl-copy`, niri through its own screenshot UI; i3 copies only). Recordings go to `~/Videos/Recordings`. Both folders are under the XDG folders and created on login.
 | Mod+B, Mod+Space, Mod+W, Mod+T | battery, system, workspace, clock notifiers |
 | Mod+S, Mod+N, Mod+P (+ XF86 media keys) | play/pause, next, previous |
 | Mod+O, D, E, C, U, Z, M, A, Shift+A | launcher: apps, web search, symbols, clipboard, wifi, bluetooth, monitors, audio out/in |
