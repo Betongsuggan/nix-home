@@ -87,7 +87,11 @@ let
           || return 1
       }
 
-      board_id() { by_name "$(req GET "$api/boards")" "$1" || die "no board '$1'"; }
+      # Deck soft-deletes boards (deletedAt != 0, hidden in the UI until its cron
+      # purges them); hide them here too
+      boards() { req GET "$api/boards" | jq -c 'map(select(.deletedAt == 0))'; }
+
+      board_id() { by_name "$(boards)" "$1" || die "no board '$1'"; }
       stack_id() { by_name "$(req GET "$api/boards/$1/stacks")" "$2" || die "no stack '$2' on board $1"; }
       label_id() { by_name "$(req GET "$api/boards/$1" | jq '.labels')" "$2" || die "no label '$2' on board $1"; }
 
@@ -96,7 +100,7 @@ let
       find_card() {
         local id=$1 b hit
         [[ $id =~ ^[0-9]+$ ]] || die "card ids are numbers, got '$id'"
-        for b in $(req GET "$api/boards" | jq -r '.[].id'); do
+        for b in $(boards | jq -r '.[].id'); do
           hit=$(req GET "$api/boards/$b/stacks" | jq -r --argjson id "$id" \
             '[.[] | select(any((.cards // [])[]; .id == $id)) | .id] | first // empty')
           if [ -n "$hit" ]; then
@@ -146,7 +150,7 @@ let
 
       case "$cmd" in
         boards)
-          out=$(req GET "$api/boards")
+          out=$(boards)
           if [ "''${1-}" = "--json" ]; then echo "$out"; else jq -r '.[] | "\(.id)\t\(.title)"' <<<"$out"; fi
           ;;
         board)

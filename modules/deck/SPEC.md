@@ -73,6 +73,7 @@ To rotate: revoke the device in Nextcloud, repeat the steps with a new app passw
 - **Why an app password and not the login password.** Revocable on its own from the Security page, and it bypasses nothing: it has the account's rights, no more.
 - **Token handling.** curl reads `user = "login:token"` from a config on a pipe (`-K <(...)`), so the token is in neither argv nor the environment.
 - **Card lookup.** Deck's card endpoints need the board and stack ids in the path, so `deck card 42` scans the account's boards for card 42. Fine for a handful of boards; archived cards are not found (unarchive in the UI first).
+- **Deleting a board** is a soft delete in Deck (`deletedAt` set, hidden in the UI, purged later by Nextcloud's cron). The CLI hides such boards in every listing and lookup.
 - **Comments** go through the OCS endpoint (`/ocs/v2.php/apps/deck/api/v1.0/cards/<id>/comments`), the rest through `/index.php/apps/deck/api/v1.0`.
 - **`done` vs. the Done stack.** `deck done` stamps the card's done time (strikethrough in the UI, hidden from Upcoming); it does not move it. The convention on these boards is `deck move <id> Done` for a finished project card and `deck done` for a checklist-style card.
 - **Claude Code.** `.claude/skills/deck/SKILL.md` carries the board conventions; `.claude/settings.json` allows `Bash(deck:*)` so updates don't prompt.
