@@ -190,6 +190,8 @@
       "qwen2.5-coder:1.5b"
       "nomic-embed-text" # embeddings for RAG / memory / web-search ranking
     ];
+    # Titles, tags, follow-ups: off the chat model's single slot
+    taskModel = "qwen2.5:3b";
     comfyui = {
       enable = true;
       workflow = ../../modules/ai-server/comfyui/workflows/sdxl-base.json;

@@ -40,6 +40,21 @@ in
       '';
     };
 
+    taskModel = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      example = "qwen2.5:3b";
+      description = ''
+        A small, non-thinking model for Open WebUI's side jobs: chat titles,
+        tags, follow-up suggestions, retrieval/search query generation. Each
+        chat turn fires several of these; with the chat model doing them
+        they queue behind each other on its single slot and, for a thinking
+        model, each one thinks first. Users then wait minutes before their
+        own reply starts. Pulled with `models` and kept loaded next to the
+        chat model and the embedder.
+      '';
+    };
+
     models = mkOption {
       type = types.listOf types.str;
       default = [ ];
@@ -257,7 +272,7 @@ in
       package = pkgs.ollama-vulkan;
       host = "0.0.0.0";
       port = cfg.ollamaPort;
-      loadModels = cfg.models;
+      loadModels = cfg.models ++ optional (cfg.taskModel != null) cfg.taskModel;
       environmentVariables = {
         # 5 minutes — short enough that idle Ollama gives RAM back to the OS
         # so ComfyUI/Speaches can use it; long enough that consecutive chat
@@ -268,8 +283,9 @@ in
         # `nomic-embed-text` for memory recall, RAG and web-search reranking
         # on most turns; with a limit of one each of those calls evicted the
         # chat model and the reply reloaded it (two cold loads per turn).
-        # The embedder is ~300 MB, so this is still safe at 16 GB RAM.
-        OLLAMA_MAX_LOADED_MODELS = "2";
+        # The embedder is ~300 MB, so this is still safe at 16 GB RAM. Three
+        # with a task model, so Open WebUI's side jobs don't evict either.
+        OLLAMA_MAX_LOADED_MODELS = if cfg.taskModel != null then "3" else "2";
         OLLAMA_CONTEXT_LENGTH = toString cfg.contextLength;
         # Flash attention + 8-bit KV cache roughly halve the memory the
         # larger context costs, with no measurable quality loss.
@@ -351,6 +367,9 @@ in
         # UI niceties
         ENABLE_FOLDERS = "True";
         ENABLE_NOTES = "True";
+      }
+      // lib.optionalAttrs (cfg.taskModel != null) {
+        TASK_MODEL = cfg.taskModel;
       }
       // lib.optionalAttrs cfg.features.memory {
         # Three mechanisms (Open WebUI >= 0.10), all on:

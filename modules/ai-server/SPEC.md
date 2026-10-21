@@ -42,6 +42,7 @@ my.ai-server = {
 | ollamaPort          | port | 11434  | Ollama HTTP API port; opened on `tailscale0` only |
 | webuiPort           | port | 8081   | Open WebUI port; opened on `tailscale0` only (8080 is already used elsewhere) |
 | contextLength       | int  | 16384  | Ollama context window in tokens for every model and client (`OLLAMA_CONTEXT_LENGTH`). Ollama's own default is 4096. Open WebUI's compaction threshold is 70 % of this. |
+| taskModel           | null or string | null | Small non-thinking model for Open WebUI's side jobs (titles, tags, follow-ups, query generation; `TASK_MODEL`). Pulled with `models`; raises the loaded-model cap to 3. Without it those jobs queue on the chat model's single slot, and with a thinking model each of them thinks first, so a reply can take minutes to start. |
 | models              | list of string | `[ ]` | Models to keep present on the host; pulled in the background after Ollama starts. Not destructive — removing an entry doesn't delete the model. |
 | comfyui.enable      | bool | false  | Enable the ComfyUI container service |
 | comfyui.port        | port | 8188   | ComfyUI HTTP port; opened on `tailscale0` only |
