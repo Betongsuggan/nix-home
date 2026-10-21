@@ -609,11 +609,11 @@
     },
     "nix-vault": {
       "locked": {
-        "lastModified": 1792591561,
-        "narHash": "sha256-SwJD0P3Rmq91loPyY+XTCcbH5Ly3xM+lrUXCWij+sr8=",
+        "lastModified": 1792596412,
+        "narHash": "sha256-/IEN62MvuE0caSbMNlr7F9oYzGvXbSsk7fpTY01YnaU=",
         "ref": "main",
-        "rev": "3d2d0193e6429a7e70be91c5bc2d397389170db8",
-        "revCount": 25,
+        "rev": "7a9a671700c0982576dea7b479fc02b693b0dd14",
+        "revCount": 26,
         "type": "git",
         "url": "ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git"
       },
