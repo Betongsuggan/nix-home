@@ -17,7 +17,11 @@
 #     -p 8188:8188 \
 #     comfyui-rocm:local
 
-FROM rocm/pytorch:latest
+# Pinned by digest: `latest` was swapped for a differently laid-out image
+# (rocm-ai-docker-stack, no git, no `python` alias) in Oct 2026 and broke
+# the service. Bump: `nix run nixpkgs#crane -- digest rocm/pytorch:latest`,
+# paste the new digest, rebuild, and watch the first start.
+FROM rocm/pytorch:latest@sha256:099f59a3bee9c436f5cc57db6bc6076fdeda579c57e9e22ae40f856d5905b3e4
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
@@ -32,6 +36,9 @@ ADD https://github.com/comfyanonymous/ComfyUI/archive/refs/tags/${COMFYUI_VERSIO
 RUN mkdir -p /opt/ComfyUI \
  && tar -xzf /tmp/comfyui.tar.gz -C /opt/ComfyUI --strip-components=1 \
  && rm /tmp/comfyui.tar.gz
+
+# The image ships python3 only; the unit starts `python`.
+RUN command -v python > /dev/null || ln -s "$(command -v python3)" /usr/local/bin/python
 
 WORKDIR /opt/ComfyUI
 # Strip torch/torchvision/torchaudio from requirements so pip doesn't
