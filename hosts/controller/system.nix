@@ -384,6 +384,8 @@ in
     adminPassFile = config.sops.secrets."nextcloud-admin-pass".path;
     maxUploadSize = "10G";
     tailnetOnly = true;
+    # Log in with Kanidm (my.sso client `nextcloud`); password form stays
+    sso.enable = true;
   };
 
   my.onlyoffice = {

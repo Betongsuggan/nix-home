@@ -28,6 +28,8 @@ let
     "127.0.0.1"
     "::1"
   ];
+
+  vault = "${inputs.nix-vault}/secrets/common.yaml";
 in
 {
   options.my.nextcloud = {
@@ -77,6 +79,45 @@ in
       '';
     };
 
+    sso = {
+      enable = mkEnableOption "logging in through the identity provider (`my.sso`) with the user_oidc app";
+
+      clientId = mkOption {
+        type = types.str;
+        default = "nextcloud";
+        description = "The Kanidm OAuth2 client (`my.sso.clients.<id>`) and the vault key `sso/clients/<id>`.";
+      };
+
+      discoveryUri = mkOption {
+        type = types.str;
+        default = "${config.my.sso.issuerFor cfg.sso.clientId}/.well-known/openid-configuration";
+        defaultText = literalExpression ''"''${config.my.sso.issuerFor cfg.sso.clientId}/.well-known/openid-configuration"'';
+        description = "OpenID discovery document of the provider.";
+      };
+
+      secretFile = mkOption {
+        type = types.str;
+        default = config.sops.secrets."nextcloud-oidc-secret".path;
+        defaultText = literalExpression ''config.sops.secrets."nextcloud-oidc-secret".path'';
+        description = ''
+          File with the client secret, readable by the `nextcloud` user. By
+          default decrypted from the vault's `common.yaml` key
+          `sso/clients/<clientId>`, the same value Kanidm is provisioned with.
+        '';
+      };
+
+      passwordLogin = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Keep the username/password form next to the provider button
+          (`user_oidc` `allow_multiple_user_backends`). When false the login
+          page redirects straight to the provider; `?direct=1` on the login
+          URL still reaches the form for the admin.
+        '';
+      };
+    };
+
     tailnetOnly = mkOption {
       type = types.bool;
       default = false;
@@ -115,28 +156,74 @@ in
         adminpassFile = cfg.adminPassFile;
       };
 
-      extraApps = with pkgs.nextcloud33Packages.apps; {
-        inherit
-          onlyoffice
-          calendar
-          contacts
-          deck
-          mail
-          notes
-          tasks
-          ;
-      };
+      extraApps =
+        with pkgs.nextcloud33Packages.apps;
+        {
+          inherit
+            onlyoffice
+            calendar
+            contacts
+            deck
+            mail
+            notes
+            tasks
+            ;
+        }
+        // optionalAttrs cfg.sso.enable { inherit user_oidc; };
       extraAppsEnable = true;
 
       settings = {
         overwriteprotocol = "https";
         overwritehost = cfg.domain;
         default_phone_region = "SE";
+      }
+      // optionalAttrs cfg.sso.enable {
+        # The provider's name resolves to this host's own tailnet address,
+        # which Nextcloud's SSRF guard classes as local
+        allow_local_remote_servers = true;
       };
 
       # mkForce overrides the upstream default that mirrors `maxUploadSize`
       # (10G). That would let a single PHP request OOM the host.
       phpOptions.memory_limit = mkForce "512M";
+    };
+
+    # The provider is app state, not config.php: declare it with occ after
+    # every setup run (the command updates an existing provider in place).
+    # `--unique-uid 0` with `preferred_username` as the user id is what makes
+    # an OIDC login land on the existing account of the same name: user_oidc's
+    # soft auto-provisioning (default) then updates that account's attributes
+    # instead of creating a second one.
+    systemd.services.nextcloud-sso-provider = mkIf cfg.sso.enable {
+      description = "Declare the OpenID Connect provider in Nextcloud";
+      after = [ "nextcloud-setup.service" ];
+      requires = [ "nextcloud-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+      path = [ config.services.nextcloud.occ ];
+      serviceConfig.Type = "oneshot";
+      script = ''
+        nextcloud-occ user_oidc:provider Kanidm \
+          --clientid ${escapeShellArg cfg.sso.clientId} \
+          --clientsecret-file ${escapeShellArg cfg.sso.secretFile} \
+          --discoveryuri ${escapeShellArg cfg.sso.discoveryUri} \
+          --scope "openid email profile" \
+          --unique-uid 0 \
+          --mapping-uid preferred_username \
+          --mapping-display-name name \
+          --mapping-email email
+        nextcloud-occ config:app:set --type=string \
+          --value=${if cfg.sso.passwordLogin then "1" else "0"} \
+          user_oidc allow_multiple_user_backends
+      '';
+    };
+
+    sops.secrets = mkIf (cfg.sso.enable && builtins.pathExists vault) {
+      "nextcloud-oidc-secret" = {
+        sopsFile = vault;
+        key = "sso/clients/${cfg.sso.clientId}";
+        owner = "nextcloud";
+        mode = "0400";
+      };
     };
 
     # Extend (don't replace) the nginx vhost the upstream nextcloud module
