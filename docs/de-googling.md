@@ -62,7 +62,7 @@ Everything below runs on `controller` unless noted. ✅ live and declarative · 
 | Payments | ❌ Not started (Swish + bank app cover most of Sweden already) | phone |
 | Partner access | ❌ One headscale user (`birger`), allow-all ACL | `hosts/controller/system.nix` |
 | Google account removed from microG | ❌ Finish line | phone |
-| Identity provider — Kanidm | 🟡 Module written 2026-10-21 (`modules/sso`), not yet deployed; services still use their own logins | `modules/sso`, Deck board SSO |
+| Identity provider — Kanidm | 🟡 Live 2026-10-21 at `id.rydback.net` (passkey login). Nextcloud, Grafana (no anonymous access any more) and Open WebUI sign in through it. Vaultwarden postponed, headscale second wave | `modules/sso`, Deck board SSO |
 
 The original plan said "no critical data on controller before the runbook, an off-site copy and a restore test exist". Nextcloud has held real data since June without any of the three. The runbook now exists; the other two are backlog item 1 and nothing else goes on controller before it is done.
 
@@ -127,6 +127,7 @@ Parked, not deleted: `hosts/mail` (self-host trial; reactivation criteria in its
 
 - Nextcloud Deck is the project tracker (`modules/deck` CLI, boards Projects / De-Google / AI lab / nix-home / SSO). This file stays the written source of truth for decisions; the boards hold the work.
 - Identity provider un-deferred: Kanidm on controller, `modules/sso` written with persons from the registry and OIDC clients for Nextcloud, Grafana, Open WebUI and Vaultwarden. Not deployed yet (vault secrets pending). Rationale in §2.
+- Later the same day: Kanidm deployed (first attempt failed on a missing public A record and on overwriting `idm_admins`; both fixed), passkey enrolled, and Nextcloud (`user_oidc`), Grafana (`generic_oauth`, anonymous access removed) and Open WebUI (OIDC with PKCE) switched to it, each keeping its local admin as break-glass. Vaultwarden SSO postponed by choice.
 
 ### 2026-10-18 (later) — the house resolves through controller
 
