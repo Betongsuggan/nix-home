@@ -6,6 +6,10 @@ let
 
   # The person operating the fleet
   operator = {
+    # Login name and display name at the identity provider (modules/sso) and
+    # the Nextcloud account; the Linux accounts below are separate
+    login = "birger";
+    displayName = "Birger Rydback";
     email = "rydback@gmail.com";
     yubikey = {
       # FIDO resident SSH key (touch-only): the bootstrap credential used to

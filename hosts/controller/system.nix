@@ -164,6 +164,7 @@ in
               value = self.tailnetIp;
             })
             [
+              "id"
               "vault"
               "chat"
               "llm"
@@ -393,6 +394,38 @@ in
     tailnetOnly = true;
   };
 
+  # Identity provider: Kanidm at id.rydback.net, one login for the services
+  # below. Clients are declared here because their secrets must exist before
+  # the consumer modules are switched to SSO. See modules/sso/SPEC.md.
+  my.sso = {
+    enable = true;
+    clients = {
+      nextcloud = {
+        displayName = "Nextcloud";
+        redirectUrls = [
+          "https://cloud.${domain}/apps/user_oidc/code"
+          "https://cloud.${domain}/index.php/apps/user_oidc/code"
+        ];
+        landing = "https://cloud.${domain}/";
+      };
+      grafana = {
+        displayName = "Grafana";
+        redirectUrls = [ "https://grafana.${domain}/login/generic_oauth" ];
+        landing = "https://grafana.${domain}/";
+      };
+      open-webui = {
+        displayName = "Open WebUI";
+        redirectUrls = [ "https://chat.${domain}/oauth/oidc/callback" ];
+        landing = "https://chat.${domain}/";
+      };
+      vaultwarden = {
+        displayName = "Vaultwarden";
+        redirectUrls = [ "https://vault.${domain}/identity/connect/oidc-signin" ];
+        landing = "https://vault.${domain}/";
+      };
+    };
+  };
+
   # OnlyOffice docservice defaults to 127.0.0.1:8000, which collides with
   # wake-proxy's 0.0.0.0:8000 (voice tunnel to desktop's Speaches). Move
   # the docservice off 8000 — nginx already proxies to it via the upstream
@@ -426,6 +459,7 @@ in
       "/var/lib/emulation"
       "/var/lib/nextcloud"
       "/var/backups/postgresql"
+      "/var/backups/kanidm"
     ];
     excludes = [
       "**/.cache/**"

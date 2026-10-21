@@ -32,7 +32,7 @@ Record the *why* here so future-you does not re-litigate.
 | Headscale location | **Stays on controller** | If controller is down, Vaultwarden/Nextcloud are down anyway; a separate control plane does not help. No VPS exists to host it. | Only if a VPS exists for another reason. |
 | Photos | **Immich on controller** (`services.immich`) | Best Google Photos replacement (timeline, ML search, faces, auto-upload app). Library < 200 GB fits the 1 TB NVMe. | If the library outgrows the disk. |
 | Search | **Native `services.searx` on controller**, tailnet-only | The existing SearXNG is a loopback sidecar for Open WebUI on `desktop`, which sleeps. A user-facing instance belongs on the always-on host. | — |
-| Identity provider | **Deferred** | Consumer sites cannot use a self-hosted IdP; it only unifies login across self-hosted services, of which there are two. | When there are enough self-hosted services with their own user DBs to hurt. |
+| Identity provider | **Kanidm on controller at `id.rydback.net`, tailnet-only** (2026-10-21, reverses the earlier deferral) | Five self-hosted logins by now (Nextcloud, Vaultwarden, Grafana, Open WebUI, Deck via app password). Kanidm is the one IdP whose people, groups and OIDC clients are declared in Nix from the registry; passkey/YubiKey login; LDAP for anything without OIDC. First wave: Nextcloud, Grafana, Open WebUI, Vaultwarden; headscale later. Tracked on the Deck **SSO** board. | If a consumer needs SAML or Kanidm's client support proves too narrow. |
 
 ---
 
@@ -62,6 +62,7 @@ Everything below runs on `controller` unless noted. ✅ live and declarative · 
 | Payments | ❌ Not started (Swish + bank app cover most of Sweden already) | phone |
 | Partner access | ❌ One headscale user (`birger`), allow-all ACL | `hosts/controller/system.nix` |
 | Google account removed from microG | ❌ Finish line | phone |
+| Identity provider — Kanidm | 🟡 Module written 2026-10-21 (`modules/sso`), not yet deployed; services still use their own logins | `modules/sso`, Deck board SSO |
 
 The original plan said "no critical data on controller before the runbook, an off-site copy and a restore test exist". Nextcloud has held real data since June without any of the three. The runbook now exists; the other two are backlog item 1 and nothing else goes on controller before it is done.
 
@@ -121,6 +122,11 @@ Parked, not deleted: `hosts/mail` (self-host trial; reactivation criteria in its
 ---
 
 ## 6. Progress log
+
+### 2026-10-21 — project tracker and the identity provider decision
+
+- Nextcloud Deck is the project tracker (`modules/deck` CLI, boards Projects / De-Google / AI lab / nix-home / SSO). This file stays the written source of truth for decisions; the boards hold the work.
+- Identity provider un-deferred: Kanidm on controller, `modules/sso` written with persons from the registry and OIDC clients for Nextcloud, Grafana, Open WebUI and Vaultwarden. Not deployed yet (vault secrets pending). Rationale in §2.
 
 ### 2026-10-18 (later) — the house resolves through controller
 
