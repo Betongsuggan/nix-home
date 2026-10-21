@@ -120,6 +120,7 @@ in
           onlyoffice
           calendar
           contacts
+          deck
           mail
           notes
           tasks
