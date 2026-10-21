@@ -37,6 +37,9 @@ let
           null;
       # The smart plug the host is powered through (registry hosts.<h>.plug)
       plug = if plugsEnabled then h.plug or null else null;
+      # Where the host announces suspend/shutdown (my.fleet-status.announceTo
+      # defaults to the WoL relay); its status carries `peers.<host>`
+      relayFqdn = if relay != null then selfLib.tailnet.fqdn relay else null;
     }
   ) selfLib.hosts;
 
@@ -87,12 +90,25 @@ let
       done
       wait
 
-      # One line per host: its status, or tailscale's view when it can't answer
+      ago() {
+        local s=$(( $(date +%s) - $1 ))
+        if [ "$s" -lt 3600 ]; then echo "$((s / 60))m"
+        elif [ "$s" -lt 86400 ]; then echo "$((s / 3600))h"
+        else echo "$((s / 86400))d"; fi
+      }
+
+      # One line per host. Live status when it answers; otherwise the plug
+      # (no power is no power), then what the host told its relay before
+      # going (asleep / shut down), then tailscale's view.
       line() {
-        local name=$1 fqdn=$2 tsname=$3 self=$4 plug=$5 file="$dir/$2.json"
-        local power=""
+        local name=$1 fqdn=$2 tsname=$3 self=$4 plug=$5 relayFqdn=$6 file="$dir/$2.json"
+        local power="" plugOn="" word="" at=""
         if [ -n "$plug" ] && [ -s "$dir/plug-$plug.json" ]; then
-          power=$(jq -r 'if .output then "power on \(.apower | round) W" else "power off" end' "$dir/plug-$plug.json")
+          plugOn=$(jq -r '.output' "$dir/plug-$plug.json")
+          power=$(jq -r '"\(.apower | round) W"' "$dir/plug-$plug.json")
+        fi
+        if [ -n "$relayFqdn" ] && [ -s "$dir/$relayFqdn.json" ]; then
+          read -r word at < <(jq -r --arg h "$name" '.peers[$h] // empty | "\(.state) \(.at)"' "$dir/$relayFqdn.json")
         fi
         if [ -s "$file" ]; then
           jq -r --arg name "$name" --arg self "$self" --arg power "$power" '
@@ -109,34 +125,42 @@ let
               (.backups | map(select(.at != null)) | max_by(.at) | select(. != null)
                 | "backup \(.at | ago) ago" + (if .result != "success" then " (FAILED)" else "" end)),
               (select(.rebootPending) | "reboot pending"),
-              ($power | select(. != ""))
+              ($power | select(. != "") | "power \(.)")
             ] | join(" · ")' "$file"
+        elif [ "$plugOn" = false ]; then
+          echo "⏻ $name · no power"
+        elif [ "$word" = suspend ]; then
+          echo "○ $name · asleep since $(ago "$at")''${power:+ · $power}"
+        elif [ "$word" = shutdown ]; then
+          echo "⏼ $name · shut down since $(ago "$at")''${power:+ · $power}"
         else
           local state seen
           read -r state seen < <(jq -r --arg ts "$tsname" '
             ([(.Self // empty), ((.Peer // {}) | .[])] | map(select(.HostName == $ts)) | first)
-            | if . == null then "absent -" elif .Online then "online -" else "asleep \(.LastSeen)" end
+            | if . == null then "absent -" elif .Online then "online -" else "offline \(.LastSeen)" end
           ' "$dir/tailscale.json")
           case "$state" in
             absent) echo "✗ $name · not on the tailnet''${power:+ · $power}" ;;
             online) echo "◐ $name · online, no status''${power:+ · $power}" ;;
             *)
               local s
-              s=$(( $(date +%s) - $(date -d "$seen" +%s 2>/dev/null || date +%s) ))
-              if [ "$s" -lt 3600 ]; then s="$((s / 60))m"
-              elif [ "$s" -lt 86400 ]; then s="$((s / 3600))h"
-              else s="$((s / 86400))d"; fi
-              echo "○ $name · asleep · seen $s ago''${power:+ · $power}"
+              s=$(ago "$(date -d "$seen" +%s 2>/dev/null || date +%s)")
+              if [ "$plugOn" = true ]; then
+                # Powered and never said goodbye: crashed, or lost power while on
+                echo "? $name · unreachable · seen $s ago · $power"
+              else
+                echo "○ $name · offline · seen $s ago"
+              fi
               ;;
           esac
         fi
       }
 
       names=() ; labels=()
-      while IFS=$'\t' read -r name fqdn tsname self plug; do
+      while IFS=$'\t' read -r name fqdn tsname self plug relayFqdn; do
         names+=("$name")
-        labels+=("$(line "$name" "$fqdn" "$tsname" "$self" "$plug")")
-      done < <(jq -r '.[] | [.name, .fqdn, .tailnetName, (.isSelf | tostring), (.plug // "")] | @tsv' "$hosts")
+        labels+=("$(line "$name" "$fqdn" "$tsname" "$self" "$plug" "$relayFqdn")")
+      done < <(jq -r '.[] | [.name, .fqdn, .tailnetName, (.isSelf | tostring), (.plug // ""), (.relayFqdn // "")] | @tsv' "$hosts")
 
       choice=$(printf '%s\n' "''${labels[@]}" | ${dmenu "Fleet"}) || exit 0
       host=""
@@ -163,6 +187,10 @@ let
           exec ${config.my.terminal.command} -e ssh "$host"
           ;;
         Wake)
+          if [ -n "$plug" ] && [ "$(jq -r .output "$dir/plug-$plug.json" 2>/dev/null)" = false ]; then
+            ${notify "$host has no power" "Plug $plug is off: use Power on"}
+            exit 0
+          fi
           if eval "$(jq -r .wake <<<"$entry")"; then
             ${notify "Waking $host" "Magic packet sent"}
           else
@@ -206,12 +234,16 @@ let
           fi
           ;;
         Details)
-          jq -r '
+          relayFqdn=$(jq -r '.relayFqdn // empty' <<<"$entry")
+          if [ -n "$relayFqdn" ] && [ -s "$dir/$relayFqdn.json" ]; then
+            jq -r --arg h "$host" '.peers[$h] // empty | "last word: \(.state) \(.at | todate)"' "$dir/$relayFqdn.json"
+          fi > "$dir/lastword"
+          { cat "$dir/lastword"; jq -r '
             [ "host: \(.host)", "system: \(.system)", "rebuilt: \(.rebuilt | todate)",
               "disk: \(.disk.usedPercent)% used, \(.disk.free / 1e9 | floor) GB free",
               (.battery | select(. != null) | "battery: \(.capacity)% \(.state)"),
               (.backups[] | "\(.unit): \(if .at then (.at | todate) else "never" end) \(.result)") ]
-            | .[]' "$dir/$fqdn.json" | ${dmenu "Details"} > /dev/null || true
+            | .[]' "$dir/$fqdn.json"; } | ${dmenu "Details"} > /dev/null || true
           ;;
         "Copy address")
           printf '%s' "$fqdn" | wl-copy

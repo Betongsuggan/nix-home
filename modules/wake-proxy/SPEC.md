@@ -42,6 +42,7 @@ The listening ports are only opened on `tailscale0` — never on the LAN or the 
 - One long-lived process instead of a `systemd-socket-activated` per-connection bash. The previous design worked for single-curl traffic but produced RSTs to nginx under SPA-style burst loads (Open WebUI loading 50+ JS files on initial render).
 - TCP-level proxy: handles HTTP, WebSocket upgrades, gRPC, and anything else that's plain TCP. No TLS termination here — front it with the existing `reverse-proxy` module if you want a public HTTPS URL.
 - The upstream's tailscale daemon also sleeps with the host; using its tailnet IP as `targetHost` means the same address starts responding again once it wakes.
+- A magic packet only reaches a host that has standby power. When the upstream is behind a smart plug that is off ([[shelly-plug]]), the proxy's WoL attempts fail by design; the fleet dashboard shows that state as *no power* and offers Power on instead.
 - Hardening: `DynamicUser`, `ProtectSystem=strict`, `ProtectHome=true`, `NoNewPrivileges=true`. The Go binary needs no state on disk.
 
 ## Verification
