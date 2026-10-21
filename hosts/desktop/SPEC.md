@@ -35,6 +35,7 @@ Personal gaming and development desktop with AMD Ryzen CPU and RDNA4 GPU. Runs t
 - Vicinae launcher with wifi, bluetooth, and monitor extensions on both users
 - Chromium, communication apps, and LocalSend on both users
 - Taildrop (`my.taildrop`, on by default for the admin user): Mod+Shift+S sends the clipboard to any tailnet device, phones included; received files land in `~/Downloads/taildrop` and received clipboards go straight to the clipboard. The admin user is the host's tailscale operator
+- Project tracker CLI (`my.deck`, Nextcloud user `birger`): `deck` reads and updates the Nextcloud Deck boards on controller; the app password comes from the vault (`common.yaml` → `/run/secrets/deck-token-betongsuggan`). See `modules/deck/SPEC.md`
 - PrusaSlicer on `betongsuggan` only (`my.printing-3d.enable`, see `modules/printing-3d/SPEC.md`)
 - Alacritty terminal with Bash shell and Starship prompt
 - Bluetooth with wake support for DualSense controller

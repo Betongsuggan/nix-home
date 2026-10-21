@@ -19,6 +19,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 - LocalSend for local file sharing (with CLI)
 - Moonlight client (`my.game-streaming.client`, 1920x1200@60 to match the panel, otherwise module defaults: 100 Mbps, HDR, auto codec/decoder) for streaming the desktop's Sunshine session over the tailnet. Pairing is a one-time manual step: wake the desktop with `ssh controller wake-desktop`, add `desktop.ts.rydback.net` in Moonlight, then approve the PIN at `https://desktop.ts.rydback.net:47990`
 - Taildrop (`my.taildrop`, on by default for the admin user): Mod+Shift+S sends the clipboard to any tailnet device, phones included; received files land in `~/Downloads/taildrop` and received clipboards go straight to the clipboard. The admin user is the host's tailscale operator
+- Project tracker CLI (`my.deck`, Nextcloud user `birger`): `deck` reads and updates the Nextcloud Deck boards on controller; the app password comes from the vault (`common.yaml` → `/run/secrets/deck-token-birgerrydback`). Claude Code uses it through `.claude/skills/deck`. See `modules/deck/SPEC.md`
 - 3D printing toolchain: PrusaSlicer, OpenSCAD (dev snapshot), FreeCAD (`my.printing-3d` with `cad.enable`, see `modules/printing-3d/SPEC.md`)
 - SMB network share browsing in Thunar (GVFS + Avahi/mDNS discovery)
 - No emulation client or Syncthing on this work laptop (dropped for lightness)
