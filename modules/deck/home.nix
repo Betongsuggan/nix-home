@@ -212,7 +212,9 @@ let
           find_card "$1"
           s=$(stack_id "$CARD_BOARD" "$2")
           order=$(req GET "$api/boards/$CARD_BOARD/stacks" | jq --argjson s "$s" '[.[] | select(.id == $s) | (.cards // []) | length] | first // 0')
-          req PUT "$(card_url "$1")/reorder" "{\"order\": $((order + 1)), \"stackId\": $s}" >/dev/null
+          # Deck reads the target stack from the path, not the body: the stack in
+          # the URL is where the card ends up
+          req PUT "$api/boards/$CARD_BOARD/stacks/$s/cards/$1/reorder" "{\"order\": $((order + 1)), \"stackId\": $s}" >/dev/null
           ;;
         label | unlabel)
           [ $# -eq 2 ] || die "usage: deck $cmd <id> <label>"
