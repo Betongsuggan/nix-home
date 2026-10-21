@@ -82,12 +82,19 @@ in
 
     anonymousRole = mkOption {
       type = types.enum [
+        "none"
         "Viewer"
         "Editor"
         "Admin"
       ];
-      default = "Viewer";
-      description = "Role every visitor gets without logging in. Access control is the reverse proxy's job (tailnet-only).";
+      default = if cfg.sso.enable then "none" else "Viewer";
+      defaultText = literalExpression ''if cfg.sso.enable then "none" else "Viewer"'';
+      description = ''
+        Role every visitor gets without logging in, or `none` to require a
+        login. Without SSO the only login is the local `admin`, so anonymous
+        Viewer is the usable default; with SSO everyone signs in and
+        anonymous access goes away.
+      '';
     };
 
     sso = {
@@ -162,7 +169,7 @@ in
           check_for_plugin_updates = false;
           feedback_links_enabled = false;
         };
-        "auth.anonymous" = {
+        "auth.anonymous" = mkIf (cfg.anonymousRole != "none") {
           enabled = true;
           org_role = cfg.anonymousRole;
         };
