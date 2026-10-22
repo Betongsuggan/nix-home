@@ -22,6 +22,16 @@ let
   vcfg = cfg.vicinae;
   vicinae = lib.getExe config.programs.vicinae.package;
 
+  # Fixes to upstream extensions, applied when they are built. Each one is
+  # made against the pinned input, so a `nix flake update` that changes those
+  # lines fails the build instead of silently dropping the fix. Drop a patch
+  # once it has landed upstream.
+  extensionPatches = {
+    # Open networks: nmcli's table prints "--" for an empty SECURITY column,
+    # which the extension took for a secured network and asked a password for
+    wifi-commander = [ ./wifi-commander-open-networks.patch ];
+  };
+
   # An extension from the vicinae-extensions input, installed under its own
   # name. Its provider id in `vicinae://launch/<id>/<command>` is
   # `@<author>/<name>` from its package.json (`vicinae cmd ls` lists them).
@@ -35,6 +45,7 @@ let
       src = "${inputs.vicinae-extensions}/extensions/${name}";
     }).overrideAttrs
       {
+        patches = extensionPatches.${name} or [ ];
         postPatch = ''
           substituteInPlace tsconfig.json --replace-quiet \
             '"../../tsconfig.json"' '"${inputs.vicinae-extensions}/tsconfig.json"'
