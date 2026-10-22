@@ -28,8 +28,10 @@ deck archive <id>
 deck new-board <title> [COLOR]             COLOR is hex without '#', default 0082c9
 deck new-stack <board> <title>
 deck new-label <board> <title> COLOR
+deck rename-board <board> <title>
 deck delete-board <board>                  the board with every stack and card
 deck delete-label <board> <label>
+deck delete-card <id>
 ```
 
 Boards, stacks and labels are a title (case-insensitive) or an id; cards are ids, which every listing prints. `-d -` reads the text from stdin, so multi-line markdown descriptions come from a heredoc. Read verbs take `--json` for the raw API answer.

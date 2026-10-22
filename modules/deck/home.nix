@@ -44,8 +44,10 @@ let
         deck new-board <title> [COLOR]             COLOR is hex without '#', default 0082c9
         deck new-stack <board> <title>
         deck new-label <board> <title> COLOR
+        deck rename-board <board> <title>
         deck delete-board <board>                  the board with every stack and card
         deck delete-label <board> <label>
+        deck delete-card <id>
 
       <board>, <stack> and <label> are a title (case-insensitive) or an id.
       "-d -" reads the text from stdin.
@@ -258,6 +260,17 @@ let
           [ $# -eq 3 ] || die "usage: deck new-label <board> <title> COLOR"
           b=$(board_id "$1")
           req POST "$api/boards/$b/labels" "$(jq -cn --arg t "$2" --arg c "$3" '{title: $t, color: $c}')" | jq -r '.id'
+          ;;
+        rename-board)
+          [ $# -eq 2 ] || die "usage: deck rename-board <board> <title>"
+          b=$(board_id "$1")
+          color=$(req GET "$api/boards/$b" | jq -r '.color')
+          req PUT "$api/boards/$b" "$(jq -cn --arg t "$2" --arg c "$color" '{title: $t, color: $c, archived: false}')" >/dev/null
+          ;;
+        delete-card)
+          [ $# -eq 1 ] || die "usage: deck delete-card <id>"
+          find_card "$1"
+          req DELETE "$(card_url "$1")" >/dev/null
           ;;
         delete-board)
           [ $# -eq 1 ] || die "usage: deck delete-board <board>"

@@ -1,17 +1,19 @@
-# De-Google — `rydback.net`
+# De-cloud — `rydback.net`
 
-A private-life initiative to regain control over where data lives, reduce dependence on US Big Tech, and make any remaining use (e.g. YouTube) a *conscious* choice rather than a default. Work is private only; work devices and accounts stay on Google and are out of scope.
+A private-life initiative to own my data and the services around it: reduce dependence on any cloud I do not control, not only Google, and make every remaining use (YouTube, payments, an AI assistant) a *conscious* choice rather than a default. Work is private only; work devices and accounts are out of scope.
 
-Re-baselined 2026-10-18 against what the repo actually runs. The earlier phase/checkbox layout is gone; this file now holds the decisions that are locked, a status board of what is live, and an ordered backlog. History stays in the progress log at the bottom.
+Started 2026 as "De-Google"; widened to all cloud dependencies on 2026-10-22 and renamed. This file holds the decisions that are locked, a status board of what is live, and the ordered backlog. The work itself and the **inventory of every external service** live in Nextcloud Deck (boards **De-cloud** and **Cloud inventory**, `deck` CLI); history stays in the progress log at the bottom.
 
 ---
 
 ## 1. Guiding principles
 
-- **Ownership tiers.** Self-host the crown jewels (passwords, files, calendar, photos). Use a *trusted, transparent* third party where self-hosting buys little ownership for a lot of babysitting (mail, off-site storage). Keep a few conscious-choice conveniences (YouTube, payments).
+- **Inventory before replacement.** Every external service I depend on has a card on the Cloud inventory board, with what data it holds and which decision applies. A card in *Using* with no decision is the debt.
+- **Ownership tiers.** Self-host the crown jewels (passwords, files, calendar, photos, identity). Use a *trusted, transparent* third party where self-hosting buys little ownership for a lot of babysitting (mail, off-site storage, DNS). Keep a few conscious-choice conveniences (YouTube, payments, Claude).
 - **Own the address, not the provider.** Identity is `you@rydback.net`. The backend behind it is swappable by DNS.
 - **Tailnet-first.** Self-hosted services are reachable only inside the headscale network. Public exposure is the exception (`rydback.net/wow`, the bootstrap blob), never for personal data.
-- **Dependency order.** Password manager before detaching any Google login. Mail last, because it is the recovery anchor for everything else.
+- **One login.** Self-hosted services authenticate through the identity provider, not their own user tables.
+- **Dependency order.** Password manager before detaching any login. Mail last, because it is the recovery anchor for everything else.
 - **NixOS everywhere.** Every service is a module under `modules/`, enabled on `controller`, in the restic set, documented in a SPEC.
 - **A backup that was never restored is hope, not a backup.** Verification is automated, the runbook is exercised.
 
@@ -32,37 +34,43 @@ Record the *why* here so future-you does not re-litigate.
 | Headscale location | **Stays on controller** | If controller is down, Vaultwarden/Nextcloud are down anyway; a separate control plane does not help. No VPS exists to host it. | Only if a VPS exists for another reason. |
 | Photos | **Immich on controller** (`services.immich`) | Best Google Photos replacement (timeline, ML search, faces, auto-upload app). Library < 200 GB fits the 1 TB NVMe. | If the library outgrows the disk. |
 | Search | **Native `services.searx` on controller**, tailnet-only | The existing SearXNG is a loopback sidecar for Open WebUI on `desktop`, which sleeps. A user-facing instance belongs on the always-on host. | — |
-| Identity provider | **Kanidm on controller at `id.rydback.net`, tailnet-only** (2026-10-21, reverses the earlier deferral) | Five self-hosted logins by now (Nextcloud, Vaultwarden, Grafana, Open WebUI, Deck via app password). Kanidm is the one IdP whose people, groups and OIDC clients are declared in Nix from the registry; passkey/YubiKey login; LDAP for anything without OIDC. First wave: Nextcloud, Grafana, Open WebUI, Vaultwarden; headscale later. Tracked on the Deck **SSO** board. | If a consumer needs SAML or Kanidm's client support proves too narrow. |
+| Identity provider | **Kanidm on controller at `id.rydback.net`, tailnet-only** (2026-10-21, reverses the earlier deferral) | Five self-hosted logins by then (Nextcloud, Vaultwarden, Grafana, Open WebUI, Deck via app password). Kanidm is the one IdP whose people, groups and OIDC clients are declared in Nix from the registry; passkey/YubiKey login; LDAP for anything without OIDC. Live for Nextcloud, Grafana, Open WebUI; Vaultwarden postponed; headscale second wave (`sso` label on the De-cloud board). | If a consumer needs SAML or Kanidm's client support proves too narrow. |
+| Project tracker | **Nextcloud Deck + the `deck` CLI** (2026-10-21) | Nothing new to host, one login, phone app, backed up with Nextcloud. Vikunja is the reserve if the kanban-only model chafes. | If priorities, cross-board filters or global labels are missed for real. |
+| Scope | **All cloud dependencies, private life only** (2026-10-22, was "Google only") | The Google account was the biggest anchor but not the only one: DNS, code hosting, the vault's backup key, subscriptions and the assistant all live elsewhere. Without an inventory the remaining dependencies stay invisible. | — |
+
+Open forks, decided on their inventory cards when they come up: DNS hosting (Route 53 vs a European provider vs zone-as-code), personal code hosting (GitHub mirror vs controller), where the vault's backup age key lives once 1Password is closed.
 
 ---
 
-## 3. Status board (2026-10-18)
+## 3. Status board (2026-10-22)
 
 Everything below runs on `controller` unless noted. ✅ live and declarative · 🟡 live with a known gap · ❌ not started.
 
 | Area | State | Where |
 |---|---|---|
-| Passwords — Vaultwarden | 🟡 Live (May 2026). Clients on all devices. No SMTP yet. Encrypted emergency export to USB has no cadence. | `modules/vaultwarden`, `hosts/controller/system.nix` |
+| Passwords — Vaultwarden | 🟡 Live (May 2026). Clients on all devices. No SMTP yet. Encrypted emergency export to USB has no cadence. SSO postponed. | `modules/vaultwarden`, `hosts/controller/system.nix` |
 | 2FA — Aegis | ❌ TOTP still on Google Authenticator | phone |
-| Account inventory | ❌ Not done | Vaultwarden |
+| Account inventory | 🟡 Cloud inventory board seeded from the repo 2026-10-22 (26 cards, `confirm` label on the unverified ones); the per-login inventory in Vaultwarden is not done | Deck, Vaultwarden |
 | Tailnet — headscale, MagicDNS, DERP, subnet router, bootstrap blob | ✅ Linux hosts + both Android devices (`ayn-thor`, `fairphone`), always-on | `modules/home-network`, `modules/headscale` |
 | Android VPN slot (Tailscale vs /e/OS Advanced Privacy IP hiding) | ❌ Not decided | phone |
-| Files / Calendar / Contacts / Notes / Tasks — Nextcloud 33 + OnlyOffice | 🟡 Live (June 2026) at `cloud.` / `office.rydback.net`. No SMTP. DAVx5 on the phone not confirmed. | `modules/nextcloud`, `modules/onlyoffice` |
+| Files / Calendar / Contacts / Notes / Tasks / Deck — Nextcloud 33 + OnlyOffice | 🟡 Live (June 2026) at `cloud.` / `office.rydback.net`. No SMTP. DAVx5 on the phone not confirmed. Signs in with Kanidm. | `modules/nextcloud`, `modules/onlyoffice` |
+| Identity provider — Kanidm | 🟡 Live 2026-10-21 at `id.rydback.net` (passkey login). Nextcloud, Grafana (no anonymous access any more) and Open WebUI sign in through it. Vaultwarden postponed, headscale second wave | `modules/sso` |
 | Photos — Immich | ❌ | — |
-| Mail — `@rydback.net` receiving | ❌ Nothing receives for the domain. `hosts/mail` is a parked scaffold. Identity anchors in the repo (`operator.email`, git email, ACME) are still Gmail. | `hosts/mail/SPEC.md`, `lib/default.nix` |
-| Backup copy 1 (source) | ✅ restic daily 01:45: `/var/lib/{vaultwarden,headscale,emulation,nextcloud}`, both git bare repos, `/var/backups/postgresql` (pg dumps 01:15) | `modules/restic-backup` |
+| Mail — `@rydback.net` receiving | ❌ Nothing receives for the domain. `hosts/mail` is a parked scaffold. Identity anchors in the repo (`operator.email`, git email, ACME, the Kanidm person) are still Gmail. | `hosts/mail/SPEC.md`, `lib/default.nix` |
+| Backup copy 1 (source) | ✅ restic daily 01:45: `/var/lib/{vaultwarden,headscale,emulation,nextcloud}`, both git bare repos, `/var/backups/{postgresql,kanidm}` | `modules/restic-backup` |
 | Backup copy 2 — `desktop`, on-site | ✅ Chrooted SFTP, WoL-woken by controller before each run | `modules/profiles` (gaming-station), `modules/restic-target` |
 | Backup copy 3 — `island-stationary`, off-site | 🟡 Target wired (2026-10-01) but controller cannot wake it (its relay is `island-pi`); runs fail while it sleeps. Best effort. | `hosts/island-stationary/SPEC.md` |
 | Backup copy 3 — Hetzner Storage Box | ❌ Decided, not built | backlog 1 |
 | `restic check` / restore test | ❌ Never run | backlog 1 |
 | Disaster-recovery runbook | ✅ `docs/disaster-recovery.md` (2026-10-18), not yet exercised | — |
 | Search — SearXNG | 🟡 Exists only as Open WebUI's loopback sidecar on `desktop` | `modules/ai-server` |
-| Home-network telemetry — DNS filter + Grafana | 🟡 Live (2026-10-18): blocky on controller for LAN (DHCP) and tailnet, hagezi + vendor lists, encrypted upstreams, per-client query log, dashboards at `grafana.rydback.net`. Router cannot force hardcoded-DNS devices (102.x firmware has no DNS Filtering); watch the log for bypassing devices before deciding on Merlin | `modules/dns-filter`, `modules/monitoring` |
+| Home-network telemetry — DNS filter + Grafana | 🟡 Live (2026-10-18): blocky on controller for LAN (DHCP) and tailnet, hagezi + vendor lists, encrypted upstreams, per-client query log, dashboards at `grafana.rydback.net` (login required). Router cannot force hardcoded-DNS devices (102.x firmware has no DNS Filtering); watch the log for bypassing devices before deciding on Merlin | `modules/dns-filter`, `modules/monitoring` |
+| DNS hosting — Route 53 | 🟡 In use, records by hand, no decision | Cloud inventory |
+| Code hosting — GitHub | 🟡 `nix-home` and five personal repos; `nix-vault` and `wow-leveling` already on controller | Cloud inventory, `modules/git-server` |
 | Maps, app stores, YouTube frontend | ❌ Not confirmed | phone |
 | Payments | ❌ Not started (Swish + bank app cover most of Sweden already) | phone |
 | Partner access | ❌ One headscale user (`birger`), allow-all ACL | `hosts/controller/system.nix` |
 | Google account removed from microG | ❌ Finish line | phone |
-| Identity provider — Kanidm | 🟡 Live 2026-10-21 at `id.rydback.net` (passkey login). Nextcloud, Grafana (no anonymous access any more) and Open WebUI sign in through it. Vaultwarden postponed, headscale second wave | `modules/sso`, Deck board SSO |
 
 The original plan said "no critical data on controller before the runbook, an off-site copy and a restore test exist". Nextcloud has held real data since June without any of the three. The runbook now exists; the other two are backlog item 1 and nothing else goes on controller before it is done.
 
@@ -70,63 +78,41 @@ The original plan said "no critical data on controller before the runbook, an of
 
 ## 4. Backlog (ordered; blockers inline)
 
-Each item is one working session. Repo work is named; operator work (phone, provider dashboards, DNS) is marked *op*.
+The same list as the De-cloud board's Backlog, numbered in order. Each item is one working session. Repo work is named; operator work (phone, provider dashboards, DNS) is marked *op*. Details and progress live on the cards.
 
-1. **Off-site backup that is always there.** *Blocks everything that adds data to controller.*
-   - *op* Hetzner account → Storage Box (BX11, 1 TB) → enable SSH, upload controller's restic public key (`hosts.controller.users.restic.ssh.id_ed25519` in `lib/default.nix`) to the box's `.ssh/authorized_keys` in RFC4716 format.
-   - `modules/restic-backup`: add `targets.<name>.sftpPort` (Storage Box speaks SFTP on 23) feeding both the repository URL and the wake probe; pin the box's published host key through `hostKey` (a non-fleet target otherwise falls back to trust-on-first-use). Add a `verify` timer: monthly `restic check --read-data-subset=5%` per target plus a `restore latest --path /var/lib/vaultwarden` smoke into a tmp dir. Update the SPEC.
-   - `hosts/controller/system.nix`: add the target. Confirm with `restic-hetzner snapshots`.
-   - Run the runbook's **drill** once (see `docs/disaster-recovery.md`) and log the result there.
+1. **Hetzner Storage Box: always-on off-site backup + restic verify.** *Blocks everything that adds data to controller.* Storage Box BX11 with controller's restic key; `modules/restic-backup` gains `sftpPort` and `hostKey` for a non-fleet target and a monthly `restic check --read-data-subset=5%` plus restore smoke test; the DR runbook's drill is run once and logged.
+2. **Mail: `@rydback.net` receives, Gmail becomes a forwarder.** Provider signup and DNS records; SMTP for Vaultwarden and Nextcloud through their existing secret files; `operator.email`, git email and the Kanidm person's mail move to the domain; then the long tail of email-of-record changes, one alias per service, listed in Vaultwarden.
+3. **Phone hygiene (no repo work).** Aegis; Organic Maps; Aurora + F-Droid only; NewPipe or Grayjay; the VPN slot decision; DAVx5 against `cloud.rydback.net`; Catima; a quarterly encrypted Vaultwarden export.
+4. **Photos: Immich.** *Blocked by 1.* `modules/immich` on the Nextcloud module's pattern, restic and pg-dump wiring, phone upload over the tailnet, one-time Takeout import.
+5. **Partner access.** Second headscale user, her phone, her Nextcloud (and Kanidm) account, shared calendar.
+6. **Search on controller.** `services.searx` at `search.rydback.net`, default engine in the browsers.
+7. **Finish line.** Nothing private depends on the Google account; remove it from microG; full check of services, mail, backups.
 
-2. **Mail: `@rydback.net` receives, Gmail becomes a forwarder.**
-   - *op* Sign up (Migadu assumed), verify the domain, add MX/SPF/DKIM/DMARC (`p=none` to start) in Route 53. Forward Gmail → `rydback.net`. Send/receive test against Gmail, Outlook, one other.
-   - `modules/vaultwarden`: SMTP via the existing `environmentFile` (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURITY`, `SMTP_FROM`, `SMTP_USERNAME`, `SMTP_PASSWORD`), so no new secret plumbing. `modules/nextcloud`: `services.nextcloud.settings.mail_*` + `secrets.mail_smtppassword` (see that SPEC's mail note). Nextcloud Mail app pointed at the provider's IMAP.
-   - `lib/default.nix`: `operator.email` and `accounts.betongsuggan.git.email` → `@rydback.net` (ACME follows). `hosts/mail/system.nix` comment likewise when it is next touched.
-   - *op* Start the long tail: change email-of-record per account, most valuable first, per-service alias each time. Keep a list in Vaultwarden. Gmail stays as a dormant forward-only fallback until nothing depends on it.
+Also on the board, unordered: the account inventory in Vaultwarden, Vaultwarden SSO (postponed), headscale OIDC login (second wave), and whatever the inventory cards turn into once decided.
 
-3. **Phone hygiene (no repo work).** Aegis with encrypted backups; Organic Maps; Aurora Store + F-Droid as the only sources; NewPipe or Grayjay for YouTube; decide the VPN slot (recommendation: Tailscale always-on, Advanced Privacy IP hiding off, tracker blocking kept); DAVx5 against `cloud.rydback.net`; Catima for passes. Encrypted Vaultwarden export to a USB stick, then a calendar reminder every quarter.
-
-4. **Photos: Immich.** *Blocked by 1.*
-   - New `modules/immich/{nixos.nix,SPEC.md}` on the Nextcloud module's pattern: `services.immich`, local PostgreSQL, `/var/lib/immich`, tailnet-only vhost through `lib.tailnet.nginxAllowOnly`, `photos.rydback.net` in `extraDnsRecords`. Add the data dir and DB to the restic set and `postgresqlBackup.databases`. ML stays on controller (CPU; fine for a personal library, can be switched off).
-   - *op* Immich app on the phone with background upload over the tailnet. One-time Google Takeout import. Keep Google Photos read-only until the import is verified, then stop uploading there.
-
-5. **Partner access.** One line: a second user in `controller.headscale.users`; *op* enroll her phone with the Tailscale app (`https://vpn.rydback.net`), create her Nextcloud user, share the calendar. Document in `hosts/controller/SPEC.md`.
-
-6. **Search on controller.** `my.searx` (or a plain `services.searx` block) at `search.rydback.net`, tailnet-only, settings from `modules/ai-server/searxng/settings.yml` as the starting point. Set it as the default engine in Firefox/Chromium through the existing modules.
-
-7. **Finish line.** Confirm nothing private depends on the Google account (inventory from Vaultwarden, mail moved, photos moved, 2FA off Authenticator). Remove the account from microG. Reboot, check services over the tailnet, check mail both ways, check the last restic run and the last verify run.
-
-Parked, not deleted: `hosts/mail` (self-host trial; reactivation criteria in its SPEC), Kanidm/Authentik (see Decisions).
+Parked, not deleted: `hosts/mail` (self-host trial; reactivation criteria in its SPEC), Authelia/Authentik (Kanidm chosen).
 
 ---
 
-## 5. Replacement map
+## 5. Inventory
 
-| Google service | Self-host (tier 1) | Trusted third party (tier 2) | State |
-|---|---|---|---|
-| Passwords | Vaultwarden | — | live |
-| 2FA | Aegis (local) | — | todo |
-| Email | *(parked: Stalwart on a VPS)* | Migadu / mailbox.org with `rydback.net` | todo |
-| Drive / Docs | Nextcloud + OnlyOffice | — | live |
-| Calendar / Contacts | Nextcloud (+ DAVx5) | — | live, phone unconfirmed |
-| Notes / Tasks | Nextcloud Notes / Tasks | — | live |
-| Photos | Immich | — | todo |
-| Maps | — | Organic Maps / OsmAnd (offline) | todo |
-| Search | SearXNG | — | sidecar only |
-| YouTube | — | NewPipe / Grayjay (no login) | todo |
-| Payments | — | Swish / bank app / Curve / Garmin Pay | todo |
-| App store | — | Aurora Store + F-Droid | todo |
-| Networking | Headscale | — | live |
-| Off-site storage | — | Hetzner Storage Box (ciphertext only) | todo |
+The replacement map that used to live here is now the **Cloud inventory** board: one card per external service, stacks *Using* (no decision yet), *Replacing* (decided, in progress), *Replaced* (done, Google copy to delete), *Keep* (conscious choice), labels `data` (holds personal data), `fleet` (this repo depends on it), `account` (just a login), `confirm` (seeded from the repo, not verified by me yet). Read it with `deck board "Cloud inventory"`.
+
+Rules: a new external dependency gets a card the day it appears; a card leaves *Using* only with a decision written on it; a *Replaced* card is closed only after the cloud copy is deleted and the account, where possible, too.
 
 ---
 
 ## 6. Progress log
 
+### 2026-10-22 — De-Google becomes De-cloud
+
+- Scope widened from the Google account to every cloud dependency; this file renamed from `de-googling.md`. The replacement map became the Cloud inventory board (26 cards seeded from the repo: Google services, Route 53, GitHub, 1Password, Hetzner, Migadu, Let's Encrypt, Anthropic, Apple, Steam, Discord, Signal, Swish/BankID, subscriptions; the ones not verifiable from the repo carry `confirm`).
+- Boards consolidated: the SSO work board merged into De-cloud (`sso` label), history kept as comments. Backlog item 1 renamed to name the Storage Box.
+
 ### 2026-10-21 — project tracker and the identity provider decision
 
-- Nextcloud Deck is the project tracker (`modules/deck` CLI, boards Projects / De-Google / AI lab / nix-home / SSO). This file stays the written source of truth for decisions; the boards hold the work.
-- Identity provider un-deferred: Kanidm on controller, `modules/sso` written with persons from the registry and OIDC clients for Nextcloud, Grafana, Open WebUI and Vaultwarden. Not deployed yet (vault secrets pending). Rationale in §2.
+- Nextcloud Deck is the project tracker (`modules/deck` CLI, boards Projects / De-cloud / AI lab / nix-home / Cloud inventory). This file stays the written source of truth for decisions; the boards hold the work.
+- Identity provider un-deferred: Kanidm on controller, `modules/sso` written with persons from the registry and OIDC clients for Nextcloud, Grafana, Open WebUI and Vaultwarden. Rationale in §2.
 - Later the same day: Kanidm deployed (first attempt failed on a missing public A record and on overwriting `idm_admins`; both fixed), passkey enrolled, and Nextcloud (`user_oidc`), Grafana (`generic_oauth`, anonymous access removed) and Open WebUI (OIDC with PKCE) switched to it, each keeping its local admin as break-glass. Vaultwarden SSO postponed by choice.
 
 ### 2026-10-18 (later) — the house resolves through controller
