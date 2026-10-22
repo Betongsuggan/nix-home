@@ -108,11 +108,9 @@ in
     secretsFile = "${inputs.nix-vault}/secrets/island-pi.yaml";
   };
 
-  # Deliberately not a subnet router. The summer-place LAN is 192.168.1.0/24,
-  # the default of most consumer routers (guest networks, the office), and an
-  # accepted route beats the local network on every laptop that lands on such
-  # a range. Nothing needs the route: island-stationary is on the tailnet and
-  # is woken over SSH to this host. Renumber the summer router first if a
-  # non-tailnet device there ever has to be reached, then advertise
-  # `self.lan.subnet` here again (see SPEC, "Subnet router").
+  # Deliberately not a subnet router: nothing on the summer-place LAN needs
+  # reaching from the tailnet. island-stationary is a tailnet member and is
+  # woken over SSH to this host. When a non-tailnet device there has to be
+  # reached, `my.home-network.advertiseRoutes = [ self.lan.subnet ];` is the
+  # whole change (see SPEC, "Subnet router").
 }

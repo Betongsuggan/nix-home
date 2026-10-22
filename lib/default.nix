@@ -94,11 +94,11 @@ let
       system = "aarch64-linux";
       users.betongsuggan = { };
       addresses = [ "island-pi" ];
-      # Summer-place LAN. Not advertised into the tailnet (hosts/island-pi):
-      # the range is every consumer router's default and an accepted route
-      # would shadow guest and office networks on it. Renumber before
-      # advertising. Must differ from controller's lan.subnet.
-      lan.subnet = "192.168.1.0/24";
+      # Summer-place LAN (checked on site 2026-10-22). Not advertised into
+      # the tailnet (hosts/island-pi): nothing there needs reaching from the
+      # tailnet; the subnet router is a one-line flip when something does.
+      # Must differ from controller's lan.subnet.
+      lan.subnet = "192.168.51.0/24";
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAVLZdSvoCGrRaHnh5jjXVnQ2lA9ppARq+jm38z/ct5A root@island-pi";
     };
 

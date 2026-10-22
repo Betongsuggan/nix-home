@@ -34,11 +34,12 @@ Any x86 fleet host can build the image and deploy, with two conditions:
 
 ## Open items (on-site at the summer place)
 
-Status 2026-10-18: onboarded on the home LAN — on the tailnet as `island-pi` (100.64.0.8), sops working, reboot verified. Should come up on its own at the summer place (DHCP + saved tailnet login; DERP relay via controller if the router blocks direct connections). Left to do there:
+Status 2026-10-22: installed at the summer place and came up on its own — LAN `192.168.51.5`, tailnet `island-pi` (100.64.0.8), direct connection to a laptop on the same LAN. Left to do (nix-home card 103):
 
 - [ ] **Host key backup** (if not done before leaving): `ssh root@island-pi.ts.rydback.net 'tar -C /etc/ssh -czf - ssh_host_ed25519_key ssh_host_ed25519_key.pub' > island-pi-hostkey.tgz`, stored privately. Needed to re-flash without re-enrolling (see Recovery).
-- [ ] **Check the subnet:** `ssh island-pi.ts.rydback.net ip -4 addr show`. The registry records `192.168.1.0/24` (`lib.hosts.island-pi.lan.subnet`) for documentation; if the summer router uses something else, change that one value.
-- [ ] **Deploy** the Pi from bits: `nixos-rebuild switch --flake .#island-pi --target-host root@island-pi.ts.rydback.net`. If it was ever deployed with the route advertised (before 2026-10-22), also run `tailscale set --advertise-routes=` on it once: removing the flag from the config does not remove it from tailscaled's saved prefs. Check with `sudo headscale nodes list-routes` on controller that island-pi advertises nothing.
+- [x] **Check the subnet:** `192.168.51.0/24`, recorded in `lib.hosts.island-pi.lan.subnet` (2026-10-22).
+- [ ] **Deploy** the Pi from bits: `nixos-rebuild switch --flake .#island-pi --target-host root@island-pi.ts.rydback.net` (brings the `wake` account for controller's backups). Its tailscaled prefs show no advertised route; confirm with `sudo headscale nodes list-routes` on controller.
+- [ ] **Controller** rebuilt with the registry subnet and the relay wake (`83d5255`): `git pull && sudo nixos-rebuild switch --flake .#controller`.
 - [ ] **Wake-on-LAN:** confirm WoL is enabled in island-stationary's BIOS (`wakeOnLan` is already on in its config), shut it down, then `ssh island-pi wake-island-stationary` and `ssh island-stationary.ts.rydback.net`.
 - [ ] Remove this section and update the status once done.
 
@@ -72,14 +73,11 @@ The standard runbook (`modules/home-network/SPEC.md`) uses `mode = "bootstrap"` 
 
 ## Subnet router
 
-The Pi does **not** advertise the summer-place LAN, on purpose (decided 2026-10-22, nix-home card 102). The LAN is `192.168.1.0/24`, the default of most consumer routers: guest networks and the office use it too. Tailnet members accept advertised routes (`--accept-routes`, all or nothing per host), and an accepted route is installed behind a policy rule that beats the local network, so on any such network a laptop would send its gateway, DNS and captive-portal traffic into the tailnet. Nothing needs the route: island-stationary is a tailnet member reached by name, and waking it is `ssh island-pi wake-island-stationary`.
+The Pi does **not** advertise the summer-place LAN (decided 2026-10-22, nix-home card 102): nothing there needs reaching from the tailnet. island-stationary is a tailnet member reached by name, and waking it is `ssh island-pi wake-island-stationary`.
 
-If a non-tailnet device at the summer place ever has to be reached from the tailnet, in this order:
+The LAN is `192.168.51.0/24` (`lib.hosts.island-pi.lan.subnet`), an uncommon range, so advertising it would be safe when the need arises. It would not be for a default range: tailnet members accept advertised routes (`--accept-routes`, all or nothing per host) behind a policy rule that beats the local network, and a route for `192.168.1.0/24` would have hijacked gateway, DNS and captive-portal traffic on every guest or office network using it, which is how the question came up. Should the summer router ever be reset to such a default, renumber it before advertising.
 
-1. Renumber the summer router to a range nothing else uses (not `192.168.0/1/50.0/24`, not `10.0.0.0/24`), and set `lib.hosts.island-pi.lan.subnet` to it.
-2. Rebuild controller (its headscale policy auto-approves every registry `lan.subnet`), then set `my.home-network.advertiseRoutes = [ self.lan.subnet ]` in this host's `system.nix` and deploy the Pi. Routes are re-applied on every tailscaled start (`set-flags`).
-
-This would be tailnet→LAN only: devices must run Tailscale to use the route.
+To advertise: controller already auto-approves every registry `lan.subnet`; set `my.home-network.advertiseRoutes = [ self.lan.subnet ]` in this host's `system.nix` and deploy the Pi (routes are re-applied on every tailscaled start, `set-flags`). Tailnet→LAN only: devices must run Tailscale to use the route.
 
 ## Wake-on-LAN relay
 
