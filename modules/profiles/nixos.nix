@@ -42,6 +42,9 @@ in
       {
         my.profiles.workstation.enable = mkDefault true;
         my.power-management.enable = mkDefault true;
+        # Roams onto guest networks; a captive portal cannot be reached
+        # through the tailnet's DNS without this
+        my.network-manager.captivePortal.enable = mkDefault true;
 
         # Two derivations at a time (each still uses every core): keeps big
         # rebuilds from pegging a laptop's CPU and thermals
