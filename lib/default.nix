@@ -94,8 +94,10 @@ let
       system = "aarch64-linux";
       users.betongsuggan = { };
       addresses = [ "island-pi" ];
-      # Summer-place LAN, advertised into the tailnet by island-pi and
-      # auto-approved by controller. Must differ from controller's lan.subnet.
+      # Summer-place LAN. Not advertised into the tailnet (hosts/island-pi):
+      # the range is every consumer router's default and an accepted route
+      # would shadow guest and office networks on it. Renumber before
+      # advertising. Must differ from controller's lan.subnet.
       lan.subnet = "192.168.1.0/24";
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAVLZdSvoCGrRaHnh5jjXVnQ2lA9ppARq+jm38z/ct5A root@island-pi";
     };

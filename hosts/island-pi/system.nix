@@ -108,9 +108,11 @@ in
     secretsFile = "${inputs.nix-vault}/secrets/island-pi.yaml";
   };
 
-  # Subnet router: advertise the summer-place LAN (lib.hosts.island-pi.lan.subnet)
-  # to the tailnet. Re-applied on every tailscaled start (set-flags) and
-  # auto-approved by controller's headscale policy, so changing the registry
-  # value and deploying both hosts is the whole procedure.
-  my.home-network.advertiseRoutes = [ self.lan.subnet ];
+  # Deliberately not a subnet router. The summer-place LAN is 192.168.1.0/24,
+  # the default of most consumer routers (guest networks, the office), and an
+  # accepted route beats the local network on every laptop that lands on such
+  # a range. Nothing needs the route: island-stationary is on the tailnet and
+  # is woken over SSH to this host. Renumber the summer router first if a
+  # non-tailnet device there ever has to be reached, then advertise
+  # `self.lan.subnet` here again (see SPEC, "Subnet router").
 }

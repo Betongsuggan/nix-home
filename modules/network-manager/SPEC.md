@@ -29,7 +29,7 @@ With `captivePortal.enable`:
 
 By hand: `captive-login` (same as `open`, re-executes itself through sudo), `captive-login probe`, `captive-login restore`. The state lives in `/run/captive-portal` and is gone after a reboot.
 
-Limits: a portal network on the same subnet as an accepted tailnet route (the summer place's `192.168.1.0/24` once island-pi advertises it) sends the probe through the tailnet instead of the local gateway; that is a routing question, not this module's. Browsers that upgrade `http://` to HTTPS on their own (Chromium's HTTPS-First mode) fall back to HTTP after a timeout on a portal, which can take a few seconds.
+Limits: a portal network on the same subnet as an accepted tailnet route sends the probe through the tailnet instead of the local gateway; that is a routing question, not this module's (which is why island-pi does not advertise the summer place's `192.168.1.0/24`). Browsers that upgrade `http://` to HTTPS on their own (Chromium's HTTPS-First mode) fall back to HTTP after a timeout on a portal, which can take a few seconds.
 
 ## Notes
 
