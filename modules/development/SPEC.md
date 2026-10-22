@@ -34,6 +34,6 @@ my.development = {
   - **python**: `python3`.
   - **node**: `nodejs_20`, `yarn`, `pnpm`. Adds `$HOME/node_modules/bin` to `PATH`.
   - **go**: `delve`, `golangci-lint`, `golangci-lint-langserver`, `gotools`, `gofumpt`, `golines`. Enables `programs.go`.
-  - **kotlin**: `kotlin`, `jdk` (nixpkgs' default, the one kotlin/ktfmt/gradle are built with, so there is only one JDK), `gradle_9`, `ktfmt`. Sets `JAVA_HOME` to that JDK. Gradle 9 on `PATH` is for ad-hoc use; project builds still go through the Gradle wrapper, which can be pointed at the Nix JDK via `org.gradle.java.installations.paths` in `~/.gradle/gradle.properties`.
+  - **kotlin**: `kotlin`, `jdk` (nixpkgs' default, the one kotlin and gradle run on), `gradle_9`, `ktfmt` overridden to run on that same `jdk` instead of its upstream `jre_headless`, so the closure holds one JDK, not two. Sets `JAVA_HOME` to that JDK. Gradle 9 on `PATH` is for ad-hoc use; project builds still go through the Gradle wrapper, which can be pointed at the Nix JDK via `org.gradle.java.installations.paths` in `~/.gradle/gradle.properties`.
   - **rust**: `cargo`, `rustc`, `rustfmt`, `clippy`, `gcc`.
   - **haskell**: `ghc`, `cabal-install`.

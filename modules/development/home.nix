@@ -62,11 +62,12 @@ in
       ]
       ++ optionals cfg.kotlin.enable [
         kotlin
-        # nixpkgs' default JDK, the one kotlin/ktfmt/gradle are built against,
-        # so only one JDK ends up in the closure
+        # nixpkgs' default JDK, the one kotlin and gradle run on. ktfmt is
+        # wrapped with jre_headless upstream, which would be a second JDK
+        # (565 MiB) in the closure; run it on the same one
         jdk
         gradle_9
-        ktfmt
+        (ktfmt.override { jre_headless = jdk; })
       ]
       ++ optionals cfg.rust.enable [
         cargo
