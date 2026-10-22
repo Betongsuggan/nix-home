@@ -29,8 +29,8 @@ Record the *why* here so future-you does not re-litigate.
 | Aliasing | **Provider aliases / catch-all on `rydback.net`; no addy.io / SimpleLogin** | Own domain + provider aliases give per-service addresses with no third party. | Never, unless the provider drops aliases. |
 | Access model | **Tailnet-only for every personal service** | Tiny attack surface; proven on Linux and both Android devices. | Never for personal data. |
 | Partner access | **Second headscale user + her phone on the tailnet + a Nextcloud account** | Enrolling one phone is less risk than exposing `cloud.rydback.net` publicly; the shared calendar lives in Nextcloud either way. | If a non-tailnet person ever needs a share: Nextcloud share links on a public, auth-only endpoint, decided then. |
-| Off-site backup | **Hetzner Storage Box (SFTP, restic client-side encrypted)**; `island-stationary` stays as a bonus copy | Always online, EU, ~€4/mo for 1 TB. The summer-house PC is a gaming machine that is off most of the time and controller cannot wake it. | If Hetzner becomes unacceptable: any SFTP/S3 target, same module. |
-| Local redundancy | **No NAS.** 3-2-1 is met across copies (controller, desktop, Storage Box, island) rather than by a mirror at one site. | Hardware that would sit idle to protect one copy of data that already has three. | If controller's data outgrows 1 TB. |
+| Off-site backup | **`island-stationary`, woken through `island-pi` before each run; no rented storage** (2026-10-22, replaces the Storage Box decision of 2026-10-18) | Three copies on separate machines with one off-site already exist; the island copy was only unreliable because controller cannot wake it, and the fleet already wakes it with `ssh island-pi wake-island-stationary`. What was missing is verification, which no rented box provides. | If the island copy fails in practice (summer-house power or internet): Hetzner Storage Box, SFTP, same module. |
+| Local redundancy | **No NAS.** 3-2-1 is met across copies (controller, desktop, island) rather than by a mirror at one site. | Hardware that would sit idle to protect one copy of data that already has three. | If controller's data outgrows 1 TB. |
 | Headscale location | **Stays on controller** | If controller is down, Vaultwarden/Nextcloud are down anyway; a separate control plane does not help. No VPS exists to host it. | Only if a VPS exists for another reason. |
 | Photos | **Immich on controller** (`services.immich`) | Best Google Photos replacement (timeline, ML search, faces, auto-upload app). Library < 200 GB fits the 1 TB NVMe. | If the library outgrows the disk. |
 | Search | **Native `services.searx` on controller**, tailnet-only | The existing SearXNG is a loopback sidecar for Open WebUI on `desktop`, which sleeps. A user-facing instance belongs on the always-on host. | — |
@@ -59,8 +59,7 @@ Everything below runs on `controller` unless noted. ✅ live and declarative · 
 | Mail — `@rydback.net` receiving | ❌ Nothing receives for the domain. `hosts/mail` is a parked scaffold. Identity anchors in the repo (`operator.email`, git email, ACME, the Kanidm person) are still Gmail. | `hosts/mail/SPEC.md`, `lib/default.nix` |
 | Backup copy 1 (source) | ✅ restic daily 01:45: `/var/lib/{vaultwarden,headscale,emulation,nextcloud}`, both git bare repos, `/var/backups/{postgresql,kanidm}` | `modules/restic-backup` |
 | Backup copy 2 — `desktop`, on-site | ✅ Chrooted SFTP, WoL-woken by controller before each run | `modules/profiles` (gaming-station), `modules/restic-target` |
-| Backup copy 3 — `island-stationary`, off-site | 🟡 Target wired (2026-10-01) but controller cannot wake it (its relay is `island-pi`); runs fail while it sleeps. Best effort. | `hosts/island-stationary/SPEC.md` |
-| Backup copy 3 — Hetzner Storage Box | ❌ Decided, not built | backlog 1 |
+| Backup copy 3 — `island-stationary`, off-site | 🟡 Target wired (2026-10-01) but controller cannot wake it (its relay is `island-pi`); runs fail while it sleeps. Becomes reliable with backlog item 1 (wake through the relay). | `hosts/island-stationary/SPEC.md` |
 | `restic check` / restore test | ❌ Never run | backlog 1 |
 | Disaster-recovery runbook | ✅ `docs/disaster-recovery.md` (2026-10-18), not yet exercised | — |
 | Search — SearXNG | 🟡 Exists only as Open WebUI's loopback sidecar on `desktop` | `modules/ai-server` |
@@ -72,7 +71,7 @@ Everything below runs on `controller` unless noted. ✅ live and declarative · 
 | Partner access | ❌ One headscale user (`birger`), allow-all ACL | `hosts/controller/system.nix` |
 | Google account removed from microG | ❌ Finish line | phone |
 
-The original plan said "no critical data on controller before the runbook, an off-site copy and a restore test exist". Nextcloud has held real data since June without any of the three. The runbook now exists; the other two are backlog item 1 and nothing else goes on controller before it is done.
+The original plan said "no critical data on controller before the runbook, an off-site copy and a restore test exist". Nextcloud has held real data since June without any of the three. The runbook exists and the off-site copy exists; what is missing is making that copy reliable and testing a restore, both backlog item 1. Nothing else that holds data goes on controller before item 1 is done.
 
 ---
 
@@ -80,7 +79,7 @@ The original plan said "no critical data on controller before the runbook, an of
 
 The same list as the De-cloud board's Backlog, numbered in order. Each item is one working session. Repo work is named; operator work (phone, provider dashboards, DNS) is marked *op*. Details and progress live on the cards.
 
-1. **Hetzner Storage Box: always-on off-site backup + restic verify.** *Blocks everything that adds data to controller.* Storage Box BX11 with controller's restic key; `modules/restic-backup` gains `sftpPort` and `hostKey` for a non-fleet target and a monthly `restic check --read-data-subset=5%` plus restore smoke test; the DR runbook's drill is run once and logged.
+1. **Reliable off-site copy + restic verify.** *Blocks everything that adds data to controller.* *op* island-stationary wakeable through island-pi; `modules/restic-backup` wakes a target through its relay when the relay is another host and retries a run whose target stayed down; a monthly `restic check --read-data-subset=5%` per target plus a restore smoke test; the DR runbook's drill run once and logged.
 2. **Mail: `@rydback.net` receives, Gmail becomes a forwarder.** Provider signup and DNS records; SMTP for Vaultwarden and Nextcloud through their existing secret files; `operator.email`, git email and the Kanidm person's mail move to the domain; then the long tail of email-of-record changes, one alias per service, listed in Vaultwarden.
 3. **Phone hygiene (no repo work).** Aegis; Organic Maps; Aurora + F-Droid only; NewPipe or Grayjay; the VPN slot decision; DAVx5 against `cloud.rydback.net`; Catima; a quarterly encrypted Vaultwarden export.
 4. **Photos: Immich.** *Blocked by 1.* `modules/immich` on the Nextcloud module's pattern, restic and pg-dump wiring, phone upload over the tailnet, one-time Takeout import.
@@ -107,7 +106,8 @@ Rules: a new external dependency gets a card the day it appears; a card leaves *
 ### 2026-10-22 — De-Google becomes De-cloud
 
 - Scope widened from the Google account to every cloud dependency; this file renamed from `de-googling.md`. The replacement map became the Cloud inventory board (26 cards seeded from the repo: Google services, Route 53, GitHub, 1Password, Hetzner, Migadu, Let's Encrypt, Anthropic, Apple, Steam, Discord, Signal, Swish/BankID, subscriptions; the ones not verifiable from the repo carry `confirm`).
-- Boards consolidated: the SSO work board merged into De-cloud (`sso` label), history kept as comments. Backlog item 1 renamed to name the Storage Box.
+- Boards consolidated: the SSO work board merged into De-cloud (`sso` label), history kept as comments.
+- Backlog item 1 re-scoped: the Hetzner Storage Box was a workaround for controller not being able to wake island-stationary. Waking it through island-pi (the fleet dashboard already does) plus restic verification gives the off-site guarantee at no cost; Hetzner stays an option on the inventory board.
 
 ### 2026-10-21 — project tracker and the identity provider decision
 
