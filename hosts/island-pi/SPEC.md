@@ -4,7 +4,7 @@ Raspberry Pi 3 Model B v1.2 (aarch64, 1 GB RAM) — the always-on host at the su
 
 - Always-on tailnet SSH node at the summer place
 - Tailscale **subnet router** advertising the summer-place LAN
-- **Wake-on-LAN relay** for `island-stationary` (`ssh island-pi wake-island-stationary`)
+- **Wake-on-LAN relay** for `island-stationary` (`ssh island-pi wake-island-stationary`); controller's restic backups wake it the same way through the `wake` account (`ssh wake@island-pi wake-island-stationary`, forced command, see `modules/common/SPEC.md`)
 
 ## The one rule: this host never builds or evaluates nix
 

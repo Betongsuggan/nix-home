@@ -7,6 +7,25 @@
 }:
 with lib;
 
+let
+  cfg = config.my.common;
+  # Hosts this one wakes (lib.hosts.<host>.wol.relay), and the dispatcher the
+  # `wake` SSH account is confined to: it runs `wake-<target>` and nothing else
+  relayed = filterAttrs (_: h: (h.wol.relay or null) == cfg.host) inputs.self.lib.hosts;
+  backupKeys = concatMap (h: attrValues (h.users.restic.ssh or { })) (
+    attrValues inputs.self.lib.hosts
+  );
+  wakeAccount = relayed != { } && backupKeys != [ ] && config.services.openssh.enable;
+  wakeDispatch = pkgs.writeShellScript "wake-dispatch" ''
+    case "''${SSH_ORIGINAL_COMMAND-}" in
+      ${concatMapStringsSep " | " (n: "wake-${n}") (attrNames relayed)})
+        exec "/run/current-system/sw/bin/$SSH_ORIGINAL_COMMAND" ;;
+      *)
+        echo "wake: refused ''${SSH_ORIGINAL_COMMAND-}" >&2
+        exit 1 ;;
+    esac
+  '';
+in
 {
   options.my.common = {
     systemd-boot = mkOption {
@@ -35,20 +54,34 @@ with lib;
   };
 
   config = {
-    users.users = genAttrs config.my.common.accounts (
-      u:
-      let
-        account = inputs.self.lib.accounts.${u};
-      in
-      {
-        isNormalUser = true;
-        inherit (account) description;
-        extraGroups = optionals account.admin [
-          "wheel"
-          "video"
-        ];
-      }
-    );
+    users.users =
+      genAttrs config.my.common.accounts (
+        u:
+        let
+          account = inputs.self.lib.accounts.${u};
+        in
+        {
+          isNormalUser = true;
+          inherit (account) description;
+          extraGroups = optionals account.admin [
+            "wheel"
+            "video"
+          ];
+        }
+      )
+      # A relay also wakes its targets for the fleet's backup sources: their
+      # restic keys (registry `users.restic`) may log in as `wake` and run
+      # nothing but `wake-<target>` (modules/restic-backup wakes a target
+      # through its relay before a run)
+      // optionalAttrs wakeAccount {
+        wake = {
+          isSystemUser = true;
+          group = "wake";
+          shell = pkgs.bash;
+          openssh.authorizedKeys.keys = map (k: "restrict,command=\"${wakeDispatch}\" ${k}") backupKeys;
+        };
+      };
+    users.groups = optionalAttrs wakeAccount { wake = { }; };
 
     time.timeZone = mkDefault "Europe/Stockholm";
     console.keyMap = mkDefault "colemak";
@@ -150,7 +183,7 @@ with lib;
       ]
       ++ mapAttrsToList (
         name: h: writeShellScriptBin "wake-${name}" "exec ${wakeonlan}/bin/wakeonlan ${h.wol.mac}"
-      ) (filterAttrs (_: h: (h.wol.relay or null) == config.my.common.host) inputs.self.lib.hosts);
+      ) relayed;
 
     # System-side dconf/gsettings plumbing, required for the home-manager
     # stylix gtk/gnome targets' dark-mode preference to reach GTK apps

@@ -49,6 +49,11 @@ my.restic-backup = {
 | targets.&lt;name&gt;.sftpHost | string | `lib.tailnet.fqdn <name>` | Receiver hostname; defaults to the tailnet FQDN of the fleet host the target is named after. |
 | targets.&lt;name&gt;.sftpUser | string | (required) | Username on the receiver. Convention: `restic-<this-source>`. |
 | targets.&lt;name&gt;.sftpPath | path | `"/repo"` | Path *inside* the receiver's chroot. Default matches `restic-target`'s writable subdir. |
+| verify.enable | bool | true | `restic check --read-data-subset` after every run plus a weekly restore test (`restic-verify-<target>.timer`). |
+| verify.onCalendar | string | `"weekly"` | Schedule of the restore test. |
+| verify.readDataSubset | string | `"2%"` | Share of pack data the post-run check reads; 2% a day covers the repo in about seven weeks. |
+| verify.maxSnapshotAgeDays | int | 2 | The restore test fails when the latest snapshot is older. |
+| verify.restorePath | path | `head paths` | Path restored (with `--verify`) into a scratch dir under `/var/lib/restic`. Keep it small. |
 | timerOnCalendar | string | `"daily"` | systemd OnCalendar expression. |
 | pruneOpts | list of strings | `--keep-daily 7 --keep-weekly 4 --keep-monthly 12` | `forget --prune` options applied after each run. |
 
@@ -113,8 +118,8 @@ restic \
 
 ## Notes
 
-- **Sleeping targets are woken.** When this host is a target's WoL relay (`hosts.<target>.wol.relay` in `lib/default.nix`, with a real MAC), each run first sends a magic packet and waits up to 2 minutes for the target's SSH port (`backupPrepareCommand`, which runs before the repo is initialised). A target that stays down fails the run. The target may still suspend during a long run if its idle detection doesn't count the SFTP session as activity.
+- **Sleeping targets are woken.** A target with a WoL relay in the registry (`hosts.<target>.wol.relay`, real MAC) is woken before each run and the run waits up to 5 minutes for its SSH port (`backupPrepareCommand`). When this host is the relay it sends the magic packet itself; otherwise it runs `wake-<target>` on the relay over SSH as the relay's `wake` account, which `modules/common` creates on every relay host and which accepts the fleet's restic keys (registry `users.restic`) with a forced command that allows nothing else. A target that stays down fails the run; the next day's run and the restore test's age check make that visible. The target may still suspend during a long run if its idle detection doesn't count the SFTP session as activity.
 - **Host keys are pinned.** Each target's host key defaults to `lib.hosts.<target>.ssh.host`, and SFTP runs with `StrictHostKeyChecking=yes` against a store-generated known_hosts file, so a changed or spoofed receiver is refused. Only targets with no key in the registry (and no explicit `hostKey`) fall back to trust-on-first-use in `/var/lib/restic/known_hosts`.
 - **Initial snapshot size.** `/var/lib/emulation` is potentially many GB. The first push to `island-stationary.ts.rydback.net` over residential upload is slow; consider seeding island-stationary over LAN on a visit, then letting incremental snapshots take over.
 - **One password, multiple repos.** The single `passwordFile` is reused across every target — each repo is initialised with the same password. Restic's threat model treats each repo independently, so this is fine; the only operational cost is that rotating the password means rotating every repo.
-- **Verify restores quarterly.** Untested backups are hope, not backups. The de-cloud plan (`docs/de-cloud.md`) explicitly calls this out; consider a systemd timer that picks a random path and restores it to a tmp dir as a smoke test.
+- **Verification is built in** (`verify.enable`, on by default). Each run ends with `restic check --read-data-subset=<share>` on that repo, so a corrupt pack fails the unit instead of waiting for the day it is needed. Once a week `restic-verify-<target>` wakes the target, asserts the latest snapshot is at most `maxSnapshotAgeDays` old (a silently failing backup shows up here even when nobody reads the journal), restores `restorePath` with `--verify` into a scratch dir under `/var/lib/restic` and requires at least one file. Both are visible as failed units; `journalctl -u restic-verify-<target>` has the summary line. This is the automated half of the disaster-recovery doctrine in `docs/de-cloud.md`; the manual drill in `docs/disaster-recovery.md` is still run by hand.

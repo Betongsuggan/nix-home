@@ -12,20 +12,28 @@ let
   cfg = config.my.restic-backup;
   selfLib = inputs.self.lib;
 
-  # A target this host wakes (its WoL relay in the registry) is woken before
-  # each run, and the run waits for its SSH port
+  # A sleeping target is woken before each run and the run waits for its SSH
+  # port: directly when this host is the target's WoL relay (registry
+  # `hosts.<target>.wol.relay`), otherwise through the relay's `wake` account
+  # (modules/common), which accepts this host's restic key for exactly that
   wakeCommand =
     name: target:
     let
       wol = selfLib.hosts.${name}.wol or null;
+      relay = wol.relay or null;
       port = "/dev/tcp/${target.sftpHost}/22";
+      wake =
+        if relay == config.my.common.host then
+          "${pkgs.wakeonlan}/bin/wakeonlan ${wol.mac}"
+        else
+          "${pkgs.openssh}/bin/ssh -i ${cfg.sshKeyFile} -o BatchMode=yes -o StrictHostKeyChecking=yes wake@${selfLib.tailnet.fqdn relay} wake-${name}";
     in
-    if wol != null && wol.relay == config.my.common.host && wol.mac != "00:00:00:00:00:00" then
+    if wol != null && relay != null && wol.mac != "00:00:00:00:00:00" then
       ''
         up() { ${pkgs.coreutils}/bin/timeout 3 ${pkgs.bash}/bin/bash -c "< ${port}" 2>/dev/null; }
         up && exit 0
-        ${pkgs.wakeonlan}/bin/wakeonlan ${wol.mac}
-        for _ in $(${pkgs.coreutils}/bin/seq 60); do
+        ${wake}
+        for _ in $(${pkgs.coreutils}/bin/seq 150); do
           up && exit 0
           ${pkgs.coreutils}/bin/sleep 2
         done
@@ -34,6 +42,31 @@ let
       ''
     else
       null;
+
+  # The weekly proof that a repo is usable: the latest snapshot is recent, and
+  # one path restores and verifies against the repo's hashes. `restic-<name>`
+  # is the wrapper the upstream module installs (repo, password, SFTP args).
+  verifyScript =
+    name: target:
+    let
+      restic = "/run/current-system/sw/bin/restic-${name}";
+      wake = wakeCommand name target;
+    in
+    pkgs.writeShellScript "restic-verify-${name}" ''
+      set -euo pipefail
+      ${optionalString (wake != null) "( ${wake} ) || exit 1"}
+      latest=$(${restic} snapshots --latest 1 --json | ${pkgs.jq}/bin/jq -r '.[0].time // empty')
+      [ -n "$latest" ] || { echo "restic ${name}: no snapshots" >&2; exit 1; }
+      age=$(( ($(${pkgs.coreutils}/bin/date +%s) - $(${pkgs.coreutils}/bin/date -d "$latest" +%s)) / 86400 ))
+      [ "$age" -le ${toString cfg.verify.maxSnapshotAgeDays} ] \
+        || { echo "restic ${name}: latest snapshot is $age days old" >&2; exit 1; }
+      tmp=$(${pkgs.coreutils}/bin/mktemp -d /var/lib/restic/verify-${name}.XXXXXX)
+      trap '${pkgs.coreutils}/bin/rm -rf "$tmp"' EXIT
+      ${restic} restore latest --verify --target "$tmp" --path ${escapeShellArg cfg.verify.restorePath}
+      n=$(${pkgs.findutils}/bin/find "$tmp" -type f | ${pkgs.coreutils}/bin/wc -l)
+      [ "$n" -gt 0 ] || { echo "restic ${name}: restore of ${cfg.verify.restorePath} produced no files" >&2; exit 1; }
+      echo "restic ${name}: snapshot $age days old, $n files restored and verified from ${cfg.verify.restorePath}"
+    '';
 in
 {
   options.my.restic-backup = {
@@ -141,6 +174,40 @@ in
       description = "systemd OnCalendar expression for the backup schedule.";
     };
 
+    verify = {
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Prove the backups are usable: every run ends with `restic check`
+          reading `readDataSubset` of the repo, and a weekly job asserts the
+          latest snapshot is at most `maxSnapshotAgeDays` old and restores
+          `restorePath` into a scratch dir with content verification.
+        '';
+      };
+      onCalendar = mkOption {
+        type = types.str;
+        default = "weekly";
+        description = "systemd OnCalendar expression for the restore test.";
+      };
+      readDataSubset = mkOption {
+        type = types.str;
+        default = "2%";
+        description = "`restic check --read-data-subset` argument run after every backup; 2% a day reads the whole repo in about seven weeks.";
+      };
+      maxSnapshotAgeDays = mkOption {
+        type = types.int;
+        default = 2;
+        description = "The restore test fails when the latest snapshot is older than this.";
+      };
+      restorePath = mkOption {
+        type = types.path;
+        default = head cfg.paths;
+        defaultText = literalExpression "head cfg.paths";
+        description = "The path the weekly restore test restores. Keep it small.";
+      };
+    };
+
     pruneOpts = mkOption {
       type = types.listOf types.str;
       default = [
@@ -185,6 +252,8 @@ in
           )
         ];
         pruneOpts = cfg.pruneOpts;
+        runCheck = cfg.verify.enable;
+        checkOpts = [ "--read-data-subset=${cfg.verify.readDataSubset}" ];
         timerConfig = {
           OnCalendar = cfg.timerOnCalendar;
           Persistent = true;
@@ -192,5 +261,31 @@ in
         };
       }
     ) cfg.targets;
+
+    systemd.services = mkIf cfg.verify.enable (
+      mapAttrs' (
+        name: target:
+        nameValuePair "restic-verify-${name}" {
+          description = "Restore test of the restic repo on ${name}";
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = verifyScript name target;
+          };
+        }
+      ) cfg.targets
+    );
+    systemd.timers = mkIf cfg.verify.enable (
+      mapAttrs' (
+        name: _:
+        nameValuePair "restic-verify-${name}" {
+          wantedBy = [ "timers.target" ];
+          timerConfig = {
+            OnCalendar = cfg.verify.onCalendar;
+            Persistent = true;
+            RandomizedDelaySec = "1h";
+          };
+        }
+      ) cfg.targets
+    );
   };
 }
