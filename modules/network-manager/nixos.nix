@@ -200,6 +200,10 @@ in
         script = ''
           [ -f ${stateDir}/url ] || exit 0
           url=$(cat ${stateDir}/url)
+          # A user unit gets NixOS's minimal unit PATH, not the session's: the
+          # browser and its .desktop file live in the user's profile
+          export PATH="/etc/profiles/per-user/$USER/bin:$HOME/.nix-profile/bin:/run/current-system/sw/bin:$PATH"
+          export XDG_DATA_DIRS="/etc/profiles/per-user/$USER/share:$HOME/.nix-profile/share:/run/current-system/sw/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
           ${pkgs.libnotify}/bin/notify-send -a Network "Wi-Fi login required" "Opening $url"
           exec ${pkgs.xdg-utils}/bin/xdg-open "$url"
         '';
