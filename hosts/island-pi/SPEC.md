@@ -38,8 +38,8 @@ Status 2026-10-22: installed at the summer place and came up on its own — LAN 
 
 - [ ] **Host key backup** (if not done before leaving): `ssh root@island-pi.ts.rydback.net 'tar -C /etc/ssh -czf - ssh_host_ed25519_key ssh_host_ed25519_key.pub' > island-pi-hostkey.tgz`, stored privately. Needed to re-flash without re-enrolling (see Recovery).
 - [x] **Check the subnet:** `192.168.51.0/24`, recorded in `lib.hosts.island-pi.lan.subnet` (2026-10-22).
-- [ ] **Deploy** the Pi from bits: `nixos-rebuild switch --flake .#island-pi --target-host root@island-pi.ts.rydback.net` (brings the `wake` account for controller's backups). Its tailscaled prefs show no advertised route; confirm with `sudo headscale nodes list-routes` on controller.
-- [ ] **Controller** rebuilt with the registry subnet and the relay wake (`83d5255`): `git pull && sudo nixos-rebuild switch --flake .#controller`.
+- [x] **Deployed** from bits over the tailnet (2026-10-22): `wake` account and `wake-island-stationary` present; headscale lists no route for island-pi.
+- [x] **Controller** rebuilt with the registry subnet and the relay wake (2026-10-22).
 - [ ] **Wake-on-LAN:** confirm WoL is enabled in island-stationary's BIOS (`wakeOnLan` is already on in its config), shut it down, then `ssh island-pi wake-island-stationary` and `ssh island-stationary.ts.rydback.net`.
 - [ ] Remove this section and update the status once done.
 
