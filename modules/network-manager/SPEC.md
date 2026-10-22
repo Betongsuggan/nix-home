@@ -24,7 +24,7 @@ With `captivePortal.enable`:
 1. A NetworkManager dispatcher runs `captive-login open` whenever an interface gets a DHCP nameserver (not `tailscale0`), and `captive-login restore` when it goes down.
 2. `captive-login` resolves a plain-HTTP probe (`connectivitycheck.gstatic.com/generate_204`) through **the network's own nameserver** and connects by address, so the probe works whatever the system resolver does. `204` means online; a redirect or a page in its place means a portal.
 3. On a portal it runs `tailscale set --accept-dns=false` (NetworkManager then writes the DHCP nameservers to `resolv.conf`), leaves the portal URL in `/run/captive-portal/url`, and starts a transient `captive-portal-wait` unit that re-probes every 5 s for up to 20 minutes.
-4. A user path unit watches that directory and `xdg-open`s the URL in the session (with a notification), so the login page appears in the default browser.
+4. A user path unit watches that directory and `xdg-open`s the URL in the session, so the login page appears in the default browser. No notification: the page is the notification.
 5. When the probe returns `204` (or the interface goes down) tailnet DNS is switched back on and the state is cleared. If the laptop was rebooted mid-login, the next online network heals it: `open` notices tailnet DNS is off with no portal in sight and turns it on.
 
 By hand: `captive-login` (same as `open`, re-executes itself through sudo), `captive-login probe`, `captive-login restore`. The state lives in `/run/captive-portal` and is gone after a reboot.

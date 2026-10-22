@@ -20,7 +20,11 @@ let
   # nothing here goes through the system resolver.
   captiveLogin = pkgs.writeShellApplication {
     name = "captive-login";
+    # Explicit, because the transient waiter unit starts with systemd's bare
+    # PATH, and the dispatcher's has no sudo
     runtimeInputs = with pkgs; [
+      coreutils
+      gnugrep
       curl
       dnsutils
       jq
@@ -40,13 +44,15 @@ let
       host=connectivitycheck.gstatic.com
       verb=''${1:-open}
       # Only probing is harmless as a user; the rest changes tailscale and /run
-      [ "$verb" = probe ] || [ "$(id -u)" = 0 ] || exec sudo "$0" "$@"
+      [ "$verb" = probe ] || [ "$EUID" = 0 ] || exec /run/wrappers/bin/sudo "$0" "$@"
 
-      # The nameserver the current default-route interface got from DHCP
+      # The nameserver the current default-route interface got from DHCP;
+      # empty when there is no default route (an interface just went down)
       network_dns() {
         local dev
         dev=$(ip -4 route show default | awk '{ print $5; exit }')
-        [ -n "$dev" ] && nmcli -g IP4.DNS device show "$dev" | head -1 | cut -d'|' -f1
+        [ -n "$dev" ] || return 0
+        nmcli -g IP4.DNS device show "$dev" | head -1 | cut -d'|' -f1
       }
       ns=''${2:-$(network_dns)}
 
@@ -84,8 +90,9 @@ let
           rm -f "$state/dns-off"
         fi
         rm -f "$state/url"
-        systemctl -q is-active captive-portal-wait && [ "$verb" != wait ] && systemctl stop captive-portal-wait
-        return 0
+        if [ "$verb" != wait ] && systemctl -q is-active captive-portal-wait; then
+          systemctl stop captive-portal-wait
+        fi
       }
 
       case $verb in
@@ -204,7 +211,6 @@ in
           # browser and its .desktop file live in the user's profile
           export PATH="/etc/profiles/per-user/$USER/bin:$HOME/.nix-profile/bin:/run/current-system/sw/bin:$PATH"
           export XDG_DATA_DIRS="/etc/profiles/per-user/$USER/share:$HOME/.nix-profile/share:/run/current-system/sw/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
-          ${pkgs.libnotify}/bin/notify-send -a Network "Wi-Fi login required" "Opening $url"
           exec ${pkgs.xdg-utils}/bin/xdg-open "$url"
         '';
       };
