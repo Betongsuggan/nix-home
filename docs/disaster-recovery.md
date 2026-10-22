@@ -32,7 +32,7 @@ Targets, in the order to try them:
 |---|---|---|
 | `desktop` | `restic-controller@desktop.ts.rydback.net:/repo` | On-site. Must be awake: WoL from the LAN (`wakeonlan 34:1b:22:84:72:67`) or the power button. |
 | `island-stationary` | `restic-controller@island-stationary.ts.rydback.net:/repo` | Off-site, summer house. Wake with `ssh island-pi wake-island-stationary`. May have missed runs while asleep; check `snapshots` dates. |
-| Hetzner Storage Box | *(backlog item 1 in `docs/de-googling.md`; add the endpoint here when it exists)* | Always on |
+| Hetzner Storage Box | *(backlog item 1 in `docs/de-cloud.md`; add the endpoint here when it exists)* | Always on |
 
 The tailnet names only resolve while headscale is up, which it is not when controller is dead. Use the LAN IP for desktop (`192.168.50.x`, check the router at `192.168.50.1`) or the public IP of the summer house for island-stationary, or do the restore *on* the target host itself, which is simplest: the repo is a local directory there (`/var/lib/restic-repos/controller/repo`).
 
@@ -197,7 +197,7 @@ cd ~/nix-home && sudo nixos-rebuild switch --flake .#controller
 
 Honest state as of 2026-10-18: `modules/sops/SPEC.md` says admin recipients are "a YubiKey-backed identity and a software backup", and names 1Password as where that backup key lives. **Verify that the software age key exists and is retrievable** (`nix-vault/.sops.yaml` lists two admin recipients if so). If it does, this scenario reduces to §3 with `SOPS_AGE_KEY_FILE` pointing at the backup key instead of the YubiKey plugin.
 
-If the backup key does not exist or is itself inside Vaultwarden on controller, there is **no** path to the restic password and the backups are ciphertext forever. Open decision, to settle in backlog item 1 of `docs/de-googling.md`:
+If the backup key does not exist or is itself inside Vaultwarden on controller, there is **no** path to the restic password and the backups are ciphertext forever. Open decision, to settle in backlog item 1 of `docs/de-cloud.md`:
 
 - a second YubiKey enrolled as an additional admin recipient, kept in a different building, or
 - the software age identity printed (or on a USB stick) in a fireproof safe, and an entry in Vaultwarden is *not* an acceptable place for it since Vaultwarden is what you are recovering.

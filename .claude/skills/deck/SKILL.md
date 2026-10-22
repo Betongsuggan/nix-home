@@ -10,7 +10,8 @@ The tracker is Nextcloud Deck at cloud.rydback.net. The `deck` command (modules/
 ## Boards and what goes where
 
 - **Projects**: the portfolio. One card per project, stacks `Idea` / `Active` / `Paused` / `Done`. A card here says what the project is and where its work is tracked; it does not hold task lists.
-- **De-Google**, **AI lab**, **nix-home**: work boards. Stacks are `Backlog` (or `To do`) / `Doing` / `Blocked` (De-Google) / `Done`. One card per work item, with a markdown checklist in the description when the item has steps.
+- **De-cloud**, **AI lab**, **nix-home**: work boards. Stacks are `Backlog` (or `To do`) / `Doing` / `Blocked` (De-cloud) / `Done`. One card per work item, with a markdown checklist in the description when the item has steps. SSO work is on De-cloud with the `sso` label.
+- **Cloud inventory**: one card per external service the user depends on, stacks `Using` (no decision yet) / `Replacing` / `Replaced` / `Keep` (conscious choice). A new cloud dependency that shows up in the repo or the conversation gets a card here the same day. Labels `data`, `fleet`, `account`, `confirm` (seeded, unverified).
 - Labels (per board): `repo` = changes in nix-home, `op` = operator work (phone, provider dashboards, hardware), `blocked` / `gate` = waiting on or gating other work, `on-site` = needs a visit.
 
 New boards only for a new long-running project with real task volume; otherwise add a card to an existing board.
@@ -24,7 +25,7 @@ Every task in this repository has a card (CLAUDE.md, "Project tracking"). If non
 3. Progress inside a card: `deck edit <id> -d -` with the updated description (tick checklist boxes, keep the rest). Read it first; the PUT replaces the whole description.
 4. New project idea from the user: `deck add Projects Idea "<title>" -d -` with two or three sentences: what, why, where work would land.
 5. Something finished in the repo: comment the commit hash on the card, then `deck move <id> Done`.
-6. `docs/de-googling.md` is still the written source of truth for De-Google decisions. A card moving to Active or Done there is also a line in that file's status board or progress log.
+6. `docs/de-cloud.md` is the written source of truth for De-cloud decisions, status and the ordered backlog. A card moving to Active or Done there is also a line in that file's status board or progress log; an inventory card changing stack updates its status row when one exists.
 
 ## Pitfalls
 

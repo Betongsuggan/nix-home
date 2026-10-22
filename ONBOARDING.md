@@ -36,7 +36,7 @@ Then read, in this order:
 | `modules/common/` | The always-on base for every host. |
 | `overlays/` | Packages from other flakes and local fixes. |
 | `checks/backends.nix` | Evaluates every unused backend so alternatives cannot rot. |
-| `docs/` | Planning notes (AI setup, de-googling). |
+| `docs/` | Planning notes (AI setup, de-cloud, disaster recovery). |
 
 Rules of thumb:
 
