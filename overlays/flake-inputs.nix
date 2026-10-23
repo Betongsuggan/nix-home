@@ -5,10 +5,6 @@ let
 in
 {
   awscli-local = fromInput inputs.awscli-local;
-  walker = fromInput inputs.walker;
-  elephant = fromInput inputs.elephant;
-  audiomenu = fromInput inputs.audiomenu;
-  monitormenu = fromInput inputs.monitormenu;
   console-mode = fromInput inputs.console-mode;
   nvim-config = fromInput inputs.nvim; # nixvim build, provides `nvim`
 

@@ -6,7 +6,6 @@
     inputs.console-mode.homeManagerModules.default
     inputs.niri.homeModules.niri
     inputs.stylix.homeModules.stylix
-    inputs.walker.homeManagerModules.default
   ]
   ++ import ./collect.nix "home.nix";
   # useGlobalPkgs: stylix must not try to add overlays to the shared pkgs

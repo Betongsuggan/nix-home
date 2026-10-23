@@ -1,68 +1,32 @@
 # Launcher
 
-A backend-agnostic application launcher system that provides a unified interface for dmenu-style selection, application launching, WiFi/Bluetooth control, audio device selection, and monitor configuration. Supports multiple backends: wofi, rofi, walker, and vicinae.
+The launcher is the standalone launcher flake ([github:Betongsuggan/launcher](https://github.com/Betongsuggan/launcher), input `launcher`): vicinae with the wifi, bluetooth, audio and monitor menus, and the fleet dashboard ([[fleet-status]]). This module wraps its Home Manager module (`programs.launcher`) and keeps the `my.launcher` API other modules build on. Window-manager binds for the menus stay in `my.window-manager.keybinds`; the flake's own keybind rendering is off here.
 
 ## Usage
 
 ```nix
-my.launcher = {
-  enable = true;
-  backend = "vicinae";
-};
+my.launcher.enable = true;                          # on for the desktop profile
+programs.launcher.vicinae.fileIndex.enable = true;  # the flake's options, directly
 ```
 
 ## Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| enable | bool | false | Enable launcher system |
-| backend | enum | "vicinae" | Which launcher backend to use: "wofi", "rofi", "walker", "vicinae" |
-| windowManager | enum | `my.window-manager.backend` ("generic" without one) | Window manager for session integration: "hyprland", "niri", "sway", "i3", "generic" |
+| enable | bool | false | Enable the launcher |
+| dmenu | function (read-only) | | `{ prompt ? null, additionalArgs ? [ ] }` -> a command reading lines on stdin and printing the choice |
+| show | function (read-only) | | `{ mode }` -> the command opening that view: `applications` (`drun`, `desktopapplications`), `websearch`, `symbols` (`emoji`), `clipboard` |
+| wifi, bluetooth, audioOutput, audioInput, monitor | null or function (read-only) | | `{ }` -> the command opening that menu; null when the backend has none, so window-manager binds for it are skipped |
 
-### Backend-specific options
-
-**wofi:**
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| wofi.settings | attrs | `{ allow_images = true; image_size = 15; }` | Additional wofi configuration |
-| wofi.style | str | "" | Custom wofi CSS styling (empty uses built-in theme) |
-
-**rofi:**
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| rofi.terminal | str | config.terminal.command | Terminal to use with rofi |
-| rofi.theme | str | "gruvbox-dark-soft" | Rofi theme to use |
-
-**walker:**
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| walker.config | attrs | {} | Walker configuration (merged with defaults) |
-| walker.theme | attrs | {} | Walker theme configuration |
-
-**vicinae:**
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| vicinae.config | JSON | {} | Extra settings merged into `programs.vicinae.settings` (`~/.config/vicinae/settings.json`) |
-| vicinae.extensions | list of package | wifi-commander, bluetooth | Extensions to install (from upstream `vicinaehq/extensions`, the `vicinae-extensions` input; build more with `config.lib.vicinae.mkExtension`) |
-| vicinae.themes | TOML | {} | Extra themes, keyed by theme file name |
-| vicinae.useLayerShell | bool | true | Whether vicinae should use layer shell |
-| vicinae.fileIndex.enable | bool | false | Run the background file indexer (file search) |
-| vicinae.fileIndex.paths | list of str | `[ home ]` | Directories to index |
-| vicinae.fileIndex.exclude | list of str | [] | Directories to leave out of the index |
+Everything else is the flake's: `programs.launcher.vicinae.{settings,upstreamExtensions,extensions,themes,useLayerShell,fileIndex,networkTool}`, `programs.launcher.{audiomenu,monitormenu}.package`, `programs.launcher.menus` (one command per menu), `programs.launcher.package` (`launcher-menu <action>`). See the flake's README for the table.
 
 ## Notes
 
-- **vicinae extension patches.** Upstream extensions are built from the `vicinae-extensions` input; fixes that have not landed upstream live as patch files next to the module and are applied at build time (`extensionPatches` in `vicinae/default.nix`), so a future input bump that touches those lines fails the build rather than losing the fix. Current: `wifi-commander-open-networks.patch` — nmcli's table prints `--` for an empty SECURITY column, which the extension took for a secured network and asked a password for (open guest networks with a captive portal could not be joined); the patch treats `--` as open and shows the lock for every named security type, WPA3 included. Worth sending upstream (vicinaehq/extensions), then the patch goes.
-- Other modules can use the exposed functions (`config.my.launcher.dmenu`, `config.my.launcher.show`, `config.my.launcher.wifi`, `config.my.launcher.bluetooth`, `config.my.launcher.audioOutput`, `config.my.launcher.audioInput`, `config.my.launcher.monitor`) to invoke the launcher without knowing which backend is active.
-- Each backend lists the menus it provides; a menu a backend lacks is `null` in the API (`my.launcher.audioOutput` etc.), and window-manager binds for it are skipped instead of failing evaluation. Not all features are implemented for all backends. WiFi and Bluetooth menus are not yet implemented for rofi. Audio and monitor menus are only available on walker and vicinae.
-- The audio menus (`audiomenu sink`/`source`) list the devices followed by the applications playing (or recording) with their volume. Picking a device makes it the default; picking an application opens its own menu (volume steps and presets, mute, move to another device) that returns after each change. The last entry, "Open mixer…", runs wiremix in `my.terminal` for meters, per-channel volume and routing. WirePlumber's restore-stream remembers volume, mute and target per `application.name`, so a level set once survives app restarts; there is no Nix-side per-app volume config.
-- The monitor menu (`monitormenu`) changes an output at runtime: resolution, scale, rotation, placement (extend beside another output, or mirror it on Hyprland), VRR, HDR (Hyprland) and on/off. A compositor reload goes back to `my.window-manager.monitors`. Its "Show as Nix" entry copies the current state as that option's Nix, to paste into the host's config.
-- The walker backend runs as a systemd service with elephant as a dependency. The vicinae backend also runs as a systemd service.
-- vicinae is nixpkgs' package with Home Manager's `programs.vicinae` (no fork). Its `settings.json` is a read-only store link, so changes made in vicinae's settings window don't persist; everything, including provider preferences (`providers.<id>.preferences`), is set from Nix.
-- The file indexer is off by default: it walks every indexed path, hidden directories included, and re-sweeps periodically (it had grown to about 2 GB over `$HOME`). With it off, file search is unavailable.
-- Menus are opened with `vicinae://launch/<provider>/<command>` deeplinks; an extension's provider id is `@<author>/<name>` from its `package.json` (e.g. `@dagimg-dot/wifi-commander`), built-in commands live under `core`, and `vicinae cmd ls` lists them all. Extensions are built on their own, so a `tsconfig.json` that extends the repository root's is repointed at the root file inside the input (otherwise the bundler emits classic JSX that needs a global `React`).
-- The vicinae backend is themed by stylix (`stylix.targets.vicinae`), which adds a "stylix" theme from the base16 palette and selects it. Walker keeps its hardcoded gruvbox CSS (no stylix target exists).
+- The wrapper sets `programs.launcher.windowManager` from `my.window-manager.backend` (hyprland, niri, sway; null for i3) so the monitor menu knows the compositor, turns the flake's keybinds off, and passes `my.terminal.command` as the terminal (for audiomenu's mixer and the fleet SSH action).
+- vicinae is themed by stylix (`stylix.targets.vicinae`, switched on here since `stylix.autoEnable` is off fleet-wide): a "stylix" theme from the base16 palette, selected in `programs.vicinae.settings`.
+- Consumers of the API: `modules/window-manager` (the menu binds, `show` for sway's `menu`), `modules/taildrop`, `modules/controls/power` and `modules/notifications/dunst` (all `dmenu`).
+- The audio menus (`audiomenu sink`/`source`) list the devices followed by the applications playing (or recording) with their volume. Picking a device makes it the default; picking an application opens its own menu (volume steps and presets, mute, move to another device) that returns after each change. The last entry, "Open mixer…", runs wiremix in `my.terminal`. WirePlumber's restore-stream remembers volume, mute and target per `application.name`.
+- The monitor menu (`monitormenu`) changes an output at runtime: resolution, scale, rotation, placement (extend beside another output, or mirror it on Hyprland), VRR, HDR (Hyprland) and on/off. A compositor reload goes back to `my.window-manager.monitors`. Its "Show as Nix" entry copies the current state as that option's Nix.
+- The upstream vicinae extensions (wifi-commander, bluetooth) are built by the flake from a pinned `vicinaehq/extensions` revision; the wifi-commander open-networks patch lives there now (`patches/`). `settings.json` is a read-only store link, so everything, provider preferences included, is set from Nix. The file indexer is off by default (it had grown to about 2 GB over `$HOME`).
+- Menus open through `vicinae://launch/<provider>/<command>` deeplinks; `vicinae cmd ls` lists them.
+- The rofi, wofi and walker backends were dropped with the extraction (no host used them); another backend would be added in the flake.

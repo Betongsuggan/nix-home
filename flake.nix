@@ -30,32 +30,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Own flakes and NUR build against the fleet's nixpkgs. walker/elephant
-    # and niri keep their own pins so their Cachix caches keep hitting.
+    # Own flakes and NUR build against the fleet's nixpkgs. The launcher
+    # (vicinae, the wifi/bluetooth/audio/monitor menus, the fleet dashboard
+    # and status server) is its own flake; modules/launcher and
+    # modules/fleet-status wrap it.
     awscli-local = {
       url = "github:Betongsuggan/awscli-local";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    audiomenu = {
-      url = "github:Betongsuggan/audiomenu";
+    launcher = {
+      url = "github:Betongsuggan/launcher";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    monitormenu = {
-      url = "github:Betongsuggan/monitormenu";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    elephant.url = "github:abenz1267/elephant/v2.16.1";
-
-    walker = {
-      url = "github:abenz1267/walker/v2.11.2";
-      inputs.elephant.follows = "elephant";
-    };
-
-    # Upstream extensions, pinned: later revisions add a native npm module
-    # (usocket) to the bluetooth extension whose node-gyp build fails
-    vicinae-extensions = {
-      url = "github:vicinaehq/extensions/b698ce7ecb58dec1efe297f87370253d8f6ba9d5";
-      flake = false;
+      inputs.home-manager.follows = "home-manager";
+      inputs.niri.follows = "niri";
     };
 
     # The editor (nixvim, on the same NixOS release as the fleet)

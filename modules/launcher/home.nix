@@ -1,7 +1,12 @@
+# The launcher: a thin wrapper over the standalone launcher flake
+# (github:Betongsuggan/launcher, `programs.launcher`), keeping the
+# `my.launcher` API other modules build on: `dmenu`, `show` and the menus.
+# The flake writes no keybinds here; my.window-manager.keybinds binds the
+# menus like everything else.
 {
   config,
   lib,
-  pkgs,
+  inputs,
   ...
 }:
 
@@ -9,142 +14,43 @@ with lib;
 
 let
   cfg = config.my.launcher;
+  launcher = config.programs.launcher;
+  wm = config.my.window-manager;
 
-  args = additionalArgs: concatStringsSep " " additionalArgs;
-
-  # audiomenu's last entry opens wiremix, a full PipeWire mixer
-  audiomenu =
-    mode: launcher: additionalArgs:
-    escapeShellArgs [
-      (getExe pkgs.audiomenu)
-      mode
-      "--launcher"
-      launcher
-      "--mixer"
-      "${config.my.terminal.command} -e ${getExe pkgs.wiremix}"
-    ]
-    + " ${args additionalArgs}";
-
-  # What each backend provides. A missing entry means the backend has no such
-  # menu, and the corresponding API function below is null.
-  backends = {
-    wofi = {
-      dmenu = cfg.wofi.buildDmenuCmd;
-      show = cfg.wofi.buildShowCmd;
-      wifi = _: "${cfg.wofi.wifi}/bin/wifi-control";
-      bluetooth = _: "${cfg.wofi.bluetooth}/bin/bluetooth-control";
-    };
-    rofi = {
-      dmenu = cfg.rofi.buildDmenuCmd;
-      show = cfg.rofi.buildShowCmd;
-      wifi = _: "${cfg.rofi.wifi}/bin/wifi-control";
-      bluetooth = _: "${cfg.rofi.bluetooth}/bin/bluetooth-control";
-    };
-    walker = {
-      dmenu = cfg.walker.buildDmenuCmd;
-      show = cfg.walker.buildShowCmd;
-      wifi =
-        {
-          additionalArgs ? [ ],
-        }:
-        "${pkgs.unstable.iwmenu}/bin/iwmenu --launcher walker --spaces 2 ${args additionalArgs}";
-      bluetooth =
-        {
-          additionalArgs ? [ ],
-        }:
-        "${pkgs.unstable.bzmenu}/bin/bzmenu --launcher walker --spaces 2 ${args additionalArgs}";
-      audioOutput =
-        {
-          additionalArgs ? [ ],
-        }:
-        audiomenu "sink" "walker" additionalArgs;
-      audioInput =
-        {
-          additionalArgs ? [ ],
-        }:
-        audiomenu "source" "walker" additionalArgs;
-      monitor =
-        {
-          additionalArgs ? [ ],
-        }:
-        "${pkgs.monitormenu}/bin/monitormenu --launcher walker ${args additionalArgs}";
-    };
-    vicinae = {
-      dmenu = cfg.vicinae.buildDmenuCmd;
-      show = cfg.vicinae.buildShowCmd;
-      wifi =
-        {
-          additionalArgs ? [ ],
-        }:
-        "${lib.getExe config.programs.vicinae.package} deeplink vicinae://launch/@dagimg-dot/wifi-commander/scan-wifi ${args additionalArgs}";
-      bluetooth =
-        {
-          additionalArgs ? [ ],
-        }:
-        "${lib.getExe config.programs.vicinae.package} deeplink vicinae://launch/@Gelei/bluetooth/devices ${args additionalArgs}";
-      audioOutput =
-        {
-          additionalArgs ? [ ],
-        }:
-        audiomenu "sink" "vicinae" additionalArgs;
-      audioInput =
-        {
-          additionalArgs ? [ ],
-        }:
-        audiomenu "source" "vicinae" additionalArgs;
-      monitor =
-        {
-          additionalArgs ? [ ],
-        }:
-        "${pkgs.monitormenu}/bin/monitormenu --launcher vicinae --backend ${cfg.windowManager} ${args additionalArgs}";
-    };
+  # `show { mode }` names from the old backends -> the flake's menus
+  showModes = {
+    applications = "applications";
+    desktopapplications = "applications";
+    drun = "applications";
+    websearch = "webSearch";
+    symbols = "symbols";
+    emoji = "symbols";
+    clipboard = "clipboard";
   };
 
-  features = [
-    "dmenu"
-    "show"
-    "wifi"
-    "bluetooth"
-    "audioOutput"
-    "audioInput"
-    "monitor"
-  ];
+  # A menu as a function (callers pass `{ }`), or null when the flake has none
+  menu = action: if launcher.menus.${action} == null then null else (_: launcher.menus.${action});
 
+  menuOption =
+    what:
+    mkOption {
+      type = types.nullOr (types.functionTo types.str);
+      internal = true;
+      readOnly = true;
+      description = ''
+        Function to generate the ${what} launcher; null when the backend has no such menu.
+
+        Usage: config.my.launcher.${what} { }
+
+        Returns a shell command string.
+      '';
+    };
 in
 {
-  imports = [
-    ./wofi
-    ./rofi
-    ./walker
-    ./vicinae
-  ];
+  imports = [ inputs.launcher.homeModules.default ];
 
   options.my.launcher = {
     enable = mkEnableOption "launcher system";
-
-    backend = mkOption {
-      type = types.enum [
-        "wofi"
-        "rofi"
-        "walker"
-        "vicinae"
-      ];
-      default = "vicinae";
-      description = "Which launcher to use";
-    };
-
-    windowManager = mkOption {
-      type = types.enum [
-        "hyprland"
-        "niri"
-        "sway"
-        "i3"
-        "generic"
-      ];
-      default = if config.my.window-manager.enable then config.my.window-manager.backend else "generic";
-      defaultText = literalExpression "my.window-manager.backend, or \"generic\" without one";
-      description = "Window manager for session integration.";
-    };
 
     dmenu = mkOption {
       type = types.functionTo types.str;
@@ -156,11 +62,7 @@ in
         Usage:
           config.my.launcher.dmenu {
             prompt = "Select an option";
-            password = false;
-            insensitive = true;
-            multiSelect = false;
-            allowImages = true;
-            additionalArgs = [ "--width" "500" ];
+            additionalArgs = [ ];
           }
 
         Returns a shell command string.
@@ -176,98 +78,57 @@ in
 
         Usage:
           config.my.launcher.show {
-            mode = "drun";  # or "run", "applications", etc.
-            additionalArgs = [];
+            mode = "drun";  # applications, websearch, symbols, clipboard
           }
 
         Returns a shell command string.
       '';
     };
 
-    wifi = mkOption {
-      type = types.nullOr (types.functionTo types.str);
-      internal = true;
-      readOnly = true;
-      description = ''
-        Function to generate WiFi network selection launcher.
-
-        Usage:
-          config.my.launcher.wifi {
-            additionalArgs = [];
-          }
-
-        Returns a shell command string.
-      '';
-    };
-
-    bluetooth = mkOption {
-      type = types.nullOr (types.functionTo types.str);
-      internal = true;
-      readOnly = true;
-      description = ''
-        Function to generate Bluetooth device selection launcher.
-
-        Usage:
-          config.my.launcher.bluetooth {
-            additionalArgs = [];
-          }
-
-        Returns a shell command string.
-      '';
-    };
-
-    audioOutput = mkOption {
-      type = types.nullOr (types.functionTo types.str);
-      internal = true;
-      readOnly = true;
-      description = ''
-        Function to generate audio output device selection launcher.
-
-        Usage:
-          config.my.launcher.audioOutput {
-            additionalArgs = [];
-          }
-
-        Returns a shell command string.
-      '';
-    };
-
-    audioInput = mkOption {
-      type = types.nullOr (types.functionTo types.str);
-      internal = true;
-      readOnly = true;
-      description = ''
-        Function to generate audio input device selection launcher.
-
-        Usage:
-          config.my.launcher.audioInput {
-            additionalArgs = [];
-          }
-
-        Returns a shell command string.
-      '';
-    };
-
-    monitor = mkOption {
-      type = types.nullOr (types.functionTo types.str);
-      internal = true;
-      readOnly = true;
-      description = ''
-        Function to generate monitor configuration launcher.
-
-        Usage:
-          config.my.launcher.monitor {
-            additionalArgs = [];
-          }
-
-        Returns a shell command string.
-      '';
-    };
+    wifi = menuOption "wifi";
+    bluetooth = menuOption "bluetooth";
+    audioOutput = menuOption "audioOutput";
+    audioInput = menuOption "audioInput";
+    monitor = menuOption "monitor";
   };
 
-  # The API: each function comes from the selected backend, or is null when
-  # the backend has no such menu (callers skip their binding then)
   config = mkIf cfg.enable {
-    my.launcher = genAttrs features (f: backends.${cfg.backend}.${f} or null);
+    programs.launcher = {
+      enable = true;
+      # The compositor, for the monitor menu; binds come from my.window-manager
+      windowManager =
+        if
+          wm.enable
+          && elem wm.backend [
+            "hyprland"
+            "niri"
+            "sway"
+          ]
+        then
+          wm.backend
+        else
+          null;
+      keybinds.enable = false;
+      terminal = "${config.my.terminal.command} -e";
+    };
+
+    # Theme vicinae from the base16 scheme (stylix.autoEnable is off
+    # fleet-wide, modules/theming)
+    stylix.targets.vicinae.enable = true;
+
+    my.launcher = {
+      inherit (launcher) dmenu;
+      show =
+        {
+          mode ? "applications",
+          ...
+        }:
+        launcher.menus.${showModes.${mode} or "applications"};
+      wifi = menu "wifi";
+      bluetooth = menu "bluetooth";
+      audioOutput = menu "audioOutput";
+      audioInput = menu "audioInput";
+      monitor = menu "monitor";
+    };
   };
 }

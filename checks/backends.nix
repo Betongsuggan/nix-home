@@ -1,5 +1,6 @@
 # Evaluation checks for the alternatives no host uses today: every backend
-# of every multi-backend module, and the optional desktop modules. Each check
+# of every multi-backend module, and the optional desktop modules. (The
+# launcher is the launcher flake's; its own checks cover its variants.) Each check
 # is one Home Manager user (private-laptop's, with overrides) and succeeds
 # when its activation package evaluates, so an unused backend can no longer
 # silently rot. Run with `nix flake check --no-build`.
@@ -30,20 +31,6 @@ prefixed "wm" (
       "niri"
       "sway"
       "i3"
-    ]
-)
-// prefixed "launcher" (
-  backendsOf
-    [
-      "my"
-      "launcher"
-      "backend"
-    ]
-    [
-      "vicinae"
-      "walker"
-      "rofi"
-      "wofi"
     ]
 )
 // prefixed "terminal" (

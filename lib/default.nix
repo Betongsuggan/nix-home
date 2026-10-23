@@ -327,6 +327,64 @@ rec {
       ) hosts
     );
 
+  # The registry as the launcher flake's fleet (services.fleet-status.hosts
+  # and programs.launcher.fleet.hosts) as seen from `self` by `user` (null:
+  # no per-user actions): SSH where sshFrom allows it, wake where the host's
+  # relay is reachable, power where `plugCommand plug` gives a plug-<name>
+  # command (modules/shelly-plug), the relay it announces to.
+  fleetHosts =
+    {
+      self,
+      user ? null,
+      plugCommand ? (_: null),
+    }:
+    let
+      targets = if user == null then [ ] else sshTargetsOf self user;
+      target = h: lib.findFirst (t: t.host == h) null targets;
+    in
+    lib.mapAttrs (
+      name: h:
+      let
+        relay = h.wol.relay or null;
+        plug = plugCommand (h.plug or null);
+        canWake =
+          relay != null
+          && (h.wol.mac or "00:00:00:00:00:00") != "00:00:00:00:00:00"
+          && (relay == self || target relay != null);
+      in
+      {
+        address = tailnet.fqdn name;
+        tailnetName = h.hostName;
+        tailnetIp = h.tailnetIp or null;
+        # The ssh module's Host alias (modules/ssh)
+        ssh =
+          if target name == null then
+            null
+          else
+            {
+              user = (target name).user;
+              command = "ssh ${name}";
+            };
+        wake =
+          if !canWake then
+            null
+          else if relay == self then
+            "wake-${name}"
+          else
+            "ssh ${relay} wake-${name}";
+        power =
+          if plug == null then
+            null
+          else
+            {
+              on = "${plug} on";
+              off = "${plug} off";
+              status = "${plug} status | jq -r '(if .output then \"on\" else \"off\" end), (.apower | round)'";
+            };
+        inherit relay;
+      }
+    ) hosts;
+
   # Key files (under ~/.ssh) that `user`@`host` authenticates to the fleet with
   sshIdentities =
     host: user:

@@ -33,7 +33,7 @@ Home Manager runs only as a NixOS module; there is no separate `home-manager swi
 - **Hosts** (`hosts/<name>/`): `lib/mk-host.nix` builds every registry entry from its folder: `system.nix` is the NixOS config and each `user-<user>.nix` becomes that user's Home Manager config. Hosts mostly pick a profile and state their hardware.
 - **Modules** (`modules/<name>/`): `nixos.nix` and/or `home.nix`, discovered automatically. Every option lives under `my.<name>`. A feature a user switches on in Home Manager derives its system half from the users (`lib.anyHomeUser`), so it is enabled in one place.
 - **Profiles** (`modules/profiles`): `workstation`, `laptop` and `gaming-station` set defaults (`mkDefault`) for a whole role; `modules/common` is the always-on base (nix settings, timezone, keymap, boot, accounts, sshd defaults).
-- **Alternatives**: window managers (Hyprland, niri, sway, i3), launchers, terminals, shells, notification daemons and file managers are backends behind one interface; one keymap (`my.window-manager.keybinds`) is rendered for every compositor, and `checks/backends.nix` evaluates every backend so unused ones cannot rot.
+- **Alternatives**: window managers (Hyprland, niri, sway, i3), terminals, shells, notification daemons and file managers are backends behind one interface; one keymap (`my.window-manager.keybinds`) is rendered for every compositor, and `checks/backends.nix` evaluates every backend so unused ones cannot rot. The launcher (vicinae, its menus and the fleet dashboard) is its own flake, `github:Betongsuggan/launcher`, wrapped by `modules/launcher` and `modules/fleet-status`.
 - **Overlays** (`overlays/`): packages from other flakes and a few local fixes.
 
 ## Adding things
