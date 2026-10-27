@@ -226,10 +226,23 @@
       # Launch Hyprland on TTY1 (if not already in a graphical session)
       # Hyprland auto-starts Steam Big Picture and Sunshine
       if [[ "$XDG_VTNR" = "1" && -z "$WAYLAND_DISPLAY" ]]; then
+        # Hyprland can't take the GPU while tty1 is in the background (it
+        # aborts at startup), so a session restarted while betongsuggan is
+        # on tty2 would crash-loop through getty. Wait for the VT instead:
+        # switching to it, or a stream (prepare-streaming-session activates
+        # this session), brings it to the front.
+        until [[ "$(loginctl show-session "$XDG_SESSION_ID" -p Active --value)" == yes ]]; do
+          sleep 1
+        done
         # start-hyprland (Hyprland >= 0.53): a watchdog that relaunches
         # Hyprland in safe mode after a crash instead of dropping the
         # autologin session to a bare TTY
-        exec start-hyprland
+        start-hyprland
+        # The compositor is gone: stop its session units (Sunshine, the
+        # virtual monitor) rather than let them restart against nothing and
+        # burn their start limit; the next Hyprland starts them again
+        systemctl --user stop hyprland-session.target
+        exit
       fi
     '';
   };

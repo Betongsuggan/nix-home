@@ -28,6 +28,19 @@ let
     echo "  Resolution: ''${WIDTH}x''${HEIGHT}@''${FPS}" >> "$LOG"
     echo "  Target workspace: $WORKSPACE" >> "$LOG"
 
+    # Hyprland renders nothing, headless outputs included, while its session
+    # isn't the active VT: bring this user's session to the front first, or
+    # the client gets a black stream with working audio and input
+    sid=$(${pkgs.systemd}/bin/loginctl show-user "$USER" -p Display --value)
+    if [ -n "$sid" ] && [ "$(${pkgs.systemd}/bin/loginctl show-session "$sid" -p Active --value)" != yes ]; then
+      echo "  Activating session $sid" >> "$LOG"
+      ${pkgs.systemd}/bin/loginctl activate "$sid" >> "$LOG" 2>&1 || true
+      for _ in $(seq 1 20); do
+        [ "$(${pkgs.systemd}/bin/loginctl show-session "$sid" -p Active --value)" = yes ] && break
+        sleep 0.25
+      done
+    fi
+
     # Keep the machine awake for the whole stream: logind's idle suspend
     # doesn't see gamepad input. Released by restore-monitors.
     ${pkgs.systemd}/bin/systemd-run --user --unit=streaming-inhibit --collect \
@@ -83,6 +96,29 @@ let
     ${pkgs.systemd}/bin/systemctl --user stop streaming-inhibit.service 2>/dev/null || true
     ${pkgs.hyprland}/bin/hyprctl reload
     ${pkgs.hyprland}/bin/hyprctl dispatch workspace 1
+  '';
+
+  # Sunshine runs the app's undo (restore-monitors) only when the client quits
+  # the app; a client that just disconnects leaves the physical monitors off
+  # and the idle inhibitor held indefinitely. Follow Sunshine's log instead:
+  # a disconnect arms a timer, a reconnect (resume) disarms it, and when it
+  # fires while the stream state is still up, restore-monitors runs.
+  stream-watch = pkgs.writeShellScript "sunshine-stream-watch" ''
+    systemd=${pkgs.systemd}/bin
+    $systemd/journalctl --user-unit=sunshine.service --follow --lines=0 --output=cat \
+    | while IFS= read -r line; do
+      case "$line" in
+        *"CLIENT DISCONNECTED"*)
+          $systemd/systemctl --user stop stream-restore.timer 2>/dev/null || true
+          $systemd/systemd-run --user --unit=stream-restore --collect \
+            --on-active=${toString cfg.restoreAfter} \
+            ${pkgs.bash}/bin/bash -c '${pkgs.systemd}/bin/systemctl --user -q is-active streaming-inhibit.service && exec ${restore-monitors}/bin/restore-monitors'
+          ;;
+        *"CLIENT CONNECTED"*)
+          $systemd/systemctl --user stop stream-restore.timer 2>/dev/null || true
+          ;;
+      esac
+    done
   '';
 
 in
@@ -148,6 +184,18 @@ in
         '';
         type = types.bool;
         default = true;
+      };
+      restoreAfter = mkOption {
+        description = ''
+          How long after a client disconnects without quitting the app the
+          stream state is undone (physical monitors back, idle inhibitor
+          released), as a systemd time span. Reconnecting before then resumes
+          the stream untouched. `null` keeps the stream state until the app is
+          quit.
+        '';
+        type = types.nullOr types.str;
+        default = "10min";
+        example = "30min";
       };
     };
   };
@@ -267,11 +315,16 @@ in
     # all encoders (nvenc/vaapi/software) "fail" because there's nothing to
     # capture. Polls hyprctl until the IPC socket is live (Hyprland's
     # exec-once creates the dir asynchronously).
+    #
+    # Pulled in by hyprland-session.target, which Hyprland's exec-once
+    # (re)starts, so every compositor instance gets it. No After= on that
+    # target: it is ordered after the units it wants, and the old
+    # After=hyprland-session.target + WantedBy=graphical-session.target made
+    # a cycle systemd broke by dropping this job at every login.
     systemd.user.services.hypr-virtual-monitors = {
       description = "Materialize Hyprland headless monitor(s) for Sunshine";
-      after = [ "hyprland-session.target" ];
-      bindsTo = [ "hyprland-session.target" ];
-      wantedBy = [ "graphical-session.target" ];
+      partOf = [ "hyprland-session.target" ];
+      wantedBy = [ "hyprland-session.target" ];
       unitConfig = mkIf (cfg.user != null) { ConditionUser = cfg.user; };
       serviceConfig = {
         Type = "oneshot";
@@ -303,14 +356,39 @@ in
       '';
     };
 
-    # Drop-in: order sunshine after the monitor service and re-add the
-    # graphical-session WantedBy that `autoStart = false` removed.
+    # Drop-in: order sunshine after the monitor service and tie it to the
+    # compositor session (`autoStart = false` dropped upstream's
+    # graphical-session WantedBy). PartOf restarts it with each Hyprland
+    # instance, so a Sunshine that burned its start limit while no
+    # compositor was up comes back with the next one.
     systemd.user.services.sunshine = {
       wants = [ "hypr-virtual-monitors.service" ];
       after = [ "hypr-virtual-monitors.service" ];
-      wantedBy = [ "graphical-session.target" ];
+      partOf = [ "hyprland-session.target" ];
+      wantedBy = [ "hyprland-session.target" ];
       unitConfig = mkIf (cfg.user != null) { ConditionUser = cfg.user; };
     };
+
+    systemd.user.services.sunshine-stream-watch = mkIf (cfg.restoreAfter != null) {
+      description = "Undo the stream state when a Moonlight client drops without quitting";
+      after = [ "sunshine.service" ];
+      partOf = [ "sunshine.service" ];
+      wantedBy = [ "sunshine.service" ];
+      unitConfig = mkIf (cfg.user != null) { ConditionUser = cfg.user; };
+      serviceConfig.ExecStart = stream-watch;
+    };
+
+    # prepare-streaming-session brings the streaming user's session to the
+    # front (`loginctl activate`). It runs from the user manager, outside any
+    # seat session, where logind's chvt action needs admin auth; let that
+    # one user switch VTs (anyone at the keyboard can anyway).
+    security.polkit.extraConfig = mkIf (cfg.user != null) ''
+      polkit.addRule(function(action, subject) {
+        if (action.id == "org.freedesktop.login1.chvt" && subject.user == "${cfg.user}") {
+          return polkit.Result.YES;
+        }
+      });
+    '';
 
     environment.systemPackages = [
       prepare-streaming-session
