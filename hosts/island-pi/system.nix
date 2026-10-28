@@ -108,6 +108,15 @@ in
     secretsFile = "${inputs.nix-vault}/secrets/island-pi.yaml";
   };
 
+  # --- Summer DNS filter ------------------------------------------------------
+  # Same blocking as home (modules/dns-filter) for everything on the summer
+  # LAN once the router hands this host out as DNS (SPEC, open items). No
+  # query log: that needs PostgreSQL, which a 1 GB Pi has no room for.
+  my.dns-filter = {
+    enable = true;
+    queryLog.enable = false;
+  };
+
   # Deliberately not a subnet router: nothing on the summer-place LAN needs
   # reaching from the tailnet. island-stationary is a tailnet member and is
   # woken over SSH to this host. When a non-tailnet device there has to be

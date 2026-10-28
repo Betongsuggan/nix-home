@@ -4,6 +4,7 @@ Raspberry Pi 3 Model B v1.2 (aarch64, 1 GB RAM) — the always-on host at the su
 
 - Always-on tailnet SSH node at the summer place
 - Deliberately **not** a subnet router (see "Subnet router" below)
+- **DNS filter for the summer LAN** (`my.dns-filter`, blocky without the query log): the same telemetry blocking as home for the Samsung TV, the Nest Mini and the AC there, once the summer router hands out `192.168.51.5` as DNS
 - **Wake-on-LAN relay** for `island-stationary` (`ssh island-pi wake-island-stationary`); controller's restic backups wake it the same way through the `wake` account (`ssh wake@island-pi wake-island-stationary`, forced command, see `modules/common/SPEC.md`)
 
 ## The one rule: this host never builds or evaluates nix
@@ -22,7 +23,7 @@ Deploying as root is what makes unsigned closure copies acceptable to the Pi's n
 
 - U-Boot + `generic-extlinux-compatible`, mainline kernel (default `linuxPackages`). No systemd-boot (`my.common.systemd-boot = false`) and no secure boot.
 - SD layout comes from the flake-built image (`packages.aarch64-linux.island-pi-sd-image`, nixpkgs `sd-image-aarch64.nix`): vfat `FIRMWARE` partition (Pi firmware + U-Boot) + ext4 `NIXOS_SD` root. Deploys only rewrite `/boot/extlinux`; the firmware partition is never touched. `/boot/firmware`'s mount options are `mkForce`d so the image's fstab matches the deployed one (a merged duplicate list made the first deploy's switch fail on `boot-firmware.mount`; images flashed before this fix need one reboot after the first deploy).
-- zram swap (zstd, 100% of RAM) instead of SD-card swap; journald capped at 100M.
+- zram swap (zstd, 100% of RAM) instead of SD-card swap; journald capped at 100M. blocky (the DNS filter) is the one memory-hungry service; the query log and monitoring stay off here.
 - Wired ethernet with plain DHCP — no NetworkManager.
 
 ## Deployer prerequisites (read before the first install)
@@ -40,6 +41,7 @@ Status 2026-10-22: installed at the summer place and came up on its own — LAN 
 - [x] **Check the subnet:** `192.168.51.0/24`, recorded in `lib.hosts.island-pi.lan.subnet` (2026-10-22).
 - [x] **Deployed** from bits over the tailnet (2026-10-22): `wake` account and `wake-island-stationary` present; headscale lists no route for island-pi.
 - [x] **Controller** rebuilt with the registry subnet and the relay wake (2026-10-22).
+- [ ] **DNS filter:** on the summer ASUS, LAN → DHCP Server → DNS Server 1 = `192.168.51.5`, DNS Server 2 empty (`modules/dns-filter/SPEC.md`, "Router setup"). Then from island-stationary `resolvectl query lgsmartad.com` must answer `0.0.0.0`. Check memory on the Pi after the first day: `free -m` and `systemctl status blocky` (blocky with the hagezi list is the biggest thing on this host; trim `my.dns-filter.blocklists` if it swaps).
 - [ ] **Wake-on-LAN:** confirm WoL is enabled in island-stationary's BIOS (`wakeOnLan` is already on in its config), shut it down, then `ssh island-pi wake-island-stationary` and `ssh island-stationary.ts.rydback.net`.
 - [ ] Remove this section and update the status once done.
 
