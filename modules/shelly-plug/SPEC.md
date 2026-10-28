@@ -34,14 +34,15 @@ plug-desktop on|off|toggle
 ## Behaviour
 
 - **Reachability**: controller advertises the home LAN into the tailnet and every member accepts routes, so `plug-*` talks to `http://<address>/rpc/…` directly from anywhere on the tailnet, with a 3 s timeout. No relay, unlike `wake-<host>` (a magic packet is an L2 broadcast). The plugs themselves stay LAN-only.
-- **Asserted settings** (`shelly-plug-config.service`, oneshot after network-online, on the managing host): `Sys.SetConfig` the device name from `description` for every plug, and `Switch.SetConfig initial_state = restore_last` for plugs that power a host. Without the latter a plug comes back *off* after a power cut and the host never boots (the factory default is `off`). The unit fails and retries every 5 min while a plug is unreachable, naming it in the journal. Plugs without an owner keep their own `initial_state`.
+- **Asserted settings** (`shelly-plug-config.service`, oneshot after network-online, on the managing host): for every plug `Sys.SetConfig` (device name from `description`, SNTP server = the managing host's `lan.address`), `Cloud.SetConfig enable=false`, `BLE.SetConfig rpc.enable=false` (no Bluetooth RPC; advertising stops with it) and `Matter.SetConfig enable=false` (Gen3 ships Matter off, this keeps it so); and `Switch.SetConfig initial_state = restore_last` for plugs that power a host. Without the latter a plug comes back *off* after a power cut and the host never boots (the factory default is `off`). The unit fails and retries every 5 min while a plug is unreachable, naming it in the journal. Plugs without an owner keep their own `initial_state`.
+- **What the plugs still talk to**: with the guards above, a plug's only traffic off the LAN is the firmware check against `updates.shelly.cloud` once a day (Shelly has no switch for it; the router's firewall is the only way to stop it) and DNS for that name. Time comes from the managing host: `services.chrony` serves `lan.subnet` on UDP 123 of `lan.interface` (chrony also replaces timesyncd as that host's own client). Without `lan.address` in the registry the plugs keep Shelly's default `time.google.com`.
 - **Metrics**: nixpkgs' `json_exporter` on loopback (`services.prometheus.exporters.json`, port 7979) turns each plug's `Switch.GetStatus` into `shelly_switch_on`, `shelly_power_watts`, `shelly_voltage_volts`, `shelly_current_amperes`, `shelly_energy_watthours_total` (counter, Wh since the plug's own reset) and `shelly_temperature_celsius`, labelled `plug` (also `instance`) and `host` for owned plugs. One probe-style job `shelly` through `my.monitoring.scrapeConfigs`, 30 s like everything else.
 - **Dashboard** "Smart plugs" (uid `shelly`), generated in Nix: power, relay state, energy per day in kWh (one series per plug), total power and total energy per day in kWh across all plugs, energy per plug and in total over the time picker's range (`$__range`, instant queries), voltage, temperature. The exporter keeps Wh (the plug's own unit); the panels divide by 1000.
 
 ## Setup and recovery
 
 - **Addresses are DHCP reservations** on the ASUS router (MAC → address), never the plug's own static IP, so the router stays the one DHCP authority. Only reserved addresses belong in the registry.
-- **A plug that fell off the WiFi** advertises only Matter commissioning over Bluetooth; Shelly's BLE RPC is off, so the Shelly app would not have helped either. The button holds (5 s reboot, 10 s factory reset) are only accepted **within 60 s of plugging the device in**: pull it, push it back, hold 10 s. The LED flashes blue and the plug runs an open `ShellyPlugSG3-<id>` access point. From a laptop: `nmcli dev wifi connect ShellyPlugSG3-<id>`, then
+- **A plug that fell off the WiFi** advertises nothing useful over Bluetooth (BLE RPC is off, asserted on every run of `shelly-plug-config`; before that it only showed Matter commissioning), so the Shelly app would not have helped either. The button holds (5 s reboot, 10 s factory reset) are only accepted **within 60 s of plugging the device in**: pull it, push it back, hold 10 s. The LED flashes blue and the plug runs an open `ShellyPlugSG3-<id>` access point. From a laptop: `nmcli dev wifi connect ShellyPlugSG3-<id>`, then
 
   ```bash
   curl -G http://192.168.33.1/rpc/WiFi.SetConfig \
@@ -60,6 +61,10 @@ plug-printer | jq .apower
 # managing host (controller)
 systemctl status shelly-plug-config
 curl -s 'http://192.168.50.201/rpc/Switch.GetConfig?id=0' | jq .initial_state   # "restore_last"
+curl -s http://192.168.50.201/rpc/Cloud.GetConfig | jq .enable                   # false
+curl -s http://192.168.50.201/rpc/BLE.GetConfig | jq .rpc.enable                 # false
+curl -s http://192.168.50.201/rpc/Sys.GetConfig | jq .sntp.server                # "192.168.50.5"
+chronyc clients | grep 192.168.50.20                                              # the plugs asking for time
 curl -s 'localhost:7979/probe?target=http://192.168.50.200/rpc/Switch.GetStatus?id=0'  # shelly_switch_on 1 + five more
 # https://grafana.rydback.net → Smart plugs: three series
 ```

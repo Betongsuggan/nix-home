@@ -11,6 +11,11 @@ with lib;
 let
   cfg = config.my.shelly-plug;
   plugs = inputs.self.lib.plugs;
+  self = inputs.self.lib.hosts.${config.my.common.host};
+  lan = self.lan or null;
+  # The managing host serves time to the plugs (chrony below) so they stop
+  # asking time.google.com. Needs the registry to know this host's LAN address.
+  ntpServer = if lan != null && lan ? address then lan.address else null;
 
   # `plug-<name> [status|on|off|toggle]`: the Shelly Gen2+ RPC over plain
   # HTTP. Every tailnet host reaches the plugs directly (the home LAN is a
@@ -257,8 +262,20 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = [ cli ];
 
+    # Time for the plugs: chrony answers the LAN, nothing else changes
+    # (chrony replaces timesyncd as this host's own client).
+    services.chrony = mkIf (cfg.manage && ntpServer != null) {
+      enable = true;
+      extraConfig = "allow ${lan.subnet}";
+    };
+    networking.firewall.interfaces = mkIf (cfg.manage && ntpServer != null) {
+      ${lan.interface}.allowedUDPPorts = [ 123 ];
+    };
+
     # Idempotent; what survives the next factory reset. A plug that is away
     # fails the unit, which retries, so the journal says which one.
+    # Guards: no cloud, no Bluetooth RPC, no Matter fabric, local time. The
+    # one thing left that leaves the LAN is the daily update check.
     systemd.services.shelly-plug-config = mkIf cfg.manage {
       description = "Assert Shelly plug settings from the registry";
       wantedBy = [ "multi-user.target" ];
@@ -284,13 +301,30 @@ in
         mapAttrsToList (
           name: p:
           let
-            nameConfig = escapeShellArg "config=${builtins.toJSON { device.name = p.description; }}";
-            switchConfig = escapeShellArg "config=${builtins.toJSON { initial_state = "restore_last"; }}";
+            json = c: escapeShellArg "config=${builtins.toJSON c}";
+            sysConfig = json (
+              {
+                device.name = p.description;
+              }
+              // optionalAttrs (ntpServer != null) { sntp.server = ntpServer; }
+            );
+            guards = {
+              "Cloud.SetConfig" = json { enable = false; };
+              "BLE.SetConfig" = json { rpc.enable = false; };
+              "Matter.SetConfig" = json { enable = false; };
+            };
+            switchConfig = json { initial_state = "restore_last"; };
           in
           ''
-            rpc ${p.address} Sys.SetConfig --data-urlencode ${nameConfig} \
+            rpc ${p.address} Sys.SetConfig --data-urlencode ${sysConfig} \
               || { echo "${name}: Sys.SetConfig failed" >&2; rc=1; }
           ''
+          + concatStrings (
+            mapAttrsToList (method: c: ''
+              rpc ${p.address} ${method} --data-urlencode ${c} \
+                || { echo "${name}: ${method} failed" >&2; rc=1; }
+            '') guards
+          )
           + optionalString (p.owner != null) ''
             rpc ${p.address} Switch.SetConfig --data-urlencode id=0 --data-urlencode ${switchConfig} \
               || { echo "${name}: Switch.SetConfig failed" >&2; rc=1; }
