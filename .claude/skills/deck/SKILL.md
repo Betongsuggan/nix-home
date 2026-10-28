@@ -12,6 +12,7 @@ The tracker is Nextcloud Deck at cloud.rydback.net. The `deck` command (modules/
 - **Projects**: the portfolio. One card per project, stacks `Idea` / `Active` / `Paused` / `Done`. A card here says what the project is and where its work is tracked; it does not hold task lists.
 - **De-cloud**, **AI lab**, **nix-home**: work boards. Stacks are `Backlog` (or `To do`) / `Doing` / `Blocked` (De-cloud) / `Done`. One card per work item, with a markdown checklist in the description when the item has steps. SSO work is on De-cloud with the `sso` label.
 - **Cloud inventory**: one card per external service the user depends on, stacks `Using` (no decision yet) / `Replacing` / `Replaced` / `Keep` (conscious choice). A new cloud dependency that shows up in the repo or the conversation gets a card here the same day. Labels `data`, `fleet`, `account`, `confirm` (seeded, unverified).
+- **Device inventory**: one card per physical device at home and the summer house, stacks `Unassessed` / `Vendor` / `Contained` / `Open` / `Nix` (the ownership ladder). Conventions, card template and the re-check workflow are in the `device-inventory` skill.
 - Labels (per board): `repo` = changes in nix-home, `op` = operator work (phone, provider dashboards, hardware), `blocked` / `gate` = waiting on or gating other work, `on-site` = needs a visit.
 
 New boards only for a new long-running project with real task volume; otherwise add a card to an existing board.
