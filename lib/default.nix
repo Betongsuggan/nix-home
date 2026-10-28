@@ -51,6 +51,7 @@ let
         interface = "enp1s0";
         subnet = "192.168.50.0/24";
         gateway = "192.168.50.1";
+        address = "192.168.50.5"; # DHCP reservation; NTP for the plugs (shelly-plug)
       };
       addresses = [
         "192.168.50.5"
@@ -92,13 +93,21 @@ let
 
     island-pi = {
       system = "aarch64-linux";
+      tailnetIp = "100.64.0.8";
       users.betongsuggan = { };
       addresses = [ "island-pi" ];
-      # Summer-place LAN (checked on site 2026-10-22). Not advertised into
-      # the tailnet (hosts/island-pi): nothing there needs reaching from the
-      # tailnet; the subnet router is a one-line flip when something does.
-      # Must differ from controller's lan.subnet.
-      lan.subnet = "192.168.51.0/24";
+      # Summer-place LAN (checked on site 2026-10-22, interface and gateway
+      # read on the host 2026-10-28). Not advertised into the tailnet
+      # (hosts/island-pi): nothing there needs reaching from the tailnet; the
+      # subnet router is a one-line flip when something does. Must differ
+      # from controller's lan.subnet. The summer DNS filter (dns-filter)
+      # listens on `interface` and asks `gateway` for reverse lookups.
+      lan = {
+        interface = "enu1u1";
+        subnet = "192.168.51.0/24";
+        gateway = "192.168.51.1";
+        address = "192.168.51.5";
+      };
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAVLZdSvoCGrRaHnh5jjXVnQ2lA9ppARq+jm38z/ct5A root@island-pi";
     };
 
