@@ -86,13 +86,11 @@ in
         else
           [ ]
       )
-      ++ [
-        {
-          timeout = config.my.window-manager.idle.screenOffAfter;
-          command = "niri msg action power-off-monitors";
-          resumeCommand = "niri msg action power-on-monitors";
-        }
-      ]
+      ++ optional (config.my.window-manager.idle.screenOffAfter != null) {
+        timeout = config.my.window-manager.idle.screenOffAfter;
+        command = "niri msg action power-off-monitors";
+        resumeCommand = "niri msg action power-on-monitors";
+      }
       ++ optional (config.my.window-manager.idle.suspendAfter != null) {
         timeout = config.my.window-manager.idle.suspendAfter;
         command = "${pkgs.systemd}/bin/systemctl suspend";

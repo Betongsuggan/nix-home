@@ -309,13 +309,11 @@ in
           else
             [ ]
         )
-        ++ [
-          {
-            timeout = config.my.window-manager.idle.screenOffAfter;
-            on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
-            on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
-          }
-        ]
+        ++ optional (config.my.window-manager.idle.screenOffAfter != null) {
+          timeout = config.my.window-manager.idle.screenOffAfter;
+          on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
+          on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
+        }
         ++ optional (config.my.window-manager.idle.suspendAfter != null) {
           timeout = config.my.window-manager.idle.suspendAfter;
           on-timeout = "${pkgs.systemd}/bin/systemctl suspend";
@@ -533,6 +531,12 @@ in
 
         misc = {
           disable_splash_rendering = true;
+          # Any key or mouse move turns the outputs back on, whatever hypridle
+          # does: it skips its on-resume `dpms on` while an app holds a dbus
+          # screensaver inhibit (Steam sends one on controller input), which
+          # left the screens dark for good
+          key_press_enables_dpms = true;
+          mouse_move_enables_dpms = true;
           # vfr moved to debug: in Hyprland 0.55 and defaults to on — no longer set here.
         };
 

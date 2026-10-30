@@ -44,7 +44,7 @@ my.window-manager = {
 | workspaceBindings.*.default | bool | false | Make this the default workspace for the monitor |
 | composeKey | str | "ralt" | Keyboard key to use as the compose key for special characters |
 | touchOutput | nullOr str | null | Output name to map touchscreen input to (e.g., "eDP-1") |
-| idle.dimAfter / lockAfter / screenOffAfter / suspendAfter | int (s); suspendAfter nullOr int | 240 / 300 / 330 / 900 | Idle timeouts, shared by hypridle (Hyprland) and swayidle (niri) |
+| idle.dimAfter / lockAfter / screenOffAfter / suspendAfter | int (s); screenOffAfter, suspendAfter nullOr int | 240 / 300 / 330 / 900 | Idle timeouts, shared by hypridle (Hyprland) and swayidle (niri); null screenOffAfter keeps the outputs on, null suspendAfter leaves suspend to the host |
 
 ## Session services
 
@@ -97,4 +97,5 @@ Screenshots are saved to `~/Pictures/Screenshots` (`my.window-manager.screenshot
 - sway and i3 take their colors and fonts from stylix (`stylix.targets.sway` / `.i3`, and swaylock under sway).
 - `checks/backends.nix` evaluates every window manager, terminal, shell, notification and file-manager backend, plus the optional desktop modules, as flake checks (`nix flake check --no-build`), so unused alternatives cannot silently break.
 - Hyprland turns blur and shadows off on battery and back on on AC, through `my.battery-monitor` hooks (on hosts with the battery monitor).
+- Hyprland wakes the outputs itself on any key press or mouse move (`misc:key_press_enables_dpms`, `mouse_move_enables_dpms`). hypridle's on-resume `dpms on` alone is not enough: it is skipped while an app holds a dbus screensaver inhibit, and Steam sends one on controller input, which left a gamer session with the screens off for good (desktop, 2026-10-27).
 - niri starts xwayland-satellite itself when an X11 client connects (niri ≥ 25.08); the package is on PATH, nothing spawns it at login.

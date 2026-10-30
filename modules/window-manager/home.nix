@@ -306,9 +306,9 @@ in
         description = "Seconds before the session locks (when the backend's lockscreen is on).";
       };
       screenOffAfter = mkOption {
-        type = types.int;
+        type = types.nullOr types.int;
         default = 330;
-        description = "Seconds before the outputs are powered off.";
+        description = "Seconds before the outputs are powered off; null keeps them on (until the machine suspends).";
       };
       suspendAfter = mkOption {
         type = types.nullOr types.int;

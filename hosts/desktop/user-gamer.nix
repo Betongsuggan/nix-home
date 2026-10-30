@@ -87,6 +87,11 @@
   # Steam Big Picture is managed by Sunshine when streaming clients connect
   my.window-manager.hyprland.lockscreen.enable = false; # Gaming user doesn't need lockscreen
   my.window-manager.hyprland.cmFsPassthrough = 1; # Always passthrough in fullscreen for HDR gaming
+  # No compositor screen-off: a gamepad never reaches Hyprland, so it could
+  # not bring the screens back (only a key or the mouse could). They stay on
+  # until logind suspends the host after 30 idle minutes; resume (a DualSense
+  # wakes it) turns them on again.
+  my.window-manager.idle.screenOffAfter = null;
   # No window rules: Hyprland 0.55's new `windowrule` parser rejects the old
   # `class:^()$` matcher, and `windowrulev2` (still functional) emits a
   # persistent on-screen deprecation warning. The old Steam tweaks are obsolete
