@@ -97,6 +97,7 @@ my.games = {
 | wineApps.\<name\>.installer.args | listOf str | preset or `[]` | Installer arguments |
 | wineApps.\<name\>.exe | str | preset | Installed executable, relative to `drive_c` |
 | wineApps.\<name\>.wayland | bool | preset or false | Run on Wine's Wayland driver (`PROTON_ENABLE_WAYLAND=1`) instead of XWayland |
+| steamFocusBridge | bool | any wine app with `steam`, on Hyprland | Run the `steam-focus-bridge` user service (see "Wine apps") |
 | wineApps.\<name\>.steam | bool | true | Launch through a Steam shortcut (added on first launch) so Steam Input and the overlay apply; off runs the app directly |
 | wineApps.\<name\>.tray | bool | false | Let Wine show tray icons; off sets `NoTrayItemsDisplay` in the prefix, so Wine draws no fallback tray box (no host has a bar with a tray) |
 | wineApps.\<name\>.preLaunch | lines | preset or "" | Shell run before every launch and before the installer, with `WINEPREFIX` set; `jq` is on `PATH` |
@@ -462,7 +463,8 @@ The first launch downloads the vendor installer to `~/.cache/wine-apps/` and run
 
 - The installer comes from an unversioned vendor URL, so it is fetched at run time rather than by Nix; the launcher updates itself inside the prefix. The prefix (login, installed games) is per-host state: delete it to start over.
 - `steam = false` makes `battlenet` run the app directly (no Steam Input, no overlay).
-- Steam Input works with the games on Wine's Wayland driver (checked with WoW's gamepad mode, 2026-10-30). The overlay is injected but draws nothing, as in Steam games on Hyprland (Deck card 141).
+- Steam Input with games on Wine's Wayland driver needs `steam-focus-bridge` (`steamFocusBridge`, user service, `steam-focus-bridge.py`). Steam is an XWayland client and picks the controller layout from the focused X window; a native Wayland window isn't one, so Steam falls back to the desktop layout (mouse, X opens the on-screen keyboard) and never comes back. The bridge listens to Hyprland's focus events and, when a native Wayland window whose process has `SteamAppId` (launched by Steam) gets focus, makes an invisible 1x1 X window tagged with that appid (`STEAM_GAME`, `_NET_WM_PID`) the X server's active, focused window. Hyprland's own focus is untouched. Off: `my.games.steamFocusBridge = false`. `steam -steamos` was tried first and does not change this.
+- The controller layout has to be a gamepad one (Steam's "Gamepad" template) for WoW's gamepad mode; a community WoW layout from the Steam Deck sent keyboard keys. Set once per shortcut in Steam; it follows the account. The overlay is injected but draws nothing, as in Steam games on Hyprland (Deck card 141).
 - Other launchers: set `installer.url` and `exe` (and `installer.args` if the installer takes any) on a new attribute name, or add a preset in `wine-apps.nix`.
 
 ## Layout

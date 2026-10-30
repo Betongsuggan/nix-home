@@ -257,6 +257,21 @@ let
     };
 
   enabled = filterAttrs (_: app: app.enable) cfg.wineApps;
+
+  focusBridge =
+    pkgs.writers.writePython3 "steam-focus-bridge"
+      {
+        libraries = [ pkgs.python3Packages.xlib ];
+        flakeIgnore = [ "E501" ];
+      }
+      (
+        replaceStrings
+          [ ''"hyprctl"'' ]
+          [
+            ''"${config.wayland.windowManager.hyprland.finalPackage}/bin/hyprctl"''
+          ]
+          (builtins.readFile ./steam-focus-bridge.py)
+      );
 in
 {
   options.my.games.wineApps = mkOption {
@@ -278,7 +293,33 @@ in
     '';
   };
 
+  options.my.games.steamFocusBridge = mkOption {
+    type = types.bool;
+    default =
+      any (app: app.steam) (attrValues enabled) && config.my.window-manager.backend == "hyprland";
+    defaultText = literalExpression "any wine app launches through Steam, on Hyprland";
+    description = ''
+      Run steam-focus-bridge: tells Steam (an XWayland client) when a game on
+      Wine's Wayland driver is focused, so Steam Input keeps the game's
+      controller layout instead of falling back to the desktop layout
+    '';
+  };
+
   config = mkIf (cfg.enable && enabled != { }) {
+    systemd.user.services.steam-focus-bridge = mkIf cfg.steamFocusBridge {
+      Unit = {
+        Description = "Tell Steam when a Wine Wayland game is focused (Steam Input layouts)";
+        After = [ "graphical-session.target" ];
+        PartOf = [ "graphical-session.target" ];
+      };
+      Service = {
+        ExecStart = "${focusBridge}";
+        Restart = "always";
+        RestartSec = "5s";
+      };
+      Install.WantedBy = [ "graphical-session.target" ];
+    };
+
     home.packages = mapAttrsToList launcher enabled ++ mapAttrsToList starter enabled;
     # Wine's Wayland driver names windows after the exe. Hyprland stops frame
     # callbacks to hidden windows, so a game on another workspace blocks in
