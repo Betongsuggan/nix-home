@@ -260,6 +260,11 @@ in
       settings = {
         sunshine_name = "betongsuggan station";
         output_name = cfg.display;
+        # wlroots screencopy, the backend that can name a headless output.
+        # Unpinned, Sunshine tries the XDG ScreenCast portal first, which on
+        # Hyprland opens the share picker and blocks startup (no HTTP server,
+        # so Moonlight sees the host offline) until someone clicks it.
+        capture = "wlr";
 
         # Codec settings: Enable AV1 + HEVC auto-negotiation
         # RX 9070 XT (VCN5) has excellent AV1/HEVC encoding quality
