@@ -68,6 +68,14 @@ in
   ];
 
   config = mkIf cfg.enable {
+    # While a game runs, Steam draws the in-game overlay (Shift+Tab, Steam
+    # button) in its "Steam Big Picture Mode" window, which sits unseen on
+    # some workspace. Hyprland stops frame callbacks to hidden windows and
+    # XWayland then paces it at ~1 fps: the overlay dims the game, its sounds
+    # play, but the panels barely update. Keep Steam's windows rendering
+    # (misc:render_unfocused_fps)
+    my.window-manager.hyprland.windowRules = [ "render_unfocused on, match:class ^(steam)$" ];
+
     home.packages =
       with pkgs;
       [

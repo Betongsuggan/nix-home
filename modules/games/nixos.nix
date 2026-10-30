@@ -51,15 +51,7 @@ in
   config = lib.mkIf anyGames {
     programs.steam = {
       enable = true;
-      # Steam's web views (client UI, overlay) with Chromium's GPU
-      # compositing draw only partly under XWayland on Hyprland: the overlay
-      # dims the game but shows stale or missing panels while its sounds
-      # play. Software compositing fixes it; the cost is a slower Steam UI,
-      # not the game (seen on bits and desktop, 2026-10-30)
-      package = pkgs.steam.override {
-        extraEnv = config.my.games.steam.env;
-        extraArgs = "-cef-disable-gpu-compositing";
-      };
+      package = pkgs.steam.override { extraEnv = config.my.games.steam.env; };
       extraCompatPackages = protonPackages;
       # Wrapped with the same compat-tool paths as Steam
       protontricks.enable = lib.any (u: gaming u && u.my.games.tools.enable) users;
