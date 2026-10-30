@@ -90,6 +90,19 @@ my.games = {
 | steamIntegration.enable | bool | false | Enable Steam library integration |
 | steamIntegration.boilr | bool | true | Install BoilR to import games from Heroic/Lutris/etc. into Steam |
 | steamIntegration.steamRomManager | bool | true | Install Steam ROM Manager (unused for ROM tiles — its headless CLI hangs on this host; `emulation-apply-shortcuts` replaces it) |
+| wineApps | attrsOf submodule | {} | Windows launchers outside Steam, one Wine prefix each, installed on first launch (see "Wine apps"). Presets: `battlenet` |
+| wineApps.\<name\>.enable | bool | false | Install the `<name>` command and its desktop entry |
+| wineApps.\<name\>.displayName | str | preset or `<name>` | Desktop entry name |
+| wineApps.\<name\>.installer.url | str | preset | Installer download URL, fetched by the command on first launch |
+| wineApps.\<name\>.installer.args | listOf str | preset or `[]` | Installer arguments |
+| wineApps.\<name\>.exe | str | preset | Installed executable, relative to `drive_c` |
+| wineApps.\<name\>.wayland | bool | preset or false | Run on Wine's Wayland driver (`PROTON_ENABLE_WAYLAND=1`) instead of XWayland |
+| wineApps.\<name\>.tray | bool | false | Let Wine show tray icons; off sets `NoTrayItemsDisplay` in the prefix, so Wine draws no fallback tray box (no host has a bar with a tray) |
+| wineApps.\<name\>.preLaunch | lines | preset or "" | Shell run before every launch and before the installer, with `WINEPREFIX` set; `jq` is on `PATH` |
+| wineApps.\<name\>.prefix | str | `~/Games/<name>` | Proton compat-data dir (`STEAM_COMPAT_DATA_PATH`); the Wine prefix is its `pfx/` |
+| wineApps.\<name\>.umuId | str | `"umu-default"` | `UMU_ID`: which protonfixes apply |
+| wineApps.\<name\>.env | attrsOf str | {} | Extra environment, e.g. `DRI_PRIME` on hybrid graphics |
+| wineApps.\<name\>.proton | package | first `protonGE.packages`' `steamcompattool` | Proton build the app runs with |
 
 ## RetroArch Core-to-System Mapping
 
@@ -432,15 +445,25 @@ shortcut's `icon` vdf field). Behavior:
 - `citron`/`eden` don't use Ryujinx's `--root-data-dir`; the key-copy and `dataDir` apply only
   to `ryubing`. For those forks, place keys/firmware in their own data dirs manually.
 
-### Battle.net
-- Install via Bottles (already available via `tools.enable`)
-- Manually add game shortcuts to Steam after installation
+### Wine apps (`wineApps`, e.g. Battle.net)
+`my.games.wineApps.battlenet.enable = true;` installs a `battlenet` command and a "Battle.net" desktop entry. The first launch downloads the vendor installer to `~/.cache/wine-apps/` and runs it in `~/Games/battlenet` (Battle.net's installer runs unattended and starts the launcher itself); later launches start the installed exe. Both run Proton-GE's `proton` script with Steam's `waitforexitandrun` verb inside nixpkgs' `steam-run` (with 32-bit freetype added), so the prefix gets DXVK/VKD3D and protonfixes as a Steam game would. Independent of `tools.enable`.
+
+- Not `umu-run`: with Proton-GE 11 it downloads Valve's Steam Linux Runtime 4 container to `~/.local/share/umu` at run time, and that download failed its digest check on bits (2026-10-30). `steam-run` comes from Nix.
+- Battle.net preset: Wine's Wayland driver (`wayland = true`) and `HardwareAcceleration = "false"` in `Battle.net.config` (`preLaunch`, seeded before the installer too), plus `HideOnClose = "false"` in each per-account `<hash>.config` so closing exits rather than hiding to a tray that isn't there (that file appears at first login, so a new host gets it from the second launch). On XWayland its embedded Chromium repainted only partly (white patches after the first click), with GPU compositing the window was black, and WineD3D instead of DXVK was too slow to repaint. Games it starts inherit the environment, so they also run on the Wayland driver.
+- Registry: the launcher keeps a generated `.reg` (today only `NoTrayItemsDisplay`, from `tray`) applied with `proton runinprefix regedit` whenever it changes (stamp: `<prefix>/.registry-applied`). This also creates the prefix on a new host.
+- Hyprland: a `render_unfocused` window rule for every `*.exe` window (Wine's Wayland driver names windows after the exe; appended to `my.window-manager.hyprland.windowRules`). Without it a game on a hidden workspace gets no frame callbacks, blocks in its vsync'd present, and WoW is disconnected after a few minutes; with it hidden games render at `misc:render_unfocused_fps` (15).
+- The command returns when the app (and everything in its prefix) exits. Starting it again while it runs waits for that exit first (`waitforexitandrun`).
+
+- The installer comes from an unversioned vendor URL, so it is fetched at run time rather than by Nix; the launcher updates itself inside the prefix. The prefix (login, installed games) is per-host state: delete it to start over.
+- A Steam tile is manual for now (Steam → Add a Non-Steam Game → the `battlenet` command).
+- Other launchers: set `installer.url` and `exe` (and `installer.args` if the installer takes any) on a new attribute name, or add a preset in `wine-apps.nix`.
 
 ## Layout
 
 - `home.nix` — overview, base packages, store tools, Steam integration
 - `options.nix` — every `my.games.*` option
 - `mangohud.nix` — the overlay
+- `wine-apps.nix` — `wineApps`: per-app umu/Proton-GE launcher commands and their presets
 - `emulation.nix` — RetroArch, standalone emulators, the Switch emulator and helpers, and the per-ROM Steam shortcuts (these share one set of derived paths and launch commands)
 - `switch-quit-listener.py`, `add-shortcuts.py` — the Python helpers, filled in via `replaceVars` / called with the generated manifest
 

@@ -31,6 +31,12 @@
     protonGE.enable = true;
     tools.enable = false;
     mangohud.sessionWide = false;
+    # Battle.net in ~/Games/battlenet, installed on first launch; its games
+    # render on the discrete GPU like Steam's (programs.steam.package)
+    wineApps.battlenet = {
+      enable = true;
+      env.DRI_PRIME = "pci-0000_03_00_0";
+    };
   };
   # Moonlight client for the desktop's Sunshine session (pair once via the
   # Sunshine web UI, see modules/game-streaming/SPEC.md)

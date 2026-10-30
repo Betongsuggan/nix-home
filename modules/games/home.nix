@@ -64,6 +64,7 @@ in
     ./options.nix
     ./mangohud.nix
     ./emulation.nix
+    ./wine-apps.nix
   ];
 
   config = mkIf cfg.enable {
