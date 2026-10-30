@@ -23,7 +23,7 @@
   # Steam-focused: Proton-GE in Steam's compat list, MangoHud only for games
   # launched with `mangohud`, no store launchers/Wine prefix managers, no
   # emulators. Discord comes with the module. Steam itself renders on the
-  # discrete GPU (programs.steam.package in system.nix); raise the platform
+  # discrete GPU (my.games.steam.env in system.nix); raise the platform
   # profile per game with `gamemoderun %command%` (my.power-management
   # .platformProfiles.gaming in system.nix).
   my.games = {
@@ -32,7 +32,7 @@
     tools.enable = false;
     mangohud.sessionWide = false;
     # Battle.net in ~/Games/battlenet, installed on first launch; its games
-    # render on the discrete GPU like Steam's (programs.steam.package)
+    # render on the discrete GPU like Steam's (my.games.steam.env)
     wineApps.battlenet = {
       enable = true;
       env.DRI_PRIME = "pci-0000_03_00_0";

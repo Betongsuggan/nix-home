@@ -176,9 +176,6 @@
   # (03:00.0) and PRIME-copy to the iGPU. PCI form because renderD* numbering
   # is not stable across boots; if the dGPU is absent Mesa falls back to the
   # iGPU. The Steam client itself keeps the dGPU awake while it is open, so
-  # close Steam on battery. The module's apply merges this with the
-  # compat-tool paths and extest.
-  programs.steam.package = pkgs.steam.override {
-    extraEnv.DRI_PRIME = "pci-0000_03_00_0";
-  };
+  # close Steam on battery.
+  my.games.steam.env.DRI_PRIME = "pci-0000_03_00_0";
 }
