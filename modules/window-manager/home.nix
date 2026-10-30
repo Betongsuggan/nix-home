@@ -638,6 +638,19 @@ in
         sway = "move container to output right";
         i3 = "move container to output right";
       };
+      # The whole workspace, e.g. a game from the PC monitor to the TV and back
+      "Mod+Alt+H" = {
+        hyprland = "movecurrentworkspacetomonitor, l";
+        niri.move-workspace-to-monitor-left = { };
+        sway = "move workspace to output left";
+        i3 = "move workspace to output left";
+      };
+      "Mod+Alt+L" = {
+        hyprland = "movecurrentworkspacetomonitor, r";
+        niri.move-workspace-to-monitor-right = { };
+        sway = "move workspace to output right";
+        i3 = "move workspace to output right";
+      };
       "Mod+Comma" = {
         hyprland = "layoutmsg, consume";
         niri.consume-window-into-column = { };

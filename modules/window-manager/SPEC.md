@@ -38,7 +38,7 @@ my.window-manager = {
 | autostartApps.\<name\>.workspace | nullOr int | null | Workspace number to launch the application in |
 | monitors | attrsOf submodule | {} | Outputs by connector name: `enable`, `mode` ({ width, height, refresh }; null = the highest resolution at its highest refresh rate on Hyprland (`highres`), the preferred mode elsewhere), `position` ({ x, y }; null = auto), `scale`, `transform` (wl_output 0-7: rotate 0/90/180/270° counter-clockwise, 4-7 flipped), `mirror` (the output to show the same picture as; Hyprland and i3, asserted elsewhere), `vrr`, and the Hyprland-only `hdr`, `bitdepth`, `sdrBrightness`, `sdrSaturation`. Unlisted outputs get the same mode choice at scale 1. Each backend renders this itself (Hyprland `monitor` rules, niri `outputs`, sway `output` lines, xrandr for i3). |
 | virtualMonitors | listOf str | [] | Virtual/headless monitor names to create at startup (e.g., for Sunshine streaming) |
-| workspaceBindings | listOf submodule | [] | Bind workspaces to specific monitors. Hyprland gives every output the next free workspace, so binding 1-9 to the main monitor and a dedicated default workspace to each other output keeps extra outputs (a TV, a virtual monitor) from taking 2, 3, ... |
+| workspaceBindings | listOf submodule | [] | Bind workspaces to specific monitors. Hyprland gives every output the next free workspace, so a `default` workspace per output (e.g. 1 on the main monitor, 11 on a TV) keeps extra outputs (a TV, a virtual monitor) from taking 2, 3, ... Binding a non-default workspace pins it: it is then always created on that monitor, even with another one focused |
 | workspaceBindings.*.workspace | int | (required) | Workspace number |
 | workspaceBindings.*.monitor | str | (required) | Monitor name (e.g., DP-1) |
 | workspaceBindings.*.default | bool | false | Make this the default workspace for the monitor |
@@ -61,7 +61,8 @@ One keymap, `my.window-manager.keybinds` (internal, defined in `home.nix`), rend
 | Mod+H/L, Mod+K/J | focus column left/right, workspace up/down |
 | Mod+Shift+H/L, Mod+Shift+K/J | move column left/right, to workspace up/down |
 | Mod+Ctrl+K/J, Mod+Ctrl+Shift+K/J | focus / move window within the column |
-| Mod+Ctrl+H/L, Mod+Ctrl+Shift+H/L | focus monitor, move to monitor |
+| Mod+Ctrl+H/L, Mod+Ctrl+Shift+H/L | focus monitor, move window/column to monitor |
+| Mod+Alt+H/L | move the current workspace to the monitor left/right (Hyprland `movecurrentworkspacetomonitor`, niri `move-workspace-to-monitor-*`, sway/i3 `move workspace to output`) |
 | Mod+Minus/Equal, Mod+Shift+Minus/Equal | column width, window height |
 | Mod+F / Mod+Shift+F | maximize column / fullscreen |
 | Mod+Comma/Period | consume into / expel from column |
@@ -96,6 +97,6 @@ Screenshots are saved to `~/Pictures/Screenshots` (`my.window-manager.screenshot
 - Enabling a window manager enables `my.launcher`, `my.controls` and `my.notifications` (mkDefault); those modules read the backend from `my.window-manager.backend` themselves (the launcher passes it to the launcher flake as `programs.launcher.windowManager`).
 - sway and i3 take their colors and fonts from stylix (`stylix.targets.sway` / `.i3`, and swaylock under sway).
 - `checks/backends.nix` evaluates every window manager, terminal, shell, notification and file-manager backend, plus the optional desktop modules, as flake checks (`nix flake check --no-build`), so unused alternatives cannot silently break.
-- Hyprland turns blur and shadows off on battery and back on on AC, through `my.battery-monitor` hooks (on hosts with the battery monitor).
 - Hyprland wakes the outputs itself on any key press or mouse move (`misc:key_press_enables_dpms`, `mouse_move_enables_dpms`). hypridle's on-resume `dpms on` alone is not enough: it is skipped while an app holds a dbus screensaver inhibit, and Steam sends one on controller input, which left a gamer session with the screens off for good (desktop, 2026-10-27).
+- Hyprland turns blur and shadows off on battery and back on on AC, through `my.battery-monitor` hooks (on hosts with the battery monitor).
 - niri starts xwayland-satellite itself when an X11 client connects (niri ≥ 25.08); the package is on PATH, nothing spawns it at login.
