@@ -9,6 +9,8 @@ The module has two halves: `home.nix`/`options.nix`/`emulation.nix`/`mangohud.ni
 - `programs.steam.protontricks` when any gaming user has `tools.enable`, wrapped with the same compat-tool paths
 - `programs.steam.extest`: Steam Input's desktop-mode keyboard/mouse emulation uses X11 XTest, which under Wayland only reaches XWayland clients; extest turns it into uinput events (plus `hardware.uinput` and the `uinput` group for gaming users). Needed for the Steam Controller on Hyprland/niri (steam-for-linux#13185)
 - nix-gaming's `programs.steam.platformOptimizations`: the SteamOS sysctls (`vm.max_map_count`, `kernel.split_lock_mitigate = 0`, `net.ipv4.tcp_fin_timeout = 5`, CFS bandwidth slice). Hosts and profiles must not set `vm.max_map_count` themselves; `boot.kernel.sysctl` rejects duplicate definitions
+- `programs.gamemode`: the daemon (renice through polkit, no group membership needed) for games launched with `gamemoderun %command%` or a launcher's GameMode toggle. Profiles and hosts only add `settings` (the gaming-station profile's `general`, desktop's `gpu` block). Laptops can hook the ACPI platform profile into it: `my.power-management.platformProfiles.gaming` (see `modules/power-management/SPEC.md`); the laptop profile keeps `gamemoded` off at login (D-Bus activated)
+- Hybrid-graphics hosts pick the render GPU themselves, on `programs.steam.package` (`pkgs.steam.override { extraEnv.DRI_PRIME = "pci-0000_03_00_0"; }`, see `hosts/bits`); the module's `apply` merges it with the compat-tool paths and extest
 
 Remote Play firewall ports are the host's choice: `programs.steam.remotePlay.openFirewall = true` in `hosts/<host>/system.nix`.
 
@@ -448,7 +450,7 @@ shortcut's `icon` vdf field). Behavior:
 
 - MangoHud is hidden by default and can be toggled with Shift_R+F9.
 - MangoHud is session-wide by default (`mangohud.sessionWide`), which the streamed Big Picture session needs for the controller toggle; with it off (private-laptop) only games launched with `mangohud` load it.
-- Base packages always installed: chiaki, discord, evtest, gamemode, lutris, steam, steam-run, sc-controller, vulkan-tools, mesa-demos.
+- Base packages always installed: chiaki, discord, evtest, gamemode, lutris, steam-run, sc-controller, vulkan-tools, mesa-demos, wine (staging, WoW64); `steam` comes from `programs.steam`. There is no knob below `tools.enable` yet, so a lean laptop (private-laptop, bits) still carries lutris and wine.
 - RetroArch uses the `retroarch-bare.wrapper` function for declarative configuration while preserving runtime changes.
 - Standalone emulators (PCSX2, Dolphin, PPSSPP) are for systems that benefit from dedicated emulators over RetroArch cores. (Duckstation was removed from nixpkgs 26.05 upstream; PSX is covered by RetroArch's beetle-psx-hw core.)
 - Switch emulation (`emulators.switch`) is pulled from `unstable` (ryubing carries a local source patch, `ryubing-sdl2-device-index.patch`, so it rebuilds from source). It ships helper scripts: `switch-refresh-keys` (copy keys from the BIOS share into the data dir), `switch-refresh-input` (install the Sunshine-pad SDL controller DB into the data dir), `switch-apply-input` (merge the verified Player 1 pad binding into `Config.json`, GUID-keyed and idempotent), and `switch-run-emulator` (canonical launch wrapper setting the SDL env vars and teeing stderr to `~/.local/state/switch-emulator/stderr.log`). Steam tiles are written by `emulation-apply-shortcuts` (see "Steam tiles for emulated systems"); `switch-apply-shortcuts` is a deprecated alias for it.

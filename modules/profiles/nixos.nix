@@ -78,7 +78,11 @@ in
             ]
             (_: {
               enable = false;
-            });
+            })
+          // {
+            # gamemoded is D-Bus activated by the first game that asks for it
+            gamemoded.wantedBy = mkIf config.programs.gamemode.enable (mkForce [ ]);
+          };
 
         services.libinput = {
           enable = true;
@@ -183,9 +187,8 @@ in
 
       powerManagement.cpuFreqGovernor = mkDefault "performance";
 
+      # gamemode itself comes with the games module (NixOS half)
       programs.gamemode = {
-        enable = true;
-        enableRenice = true;
         settings.general = {
           renice = mkDefault 10;
           softrealtime = mkDefault "auto";

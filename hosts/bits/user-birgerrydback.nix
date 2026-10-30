@@ -19,9 +19,19 @@
   # Firefox handles DRM streaming here; skip the second (Widevine) Chromium build
   my.chromium.widevine = false;
   my.firefox.enable = true;
-  # No games module on this machine, so Discord comes from here
-  my.communication.discord = true;
   my.media.enable = true;
+  # Steam-focused: Proton-GE in Steam's compat list, MangoHud only for games
+  # launched with `mangohud`, no store launchers/Wine prefix managers, no
+  # emulators. Discord comes with the module. Steam itself renders on the
+  # discrete GPU (programs.steam.package in system.nix); raise the platform
+  # profile per game with `gamemoderun %command%` (my.power-management
+  # .platformProfiles.gaming in system.nix).
+  my.games = {
+    enable = true;
+    protonGE.enable = true;
+    tools.enable = false;
+    mangohud.sessionWide = false;
+  };
   # Moonlight client for the desktop's Sunshine session (pair once via the
   # Sunshine web UI, see modules/game-streaming/SPEC.md)
   my.game-streaming.client = {

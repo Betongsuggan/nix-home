@@ -8,6 +8,40 @@ with lib;
 let
   cfg = config.my.power-management;
 
+  # gamemode start/end hook: raise the ACPI platform profile for the duration
+  # of a game. Runs as the user (gamemoded is a user daemon with a minimal
+  # PATH, hence coreutils in runtimeInputs); the udev rule below makes the
+  # legacy aggregate file group-writable for `video`, the group this repo
+  # already uses for user-writable laptop sysfs knobs (backlight). `end` only
+  # restores the saved profile if the file still holds the gaming one: TLP
+  # rewrites it on AC/battery changes and on resume, and that value must win.
+  gamemodePlatformProfile = pkgs.writeShellApplication {
+    name = "gamemode-platform-profile";
+    runtimeInputs = [ pkgs.coreutils ];
+    text = ''
+      profile=/sys/firmware/acpi/platform_profile
+      saved="''${XDG_RUNTIME_DIR:-/tmp}/gamemode-platform-profile"
+      gaming=${lib.escapeShellArg (toString cfg.platformProfiles.gaming)}
+      [ -w "$profile" ] || exit 0
+      case "''${1:-}" in
+        start)
+          cat "$profile" > "$saved"
+          echo "$gaming" > "$profile" || true
+          ;;
+        end)
+          if [ -r "$saved" ] && [ "$(cat "$profile")" = "$gaming" ]; then
+            cat "$saved" > "$profile" || true
+          fi
+          rm -f "$saved"
+          ;;
+        *)
+          echo "usage: gamemode-platform-profile start|end" >&2
+          exit 64
+          ;;
+      esac
+    '';
+  };
+
   # Samples the battery/AC sysfs nodes to a log that is fdatasync'd after every
   # write. Buffered writers (journald included) lose the final seconds on a hard
   # power cut, which is exactly the window that tells a failing battery pack
@@ -136,6 +170,18 @@ in
         description = "ACPI platform profile on battery";
         type = types.str;
         default = "low-power";
+      };
+
+      gaming = mkOption {
+        description = ''
+          ACPI platform profile while gamemode is active (games launched with
+          `gamemoderun %command%`, or a launcher's GameMode toggle), restored
+          when the game ends. Requires programs.gamemode (the games module
+          enables it). null leaves the profile to TLP.
+        '';
+        type = types.nullOr types.str;
+        default = null;
+        example = "performance";
       };
     };
 
@@ -279,6 +325,26 @@ in
           AMDGPU_ABM_LEVEL_ON_BAT = cfg.amdgpuAbmLevel.battery;
         })
       ];
+    };
+
+    assertions = [
+      {
+        assertion = cfg.platformProfiles.gaming != null -> config.programs.gamemode.enable;
+        message = "my.power-management.platformProfiles.gaming needs programs.gamemode (set my.games.enable for a user)";
+      }
+    ];
+
+    # The platform profile is written by the user's gamemode hook, so the
+    # legacy aggregate file (what TLP writes too) is group-writable for
+    # `video`, like the backlight in the laptop profile
+    services.udev.extraRules = mkIf (cfg.platformProfiles.gaming != null) ''
+      ACTION=="add", SUBSYSTEM=="platform-profile", RUN+="${pkgs.coreutils}/bin/chgrp video /sys/firmware/acpi/platform_profile"
+      ACTION=="add", SUBSYSTEM=="platform-profile", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/firmware/acpi/platform_profile"
+    '';
+
+    programs.gamemode.settings.custom = mkIf (cfg.platformProfiles.gaming != null) {
+      start = "${lib.getExe gamemodePlatformProfile} start";
+      end = "${lib.getExe gamemodePlatformProfile} end";
     };
 
     # Forensics for unexplained hard power-offs: a hard cut leaves no trace in

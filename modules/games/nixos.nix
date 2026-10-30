@@ -48,6 +48,12 @@ in
       extest.enable = true;
     };
 
+    # On-demand renice/ioprio for games launched with `gamemoderun` (or a
+    # launcher's GameMode toggle); renice goes through polkit, no group
+    # needed. Laptops hook the ACPI platform profile into it
+    # (my.power-management.platformProfiles.gaming)
+    programs.gamemode.enable = true;
+
     # extest opens /dev/uinput as the Steam user
     hardware.uinput.enable = true;
     users.users = lib.genAttrs gamers (_: {

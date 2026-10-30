@@ -18,9 +18,23 @@
     kernelParams = [
       "amd_pstate=active" # Modern AMD CPU frequency scaling
       # The BIOS (0.1.81) declares ASPM unsupported in the FADT, which leaves
-      # TLP's PCIE_ASPM_ON_BAT a no-op; force it so links can power down
+      # TLP's PCIE_ASPM_ON_BAT a no-op; force it so links can power down.
+      # Suspect for the discrete GPU's remaining probe failures (see
+      # initrd.kernelModules): drop it first if `amdgpu 0000:03:00.0` still
+      # fails discovery with amdgpu loaded from the initrd
       "pcie_aspm=force"
     ];
+
+    # Early KMS, for the discrete Navi 24 (03:00.0) rather than for the
+    # panel: loaded from stage 2 (udev coldplug, 20-35 s in, after the LUKS
+    # prompt) amdgpu lost the race against TLP, whose RUNTIME_PM_ON_*=auto
+    # applies to the still driverless dGPU and its root port 00:01.1; a
+    # driverless endpoint drops to D3cold with its bridge and the probe then
+    # reads all-ones ("failed to read discovery info from memory, vram size
+    # read: ffffffff"). In the initrd it probes at ~2 s, before any runtime-PM
+    # policy exists; amdgpu's own BOCO runtime PM powers it down afterwards.
+    # Diagnosed 2026-10-30 over six boots (3 failed, all without the dGPU).
+    initrd.kernelModules = [ "amdgpu" ];
 
     kernel.sysctl = {
       "vm.dirty_writeback_centisecs" = 1500;
@@ -116,6 +130,9 @@
   my.power-management = {
     cpuVendor = "amd";
     gpuVendor = "amd";
+    # Raise the firmware power budget only while a game runs (gamemode hook,
+    # `gamemoderun %command%`); AC stays on the default balanced profile
+    platformProfiles.gaming = "performance";
 
     # The AC caps and forensics logging that chased the hard power-offs are
     # retired: the telemetry they produced identified the cause (a pack that
@@ -153,4 +170,15 @@
   };
 
   services.xserver.desktopManager.runXdgAutostartIfNone = true;
+
+  # MUX-less hybrid graphics: Hyprland composites on the Rembrandt iGPU
+  # (67:00.0); Steam and every game it launches render on the Navi 24
+  # (03:00.0) and PRIME-copy to the iGPU. PCI form because renderD* numbering
+  # is not stable across boots; if the dGPU is absent Mesa falls back to the
+  # iGPU. The Steam client itself keeps the dGPU awake while it is open, so
+  # close Steam on battery. The module's apply merges this with the
+  # compat-tool paths and extest.
+  programs.steam.package = pkgs.steam.override {
+    extraEnv.DRI_PRIME = "pci-0000_03_00_0";
+  };
 }

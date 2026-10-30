@@ -40,6 +40,7 @@ my.power-management = {
 | powerModes.battery | str | "powersave" | Default CPU scaling governor on battery power |
 | platformProfiles.ac | str | "balanced" | ACPI platform profile on AC (AMD CPU only) |
 | platformProfiles.battery | str | "low-power" | ACPI platform profile on battery (AMD CPU only) |
+| platformProfiles.gaming | null or str | null | ACPI platform profile while gamemode is active (`gamemoderun %command%`, or a launcher's GameMode toggle), restored when the game ends; needs `programs.gamemode` (the games module enables it) |
 | amdgpuPerfLevel.ac | str | "auto" | amdgpu DPM performance level on AC (AMD GPU only) |
 | amdgpuPerfLevel.battery | str | "auto" | amdgpu DPM performance level on battery (AMD GPU only; `low` pins the lowest clocks) |
 | amdgpuAbmLevel.ac / .battery | int 0-4 | 0 / 3 | amdgpu Adaptive Backlight Management (lower backlight, contrast compensated); the panel is usually the largest consumer on battery |
@@ -52,6 +53,7 @@ my.power-management = {
 - Enables upower for power device monitoring.
 - Lid close behavior is gated on external displays, not power source: with an external monitor connected (logind "docked" state: docking station or more than one connected display) the lid is ignored; otherwise lid close suspends, on AC and battery alike. Inactivity suspend (hypridle) is unaffected. Hyprland handles locking and panel disable via lid switch binds.
 - AMD CPU: configures P-State energy policy and platform profile.
+- `platformProfiles.gaming` hooks gamemode's `custom.start`/`end` to `gamemode-platform-profile`, which runs as the user: `start` saves the current profile to `$XDG_RUNTIME_DIR/gamemode-platform-profile` and writes the gaming one to the legacy aggregate file `/sys/firmware/acpi/platform_profile` (what TLP writes too; it sets every registered handler); `end` restores the saved value only if the file still holds the gaming profile, because TLP rewrites it on AC/battery changes and resume and that value must win. A udev rule on the `platform-profile` subsystem makes the file group-writable for `video`, the group this repo already uses for user-writable laptop sysfs knobs (backlight), so no group memberships change. Only games started through gamemode get the profile; Steam needs `gamemoderun %command%` in the game's launch options.
 - Intel CPU: configures HWP energy policy.
 - AMD GPU: configures DPM state and performance level per power source.
 
