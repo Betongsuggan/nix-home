@@ -97,6 +97,16 @@ let
           default = false;
           description = "Run on Wine's Wayland driver (PROTON_ENABLE_WAYLAND) instead of XWayland";
         };
+        steam = mkOption {
+          type = types.bool;
+          default = true;
+          description = ''
+            Launch through a Steam shortcut (registered on first launch), so
+            Steam Input (the Steam Controller as a gamepad) and the overlay
+            cover the app and the games it starts. Off: the command runs the
+            app directly
+          '';
+        };
         tray = mkOption {
           type = types.bool;
           default = false;
@@ -148,10 +158,11 @@ let
       "NoTrayItemsDisplay"=dword:0000000${if app.tray then "0" else "1"}
     '';
 
+  # Runs the app; what the Steam shortcut points at
   launcher =
     name: app:
     pkgs.writeShellApplication {
-      inherit name;
+      name = "${name}-run";
       runtimeInputs = [
         pkgs.curl
         pkgs.jq
@@ -160,7 +171,9 @@ let
         export STEAM_COMPAT_DATA_PATH=${escapeShellArg app.prefix}
         # Proton insists on a Steam install path; nothing is used from it here
         export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
-        export SteamAppId=0 SteamGameId=${escapeShellArg name}
+        # Launched by Steam these are the shortcut's ids, which Proton and
+        # Steam Input key off; only default them for a direct run
+        export SteamAppId="''${SteamAppId:-0}" SteamGameId="''${SteamGameId:-${name}}"
         export UMU_ID=${escapeShellArg app.umuId}
         export WINEPREFIX="$STEAM_COMPAT_DATA_PATH/pfx"
         ${optionalString app.wayland "export PROTON_ENABLE_WAYLAND=1"}
@@ -196,6 +209,53 @@ let
       '';
     };
 
+  steamShortcut = pkgs.writers.writePython3 "steam-shortcut" {
+    libraries = [ pkgs.python3Packages.vdf ];
+    flakeIgnore = [ "E501" ];
+  } (builtins.readFile ./steam-shortcut.py);
+
+  # The command and desktop entry: start the app through its Steam shortcut,
+  # adding the shortcut first if Steam doesn't have it yet. The shortcut points
+  # at the profile path of <name>-run, which stays put across rebuilds
+  starter =
+    name: app:
+    let
+      run = "${config.home.profileDirectory}/bin/${name}-run";
+      shortcut = mode: "${steamShortcut} ${mode} ${escapeShellArg run} ${escapeShellArg app.displayName}";
+    in
+    pkgs.writeShellApplication {
+      inherit name;
+      runtimeInputs = [ pkgs.procps ];
+      text =
+        if !app.steam then
+          ''exec ${run} "$@"''
+        else
+          ''
+            status=0
+            id=$(${shortcut "check"}) || status=$?
+            # No Steam account on this machine yet: run it directly
+            [ "$status" -ne 2 ] || exec ${run} "$@"
+            if [ "$status" -ne 0 ]; then
+              # Steam rewrites shortcuts.vdf from memory on exit, so it has to
+              # be stopped while the shortcut is added (once per host)
+              if pgrep -x steam >/dev/null; then
+                steam -shutdown >/dev/null 2>&1 || true
+                for _ in $(seq 30); do pgrep -x steam >/dev/null || break; sleep 1; done
+              fi
+              id=$(${shortcut "add"})
+            fi
+            # A launch handed to a Steam that is still starting (shortcuts not
+            # loaded yet) hangs as pending until cancelled; start Steam first
+            # and send the launch once its UI process is up
+            if ! pgrep -x steam >/dev/null; then
+              setsid steam -silent >/dev/null 2>&1 &
+              for _ in $(seq 60); do pgrep -f steamwebhelper >/dev/null && break; sleep 1; done
+              sleep 5
+            fi
+            exec steam "steam://rungameid/$id"
+          '';
+    };
+
   enabled = filterAttrs (_: app: app.enable) cfg.wineApps;
 in
 {
@@ -219,7 +279,7 @@ in
   };
 
   config = mkIf (cfg.enable && enabled != { }) {
-    home.packages = mapAttrsToList launcher enabled;
+    home.packages = mapAttrsToList launcher enabled ++ mapAttrsToList starter enabled;
     # Wine's Wayland driver names windows after the exe. Hyprland stops frame
     # callbacks to hidden windows, so a game on another workspace blocks in
     # its vsync'd present until it's shown again; WoW gets disconnected after
