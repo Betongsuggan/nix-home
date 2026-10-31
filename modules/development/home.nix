@@ -15,6 +15,15 @@ in
   options.my.development = {
     enable = mkEnableOption "development tooling";
 
+    infra.enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Cloud tooling on PATH everywhere (LocalStack, AWS CLI/CDK, Terraform).
+        Off when the repos bring these in their own dev shells (direnv)
+      '';
+    };
+
     python.enable = mkEnableOption "Python toolchain";
     node.enable = mkEnableOption "Node.js toolchain";
     go.enable = mkEnableOption "Go toolchain";
@@ -30,15 +39,16 @@ in
       [
         # Github
         gh
-
-        # Infrastructure
+      ]
+      ++ optionals cfg.infra.enable [
         localstack
         awscli-local
         aws-cdk-local # top-level attr from overrides/aws-cdk.nix (was nodePackages.*)
         aws-cdk
         unstable.awscli2
         terraform
-
+      ]
+      ++ [
         # AI tools (opencode is configured via programs.opencode below)
         unstable.claude-code
       ]

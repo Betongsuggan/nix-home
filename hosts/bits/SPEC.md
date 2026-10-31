@@ -5,7 +5,7 @@ Work laptop for Birger Rydback at Bits. This is an AMD-based laptop running NixO
 ## Key Features
 
 - Hyprland compositor using the built-in scrolling layout configured to mimic niri's scrollable tiling (see `modules/window-manager/SPEC.md` for the niri-equivalent keybinds), with Vicinae launcher (wifi and bluetooth extensions; monitors through monitormenu)
-- Development tooling with direnv, git, and SSH agent
+- Development tooling: toolchains (Go, Node, Python, Kotlin) and cloud tools (LocalStack, AWS CLI/CDK, Terraform) come from each repository's own dev shell (`flake.nix` + `.envrc` with `use flake`, cached by nix-direnv; `~/Development/cloud` has one), not from the system: `my.development` keeps only gh, Claude Code and opencode (`infra.enable = false`, no language flags). The editor keeps its Go and TypeScript language servers (`my.editor.languages`); Kotlin is gone from the editor. Plus direnv, git and the SSH agent
 - Firefox browser (home-manager managed, `my.firefox.enable`) with Slack; Discord comes with the games module
 - Alacritty terminal with Bash shell and Starship prompt
 - Disk encryption enabled for security

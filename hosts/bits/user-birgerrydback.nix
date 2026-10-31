@@ -8,12 +8,17 @@
 {
   home.stateVersion = "24.05";
 
+  # Toolchains and cloud tools come from each repo's dev shell (`use flake`
+  # in .envrc, cached by nix-direnv); globally only gh and the AI tools.
+  # The editor keeps its Go and TypeScript language servers, which would
+  # otherwise follow the (now off) toolchain flags
   my.development = {
     enable = true;
-    python.enable = true;
-    node.enable = true;
-    go.enable = true;
-    kotlin.enable = true;
+    infra.enable = false;
+  };
+  my.editor.languages = {
+    go = true;
+    typescript = true;
   };
   my.direnv.enable = true;
   # Firefox handles DRM streaming here; skip the second (Widevine) Chromium build
