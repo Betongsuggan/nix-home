@@ -108,6 +108,8 @@ in
       # ranges out of DejaVu's coverage at scan time sends every app to Noto
       # Color Emoji for them
       configFile.emoji-not-dejavu = {
+        # Home Manager's configFile entries default to off
+        enable = true;
         priority = 45;
         text = ''
           <?xml version="1.0"?>
