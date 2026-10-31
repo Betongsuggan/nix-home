@@ -21,12 +21,13 @@ my.graphics = {
 | amd | bool | false | Enable AMD graphics support |
 | nvidia | bool | false | Enable NVIDIA graphics support |
 | intel.enable | bool | false | Enable Intel graphics support |
-| intel.generation | enum: "legacy" "modern" "arc" | "modern" | Intel GPU generation (see below) |
+| intel.generation | enum: "legacy" "modern" "arc" "xe" | "modern" | Intel GPU generation (see below) |
 
 Intel GPU generations:
 - `legacy` -- Pre-Broadwell (Sandy Bridge, Ivy Bridge, Haswell). Uses i965 VA-API driver.
 - `modern` -- Broadwell through Tiger Lake (2014-2020). Uses iHD VA-API driver.
-- `arc` -- Intel Arc discrete GPUs and Meteor Lake+ (2022+). Uses iHD with GuC/HuC firmware enabled.
+- `arc` -- Intel Arc discrete GPUs and Meteor Lake (2022+), on the i915 kernel driver. Uses iHD with GuC/HuC firmware enabled.
+- `xe` -- Lunar Lake, Panther Lake and later (Xe2/Xe3 graphics, e.g. the Arc B390 in the Framework Laptop 13 Pro). These run on the `xe` kernel driver, which i915 doesn't bind, so early KMS loads `xe` and no i915 parameters are set (`xe` uses GuC by default). Uses iHD.
 
 ## Notes
 
