@@ -51,6 +51,19 @@
     ];
   };
 
+  # Straight to the default entry; hold a key during boot for the menu
+  boot.loader.timeout = 0;
+
+  # A hung stop job (once a session scope with nvim: 90 s, killed at the
+  # default timeout) shouldn't hold a shutdown for long; 10 s for the system
+  # and the user manager
+  systemd.settings.Manager.DefaultTimeoutStopSec = "10s";
+  systemd.user.extraConfig = "DefaultTimeoutStopSec=10s";
+
+  # Option manuals are evaluated on every rebuild (~7 s of ~35); `man` for
+  # the installed tools stays
+  documentation.nixos.enable = false;
+
   hardware = {
     cpu.amd.updateMicrocode = true;
     i2c.enable = true;

@@ -7,6 +7,8 @@
 
 {
   home.stateVersion = "24.05";
+  # The Home Manager options manpage is rebuilt on every evaluation
+  manual.manpages.enable = false;
 
   # Toolchains and cloud tools come from each repo's dev shell (`use flake`
   # in .envrc, cached by nix-direnv); globally only gh and the AI tools.
