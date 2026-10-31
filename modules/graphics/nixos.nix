@@ -21,13 +21,15 @@ with lib;
           "legacy"
           "modern"
           "arc"
+          "xe"
         ];
         default = "modern";
         description = ''
           Intel GPU generation:
           - "legacy": Pre-Broadwell (Sandy Bridge, Ivy Bridge, Haswell) - uses i965 VA-API driver
           - "modern": Broadwell through Tiger Lake (2014-2020) - uses iHD VA-API driver
-          - "arc": Intel Arc discrete GPUs and Meteor Lake+ (2022+) - uses iHD with extra features
+          - "arc": Intel Arc discrete GPUs and Meteor Lake (2022+) on the i915 kernel driver - uses iHD with extra features
+          - "xe": Lunar Lake, Panther Lake and later (Xe2/Xe3), which the `xe` kernel driver drives instead of i915 - uses iHD
         '';
       };
     };
@@ -100,8 +102,11 @@ with lib;
     # Intel-specific configuration
     hardware.cpu.intel.updateMicrocode = mkIf config.my.graphics.intel.enable true;
 
-    # Early KMS for Intel (smoother boot, required for Plymouth)
-    boot.initrd.kernelModules = mkIf config.my.graphics.intel.enable [ "i915" ];
+    # Early KMS for Intel (smoother boot, required for Plymouth); Xe2/Xe3
+    # GPUs belong to the xe driver, which i915 doesn't bind
+    boot.initrd.kernelModules = mkIf config.my.graphics.intel.enable [
+      (if config.my.graphics.intel.generation == "xe" then "xe" else "i915")
+    ];
 
     # Intel Arc: Enable GuC/HuC firmware for better performance and features
     boot.kernelParams =

@@ -27,47 +27,10 @@
   my.chromium.widevine = false;
   my.firefox.enable = true;
   my.media.enable = true;
-  # Steam-focused: Proton-GE in Steam's compat list, MangoHud only for games
-  # launched with `mangohud`, no store launchers/Wine prefix managers, no
-  # emulators. Discord comes with the module. Steam itself renders on the
-  # discrete GPU (my.games.steam.env in system.nix); raise the platform
-  # profile per game with `gamemoderun %command%` (my.power-management
-  # .platformProfiles.gaming in system.nix).
-  my.games = {
-    enable = true;
-    protonGE.enable = true;
-    tools.enable = false;
-    mangohud.sessionWide = false;
-    # Battle.net in ~/Games/battlenet, installed on first launch; its games
-    # render on the discrete GPU like Steam's (my.games.steam.env)
-    wineApps.battlenet = {
-      enable = true;
-      env.DRI_PRIME = "pci-0000_03_00_0";
-    };
-  };
-  # Moonlight client for the desktop's Sunshine session (pair once via the
-  # Sunshine web UI, see modules/game-streaming/SPEC.md)
-  my.game-streaming.client = {
-    enable = true;
-    # The panel is 1920x1200@60: a 120 fps request makes Moonlight disable
-    # frame pacing ("target 60 Hz with 120 FPS stream")
-    resolution = {
-      width = 1920;
-      height = 1200;
-    };
-    fps = 60;
-  };
-  my.printing-3d = {
-    enable = true;
-    cad.enable = true;
-  };
+  # Gaming (Steam, Battle.net), the Moonlight client and 3D printing/CAD stay
+  # off on this machine for now; each is one block to bring back (see git
+  # history of this file before the Framework move)
   my.file-manager.networkShares.enable = true;
-  # Top-level folders of ~ that belong there (see modules/home-check)
-  my.home-check.allowed = [
-    "Games"
-    "emulation"
-    "roms"
-  ];
 
   my.notifications.enable = true;
   my.network-monitor.enable = true;
