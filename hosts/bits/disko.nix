@@ -33,7 +33,13 @@
             content = {
               type = "luks";
               name = "cryptroot";
-              settings.allowDiscards = true;
+              settings = {
+                allowDiscards = true;
+                # Unlock through the TPM (Secure Boot state, PCR 7) plus a
+                # PIN once a TPM2 token is enrolled (SPEC.md runbook); until
+                # then, and whenever the TPM refuses, the passphrase is asked
+                crypttabExtraOpts = [ "tpm2-device=auto" ];
+              };
               content = {
                 type = "lvm_pv";
                 vg = "vg";

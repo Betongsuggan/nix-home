@@ -8,7 +8,7 @@ Work laptop for Birger Rydback at Bits: a **Framework Laptop 13 Pro** (Intel Cor
 - Development tooling: toolchains (Go, Node, Python, Kotlin) and cloud tools (LocalStack, AWS CLI/CDK, Terraform) come from each repository's own dev shell (`flake.nix` + `.envrc` with `use flake`, cached by nix-direnv; `~/Development/cloud` has one), not from the system: `my.development` keeps only gh, Claude Code and opencode (`infra.enable = false`, no language flags). The editor keeps its Go and TypeScript language servers (`my.editor.languages`); Kotlin is gone from the editor. Plus direnv, git and the SSH agent
 - Firefox browser (home-manager managed, `my.firefox.enable`) with Slack
 - Alacritty terminal with Bash shell and Starship prompt
-- Disk: disko (`disko.nix`) on the internal NVMe: 1 GiB ESP, then one LUKS2 container (discard on) holding LVM with a 34 GiB swap LV (hibernation target, RAM + 2 GiB) and the ext4 root. zswap (zstd, 20 % of RAM) is the compressed cache in front of the swap LV
+- Disk: disko (`disko.nix`) on the internal NVMe: 1 GiB ESP, then one LUKS2 container (discard on; unlocked by TPM2 + PIN, the passphrase is the recovery key) holding LVM with a 34 GiB swap LV (hibernation target, RAM + 2 GiB) and the ext4 root. zswap (zstd, 20 % of RAM) is the compressed cache in front of the swap LV
 - Fingerprint reader (Framework's Goodix sensor, libfprint's built-in driver: `driver = "generic"`; confirm the USB id on the machine): fingerprint or password at the same prompt for login, sudo and polkit; hyprlock reads it natively
 - `my.profiles.laptop` (implies workstation): touchpad, backlight, TLP power management, battery notifications, audio, bluetooth, printing, firmware updates
 - Battery monitoring and power management (TLP and thermald for Intel, `cpuVendor`/`gpuVendor = "intel"`, see `modules/power-management/SPEC.md`)
@@ -33,9 +33,10 @@ Work laptop for Birger Rydback at Bits: a **Framework Laptop 13 Pro** (Intel Cor
 
 - Hardware: Intel Core Ultra X9 (Panther Lake) with microcode updates; graphics on the `xe` kernel driver (`my.graphics.intel.generation = "xe"`, early KMS loads `xe`), VA-API through iHD
 - Kernel: `linuxPackages_latest` (7.2 at the move): Panther Lake support and Xe3 fixes keep landing (Phoronix measured gains through 7.3), so this host tracks the newest kernel rather than an LTS
-- Boot: lanzaboote Secure Boot (`my.secure-boot`), signed UKIs on the 1 GiB ESP, 10 generations; keys in `/var/lib/sbctl`
+- Boot: lanzaboote Secure Boot (`my.secure-boot`), signed UKIs on the 1 GiB ESP, 10 generations; keys in `/var/lib/sbctl`; loader timeout 0 (hold a key during boot for the menu)
 - Hibernate: `boot.resumeDevice = /dev/vg/swap` (set by disko); works with lanzaboote as long as kernel lockdown stays off (NixOS default). `suspend-then-hibernate` on lid close is not configured yet
 - **Waydroid is off.** It was only used for offline Netflix downloads. On the previous laptop it crashed Hyprland (Android surfaces crossing from the discrete GPU to the iGPU); this machine has one GPU, so that reason is gone, but nothing has been tested. Waydroid pulls in `psi=1` on the kernel command line, so toggling it needs a reboot
+- Lean boot/shutdown/rebuild (2026-10-31, card 148). Baseline: 39.7 s cold boot (firmware 13.7, loader 1.8, kernel 0.8, initrd 18.2 incl. typing the LUKS passphrase and the Argon2 KDF, userspace 5.2); shutdown ~5 s with outliers of 11 s and 92 s (a session scope with nvim hung until the 90 s default stop timeout, user services restart-looping meanwhile); evaluation ~35 s cold. Now: stop timeout 10 s for the system and user managers (`DefaultTimeoutStopSec`), loader timeout 0, NixOS manual and the Home Manager options manpage off (~7 s less evaluation; `man` for tools stays). Login stays getty + fingerprint (no autologin: work laptop)
 - Firmware updates via fwupd (deferred to on-demand start)
 - Timezone: Europe/Stockholm
 - **Closure**: re-measure after the first switch on the Framework (`nix path-info -S /run/current-system`; `nix path-info -rs /run/current-system | sort -k2 -n | tail` lists the big ones). The old laptop was at 25.63 GiB on 2026-10-31 with gaming, Moonlight and CAD still on.
@@ -48,11 +49,13 @@ The Framework takes over the old laptop's identity (host SSH key and Tailscale s
 
 1. On the old laptop: copy `/etc/ssh/ssh_host_ed25519_key{,.pub}` and `/var/lib/tailscale/` somewhere safe (USB stick, or over the tailnet). Leave the old laptop as it is until the new one works.
 2. Framework firmware: Secure Boot in setup mode (clear the factory keys).
-3. Boot the NixOS installer, get the repo (this branch until the PR is merged), check the disk name with `lsblk` against `disko.nix`, then format: `sudo nix run github:nix-community/disko -- --mode destroy,format,mount --flake .#bits` (asks for the new LUKS passphrase).
+3. Boot the NixOS installer, get the repo (this branch until the PR is merged), check the disk name with `lsblk` against `disko.nix`, then format: `sudo nix run github:nix-community/disko -- --mode destroy,format,mount --flake .#bits` (asks for the new LUKS passphrase: make it long and random and store it in Bitwarden; after step 7 it is only the recovery key).
 4. Put the host key into `/mnt/etc/ssh/` (mode 600 for the private key) and the Tailscale state into `/mnt/var/lib/tailscale/`.
 5. `nixos-generate-config --no-filesystems --show-hardware-config` and compare `boot.initrd.availableKernelModules` with `system.nix`.
 6. `sudo nixos-install --flake .#bits`, reboot (Secure Boot still off). Then `sudo sbctl create-keys && sudo sbctl enroll-keys --microsoft`, `nixos-rebuild switch`, and turn Secure Boot on in the firmware; `sbctl status` and `bootctl status` confirm it.
-7. Restore `/home/birgerrydback` from the old laptop over the tailnet (`rsync -aHAX`); `~/Games` can stay behind while gaming is off.
-8. Re-enroll fingerprints (`fprintd-enroll`).
-9. Check: `ssh controller`, `tailscale status` (same IP), `ls /run/secrets`, `vulkaninfo --summary` (ANV on the B390), `systemctl hibernate` + resume, `cat /sys/module/zswap/parameters/enabled`, suspend/resume on battery.
-10. Merge the PR and move its Deck card to Done; the old laptop can be wiped.
+7. With Secure Boot on, enrol the TPM unlock: `sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 --tpm2-with-pin=yes /dev/disk/by-partlabel/disk-main-luks` (choose the PIN). `disko.nix` already sets `tpm2-device=auto` in crypttab, so the next boot asks for the PIN; the TPM releases the key only for this Secure Boot state and locks out after repeated wrong PINs. `sudo systemd-cryptenroll /dev/disk/by-partlabel/disk-main-luks` should list a `password` and a `tpm2` slot. If the TPM ever refuses (Secure Boot keys changed, firmware update that changes PCR 7), the passphrase prompt appears; then wipe and re-enrol the TPM slot: `--wipe-slot=tpm2` with the same command.
+8. Restore `/home/birgerrydback` from the old laptop over the tailnet (`rsync -aHAX`); `~/Games` can stay behind while gaming is off.
+9. Re-enroll fingerprints (`fprintd-enroll`).
+10. Firmware boot options: disable network (PXE) boot and any boot device you don't use, so POST is short.
+11. Check: `ssh controller`, `tailscale status` (same IP), `ls /run/secrets`, `vulkaninfo --summary` (ANV on the B390), `systemctl hibernate` + resume, `cat /sys/module/zswap/parameters/enabled`, suspend/resume on battery, and `systemd-analyze` against the old laptop's 39.7 s (firmware 13.7, loader 1.8, kernel 0.8, initrd 18.2, userspace 5.2).
+12. Merge the PR and move its Deck card to Done; the old laptop can be wiped.
