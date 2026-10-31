@@ -7,7 +7,13 @@
 }:
 
 {
-  imports = [ ./disko.nix ];
+  imports = [
+    ./disko.nix
+    # Framework's quirks for the 13 Pro (their NixOS guide asks for it): EC
+    # kernel module and framework-tool (charge limit, LEDs), ambient light
+    # sensor, NVMe idle power, Ethernet card autosuspend
+    inputs.nixos-hardware.nixosModules.framework-intel-core-ultra-series3
+  ];
 
   system.stateVersion = "24.05";
   boot = {
@@ -42,6 +48,10 @@
       "sd_mod"
     ];
   };
+
+  # zswap already compresses in front of the swap LV; the laptop profile's
+  # zram would compress the same pages a second time
+  zramSwap.enable = false;
 
   # Straight to the default entry; hold a key during boot for the menu
   boot.loader.timeout = 0;
@@ -85,6 +95,12 @@
   my.graphics.intel = {
     enable = true;
     generation = "xe";
+  };
+  # The nixos-hardware module defaults to i915 in the initrd and both VA-API
+  # drivers plus intel-ocl; Panther Lake runs on xe with iHD only
+  hardware.intelgpu = {
+    driver = "xe";
+    vaapiDriver = "intel-media-driver";
   };
   networking.nameservers = [ "1.1.1.1" ];
   # LocalStack API Gateway endpoint used by local development

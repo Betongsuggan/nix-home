@@ -624,6 +624,26 @@
         "url": "ssh://git@controller.ts.rydback.net/var/lib/git/nix-vault.git"
       }
     },
+    "nixos-hardware": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793355509,
+        "narHash": "sha256-/Zs18x+IW4LuVH0rKxra0WPRgsk0DQsi0Bwkf8sOC5c=",
+        "owner": "NixOS",
+        "repo": "nixos-hardware",
+        "rev": "04c6b94fa104bc23650983a4513aea196794d321",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixos-hardware",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1785828668,
@@ -857,6 +877,7 @@
         "niri": "niri",
         "nix-gaming": "nix-gaming",
         "nix-vault": "nix-vault",
+        "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-kernel": "nixpkgs-kernel",
         "nixpkgs-unstable": "nixpkgs-unstable",

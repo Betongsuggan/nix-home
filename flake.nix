@@ -80,6 +80,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Framework (and other) hardware quirks; bits imports the Framework 13 Pro
+    # module, as Framework's NixOS guide asks
+    nixos-hardware = {
+      url = "github:NixOS/nixos-hardware";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     terranix = {
       url = "github:terranix/terranix";
       inputs.nixpkgs.follows = "nixpkgs";
