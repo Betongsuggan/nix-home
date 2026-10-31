@@ -60,6 +60,9 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [
       (pkgs.nvim-config.extend {
+        # nixvim's man pages for its own options were half of the editor's
+        # evaluation (8 s -> 4 s on bits), on every rebuild
+        enableMan = false;
         languages = lib.recursiveUpdate (lib.mapAttrs (_: enable: { inherit enable; }) cfg.languages) {
           nix.nixd.options = lib.optionalAttrs (cfg.languages.nix && cfg.flakePath != null) {
             nixos = "${flake}.nixosConfigurations.${host}.options";
