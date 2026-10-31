@@ -102,6 +102,32 @@ in
         "Symbols Nerd Font Mono"
         "Noto Color Emoji"
       ];
+      # DejaVu Sans carries black-and-white copies of the emoji blocks (😂
+      # and the other emoticons), and it is the fallback for any font
+      # missing them (the terminal's Hasklig, GTK's sans-serif). Taking those
+      # ranges out of DejaVu's coverage at scan time sends every app to Noto
+      # Color Emoji for them
+      configFile.emoji-not-dejavu = {
+        priority = 45;
+        text = ''
+          <?xml version="1.0"?>
+          <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+          <fontconfig>
+            <match target="scan">
+              <test name="family" compare="contains"><string>DejaVu</string></test>
+              <edit name="charset" mode="assign">
+                <minus>
+                  <name>charset</name>
+                  <charset>
+                    <range><int>0x1F300</int><int>0x1F6FF</int></range>
+                    <range><int>0x1F900</int><int>0x1FAFF</int></range>
+                  </charset>
+                </minus>
+              </edit>
+            </match>
+          </fontconfig>
+        '';
+      };
     };
 
     home.packages = with pkgs; [
