@@ -30,3 +30,4 @@ my.editor = {
 - Colors: the Neovim colorscheme of `my.theming.scheme` (gruvbox.nvim, kanagawa.nvim), so the editor matches the desktop with the scheme's own hand-tuned highlighting; catppuccin when theming is off.
 - With Nix enabled, nixd gets `nixosConfigurations.<host>.options` and the Home Manager user options from `flakePath` (evaluated by nixd on demand, as the user, so the checkout must be able to fetch its inputs, e.g. nix-vault over the tailnet).
 - Update the editor with `nix flake update nvim`. Its own options (`languages.*`, `theme.base16`, `languages.nix.server`) are documented in the nvim repository's README.
+- `enableMan = false`: nixvim's man pages for its own options (`man nixvim`) are not built. They were half of the editor's evaluation (8 s → 4 s), paid on every rebuild of every host with the editor (2026-10-31)
