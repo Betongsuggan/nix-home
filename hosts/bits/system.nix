@@ -144,10 +144,8 @@
   networking.firewall = {
     allowedTCPPorts = [
       8080
-      53317
       3010
     ];
-    allowedUDPPorts = [ 53317 ];
   };
 
   my.webcam = {

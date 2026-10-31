@@ -18,10 +18,10 @@ with lib;
       XDG_DATA_HOME = "$HOME/.local/share";
     };
 
-    # btop's view plus GPU: on AMD/Intel bottom attributes GPU load per
-    # process from each process's DRM fdinfo (gpu% = engine time, gmem% =
-    # VRAM) and shows GPU memory and temperatures in the widgets. btop stays;
-    # it has no per-process GPU attribution.
+    # The one process monitor (htop and btop went): on AMD/Intel bottom
+    # attributes GPU load per process from each process's DRM fdinfo (gpu% =
+    # engine time, gmem% = VRAM) and shows GPU memory and temperatures in the
+    # widgets.
     programs.bottom = {
       enable = true;
       settings = {
@@ -49,12 +49,10 @@ with lib;
     # CLI tools wanted on every machine, headless ones included
     home.packages = with pkgs; [
       dconf
-      btop
       coreutils
       pciutils
       exfat
       gnumake
-      htop
       jq
       lf
       lm_sensors

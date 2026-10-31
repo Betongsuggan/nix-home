@@ -34,13 +34,12 @@ with lib;
         createDirectories = mkDefault true;
       };
 
+      # Kept small: mpv (media), nvim (text) and `nix run` cover the rest.
+      # zathura over Okular, which pulled in the KDE libraries (1.8 GiB vs
+      # 0.5 GiB closure)
       home.packages = with pkgs; [
-        gedit
-        gimp
-        gparted
         imv
-        kdePackages.okular
-        vlc
+        zathura
       ];
 
       my = {

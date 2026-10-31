@@ -28,7 +28,6 @@ in
     home.packages =
       with pkgs;
       [
-        unstable.android-tools
         # Github
         gh
 
@@ -39,7 +38,6 @@ in
         aws-cdk
         unstable.awscli2
         terraform
-        d2
 
         # AI tools (opencode is configured via programs.opencode below)
         unstable.claude-code

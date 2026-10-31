@@ -23,7 +23,7 @@ Hardware specifics (GPU vendor, CPU vendor, disks, kernel modules) stay in the h
 ## Home Manager (`home.nix`)
 
 - Every user: `my.{general,git,shell,starship,terminal,theming}` enabled; the git identity comes from `lib.accounts`.
-- `my.profiles.desktop` (turned on by the NixOS `workstation` profile): `my.{chromium,communication,file-manager,launcher,window-manager}` enabled, plus the desktop apps gimp, gedit, gparted, imv, okular and vlc (wine comes with `my.games`), and the standard XDG folders (`xdg.userDirs`: Desktop, Documents, Downloads, Music, Pictures, Videos, Templates, Public), written to `user-dirs.dirs` and created, so browsers, Slack and file dialogs all save to the same `~/Downloads` etc.
+- `my.profiles.desktop` (turned on by the NixOS `workstation` profile): `my.{chromium,communication,file-manager,launcher,window-manager}` enabled, plus two desktop apps, imv (images) and zathura (PDF; replaced Okular, whose KDE libraries made it a 1.8 GiB closure against 0.5 GiB). VLC, gedit, gparted and GIMP were dropped on 2026-10-31: mpv (`my.media`) and nvim cover playback and text, and the rest is a `nix run` away; a user who wants one adds it in their user file (wine comes with `my.games`), and the standard XDG folders (`xdg.userDirs`: Desktop, Documents, Downloads, Music, Pictures, Videos, Templates, Public), written to `user-dirs.dirs` and created, so browsers, Slack and file dialogs all save to the same `~/Downloads` etc.
 
 ## Notes
 

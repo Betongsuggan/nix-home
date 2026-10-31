@@ -28,7 +28,7 @@ my.development = {
 
 ## Notes
 
-- Baseline (installed whenever `enable = true`): `gh`, `localstack`, `awscli-local`, `aws-cdk-local`, `aws-cdk`, `awscli2`, `terraform`, `d2`, `claude-code`, `opencode`.
+- Baseline (installed whenever `enable = true`): `gh`, `localstack`, `awscli-local`, `aws-cdk-local`, `aws-cdk`, `awscli2`, `terraform`, `claude-code`, `opencode`. `d2` (it pulled in Playwright's three browsers, 0.9 GiB) and `android-tools` were dropped on 2026-10-31; use `nix run nixpkgs#d2` / `nix shell nixpkgs#android-tools` when needed.
 - **opencode** (`programs.opencode`, from unstable) replaces aider, which has had no release since 2025. Its `opencode.json` declares one provider, `ollama`, pointing at `https://llm.rydback.net/v1` (the tailnet-only HTTPS vhost on controller that fronts the wake-proxy and wakes the AI host on demand), with `qwen2.5-coder:14b` as default model and `gpt-oss:20b` as the alternative. opencode needs each model listed by name, so keep that list in step with `my.ai-server.models` on desktop. The `ollama` CLI is intentionally not installed — its `engine` binary collides with `mesa-demos` pulled in by the `games` module.
 - Per language:
   - **python**: `python3`.
