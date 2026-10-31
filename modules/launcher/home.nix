@@ -6,6 +6,7 @@
 {
   config,
   lib,
+  pkgs,
   inputs,
   ...
 }:
@@ -26,6 +27,37 @@ let
     symbols = "symbols";
     emoji = "symbols";
     clipboard = "clipboard";
+  };
+
+  # vicinae's emoji picker only copies (no paste action, no setting for one),
+  # so the symbols menu waits for the pick to land in the clipboard and types
+  # it into the focused window. Only a new, short, single-line value counts,
+  # so cancelling and copying something else later never pastes it
+  pasteSymbols = pkgs.writeShellApplication {
+    name = "launcher-symbols-paste";
+    runtimeInputs = [
+      pkgs.wl-clipboard
+      pkgs.wtype
+    ];
+    text = ''
+      before=$(wl-paste --no-newline 2>/dev/null || true)
+      ${launcher.menus.symbols}
+      now=$before
+      for _ in $(seq 300); do
+        sleep 0.1
+        now=$(wl-paste --no-newline 2>/dev/null || true)
+        [ "$now" = "$before" ] || break
+      done
+      case $now in
+        *$'\n'*) exit 0 ;;
+      esac
+      if [ "$now" = "$before" ] || [ "''${#now}" -gt 16 ]; then
+        exit 0
+      fi
+      # Let the launcher close so the target window has focus again
+      sleep 0.2
+      wtype -- "$now"
+    '';
   };
 
   # A menu as a function (callers pass `{ }`), or null when the flake has none
@@ -123,7 +155,13 @@ in
           mode ? "applications",
           ...
         }:
-        launcher.menus.${showModes.${mode} or "applications"};
+        let
+          menu = showModes.${mode} or "applications";
+        in
+        if menu == "symbols" && launcher.backend == "vicinae" then
+          getExe pasteSymbols
+        else
+          launcher.menus.${menu};
       wifi = menu "wifi";
       bluetooth = menu "bluetooth";
       audioOutput = menu "audioOutput";
