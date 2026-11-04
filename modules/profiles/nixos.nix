@@ -107,100 +107,129 @@ in
       }
     ))
 
-    (mkIf cfg.gaming-station.enable {
-      my.profiles.workstation.enable = mkDefault true;
+    (mkIf cfg.gaming-station.enable (
+      {
+        my.profiles.workstation.enable = mkDefault true;
 
-      # Admins can drive the virtual input devices (remappers, streaming)
-      users.users =
-        genAttrs config.my.common.admins (_: {
-          extraGroups = [
-            "uinput"
-            "input"
+        # One idle suspend for the host, from logind: 30 minutes after every
+        # session is idle (the window manager reports the hint) and nothing
+        # holds an idle inhibitor (a gamepad in use, my.controller.keepAwake;
+        # a running stream). SSH and the backup's SFTP sessions are never idle,
+        # so a woken restic target stays up for the whole run.
+        services.logind.settings.Login = {
+          IdleAction = mkDefault "suspend";
+          IdleActionSec = mkDefault "30min";
+        };
+
+        # Admins can drive the virtual input devices (remappers, streaming)
+        users.users =
+          genAttrs config.my.common.admins (_: {
+            extraGroups = [
+              "uinput"
+              "input"
+            ];
+          })
+          // {
+            # The couch session: an unprivileged `gamer` logged in on tty1 at boot
+            # (the account itself comes from lib.accounts)
+            gamer.extraGroups = [
+              "networkmanager"
+              "video"
+              "audio"
+              "input"
+              "uinput"
+              "gamemode"
+            ];
+          };
+        my.autologin = {
+          enable = true;
+          user = "gamer";
+          method = "getty";
+          tty = "tty1";
+        };
+
+        my.secure-boot.enable = mkDefault true;
+        my.audio.lowLatency = mkDefault true;
+        my.bluetooth.wake = {
+          enable = mkDefault true;
+          allowedDevices = [
+            "D0:BC:C1:41:80:04" # DualSense Wireless Controller
           ];
-        })
-        // {
-          # The couch session: an unprivileged `gamer` logged in on tty1 at boot
-          # (the account itself comes from lib.accounts)
-          gamer.extraGroups = [
-            "networkmanager"
-            "video"
-            "audio"
-            "input"
-            "uinput"
-            "gamemode"
+        };
+
+        # Off-site/on-site copy of controller's backups
+        my.restic-target = {
+          enable = mkDefault true;
+          sources.controller.sshKey = inputs.self.lib.hosts.controller.users.restic.ssh.id_ed25519;
+        };
+
+        nixpkgs.config.permittedInsecurePackages = [ "freeimage-3.18.0-unstable-2024-04-18" ];
+
+        boot = {
+          # Zen kernel optimized for desktop/gaming performance on Ryzen CPUs
+          kernelPackages = mkDefault pkgs.linuxPackages_zen;
+          supportedFilesystems = [ "ntfs" ];
+          kernelParams = [
+            "preempt=full"
+            "threadirqs"
+            "transparent_hugepage=madvise"
+            "mitigations=off"
+            "amd_pstate=active" # Modern AMD P-State driver
+            "split_lock_detect=off" # Gaming performance
+            "tsc=reliable"
+            "clocksource=tsc"
+            "nowatchdog"
+            "nmi_watchdog=0"
           ];
+          kernel.sysctl = {
+            "vm.swappiness" = 10;
+            # vm.max_map_count: nix-gaming's platformOptimizations (games module)
+            "vm.vfs_cache_pressure" = 50;
+            "vm.dirty_ratio" = 20;
+            "vm.dirty_background_ratio" = 5;
+          };
         };
-      my.autologin = {
-        enable = true;
-        user = "gamer";
-        method = "getty";
-        tty = "tty1";
-      };
 
-      my.secure-boot.enable = mkDefault true;
-      my.audio.lowLatency = mkDefault true;
-      my.bluetooth.wake = {
-        enable = mkDefault true;
-        allowedDevices = [
-          "D0:BC:C1:41:80:04" # DualSense Wireless Controller
+        zramSwap = {
+          enable = mkDefault true;
+          algorithm = mkDefault "zstd";
+          memoryPercent = mkDefault 50;
+        };
+
+        powerManagement.cpuFreqGovernor = mkDefault "performance";
+
+        # gamemode itself comes with the games module (NixOS half)
+        programs.gamemode = {
+          settings.general = {
+            renice = mkDefault 10;
+            softrealtime = mkDefault "auto";
+            ioprio = mkDefault 0;
+            inhibit_screensaver = mkDefault 1;
+          };
+        };
+        environment.systemPackages = with pkgs; [
+          gamemode
+          mangohud
+          ryzenadj # these are Ryzen machines
         ];
-      };
-
-      # Off-site/on-site copy of controller's backups
-      my.restic-target = {
-        enable = mkDefault true;
-        sources.controller.sshKey = inputs.self.lib.hosts.controller.users.restic.ssh.id_ed25519;
-      };
-
-      nixpkgs.config.permittedInsecurePackages = [ "freeimage-3.18.0-unstable-2024-04-18" ];
-
-      boot = {
-        # Zen kernel optimized for desktop/gaming performance on Ryzen CPUs
-        kernelPackages = mkDefault pkgs.linuxPackages_zen;
-        supportedFilesystems = [ "ntfs" ];
-        kernelParams = [
-          "preempt=full"
-          "threadirqs"
-          "transparent_hugepage=madvise"
-          "mitigations=off"
-          "amd_pstate=active" # Modern AMD P-State driver
-          "split_lock_detect=off" # Gaming performance
-          "tsc=reliable"
-          "clocksource=tsc"
-          "nowatchdog"
-          "nmi_watchdog=0"
+      }
+      // optionalAttrs (options ? home-manager) {
+        home-manager.sharedModules = [
+          (
+            { config, ... }:
+            {
+              # logind's IdleAction above is the only suspend: the compositor
+              # does not see gamepad input, so its own would cut a
+              # controller-only game or stream short
+              my.window-manager.idle.suspendAfter = mkDefault null;
+              # Nor does it power the gamer's screens off: a gamepad could not
+              # bring them back (only a key or the mouse can). They stay on
+              # until the host suspends.
+              my.window-manager.idle.screenOffAfter = mkIf (config.home.username == "gamer") (mkDefault null);
+            }
+          )
         ];
-        kernel.sysctl = {
-          "vm.swappiness" = 10;
-          # vm.max_map_count: nix-gaming's platformOptimizations (games module)
-          "vm.vfs_cache_pressure" = 50;
-          "vm.dirty_ratio" = 20;
-          "vm.dirty_background_ratio" = 5;
-        };
-      };
-
-      zramSwap = {
-        enable = mkDefault true;
-        algorithm = mkDefault "zstd";
-        memoryPercent = mkDefault 50;
-      };
-
-      powerManagement.cpuFreqGovernor = mkDefault "performance";
-
-      # gamemode itself comes with the games module (NixOS half)
-      programs.gamemode = {
-        settings.general = {
-          renice = mkDefault 10;
-          softrealtime = mkDefault "auto";
-          ioprio = mkDefault 0;
-          inhibit_screensaver = mkDefault 1;
-        };
-      };
-      environment.systemPackages = with pkgs; [
-        gamemode
-        mangohud
-        ryzenadj # these are Ryzen machines
-      ];
-    })
+      }
+    ))
   ];
 }

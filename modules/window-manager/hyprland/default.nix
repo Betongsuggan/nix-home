@@ -9,6 +9,18 @@ with lib;
 let
   wmLib = import ../lib.nix { inherit lib; };
 
+  # `session-idle-hint true|false`: logind sees a Wayland session as idle only
+  # when told (SetIdleHint); there is no tty activity to go by. hypridle runs
+  # as a user service, outside the session, so the session is the user's
+  # display session.
+  idleHint = pkgs.writeShellScript "session-idle-hint" ''
+    busctl=${pkgs.systemd}/bin/busctl
+    session=$($busctl get-property org.freedesktop.login1 /org/freedesktop/login1/user/self \
+      org.freedesktop.login1.User Display | ${pkgs.gawk}/bin/awk '{ gsub(/"/, "", $3); print $3 }')
+    [ -n "$session" ] && [ "$session" != / ] || exit 0
+    exec $busctl call org.freedesktop.login1 "$session" org.freedesktop.login1.Session SetIdleHint b "$1"
+  '';
+
   # my.window-manager.monitors in Hyprland's `monitor = name,mode,pos,scale,...`
   # syntax, plus a catch-all rule for unlisted outputs
   monitorRule =
@@ -293,6 +305,15 @@ in
             timeout = config.my.window-manager.idle.dimAfter;
             on-timeout = "${pkgs.brightnessctl}/bin/brightnessctl -s set 10";
             on-resume = "${pkgs.brightnessctl}/bin/brightnessctl -r";
+          }
+          # The session's idle hint, for logind's IdleAction (suspendAfter =
+          # null). Like every listener it honours inhibits, which hypridle
+          # applies to on-resume too: input while an app inhibits leaves the
+          # hint set until the next idle cycle.
+          {
+            timeout = config.my.window-manager.idle.dimAfter;
+            on-timeout = "${idleHint} true";
+            on-resume = "${idleHint} false";
           }
         ]
         ++ (

@@ -26,12 +26,6 @@ let
 in
 {
   my.window-manager = {
-    # One idle suspend for the host: logind's IdleAction (system.nix, 30 min).
-    # A second one from the compositor (15 min) would cut a gamepad-only
-    # stream short, since gamepad input doesn't reach it; a running stream
-    # also holds a sleep inhibitor (game-streaming).
-    idle.suspendAfter = null;
-
     monitors = {
       DP-2 = hdr // {
         mode = {

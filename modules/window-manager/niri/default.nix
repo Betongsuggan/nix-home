@@ -68,6 +68,13 @@ in
     services.swayidle = {
       enable = true;
       systemdTargets = [ "graphical-session.target" ];
+      # The session's idle hint, for logind's IdleAction (suspendAfter = null):
+      # logind sees a Wayland session as idle only when told
+      extraArgs = [
+        "-w"
+        "idlehint"
+        (toString config.my.window-manager.idle.dimAfter)
+      ];
       timeouts = [
         {
           timeout = config.my.window-manager.idle.dimAfter;

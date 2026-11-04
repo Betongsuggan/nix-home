@@ -112,6 +112,28 @@ with lib;
       };
     };
 
+    keepAwake = {
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Hold a logind idle inhibitor while a gamepad is in use. The
+          compositor never sees gamepad input, so without it the session
+          reads as idle mid-game and logind's IdleAction suspends the host.
+        '';
+      };
+
+      holdSeconds = mkOption {
+        type = types.ints.positive;
+        default = 1800;
+        description = ''
+          How long the inhibitor outlives the last gamepad input. The session
+          may have been idle for longer than IdleActionSec by then, so logind
+          acts as soon as it is released: this is the gamepad's idle timeout,
+          the same 30 minutes as the gaming-station profile's IdleActionSec.
+        '';
+      };
+    };
   };
 
   config = mkIf config.my.controller.enable {
@@ -452,6 +474,98 @@ with lib;
         Install = {
           WantedBy = [ "default.target" ];
         };
+      }
+    );
+
+    # Gamepad input keeps the host awake: every joystick (a `jsN` handler,
+    # which leaves out the DualSense's motion sensors) is read without a grab,
+    # and a button press or axis event holds `systemd-inhibit --what=idle`
+    # until holdSeconds pass without one. Rescans every 5 s for hotplugged pads.
+    systemd.user.services.gamepad-keep-awake = mkIf config.my.controller.keepAwake.enable (
+      let
+        script = pkgs.writeText "gamepad-keep-awake.py" ''
+          import os
+          import re
+          import select
+          import struct
+          import subprocess
+          import time
+
+          HOLD_SECONDS = ${toString config.my.controller.keepAwake.holdSeconds}
+          INHIBIT = [
+              "${pkgs.systemd}/bin/systemd-inhibit", "--what=idle", "--mode=block",
+              "--who=gamepad-keep-awake", "--why=A gamepad is in use",
+              "${pkgs.coreutils}/bin/sleep", "infinity",
+          ]
+          EVENT_FORMAT = "llHHi"
+          EVENT_SIZE = struct.calcsize(EVENT_FORMAT)
+          EV_KEY, EV_ABS = 1, 3
+
+
+          def joysticks():
+              try:
+                  blocks = open("/proc/bus/input/devices").read().split("\n\n")
+              except OSError:
+                  return set()
+              found = set()
+              for block in blocks:
+                  handlers = re.search(r"Handlers=(.*)", block)
+                  if handlers and re.search(r"\bjs\d+", handlers.group(1)):
+                      event = re.search(r"\bevent(\d+)", handlers.group(1))
+                      if event:
+                          found.add("/dev/input/event" + event.group(1))
+              return found
+
+
+          fds = {}
+          inhibitor = None
+          last_input = None
+          next_scan = 0.0
+          while True:
+              if time.monotonic() >= next_scan:
+                  next_scan = time.monotonic() + 5
+                  present = joysticks()
+                  for dev in set(fds) - present:
+                      os.close(fds.pop(dev))
+                  for dev in present - set(fds):
+                      try:
+                          fds[dev] = os.open(dev, os.O_RDONLY | os.O_NONBLOCK)
+                      except OSError:
+                          pass
+
+              if fds:
+                  ready = select.select(list(fds.values()), [], [], 5)[0]
+              else:
+                  time.sleep(5)
+                  ready = []
+              for fd in ready:
+                  try:
+                      data = os.read(fd, EVENT_SIZE * 64)
+                  except OSError:
+                      next_scan = 0  # unplugged: dropped on the next scan
+                      continue
+                  for i in range(0, len(data) - EVENT_SIZE + 1, EVENT_SIZE):
+                      _, _, etype, _, value = struct.unpack_from(EVENT_FORMAT, data, i)
+                      if (etype == EV_KEY and value == 1) or etype == EV_ABS:
+                          last_input = time.monotonic()
+
+              active = last_input is not None and time.monotonic() - last_input < HOLD_SECONDS
+              if active and inhibitor is None:
+                  inhibitor = subprocess.Popen(INHIBIT)
+              elif not active and inhibitor is not None:
+                  inhibitor.terminate()
+                  inhibitor.wait()
+                  inhibitor = None
+        '';
+      in
+      {
+        Unit.Description = "Hold a logind idle inhibitor while a gamepad is in use";
+        Service = {
+          ExecStart = "${pkgs.python3}/bin/python3 ${script}";
+          Restart = "always";
+          RestartSec = "5s";
+        };
+        Install.WantedBy = [ "default.target" ];
       }
     );
   };

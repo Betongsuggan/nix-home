@@ -44,7 +44,7 @@ my.window-manager = {
 | workspaceBindings.*.default | bool | false | Make this the default workspace for the monitor |
 | composeKey | str | "ralt" | Keyboard key to use as the compose key for special characters |
 | touchOutput | nullOr str | null | Output name to map touchscreen input to (e.g., "eDP-1") |
-| idle.dimAfter / lockAfter / screenOffAfter / suspendAfter | int (s); screenOffAfter, suspendAfter nullOr int | 240 / 300 / 330 / 900 | Idle timeouts, shared by hypridle (Hyprland) and swayidle (niri); null screenOffAfter keeps the outputs on, null suspendAfter leaves suspend to the host |
+| idle.dimAfter / lockAfter / screenOffAfter / suspendAfter | int (s); screenOffAfter, suspendAfter nullOr int | 240 / 300 / 330 / 900 | Idle timeouts, shared by hypridle (Hyprland) and swayidle (niri); null screenOffAfter keeps the outputs on, null suspendAfter leaves suspend to the host (logind's IdleAction, which needs the idle hint below) |
 
 ## Session services
 
@@ -97,6 +97,7 @@ Screenshots are saved to `~/Pictures/Screenshots` (`my.window-manager.screenshot
 - Enabling a window manager enables `my.launcher`, `my.controls` and `my.notifications` (mkDefault); those modules read the backend from `my.window-manager.backend` themselves (the launcher passes it to the launcher flake as `programs.launcher.windowManager`).
 - sway and i3 take their colors and fonts from stylix (`stylix.targets.sway` / `.i3`, and swaylock under sway).
 - `checks/backends.nix` evaluates every window manager, terminal, shell, notification and file-manager backend, plus the optional desktop modules, as flake checks (`nix flake check --no-build`), so unused alternatives cannot silently break.
+- The session reports its idle hint to logind after `idle.dimAfter` (hypridle: a `session-idle-hint` listener on the user's display session; niri: swayidle's `idlehint`), and clears it on input. logind treats a Wayland session as idle only when told, so without it `IdleAction` never fires: desktop ran with `IdleAction=suspend` for days without one suspend (found 2026-11-04). The listener honours inhibits like every hypridle listener, and hypridle skips on-resume as well while a dbus inhibit is held: input during an inhibit leaves the hint set until the next idle cycle.
 - Hyprland wakes the outputs itself on any key press or mouse move (`misc:key_press_enables_dpms`, `mouse_move_enables_dpms`). hypridle's on-resume `dpms on` alone is not enough: it is skipped while an app holds a dbus screensaver inhibit, and Steam sends one on controller input, which left a gamer session with the screens off for good (desktop, 2026-10-27).
 - Hyprland turns blur and shadows off on battery and back on on AC, through `my.battery-monitor` hooks (on hosts with the battery monitor).
 - niri starts xwayland-satellite itself when an X11 client connects (niri ≥ 25.08); the package is on PATH, nothing spawns it at login.

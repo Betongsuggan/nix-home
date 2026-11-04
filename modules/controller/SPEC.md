@@ -30,6 +30,8 @@ my.controller = {
 | steamOverlay.buttons | list of enum | ["l3" "r3"] | Chord (held together) that opens the overlay (a, b, x, y, l1, r1, l2, r2, select, start, guide, l3, r3) |
 | steamOverlay.holdSeconds | float | 0.2 | How long the chord must be held before firing |
 | steamOverlay.padName | string | "Sunshine X-Box One (virtual) pad" | Device name (in `/proc/bus/input/devices`) to watch |
+| keepAwake.enable | bool | true | Hold a logind idle inhibitor while a gamepad is in use |
+| keepAwake.holdSeconds | positive int | 1800 | How long the inhibitor outlives the last gamepad input |
 
 ## Notes
 
@@ -44,6 +46,12 @@ my.controller = {
 - Over Moonlight there is no keyboard, and **Steam Input is disabled for the Sunshine virtual pad** (so Ryujinx can read it — see `modules/games/SPEC.md`). With Steam Input off, the pad's Guide button can't reach Steam, so the overlay is opened by **injecting its keyboard shortcut (Shift+Tab)** instead — this works regardless of Steam Input, and Switch shortcuts already set `AllowOverlay=1`.
 - Runs as a systemd user service (`controller-steam-overlay`) that watches the Sunshine pad's evdev node (hotplug-aware, read-only — no `EVIOCGRAB`) and, on the chord (default **L3+R3**), runs `hyprctl dispatch sendshortcut "SHIFT,TAB,activewindow"`. Same listener pattern as `switch-quit-listener`; the two coexist (distinct chords, no device grab).
 - If the overlay doesn't respond to the compositor-injected shortcut, fall back to `wtype -M shift -k Tab -m shift` (set `WAYLAND_DISPLAY`), or `ydotool` (uinput-level, indistinguishable from real hardware) as a last resort.
+
+### Gamepad keeps the host awake (`keepAwake`)
+
+- The compositor never sees gamepad input, so a controller-only game or stream reads as an idle session and logind's `IdleAction` (gaming-station profile) would suspend mid-game. `gamepad-keep-awake` (user service) reads every joystick's evdev node (devices with a `jsN` handler, which leaves out the DualSense's motion sensors; read-only, no grab, rescanned every 5 s) and holds `systemd-inhibit --what=idle` until `holdSeconds` pass without a button press or axis event.
+- The session has usually been idle longer than `IdleActionSec` by the time the inhibitor goes, so logind suspends as soon as it is released: `holdSeconds` is the gamepad's idle timeout, matched to the profile's 30 minutes.
+- Check it: `systemd-inhibit --list` shows `gamepad-keep-awake` while a pad is in use.
 
 ## Troubleshooting
 

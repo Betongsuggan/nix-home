@@ -237,17 +237,10 @@
     codeInterpreter.enable = true;
   };
 
-  # Auto-suspend after 30 min of session-idle. Logind tracks input events on
-  # the gamer compositor session and ssh logins, so streaming / gaming /
-  # remote shells correctly keep the host awake. The gap is in-flight AI
-  # requests (Ollama / ComfyUI / Speaches are system services that logind
-  # doesn't track); in the rare case a long generation is mid-stream when
-  # the idle timer fires, the wake-proxy on controller makes recovery a
-  # client retry away.
-  services.logind.settings.Login = {
-    IdleAction = "suspend";
-    IdleActionSec = "30min";
-  };
+  # Auto-suspend after 30 idle minutes comes from the gaming-station profile.
+  # logind does not track the AI services (Ollama, ComfyUI, Speaches): a long
+  # generation can be cut by the suspend, and controller's wake-proxy makes
+  # recovery a client retry away.
 
   my.docker.enable = true;
   # Steam Remote Play ports (TCP 27036-27037, UDP 27031-27036)
