@@ -1,5 +1,6 @@
-# input-remapper mappings for the Logitech G13 (keypad + thumbstick, which
-# input-remapper groups as one device "Logitech G13 Thumbstick")
+# input-remapper mappings for the Logitech G13 (my.input-remapper.g13): the
+# keypad and thumbstick, which input-remapper groups as one device "Logitech
+# G13 Thumbstick", so every mapping goes in one preset
 let
   # Thumbstick axis past `threshold` percent (negative = below center)
   stick = code: threshold: output: {

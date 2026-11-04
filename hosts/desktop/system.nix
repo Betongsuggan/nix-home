@@ -256,16 +256,7 @@
   };
   my.amd-overdrive.enable = true;
 
-  # The G13 keypad + thumbstick are grouped by input-remapper under a single
-  # device group named "Logitech G13 Thumbstick". All mappings (G-keys and
-  # thumbstick) go in one preset.
-  my.input-remapper = {
-    enable = true;
-    devices."Logitech G13 Thumbstick" = {
-      preset = "g13";
-      mappings = import ./g13.nix;
-    };
-  };
+  my.input-remapper.g13.enable = true;
 
   system.stateVersion = "25.05";
 }

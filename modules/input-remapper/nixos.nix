@@ -169,37 +169,54 @@ in
         Use evtest or input-remapper-gtk to discover device names.
       '';
     };
+
+    g13.enable = mkEnableOption ''
+      the operator's Logitech G13 preset (./g13.nix): G-keys, the thumbstick
+      as movement keys and the M1 wall-climb macro; implies enable
+    '';
   };
 
-  config = mkIf cfg.enable {
-    services.input-remapper = {
-      enable = true;
-      enableUdevRules = true;
-      # nixpkgs wants the daemon by graphical.target, which hosts that autologin
-      # on a getty and start the compositor from the shell (no display manager)
-      # never reach, so it never started and every udev hotplug autoload failed
-      # with "Daemon missing" (exit 5). It is a root uinput injector with no
-      # graphical-session dependency.
-      serviceWantedBy = [ "multi-user.target" ];
-    };
+  config = mkMerge [
+    (mkIf cfg.g13.enable {
+      my.input-remapper = {
+        enable = true;
+        devices."Logitech G13 Thumbstick" = {
+          preset = "g13";
+          mappings = import ./g13.nix;
+        };
+      };
+    })
 
-    environment.etc."input-remapper-2".source = configDir;
+    (mkIf cfg.enable {
+      services.input-remapper = {
+        enable = true;
+        enableUdevRules = true;
+        # nixpkgs wants the daemon by graphical.target, which hosts that autologin
+        # on a getty and start the compositor from the shell (no display manager)
+        # never reach, so it never started and every udev hotplug autoload failed
+        # with "Daemon missing" (exit 5). It is a root uinput injector with no
+        # graphical-session dependency.
+        serviceWantedBy = [ "multi-user.target" ];
+      };
 
-    # The root daemon loads no config on its own under systemd: it waits for a
-    # *user session* to call set_config_dir over D-Bus (upstream does this from
-    # an XDG autostart entry) and skips root callers such as the udev hook, so
-    # files under /root/.config were never read. This is a system-wide setup,
-    # so tell the daemon about the /etc tree directly at startup (Type=dbus
-    # guarantees the name is owned before ExecStartPost). From then on the
-    # udev rule's autoload_single covers hotplug; the autoload here covers
-    # devices attached at boot.
-    systemd.services.input-remapper = {
-      postStart = ''
-        ${dbusCall} set_config_dir s "${etcConfigDir}"
-        ${dbusCall} autoload
-      '';
-      # Re-inject on rebuild when mappings change (the unit itself is stable)
-      restartTriggers = [ configDir ];
-    };
-  };
+      environment.etc."input-remapper-2".source = configDir;
+
+      # The root daemon loads no config on its own under systemd: it waits for a
+      # *user session* to call set_config_dir over D-Bus (upstream does this from
+      # an XDG autostart entry) and skips root callers such as the udev hook, so
+      # files under /root/.config were never read. This is a system-wide setup,
+      # so tell the daemon about the /etc tree directly at startup (Type=dbus
+      # guarantees the name is owned before ExecStartPost). From then on the
+      # udev rule's autoload_single covers hotplug; the autoload here covers
+      # devices attached at boot.
+      systemd.services.input-remapper = {
+        postStart = ''
+          ${dbusCall} set_config_dir s "${etcConfigDir}"
+          ${dbusCall} autoload
+        '';
+        # Re-inject on rebuild when mappings change (the unit itself is stable)
+        restartTriggers = [ configDir ];
+      };
+    })
+  ];
 }

@@ -126,6 +126,8 @@
   my.network-manager.wakeOnWlan = true;
   networking.interfaces."eth0".wakeOnLan.enable = true;
 
+  my.input-remapper.g13.enable = true;
+
   networking.firewall = {
     allowedTCPPorts = [
       8080

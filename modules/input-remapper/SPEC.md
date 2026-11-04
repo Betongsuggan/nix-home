@@ -19,12 +19,21 @@ my.input-remapper = {
 };
 ```
 
+For the Logitech G13 there is a ready preset, shared by every host that has one:
+
+```nix
+my.input-remapper.g13.enable = true;  # implies enable
+```
+
+It maps the device input-remapper calls "Logitech G13 Thumbstick" (the keypad and the thumbstick in one group) with `g13.nix`: the thumbstick types `w`/`a`/`r`/`s` (the Colemak letters on the physical WASD keys, which is how the games' movement binds were recorded), G1-G22 type digits, Tab, left Shift and function keys, M1 is a WoW wall-climb macro (jump, then forward 10 ms later, held 50 ms, a 30 ms gap, repeated while M1 is held), and the two thumbstick buttons give left Ctrl and Esc. The symbols are literal only because Hyprland reads input-remapper's virtual keyboard with a US layout (see Notes). Used on `desktop` and `island-stationary`.
+
 ## Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Enable input-remapper declarative configuration |
 | devices | attrsOf deviceType | {} | Devices to configure, keyed by evdev device name |
+| g13.enable | bool | false | The shared Logitech G13 preset (`g13.nix`); implies `enable` |
 
 ### Device options
 
