@@ -61,8 +61,5 @@
 
   # Project tracker: `deck` talks to Nextcloud Deck on controller as the
   # `birger` Nextcloud account (app password from the vault). See modules/deck/SPEC.md
-  my.deck = {
-    enable = true;
-    user = "birger";
-  };
+  my.deck.enable = true;
 }

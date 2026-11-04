@@ -31,6 +31,7 @@
     };
   };
   my.sops.enable = true;
+  my.deck.enable = true;
 
   my.window-manager = {
     autostartApps = {

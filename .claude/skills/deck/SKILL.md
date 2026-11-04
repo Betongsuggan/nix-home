@@ -5,7 +5,7 @@ description: Read and update the project tracker (Nextcloud Deck on controller) 
 
 # Project tracker: Nextcloud Deck
 
-The tracker is Nextcloud Deck at cloud.rydback.net. The `deck` command (modules/deck) is installed for the admin user on bits and desktop and authenticates on its own. Run `deck --help` for the verbs; `modules/deck/SPEC.md` has the details.
+The tracker is Nextcloud Deck at cloud.rydback.net. The `deck` command (modules/deck) is installed for the admin user on bits, desktop and island-stationary and authenticates on its own. Run `deck --help` for the verbs; `modules/deck/SPEC.md` has the details.
 
 ## Boards and what goes where
 

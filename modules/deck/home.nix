@@ -294,8 +294,9 @@ in
 
     user = mkOption {
       type = types.str;
-      default = config.home.username;
-      defaultText = literalExpression "config.home.username";
+      # The fleet has one Nextcloud account: the operator's
+      default = inputs.self.lib.operator.login;
+      defaultText = literalExpression "lib.operator.login";
       description = ''
         Nextcloud login the app password belongs to. Also selects the vault
         key: `accounts/nextcloud/<user>/deck-token` in `secrets/common.yaml`.

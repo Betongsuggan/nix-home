@@ -6,10 +6,7 @@ The `deck` command: Nextcloud Deck (the project tracker on controller, see `modu
 
 ```nix
 # hosts/<host>/user-<name>.nix
-my.deck = {
-  enable = true;
-  user = "birger";   # the Nextcloud login; defaults to the Home Manager username
-};
+my.deck.enable = true;   # user: the Nextcloud login, defaults to lib.operator.login
 ```
 
 That is the whole wiring. The NixOS half sees the user and decrypts `accounts/nextcloud/<user>/deck-token` from `secrets/common.yaml` to `/run/secrets/deck-token-<hm-user>` (owner that user, 0400). The host must have `my.sops` on.
@@ -49,7 +46,7 @@ deck move 42 Active && deck comment 42 "Started 2026-10-22: module skeleton push
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | enable | bool | false | Install `deck` for this user |
-| user | str | `config.home.username` | Nextcloud login the app password belongs to; selects the vault key |
+| user | str | `lib.operator.login` | Nextcloud login the app password belongs to; selects the vault key |
 | url | str | `https://cloud.<lib.domain>` | Nextcloud base URL |
 | tokenFile | str | `/run/secrets/deck-token-<hm-user>` | File with the app password, read at runtime. A string, not a path, so it never enters the store |
 | package | package (read-only) | the script | For other modules |
