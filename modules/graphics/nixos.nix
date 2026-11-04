@@ -113,7 +113,10 @@ with lib;
     # NVIDIA-specific configuration
     hardware.nvidia = mkIf config.my.graphics.nvidia {
       modesetting.enable = true;
-      powerManagement.enable = false;
+      # nvidia-suspend/-resume/-hibernate and video memory saved to disk:
+      # without them a resume from suspend hangs (island-stationary,
+      # 2026-11-04), and every workstation suspends when idle
+      powerManagement.enable = mkDefault true;
       open = false;
       nvidiaSettings = true;
       package = mkDefault config.boot.kernelPackages.nvidiaPackages.stable;
