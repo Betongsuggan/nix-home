@@ -28,6 +28,8 @@ let
   # nixosConfiguration for each (lib/mk-host.nix). Optional fields default to:
   #   system = "x86_64-linux";
   #   hostName = <attribute name>;  (also the host's tailnet name)
+  # A host that can be woken has `wol = { macs = [ ... ]; relay = <host>; }`:
+  # the relay sits on its LAN and sends a magic packet to every MAC listed.
   hostEntries = {
     bits = {
       hostName = "bits-nixos";
@@ -75,9 +77,14 @@ let
     island-stationary = {
       tailnetIp = "100.64.0.4";
       addresses = [ "island-stationary" ];
-      # The wired NIC (eth0). Woken from island-pi: `ssh island-pi wake-island-stationary`
+      # Woken from island-pi: `ssh island-pi wake-island-stationary`. Both
+      # NICs get the packet: the host runs on Wi-Fi (wake-on-WLAN from
+      # suspend, my.network-manager.wakeOnWlan); eth0 wakes it when cabled
       wol = {
-        mac = "e0:d5:5e:2b:06:d6";
+        macs = [
+          "bc:a8:a6:7a:3d:52" # wlan0, Intel Wireless 3165
+          "e0:d5:5e:2b:06:d6" # eth0
+        ];
         relay = "island-pi";
       };
       ssh.host = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFadvK7ZRpD4sA+aHutNTz9c6AP8KWWjcSfbKRDmI+Ow root@island-stationary";
@@ -118,7 +125,7 @@ let
       # Woken from controller: `ssh controller wake-desktop` (also by
       # controller's wake-proxy for the AI services)
       wol = {
-        mac = "34:1b:22:84:72:67";
+        macs = [ "34:1b:22:84:72:67" ];
         relay = "controller";
       };
       # The smart plug between the wall and this host (devices.<name>):
@@ -356,10 +363,7 @@ rec {
       let
         relay = h.wol.relay or null;
         plug = plugCommand (h.plug or null);
-        canWake =
-          relay != null
-          && (h.wol.mac or "00:00:00:00:00:00") != "00:00:00:00:00:00"
-          && (relay == self || target relay != null);
+        canWake = relay != null && (h.wol.macs or [ ]) != [ ] && (relay == self || target relay != null);
       in
       {
         address = tailnet.fqdn name;

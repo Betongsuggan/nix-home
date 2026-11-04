@@ -24,11 +24,11 @@ let
       port = "/dev/tcp/${target.sftpHost}/22";
       wake =
         if relay == config.my.common.host then
-          "${pkgs.wakeonlan}/bin/wakeonlan ${wol.mac}"
+          "${pkgs.wakeonlan}/bin/wakeonlan ${concatStringsSep " " wol.macs}"
         else
           "${pkgs.openssh}/bin/ssh -i ${cfg.sshKeyFile} -o BatchMode=yes -o StrictHostKeyChecking=yes wake@${selfLib.tailnet.fqdn relay} wake-${name}";
     in
-    if wol != null && relay != null && wol.mac != "00:00:00:00:00:00" then
+    if wol != null && relay != null && (wol.macs or [ ]) != [ ] then
       ''
         up() { ${pkgs.coreutils}/bin/timeout 3 ${pkgs.bash}/bin/bash -c "< ${port}" 2>/dev/null; }
         up && exit 0

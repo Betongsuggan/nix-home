@@ -59,7 +59,7 @@ Everything below runs on `controller` unless noted. ✅ live and declarative · 
 | Mail — `@rydback.net` receiving | ❌ Nothing receives for the domain. `hosts/mail` is a parked scaffold. Identity anchors in the repo (`operator.email`, git email, ACME, the Kanidm person) are still Gmail. | `hosts/mail/SPEC.md`, `lib/default.nix` |
 | Backup copy 1 (source) | ✅ restic daily 01:45: `/var/lib/{vaultwarden,headscale,emulation,nextcloud}`, both git bare repos, `/var/backups/{postgresql,kanidm}` | `modules/restic-backup` |
 | Backup copy 2 — `desktop`, on-site | ✅ Chrooted SFTP, WoL-woken by controller before each run | `modules/profiles` (gaming-station), `modules/restic-target` |
-| Backup copy 3 — `island-stationary`, off-site | 🟡 Target wired (2026-10-01) but controller cannot wake it (its relay is `island-pi`); runs fail while it sleeps. Becomes reliable with backlog item 1 (wake through the relay). | `hosts/island-stationary/SPEC.md` |
+| Backup copy 3 — `island-stationary`, off-site | 🔴 Woken through `island-pi` since 2026-10-22, but no run has succeeded: the packet went to the uncabled eth0 only. Wake-on-WLAN added 2026-11-04; reliable once a suspended-host wake test and a nightly run pass. | `hosts/island-stationary/SPEC.md` |
 | `restic check` / restore test | ❌ Never run | backlog 1 |
 | Disaster-recovery runbook | ✅ `docs/disaster-recovery.md` (2026-10-18), not yet exercised | — |
 | Search — SearXNG | 🟡 Exists only as Open WebUI's loopback sidecar on `desktop` | `modules/ai-server` |
@@ -102,6 +102,10 @@ Rules: a new external dependency gets a card the day it appears; a card leaves *
 ---
 
 ## 6. Progress log
+
+### 2026-11-04 — the off-site copy never woke
+
+- Every nightly run to island-stationary since 2026-10-22 failed with "did not wake up" (restore test too): island-pi sent the magic packet to eth0, which has no cable at the summer house. The registry now lists every wakeable NIC (`wol.macs`), island-stationary's Wi-Fi card arms wake-on-WLAN, and logind (not hypridle) does its idle suspend, so a woken run is no longer cut off after 15 minutes. Pending: a wake test against the suspended host, then a green nightly run.
 
 ### 2026-10-22 — De-Google becomes De-cloud
 

@@ -180,7 +180,8 @@ in
         magic-wormhole
       ]
       ++ mapAttrsToList (
-        name: h: writeShellScriptBin "wake-${name}" "exec ${wakeonlan}/bin/wakeonlan ${h.wol.mac}"
+        name: h:
+        writeShellScriptBin "wake-${name}" "exec ${wakeonlan}/bin/wakeonlan ${concatStringsSep " " h.wol.macs}"
       ) relayed;
 
     # System-side dconf/gsettings plumbing, required for the home-manager

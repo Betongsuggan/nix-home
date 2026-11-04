@@ -143,6 +143,11 @@ in
       opening a captive portal's login page when a network needs one, and
       switching tailnet DNS off until the login is done
     '';
+
+    wakeOnWlan = mkEnableOption ''
+      waking from suspend on a magic packet over Wi-Fi (WoWLAN), for hosts
+      woken by a relay (registry `wol`) that have no cable
+    '';
   };
 
   config = mkMerge [
@@ -214,6 +219,16 @@ in
           exec ${pkgs.xdg-utils}/bin/xdg-open "$url"
         '';
       };
+    })
+
+    # Armed on the phy as soon as it appears rather than just before sleep:
+    # NetworkManager decides at PrepareForSleep whether to take a device down,
+    # and keeps a Wi-Fi link up across suspend only if WoWLAN is already on
+    # (the driver then stays associated, and enables the card's PCI wakeup)
+    (mkIf (cfg.enable && cfg.wakeOnWlan) {
+      services.udev.extraRules = ''
+        ACTION=="add", SUBSYSTEM=="ieee80211", RUN+="${pkgs.iw}/bin/iw phy %k wowlan enable magic-packet"
+      '';
     })
   ];
 }

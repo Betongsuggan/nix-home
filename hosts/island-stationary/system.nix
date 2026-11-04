@@ -118,9 +118,12 @@
     mode = "onboarded";
   };
 
-  # Wake-on-LAN from island-pi (the always-on relay at the summer place):
-  # `ssh island-pi wake-island-stationary`. The MAC lives in lib/default.nix;
-  # WoL must also be enabled in BIOS ("Power On By PCI-E" / ErP off).
+  # Woken from island-pi (the always-on relay at the summer place):
+  # `ssh island-pi wake-island-stationary` sends a magic packet to both MACs
+  # in lib/default.nix. The host runs on Wi-Fi, so wake-on-WLAN is what
+  # works today (from suspend only); eth0 wakes it when cabled, which needs
+  # WoL in BIOS ("Power On By PCI-E" / ErP off).
+  my.network-manager.wakeOnWlan = true;
   networking.interfaces."eth0".wakeOnLan.enable = true;
 
   networking.firewall = {

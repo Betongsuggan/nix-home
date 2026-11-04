@@ -255,7 +255,7 @@ in
 
   my.wake-proxy = {
     enable = true;
-    targetMac = inputs.self.lib.hosts.desktop.wol.mac;
+    targetMac = builtins.head inputs.self.lib.hosts.desktop.wol.macs;
     targetHost = inputs.self.lib.hosts.desktop.tailnetIp;
     ports = [
       11434 # Ollama API
