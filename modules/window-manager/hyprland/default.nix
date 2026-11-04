@@ -585,9 +585,10 @@ in
         };
 
         input = {
-          kb_layout = "us";
-          kb_variant = "colemak";
-          kb_options = "caps:escape,compose:${config.my.window-manager.composeKey}";
+          # Colemak first, QWERTY second; both Shift keys together toggle.
+          kb_layout = "us,us";
+          kb_variant = "colemak,";
+          kb_options = "caps:escape,compose:${config.my.window-manager.composeKey},grp:shifts_toggle";
           resolve_binds_by_sym = 1;
 
           touchpad = {

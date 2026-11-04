@@ -698,15 +698,11 @@ in
       ## Compositor-specific extras
       "Mod+R".hyprland = "layoutmsg, colresize +conf"; # cycle preset widths
       "Mod+Ctrl+C".hyprland = "layoutmsg, center";
-      "Mod+Shift+B" = {
-        hyprland = "exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant"; # QWERTY
-        niri.spawn = [
-          "sh"
-          "-c"
-          "niri msg action switch-keyboard-layout"
-        ];
-      };
-      "Mod+Shift+C".hyprland = "exec, ${pkgs.hyprland}/bin/hyprctl keyword input:kb_variant colemak";
+      "Mod+Shift+B".niri.spawn = [
+        "sh"
+        "-c"
+        "niri msg action switch-keyboard-layout"
+      ];
       "Mod+Tab".niri.toggle-overview = { };
       "Mod+Shift+E".niri.quit.skip-confirmation = false;
     }
