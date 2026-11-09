@@ -27,7 +27,7 @@ in
         cd site
         python3 build.py            # pages + addon/ForsakenDuo/Data.lua
         mkdir -p "$out/addon"
-        cp index.html level-*.html loot.html rotation.html guide.css guide.js rotation.js "$out"/
+        cp index.html level-*.html loot.html rotation.html guide.css guide.js rotation.js damage.js "$out"/
         cp -r maps "$out"/maps
         cp -r icons "$out"/icons
         # the in-game addon, zipped so it unpacks straight into Interface/AddOns
