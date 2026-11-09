@@ -29,6 +29,7 @@ in
         mkdir -p "$out/addon"
         cp index.html level-*.html loot.html rotation.html guide.css guide.js rotation.js "$out"/
         cp -r maps "$out"/maps
+        cp -r icons "$out"/icons
         # the in-game addon, zipped so it unpacks straight into Interface/AddOns
         (cd addon && zip -qr "$out/addon/ForsakenDuo.zip" ForsakenDuo -x '*.luacheckrc')
       '';
