@@ -1131,11 +1131,11 @@
     "wow-guide": {
       "flake": false,
       "locked": {
-        "lastModified": 1794255458,
-        "narHash": "sha256-jX6v4yfmQdIkZ9/DlJS1yFJh/XpegPTEJ4Ay4e2o9Y4=",
+        "lastModified": 1794256615,
+        "narHash": "sha256-A9/VIpjqxxg/7OR6IfjqoyLx9K4ai08lbQEZkvuLOCY=",
         "ref": "main",
-        "rev": "1470cb1c2e36b5a767180fa064f7b5148308e1d9",
-        "revCount": 42,
+        "rev": "d31111fd9b1c666abafa66dd86dbb70045264588",
+        "revCount": 43,
         "type": "git",
         "url": "ssh://git@controller.ts.rydback.net/var/lib/git/wow-leveling.git"
       },
