@@ -5,6 +5,7 @@ Personal Intel-based convertible laptop (i7-1165G7, 16 GB) for daily use, light 
 ## Key Features
 
 - Hyprland (the window-manager default: scrolling layout mimicking niri, see `modules/window-manager/SPEC.md`) with accelerometer screen rotation in tablet mode (`my.controls.utils.autoScreenRotation`). External displays through the Hyprland lid script and the launcher's monitor menu (Mod+M); no kanshi (its profiles are bits' monitors)
+- The LG TV (USB-C to HDMI adapter) is pinned to its preferred 3840x2160@60 by a `desc:` monitor rule (any port). Hyprland's default `highres` picked 4K@120, more than Tiger Lake's DP 1.4 link carries in 8-bit RGB, so the link fell back to a converted colour format with wrong colours (yellow cursor turned green); niri had used the preferred mode
 - Alacritty terminal (module default), Bash with Starship
 - Vicinae launcher with wifi and bluetooth extensions
 - Firefox (`my.firefox`); no Chromium, no Slack (`my.communication` off)

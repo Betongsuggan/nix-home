@@ -30,6 +30,16 @@
   # Convertible: follow the accelerometer
   my.controls.utils.autoScreenRotation = true;
 
+  # The LG TV (through a USB-C to HDMI adapter) at its preferred 4K@60.
+  # Hyprland's default `highres` picks 4K@120, which Tiger Lake's DP 1.4 link
+  # only fits in a converted colour format, and the colours come out wrong
+  # (yellow turns green). Matched by description: any USB-C port
+  my.window-manager.monitors."desc:LG Electronics LG TV SSCR2 0x01010101".mode = {
+    width = 3840;
+    height = 2160;
+    refresh = 60;
+  };
+
   my.sops.enable = true;
 
   my.secrets = {
