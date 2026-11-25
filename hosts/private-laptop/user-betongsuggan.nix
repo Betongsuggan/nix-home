@@ -2,6 +2,20 @@
 {
   home.stateVersion = "24.05";
 
+  # Kept light, like bits: Hyprland (the window-manager default), Alacritty
+  # (the terminal default), Firefox instead of Chromium, no Slack. Toolchains
+  # come from each repo's dev shell (`use flake` in .envrc, cached by
+  # nix-direnv); globally only gh and the AI tools, and the editor keeps only
+  # Nix (its other languages follow the toolchain flags, all off)
+  my.development = {
+    enable = true;
+    infra.enable = false;
+  };
+  my.direnv.enable = true;
+  my.firefox.enable = true;
+  my.chromium.enable = false;
+  my.communication.enable = false;
+
   my.game-streaming.client.enable = true;
   # Steam and Moonlight only; no store launchers/Wine prefix managers here
   my.games = {
@@ -12,70 +26,9 @@
   };
   my.notifications.enable = true;
   my.network-monitor.enable = true;
-  my.kanshi.enable = true;
-  my.development = {
-    enable = true;
-    python.enable = true;
-    node.enable = true;
-    go.enable = true;
-  };
-
-  my.terminal = {
-    backend = "ghostty";
-    colors.useTheme = true;
-
-    ghostty.extraSettings = {
-      # Disable close confirmation
-      confirm-close-surface = false;
-
-      # Quality of life
-      cursor-style = "block";
-      cursor-style-blink = false;
-      mouse-hide-while-typing = true;
-      unfocused-split-opacity = 0.8;
-      focus-follows-mouse = true;
-
-      # Padding
-      window-padding-x = 8;
-      window-padding-y = 8;
-      window-padding-balance = true;
-    };
-
-    ghostty.keybindings = [
-      # Scrollback to editor (vim selection workaround)
-      "ctrl+shift+e=write_scrollback_file:open"
-
-      # Vim-style scrolling
-      "ctrl+shift+k=scroll_page_lines:-5"
-      "ctrl+shift+j=scroll_page_lines:5"
-      "ctrl+shift+u=scroll_page_up"
-      "ctrl+shift+d=scroll_page_down"
-
-      # Split navigation (vim-style)
-      "ctrl+alt+h=goto_split:left"
-      "ctrl+alt+j=goto_split:down"
-      "ctrl+alt+k=goto_split:up"
-      "ctrl+alt+l=goto_split:right"
-
-      # Split creation
-      "ctrl+alt+enter=new_split:auto"
-
-      # Font size
-      "ctrl+plus=increase_font_size:1"
-      "ctrl+minus=decrease_font_size:1"
-      "ctrl+0=reset_font_size"
-
-      # Copy URL under cursor
-      "ctrl+shift+y=copy_url_to_clipboard"
-    ];
-  };
 
   # Convertible: follow the accelerometer
   my.controls.utils.autoScreenRotation = true;
-
-  my.window-manager = {
-    backend = "niri";
-  };
 
   my.sops.enable = true;
 
@@ -94,5 +47,4 @@
       }
     ];
   };
-
 }

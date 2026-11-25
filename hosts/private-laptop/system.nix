@@ -43,17 +43,12 @@
 
   swapDevices = [ { device = "/dev/disk/by-uuid/da3b504d-b0fa-450e-8974-e332c5ce5608"; } ];
 
-  environment.systemPackages = with pkgs; [
-    iio-sensor-proxy
-  ];
-
   my.profiles.laptop.enable = true;
   my.power-management.cpuVendor = "intel";
   my.graphics = {
     intel.enable = true;
     # intel.generation = "modern"; # Set to "legacy" or "arc" if needed
   };
-  my.docker.enable = true;
 
   my.home-network = {
     enable = true;

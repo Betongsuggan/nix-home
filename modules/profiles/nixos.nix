@@ -50,6 +50,17 @@ in
         # rebuilds from pegging a laptop's CPU and thermals
         nix.settings.max-jobs = mkDefault 2;
 
+        # Lean boot, shutdown and rebuilds. Straight to the default entry
+        # (hold a key during boot for the menu); a hung stop job (once a
+        # session scope with nvim: 90 s) holds a shutdown for 10 s at most,
+        # system and user manager alike; the option manuals, evaluated on every
+        # rebuild (~7 s of ~35 on bits), are off (`man` for tools stays)
+        # (above modules/common's mkDefault 1, still below a host's own value)
+        boot.loader.timeout = mkOverride 900 0;
+        systemd.settings.Manager.DefaultTimeoutStopSec = mkDefault "10s";
+        systemd.user.extraConfig = "DefaultTimeoutStopSec=10s";
+        documentation.nixos.enable = mkDefault false;
+
         # No cups-browsed daemon from boot; cupsd stays socket-activated
         my.printers.remoteDiscovery = mkDefault false;
 
@@ -103,7 +114,13 @@ in
       }
       # Hosts without Home Manager users have no home-manager options at all
       // optionalAttrs (options ? home-manager) {
-        home-manager.sharedModules = [ { my.battery-monitor.enable = mkDefault true; } ];
+        home-manager.sharedModules = [
+          {
+            my.battery-monitor.enable = mkDefault true;
+            # The Home Manager options manpage is rebuilt on every evaluation
+            manual.manpages.enable = mkDefault false;
+          }
+        ];
       }
     ))
 
